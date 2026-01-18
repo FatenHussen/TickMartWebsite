@@ -44,6 +44,7 @@ export interface LoginResponse {
       email?: string;
       phone?: string;
     };
+    token: string;
   };
 }
 
@@ -72,6 +73,7 @@ export interface VerifyOtpResponse {
       email?: string;
       phone?: string;
     };
+    token: string;
   };
 }
 
@@ -121,6 +123,26 @@ export interface VerifyPasswordResponse {
     };
   };
 }
+
+export interface ResetPasswordPayload {
+  new_password: string;
+  new_password_confirmation: string;
+}
+
+export interface ResetPasswordResponse {
+  status: boolean;
+  message: string;
+  data: {
+    message?: string;
+    [key: string]: unknown;
+  };
+}
+
+export type ChangePasswordFormValues = {
+  currentPassword: string;
+  newPassword: string;
+  confirmNewPassword: string;
+};
 
 // ==================== Location API Types ====================
 export interface Governorate {

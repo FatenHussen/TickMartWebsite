@@ -6,6 +6,7 @@ import SignIn from "../../../features/auth/view/Sign-in";
 import SignUp from "../../../features/auth/view/Sign-up";
 import Otp from "../../../features/auth/view/Otp";
 import ForgotPassword from "../../../features/auth/view/ForgotPassword";
+import ChangePassword from "../../../features/auth/view/ChangePassword";
 import { ROOTS } from "../path/paths";
 
 const SuspenseOutlet = function SuspenseOutlet() {
@@ -39,6 +40,10 @@ export const authRoutes: RouteObject[] = [
           {
             path: "forgot-password",
             element: <ForgotPassword />,
+          },
+          {
+            path: "change-password",
+            element: <ChangePassword />,
           },
         ],
       },

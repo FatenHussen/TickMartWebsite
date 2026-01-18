@@ -1,3 +1,4 @@
+// ==================== Page Routes ====================
 export const ROOTS = {
   AUTH: "/auth",
   PRODUCT: "/product",
@@ -14,7 +15,7 @@ export const paths = {
       signUp: `${ROOTS.AUTH}/sign-up`,
       otp: `${ROOTS.AUTH}/otp`,
       forgotPassword: `${ROOTS.AUTH}/forgot-password`,
-      reset: `${ROOTS.AUTH}/reset`,
+      changePassword: `${ROOTS.AUTH}/change-password`,
     },
   },
   client: {
@@ -26,14 +27,26 @@ export const paths = {
   },
 };
 
-// ----------- key to endponit is fixed -----------
+// ==================== API Endpoints ====================
+const API_BASE = {
+  USER_AUTH: "user/auth",
+  ADMIN: "admin",
+};
 
-// const MAINBASES = {
-//   USERS: "user",
-// };
-
-export const BASES = {
-  //   AUTH: `/${MAINBASES.USERS}/auth`,
-  AUTH: `/auth`,
-  PRODUCT: `/product`,
+export const endpoints = {
+  auth: {
+    login: `${API_BASE.USER_AUTH}/login`,
+    register: `${API_BASE.USER_AUTH}/register`,
+    sendOtp: `${API_BASE.USER_AUTH}/send-otp`,
+    verifyOtp: `${API_BASE.USER_AUTH}/verify-otp`,
+    sendPassword: `${API_BASE.USER_AUTH}/send-password`,
+    verifyPassword: `${API_BASE.USER_AUTH}/verify-password`,
+    resetPassword: `${API_BASE.USER_AUTH}/reset-password`,
+    me: `${API_BASE.USER_AUTH}/me`,
+    logout: `${API_BASE.USER_AUTH}/logout`,
+  },
+  location: {
+    governorates: `${API_BASE.ADMIN}/governorates`,
+    cities: `${API_BASE.ADMIN}/cities`,
+  },
 };

@@ -1,6 +1,6 @@
 import axios from "axios";
+import { useAuthStore } from "@/store/auth";
 
-// Use proxy in development, direct URL in production
 const BASE_URL = import.meta.env.DEV
   ? "https://tikmool.octopus-software.online/api"
   : "https://tikmool.octopus-software.online/api/";
@@ -13,8 +13,21 @@ const _axios = axios.create({
     "X-CLIENT": "web",
     "Accept-Language": "en",
   },
-  withCredentials: true, // Enable sending HttpOnly cookies automatically
 });
+
+// Request interceptor - Add token to requests
+_axios.interceptors.request.use(
+  (config) => {
+    const token = useAuthStore.getState().token;
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
 // Response interceptor
 _axios.interceptors.response.use(
@@ -22,19 +35,19 @@ _axios.interceptors.response.use(
     return response;
   },
   (error) => {
-    // Handle errors globally if needed
     if (error.response) {
-      // Server responded with error status
+      // Handle 401 Unauthorized - clear auth state
+      if (error.response.status === 401) {
+        useAuthStore.getState().logoutLocal();
+      }
       console.error("API Error:", error.response.data);
     } else if (error.request) {
-      // Request was made but no response received
       console.error("Network Error:", error.request);
     } else {
-      // Something else happened
       console.error("Error:", error.message);
     }
     return Promise.reject(error);
-  },
+  }
 );
 
 export default _axios;

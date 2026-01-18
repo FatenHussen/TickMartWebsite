@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Link, useNavigate } from "react-router-dom";
 import OTPInput from "react-otp-input";
 import type { InputHTMLAttributes } from "react";
-import AuthLayout from "@/features/auth/layout/Auth-Layout";
 import Button from "@/shared/ui/Button";
 import { useOtpStore } from "@/store/otp";
 import {
@@ -11,11 +11,13 @@ import {
   useVerifyPassword,
   useForgotPassword,
 } from "@/features/auth/hooks/useAuth";
+import { paths } from "@/app/routes/path/paths";
 
 const OTP_LENGTH = 5;
 
 export default function Otp() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [code, setCode] = useState("");
   const [timer, setTimer] = useState<number>(60);
   const email = useOtpStore((state) => state.email);
@@ -38,19 +40,16 @@ export default function Otp() {
     return () => clearInterval(id);
   }, [timer]);
 
-  // Redirect if no email or phone is stored
   useEffect(() => {
     if (!email && !phone) {
-      // You might want to redirect to sign-up page
-      // navigate(paths.auth.jwt.signUp);
+      navigate(paths.auth.jwt.signUp);
     }
-  }, [email, phone]);
+  }, [email, phone, navigate]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (code.length !== OTP_LENGTH) return;
 
-    // Use verifyPassword if it's password reset flow, otherwise use verifyOtp
     if (isPasswordReset) {
       verifyPassword(code);
     } else {
@@ -59,9 +58,8 @@ export default function Otp() {
   };
 
   const handleResend = () => {
-    if (timer > 0) return; // Prevent resend if timer is still running
+    if (timer > 0) return;
 
-    // Use sendPassword if it's password reset flow, otherwise use sendOtp
     if (isPasswordReset) {
       const payload: { email?: string; phone?: string } = {};
       if (email) {
@@ -75,9 +73,6 @@ export default function Otp() {
           setTimer(60);
           setCode("");
         },
-        onError: () => {
-          // Handle error if needed
-        },
       });
     } else {
       sendOtp(undefined, {
@@ -85,14 +80,10 @@ export default function Otp() {
           setTimer(60);
           setCode("");
         },
-        onError: () => {
-          // Handle error if needed
-        },
       });
     }
   };
 
-  // Mask email/phone for display
   const getMaskedContact = () => {
     if (email) {
       const [localPart, domain] = email.split("@");
@@ -106,90 +97,149 @@ export default function Otp() {
     return "";
   };
 
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+  };
+
   return (
-    <AuthLayout
-      title="App Everything"
-      blurb="We sent a verification code to your email."
-      illustration={
-        <img
-          src="https://i.ibb.co/6W58rtf/delivery-illustration.png"
-          alt="Delivery illustration"
-          className="w-full h-auto object-contain"
-        />
-      }
-    >
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="space-y-2 text-center">
-          <h1 className="text-lg font-semibold text-slate-900">
-            {t("auth.enterVerificationCode")}
-          </h1>
-          <p className="text-xs text-slate-500">
-            {t("auth.sentCodeTo")}
-            <span className="ml-1 font-semibold text-primary">
-              {getMaskedContact()}
+    <div className="min-h-screen grid lg:grid-cols-2">
+      {/* Left Side - Illustration */}
+      <div className="hidden lg:flex bg-cyan-50 flex-col">
+        {/* Header */}
+        <div className="p-8">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-cyan-500 rounded-xl flex items-center justify-center">
+              <span className="text-white text-xl font-bold">T</span>
+            </div>
+            <span className="text-lg font-semibold text-gray-800">
+              App Everything
             </span>
-          </p>
+          </div>
         </div>
 
-        <OTPInput
-          value={code}
-          onChange={(val: string) => setCode(val.slice(0, OTP_LENGTH))}
-          numInputs={OTP_LENGTH}
-          shouldAutoFocus
-          inputType="tel"
-          containerStyle="justify-center gap-2 flex max-w-xs mx-auto"
-          renderInput={(props: InputHTMLAttributes<HTMLInputElement>) => (
-            <input
-              {...props}
-              className="h-12 w-14 rounded-lg border border-slate-200 text-center text-lg font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary transition-colors [appearance:textfield]"
+        {/* Illustration */}
+        <div className="flex-1 flex items-center justify-center px-8">
+          <div className="max-w-md">
+            <img
+              src="https://i.ibb.co/6W58rtf/delivery-illustration.png"
+              alt="Delivery illustration"
+              className="w-full h-auto"
             />
-          )}
-        />
-
-        <div className="flex items-center justify-center gap-3 text-[11px] text-slate-500">
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="text-primary font-semibold hover:underline p-0 h-auto text-[11px]"
-          >
-            {t("auth.changeEmailPhone")}
-          </Button>
-          <span className="text-slate-400">|</span>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={handleResend}
-            disabled={
-              timer > 0 ||
-              isSendingOtp ||
-              isSendingPassword ||
-              (!email && !phone)
-            }
-            className="text-primary font-semibold disabled:text-slate-400 disabled:cursor-not-allowed p-0 h-auto text-[11px]"
-          >
-            {isSendingOtp || isSendingPassword
-              ? t("common.submit")
-              : timer > 0
-              ? `${t("auth.resendCodeIn")} ${String(
-                  Math.floor(timer / 60)
-                ).padStart(2, "0")}:${String(timer % 60).padStart(2, "0")}`
-              : t("auth.resendCode")}
-          </Button>
+          </div>
         </div>
 
-        <Button
-          type="submit"
-          fullWidth
-          variant="primary"
-          className="mt-2"
-          isLoading={isPending}
-          disabled={code.length !== OTP_LENGTH}
-        >
-          {t("common.continue")}
-        </Button>
-      </form>
-    </AuthLayout>
+        {/* Promo Card */}
+        <div className="p-8">
+          <div className="bg-white rounded-2xl shadow-lg p-5">
+            <div className="flex gap-4">
+              <div className="w-16 h-16 rounded-xl bg-orange-100 flex items-center justify-center overflow-hidden">
+                <span className="text-3xl">🍝</span>
+              </div>
+              <div className="flex-1">
+                <p className="text-[10px] text-orange-500 font-medium uppercase tracking-wider">
+                  Sponsored
+                </p>
+                <h3 className="text-sm font-bold text-gray-900 mt-1">
+                  Get 30% Off Your First Order!
+                </h3>
+                <p className="text-xs text-gray-500 mt-1">
+                  Enjoy exclusive deals from top restaurants. Limited time offer
+                  for new customers.
+                </p>
+                <button className="text-xs text-cyan-500 font-semibold mt-2 hover:underline">
+                  View offer →
+                </button>
+              </div>
+            </div>
+            <p className="text-[10px] text-gray-400 mt-4">
+              Manage ad campaigns from your dashboard
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Right Side - OTP Form */}
+      <div className="flex items-center justify-center px-6 py-12 bg-white">
+        <div className="w-full max-w-md">
+          <form onSubmit={handleSubmit} className="space-y-8">
+            {/* Header */}
+            <div className="text-center space-y-2">
+              <h1 className="text-xl font-bold text-gray-900">
+                {t("auth.enterVerificationCode")}
+              </h1>
+              <p className="text-sm text-gray-500">
+                {t("auth.sentCodeTo")}
+                <br />
+                <span className="font-semibold text-cyan-500">
+                  {getMaskedContact()}
+                </span>
+              </p>
+            </div>
+
+            {/* OTP Input */}
+            <OTPInput
+              value={code}
+              onChange={(val: string) => setCode(val.slice(0, OTP_LENGTH))}
+              numInputs={OTP_LENGTH}
+              shouldAutoFocus
+              inputType="tel"
+              containerStyle="justify-center gap-3 flex"
+              renderInput={(props: InputHTMLAttributes<HTMLInputElement>) => (
+                <input
+                  {...props}
+                  className="!w-14 h-14 rounded-xl border-2 border-gray-200 text-center text-xl font-semibold text-gray-800 focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100 transition-all [appearance:textfield]"
+                />
+              )}
+            />
+
+            {/* Timer */}
+            <p className="text-center text-sm text-gray-500">
+              {t("auth.resendCodeIn")}{" "}
+              <span className="font-semibold">{formatTime(timer)}</span>
+            </p>
+
+            {/* Actions */}
+            <div className="flex items-center justify-center gap-4 text-sm">
+              <Link
+                to={paths.auth.jwt.signUp}
+                className="text-cyan-500 font-medium hover:underline"
+              >
+                {t("auth.changeEmailPhone")}
+              </Link>
+              <span className="text-gray-300">|</span>
+              <button
+                type="button"
+                onClick={handleResend}
+                disabled={
+                  timer > 0 ||
+                  isSendingOtp ||
+                  isSendingPassword ||
+                  (!email && !phone)
+                }
+                className="text-cyan-500 font-medium hover:underline disabled:text-gray-400 disabled:cursor-not-allowed disabled:no-underline"
+              >
+                {isSendingOtp || isSendingPassword
+                  ? t("common.sending")
+                  : t("auth.resendCode")}
+              </button>
+            </div>
+
+            {/* Submit Button */}
+            <Button
+              type="submit"
+              fullWidth
+              variant="primary"
+              className="py-3 rounded-full font-semibold"
+              isLoading={isPending}
+              disabled={code.length !== OTP_LENGTH}
+            >
+              {t("common.signUp")}
+            </Button>
+          </form>
+        </div>
+      </div>
+    </div>
   );
 }

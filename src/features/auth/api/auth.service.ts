@@ -1,5 +1,5 @@
 import _axios from "@/app/middleware/interceptor";
-import { QueryConfig } from "@/utils/queryKeys";
+import { endpoints } from "@/app/routes/path/paths";
 import type {
   LoginPayload,
   LoginResponse,
@@ -13,6 +13,8 @@ import type {
   SendPasswordResponse,
   VerifyPasswordPayload,
   VerifyPasswordResponse,
+  ResetPasswordPayload,
+  ResetPasswordResponse,
 } from "../types";
 
 export type {
@@ -28,60 +30,81 @@ export type {
   SendPasswordResponse,
   VerifyPasswordPayload,
   VerifyPasswordResponse,
+  ResetPasswordPayload,
+  ResetPasswordResponse,
 };
 
 export const _AuthApi = {
   login: async (payload: LoginPayload): Promise<LoginResponse> => {
-    const { url } = QueryConfig.LOGIN;
-    const res = await _axios.post<LoginResponse>(url, payload);
+    const res = await _axios.post<LoginResponse>(endpoints.auth.login, payload);
     return res.data;
   },
 
   register: async (payload: RegisterPayload): Promise<RegisterResponse> => {
-    const { url } = QueryConfig.REGISTER;
-    const res = await _axios.post<RegisterResponse>(url, payload);
-    return res.data;
-  },
-
-  verifyOtp: async (payload: VerifyOtpPayload): Promise<VerifyOtpResponse> => {
-    const { url } = QueryConfig.VERIFY_OTP;
-    const res = await _axios.post<VerifyOtpResponse>(url, payload);
+    const res = await _axios.post<RegisterResponse>(
+      endpoints.auth.register,
+      payload
+    );
     return res.data;
   },
 
   sendOtp: async (payload: SendOtpPayload): Promise<SendOtpResponse> => {
-    const { url } = QueryConfig.SEND_OTP;
-    const res = await _axios.post<SendOtpResponse>(url, payload);
+    const res = await _axios.post<SendOtpResponse>(
+      endpoints.auth.sendOtp,
+      payload
+    );
+    return res.data;
+  },
+
+  verifyOtp: async (payload: VerifyOtpPayload): Promise<VerifyOtpResponse> => {
+    const res = await _axios.post<VerifyOtpResponse>(
+      endpoints.auth.verifyOtp,
+      payload
+    );
     return res.data;
   },
 
   sendPassword: async (
     payload: SendPasswordPayload
   ): Promise<SendPasswordResponse> => {
-    const { url } = QueryConfig.SEND_PASSWORD;
-    const res = await _axios.post<SendPasswordResponse>(url, payload);
+    const res = await _axios.post<SendPasswordResponse>(
+      endpoints.auth.sendPassword,
+      payload
+    );
     return res.data;
   },
 
   verifyPassword: async (
     payload: VerifyPasswordPayload
   ): Promise<VerifyPasswordResponse> => {
-    const { url } = QueryConfig.VERIFY_PASSWORD;
-    const res = await _axios.post<VerifyPasswordResponse>(url, payload);
+    const res = await _axios.post<VerifyPasswordResponse>(
+      endpoints.auth.verifyPassword,
+      payload
+    );
+    return res.data;
+  },
+
+  resetPassword: async (
+    payload: ResetPasswordPayload
+  ): Promise<ResetPasswordResponse> => {
+    const res = await _axios.post<ResetPasswordResponse>(
+      endpoints.auth.resetPassword,
+      payload
+    );
     return res.data;
   },
 
   me: async (): Promise<{ data: { user: LoginResponse["data"]["user"] } }> => {
-    const { url } = QueryConfig.ME;
     const res = await _axios.get<{
       data: { user: LoginResponse["data"]["user"] };
-    }>(url);
+    }>(endpoints.auth.me);
     return res.data;
   },
 
   logout: async (): Promise<{ data: { message?: string } }> => {
-    const { url } = QueryConfig.LOGOUT;
-    const res = await _axios.post<{ data: { message?: string } }>(url);
+    const res = await _axios.post<{ data: { message?: string } }>(
+      endpoints.auth.logout
+    );
     return res.data;
   },
 };
