@@ -1,24 +1,13 @@
 import _axios from "@/app/middleware/interceptor";
 import { QueryConfig } from "@/utils/queryKeys";
+import type {
+  Governorate,
+  City,
+  GovernoratesResponse,
+  CitiesResponse,
+} from "../types";
 
-export interface Governorate {
-  id: number;
-  name: string;
-}
-
-export interface City {
-  id: number;
-  name: string;
-}
-
-export interface GovernoratesResponse {
-  data: Governorate[];
-}
-
-export interface CitiesResponse {
-  data: City[];
-  message?: string;
-}
+export type { Governorate, City, GovernoratesResponse, CitiesResponse };
 
 export const _LocationApi = {
   getGovernorates: async (): Promise<GovernoratesResponse> => {
@@ -29,11 +18,7 @@ export const _LocationApi = {
 
   getCities: async (governorateId: number): Promise<CitiesResponse> => {
     const { url } = QueryConfig.CITIES;
-    const res = await _axios.get<CitiesResponse>(url, {
-      params: {
-        governorate_id: governorateId,
-      },
-    });
+    const res = await _axios.get<CitiesResponse>(`${url}/${governorateId}`);
     return res.data;
   },
 };

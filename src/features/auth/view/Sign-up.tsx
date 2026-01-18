@@ -1,6 +1,7 @@
 import { useForm } from "react-hook-form";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
 import AuthLayout from "@/features/auth/layout/Auth-Layout";
 import InputField from "@/shared/ui/InputField";
 import Button from "@/shared/ui/Button";
@@ -8,20 +9,12 @@ import Label from "@/shared/ui/Label";
 import { detectEmailOrPhone } from "@/shared/lib/utils";
 import { useGovernorates, useCities } from "@/features/auth/hooks/useLocation";
 import { useRegister } from "@/features/auth/hooks/useAuth";
-
-type FormValues = {
-  fullName: string;
-  emailOrPhone: string;
-  password: string;
-  confirmPassword: string;
-  governorate: string;
-  city: string;
-  agree: boolean;
-};
+import { paths } from "@/app/routes/path/paths";
+import type { SignUpFormValues, UserRole } from "@/features/auth/types";
 
 export default function SignUp() {
   const { t } = useTranslation();
-  const [role, setRole] = useState<"customer" | "marketer">("customer");
+  const [role, setRole] = useState<UserRole>("customer");
   const { mutate: registerUser, isPending } = useRegister();
 
   const {
@@ -30,7 +23,7 @@ export default function SignUp() {
     watch,
     setValue,
     formState: { errors },
-  } = useForm<FormValues>({
+  } = useForm<SignUpFormValues>({
     defaultValues: {
       fullName: "",
       emailOrPhone: "",
@@ -58,7 +51,7 @@ export default function SignUp() {
     setValue("city", "");
   }, [selectedGovernorateId, setValue]);
 
-  const onSubmit = async (data: FormValues) => {
+  const onSubmit = async (data: SignUpFormValues) => {
     const detectedType = detectEmailOrPhone(data.emailOrPhone);
 
     // Prepare payload with either email or phone key
@@ -88,7 +81,6 @@ export default function SignUp() {
   return (
     <AuthLayout
       title={t("auth.createAccount")}
-      blurb={t("auth.orderFromStores")}
       features={[
         t("auth.orderFromNearby"),
         t("auth.collectPoints"),
@@ -98,36 +90,34 @@ export default function SignUp() {
       helper={t("auth.onFirstOrder")}
     >
       <div className="space-y-5">
-        <div className="flex gap-2 rounded-full p-1 border border-primary/20 bg-blue-off transition-colors">
-          <Button
+        {/* Role Toggle - Customer / Seller */}
+        <div className="flex rounded-full p-1 bg-gray-100">
+          <button
             type="button"
-            variant={role === "customer" ? "primary" : "ghost"}
-            size="sm"
             onClick={() => setRole("customer")}
-            className={`flex-1 rounded-full px-4 py-2 text-sm font-semibold transition-all ${
+            className={`flex-1 rounded-full py-2.5 text-sm font-medium transition-all ${
               role === "customer"
-                ? "bg-primary text-white shadow-md"
-                : "text-primary bg-transparent hover:bg-transparent"
+                ? "bg-primary text-white shadow-sm"
+                : "text-gray-600 hover:text-gray-800"
             }`}
           >
             {t("common.customer")}
-          </Button>
-          <Button
+          </button>
+          <button
             type="button"
-            variant={role === "marketer" ? "primary" : "ghost"}
-            size="sm"
-            onClick={() => setRole("marketer")}
-            className={`flex-1 rounded-full px-4 py-2 text-sm font-semibold transition-all ${
-              role === "marketer"
-                ? "bg-primary text-white shadow-md"
-                : "text-primary bg-transparent hover:bg-transparent"
+            onClick={() => setRole("seller")}
+            className={`flex-1 rounded-full py-2.5 text-sm font-medium transition-all ${
+              role === "seller"
+                ? "bg-primary text-white shadow-sm"
+                : "text-gray-600 hover:text-gray-800"
             }`}
           >
-            {t("common.marketer")}
-          </Button>
+            {t("common.seller")}
+          </button>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          {/* Full Name */}
           <InputField
             label={t("auth.fullName")}
             placeholder={t("auth.enterFullName")}
@@ -136,10 +126,11 @@ export default function SignUp() {
             error={errors.fullName}
           />
 
+          {/* Email or Phone */}
           <InputField
-            label={t("auth.emailAddress") + " / " + t("auth.phoneNumber")}
+            label={t("auth.emailOrPhone")}
             type="text"
-            placeholder={t("auth.emailAddress") + " / " + t("auth.phoneNumber")}
+            placeholder="your.email@example.com / 09xxxxxxxx"
             required
             {...register("emailOrPhone", {
               required: t("validation.required"),
@@ -166,6 +157,7 @@ export default function SignUp() {
             error={errors.emailOrPhone}
           />
 
+          {/* Password */}
           <InputField
             label={t("common.password")}
             type="password"
@@ -182,6 +174,7 @@ export default function SignUp() {
             helperText={t("auth.passwordHelper")}
           />
 
+          {/* Confirm Password */}
           <InputField
             label={t("common.confirmPassword")}
             type="password"
@@ -195,102 +188,161 @@ export default function SignUp() {
             error={errors.confirmPassword}
           />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {/* Governorate & City */}
+          <div className="grid grid-cols-2 gap-3">
+            {/* Governorate */}
             <div className="space-y-2">
-              <Label className="block text-sm font-medium text-custom-primary">
+              <Label className="block text-sm font-medium text-gray-700">
                 {t("auth.governorate")}
+                <span className="text-red-500 ms-0.5">*</span>
               </Label>
-              <select
-                className="w-full rounded-lg border border-custom-secondary bg-custom-primary px-4 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-custom-accent transition-colors"
-                {...register("governorate", {
-                  required: t("validation.selectGovernorate"),
-                  validate: (v) =>
-                    (v !== "" && v !== "0") ||
-                    t("validation.selectGovernorate"),
-                })}
-              >
-                <option value="">{t("auth.selectGovernorate")}</option>
-                {governorates.map((governorate) => (
-                  <option key={governorate.id} value={String(governorate.id)}>
-                    {governorate.name}
-                  </option>
-                ))}
-              </select>
-              {errors.governorate ? (
+              <div className="relative">
+                <select
+                  className="w-full appearance-none rounded-lg border border-gray-200 bg-white px-4 py-2.5 pe-10 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
+                  {...register("governorate", {
+                    required: t("validation.selectGovernorate"),
+                    validate: (v) =>
+                      (v !== "" && v !== "0") ||
+                      t("validation.selectGovernorate"),
+                  })}
+                >
+                  <option value="">{t("auth.selectGovernorate")}</option>
+                  {governorates.map((governorate) => (
+                    <option key={governorate.id} value={String(governorate.id)}>
+                      {governorate.name}
+                    </option>
+                  ))}
+                </select>
+                <svg
+                  className="pointer-events-none absolute end-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </div>
+              {errors.governorate && (
                 <p className="text-xs text-red-500">
                   {errors.governorate.message}
                 </p>
-              ) : null}
+              )}
             </div>
 
+            {/* City */}
             <div className="space-y-2">
-              <Label className="block text-sm font-medium text-custom-primary">
+              <Label className="block text-sm font-medium text-gray-700">
                 {t("auth.city")}
+                <span className="text-red-500 ms-0.5">*</span>
               </Label>
-              <select
-                className="w-full rounded-lg border border-custom-secondary bg-custom-primary px-4 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-custom-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={
-                  !selectedGovernorateId ||
-                  selectedGovernorateId === "" ||
-                  selectedGovernorateId === "0" ||
-                  isLoadingCities
-                }
-                {...register("city", {
-                  required: t("validation.selectCity"),
-                  validate: (v) =>
-                    (v !== "" && v !== "0") || t("validation.selectCity"),
-                })}
-              >
-                <option value="">{t("auth.selectCity")}</option>
-                {cities.map((city) => (
-                  <option key={city.id} value={String(city.id)}>
-                    {city.name}
-                  </option>
-                ))}
-              </select>
-              {errors.city ? (
+              <div className="relative">
+                <select
+                  className="w-full appearance-none rounded-lg border border-gray-200 bg-white px-4 py-2.5 pe-10 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50"
+                  disabled={
+                    !selectedGovernorateId ||
+                    selectedGovernorateId === "" ||
+                    selectedGovernorateId === "0" ||
+                    isLoadingCities
+                  }
+                  {...register("city", {
+                    required: t("validation.selectCity"),
+                    validate: (v) =>
+                      (v !== "" && v !== "0") || t("validation.selectCity"),
+                  })}
+                >
+                  <option value="">{t("auth.selectCity")}</option>
+                  {cities.map((city) => (
+                    <option key={city.id} value={String(city.id)}>
+                      {city.name}
+                    </option>
+                  ))}
+                </select>
+                <svg
+                  className="pointer-events-none absolute end-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </div>
+              {errors.city && (
                 <p className="text-xs text-red-500">{errors.city.message}</p>
-              ) : null}
+              )}
             </div>
           </div>
 
-          <Label className="inline-flex items-center gap-2 text-xs text-custom-secondary cursor-pointer">
+          {/* Terms Agreement */}
+          <label className="flex items-start gap-2 cursor-pointer">
             <input
               type="checkbox"
-              className="accent-custom-accent"
+              className="mt-1 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
               {...register("agree", {
                 validate: (v) => v || t("validation.acceptTerms"),
               })}
             />
-            <span>
+            <span className="text-xs text-gray-600">
               {t("auth.agreeToTerms")}{" "}
-              <span className="text-cyan-dark">{t("auth.termsOfService")}</span>{" "}
+              <Link
+                to="/terms"
+                className="text-primary font-medium hover:underline"
+              >
+                {t("auth.termsOfService")}
+              </Link>{" "}
               {t("auth.and")}{" "}
-              <span className="text-cyan-dark">{t("auth.privacyPolicy")}</span>
+              <Link
+                to="/privacy"
+                className="text-primary font-medium hover:underline"
+              >
+                {t("auth.privacyPolicy")}
+              </Link>
             </span>
-          </Label>
-          {errors.agree ? (
+          </label>
+          {errors.agree && (
             <p className="text-xs text-red-500">{errors.agree.message}</p>
-          ) : null}
+          )}
 
+          {/* Submit Button */}
           <Button
             type="submit"
             isLoading={isPending}
             fullWidth
             variant="primary"
-            className="mt-2"
+            className="mt-4 py-3 rounded-full font-semibold"
           >
             {t("common.signUp")}
           </Button>
 
-          <p className="text-center text-xs text-slate-500">
+          {/* Login Link */}
+          <p className="text-center text-sm text-gray-500">
             {t("common.alreadyHaveAccount")}{" "}
-            <a
-              className="text-cyan-dark font-semibold hover:underline"
-              href="#"
+            <Link
+              to={paths.auth.jwt.signIn}
+              className="text-primary font-semibold hover:underline"
             >
               {t("common.login")}
-            </a>
+            </Link>
+          </p>
+
+          {/* Continue as Guest */}
+          <p className="text-center text-sm">
+            <span className="text-gray-400">{t("common.or")} </span>
+            <Link
+              to={paths.client.home}
+              className="text-primary font-medium hover:underline"
+            >
+              {t("auth.continueAsGuest")}
+            </Link>
           </p>
         </form>
       </div>

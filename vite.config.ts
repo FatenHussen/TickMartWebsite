@@ -18,25 +18,25 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  server: {
-    proxy: {
-      "/api": {
-        target: "https://tikmool.octopus-software.online",
-        changeOrigin: true,
-        secure: true,
-        cookieDomainRewrite: "localhost",
-        configure: (proxy, _options) => {
-          proxy.on("proxyRes", (proxyRes) => {
-            // Ensure cookies are forwarded properly
-            const setCookieHeaders = proxyRes.headers["set-cookie"];
-            if (setCookieHeaders) {
-              proxyRes.headers["set-cookie"] = setCookieHeaders.map((cookie) =>
-                cookie.replace(/Domain=[^;]+/gi, "Domain=localhost")
-              );
-            }
-          });
-        },
-      },
-    },
-  },
+  // server: {
+  //   proxy: {
+  //     "/api": {
+  //       target: "https://tikmool.octopus-software.online",
+  //       changeOrigin: true,
+  //       secure: true,
+  //       cookieDomainRewrite: "localhost",
+  //       configure: (proxy, _options) => {
+  //         proxy.on("proxyRes", (proxyRes) => {
+  //           // Ensure cookies are forwarded properly
+  //           const setCookieHeaders = proxyRes.headers["set-cookie"];
+  //           if (setCookieHeaders) {
+  //             proxyRes.headers["set-cookie"] = setCookieHeaders.map((cookie) =>
+  //               cookie.replace(/Domain=[^;]+/gi, "Domain=localhost")
+  //             );
+  //           }
+  //         });
+  //       },
+  //     },
+  //   },
+  // },
 });

@@ -1,96 +1,34 @@
 import _axios from "@/app/middleware/interceptor";
 import { QueryConfig } from "@/utils/queryKeys";
+import type {
+  LoginPayload,
+  LoginResponse,
+  RegisterPayload,
+  RegisterResponse,
+  VerifyOtpPayload,
+  VerifyOtpResponse,
+  SendOtpPayload,
+  SendOtpResponse,
+  SendPasswordPayload,
+  SendPasswordResponse,
+  VerifyPasswordPayload,
+  VerifyPasswordResponse,
+} from "../types";
 
-export interface LoginPayload {
-  email?: string;
-  phone?: string;
-  password: string;
-}
-
-export interface RegisterPayload {
-  name: string;
-  email?: string;
-  phone?: string;
-  password: string;
-  city_id: number;
-  governorate_id: number;
-}
-
-export interface LoginResponse {
-  data: {
-    user: {
-      id: number;
-      name: string;
-      email?: string;
-      phone?: string;
-    };
-  };
-}
-
-export interface RegisterResponse {
-  data: {
-    message?: string;
-    [key: string]: any;
-  };
-}
-
-export interface VerifyOtpPayload {
-  email?: string;
-  phone?: string;
-  code: string;
-}
-
-export interface VerifyOtpResponse {
-  data: {
-    user: {
-      id: number;
-      name: string;
-      email?: string;
-      phone?: string;
-    };
-  };
-}
-
-export interface SendOtpPayload {
-  email?: string;
-  phone?: string;
-}
-
-export interface SendOtpResponse {
-  data: {
-    message?: string;
-    [key: string]: any;
-  };
-}
-
-export interface SendPasswordPayload {
-  email?: string;
-  phone?: string;
-}
-
-export interface SendPasswordResponse {
-  data: {
-    message?: string;
-    [key: string]: any;
-  };
-}
-
-export interface VerifyPasswordPayload {
-  email?: string;
-  phone?: string;
-  code: string;
-}
-
-export interface VerifyPasswordResponse {
-  data: {
-    user: {
-      id: number;
-      name: string;
-      email?: string;
-      phone?: string;
-    };
-  };
-}
+export type {
+  LoginPayload,
+  LoginResponse,
+  RegisterPayload,
+  RegisterResponse,
+  VerifyOtpPayload,
+  VerifyOtpResponse,
+  SendOtpPayload,
+  SendOtpResponse,
+  SendPasswordPayload,
+  SendPasswordResponse,
+  VerifyPasswordPayload,
+  VerifyPasswordResponse,
+};
 
 export const _AuthApi = {
   login: async (payload: LoginPayload): Promise<LoginResponse> => {

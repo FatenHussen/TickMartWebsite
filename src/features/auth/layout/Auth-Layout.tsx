@@ -1,8 +1,8 @@
 import React from "react";
 import ThemeToggle from "@/components/ThemeToggle";
 import LanguageToggle from "@/components/LanguageToggle";
-import Button from "@/shared/ui/Button";
-import { useTranslation } from "react-i18next";
+import { HiCheckCircle } from "react-icons/hi";
+import { HiGift } from "react-icons/hi2";
 
 type AuthLayoutProps = {
   title: string;
@@ -16,120 +16,93 @@ type AuthLayoutProps = {
 
 export default function AuthLayout({
   title,
-  blurb,
   features = [],
   ctaLabel,
   helper,
   illustration,
   children,
 }: AuthLayoutProps) {
-  const { t } = useTranslation();
-
   return (
-    <div className="h-full bg-blue-off transition-colors min-h-screen">
-      <div className="relative w-full h-full grid lg:grid-cols-[1.1fr_1fr]  shadow-[0_24px_60px_rgba(0,0,0,0.12)] overflow-hidden transition-colors">
+    <div className="min-h-screen bg-gray-50">
+      <div className="relative w-full min-h-screen grid lg:grid-cols-[1fr_1fr] overflow-hidden">
         {/* Theme and Language toggles */}
         <div className="absolute top-4 right-4 z-20 flex gap-2">
           <LanguageToggle />
           <ThemeToggle />
         </div>
 
-        {/* LEFT SIDE – like the dribbble shot */}
-        <aside className=" px-6 md:px-10 py-8 flex flex-col gap-8 transition-colors">
-          {/* Logo + app name */}
-          <header className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-xl bg-cyan-500 flex items-center justify-center text-white text-xl font-bold shadow-md">
-              H
-            </div>
-            <span className="text-slate-800  font-semibold text-lg transition-colors">
-              {title}
-            </span>
-          </header>
+        {/* LEFT SIDE - Cyan/Teal gradient background */}
+        <aside className="relative bg-gradient-to-br from-cyan-400 via-cyan-500 to-teal-500 px-8 md:px-12 py-10 flex flex-col min-h-[400px] lg:min-h-screen overflow-hidden">
+          {/* Decorative elements */}
+          <div className="absolute top-10 left-10 w-20 h-20 bg-yellow-300 rounded-full opacity-80" />
+          <div className="absolute top-20 left-24 w-4 h-4 bg-yellow-300 rounded-full opacity-60" />
+          <div className="absolute top-32 right-20 w-6 h-6 bg-white rounded-full opacity-40" />
+          <div className="absolute bottom-40 right-10 w-12 h-12 bg-yellow-300 rounded-full opacity-70" />
 
-          {blurb ? (
-            <p className="text-sm text-text-secondary  transition-colors max-w-md">
-              {blurb}
-            </p>
-          ) : null}
+          {/* Cloud decorations */}
+          <div className="absolute top-16 right-16 w-24 h-8 bg-white/30 rounded-full blur-sm" />
+          <div className="absolute top-20 right-24 w-16 h-6 bg-white/20 rounded-full blur-sm" />
 
-          {features.length > 0 ? (
-            <ul className="space-y-2 text-sm text-text-primary transition-colors">
-              {features.map((item) => (
-                <li key={item} className="flex items-start gap-2">
-                  <span className="text-lg leading-none">•</span>
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-          ) : null}
-
-          {/* Illustration */}
-          <div className="flex-1 flex items-center justify-center">
+          {/* Illustration Area */}
+          <div className="flex-1 flex items-center justify-center relative z-10">
             {illustration ? (
               <div className="w-full max-w-md">{illustration}</div>
             ) : (
-              <div className="w-full max-w-md aspect-4/3 rounded-3xl bg-white  shadow-lg flex items-center justify-center transition-colors">
-                <span className="text-7xl">🛵</span>
+              <div className="relative">
+                {/* Phone mockup */}
+                <div className="w-48 h-80 bg-white rounded-3xl shadow-2xl p-3 transform -rotate-6">
+                  <div className="w-full h-full bg-gradient-to-b from-cyan-100 to-white rounded-2xl flex items-center justify-center">
+                    <div className="text-center">
+                      <div className="w-16 h-16 bg-cyan-500 rounded-xl mx-auto mb-3 flex items-center justify-center">
+                        <span className="text-white text-2xl font-bold">T</span>
+                      </div>
+                      <span className="text-xs text-gray-500">Tikmool</span>
+                    </div>
+                  </div>
+                </div>
+                {/* Delivery scooter illustration */}
+                <div className="absolute -bottom-8 -right-16 w-40 h-32 flex items-end">
+                  <div className="text-6xl">🛵</div>
+                </div>
+                {/* Shopping bag */}
+                <div className="absolute -top-4 -right-8">
+                  <div className="text-4xl">🛍️</div>
+                </div>
               </div>
             )}
           </div>
 
-          {/* Bottom promo card */}
-          <div className="mt-4">
-            <div className="bg-white rounded-xl shadow-[0_18px_40px_rgba(15,23,42,0.12)] px-5 py-4 flex gap-4 items-center">
-              <div className="h-16 w-16 rounded-xl bg-slate-200 flex items-center justify-center overflow-hidden">
-                <span className="text-3xl">🍝</span>
-              </div>
-              <div className="flex-1 space-y-1">
-                <p className="text-[11px] uppercase tracking-wide text-slate-400">
-                  {t("auth.sponsored")}
-                </p>
-                <h3 className="text-sm font-semibold text-slate-900">
-                  {t("auth.get30Off")}
-                </h3>
-                <p className="text-xs text-slate-500">
-                  {t("auth.enjoyExclusiveDeals")}
-                </p>
-              </div>
-              <Button
-                size="sm"
-                variant="secondary"
-                className="text-xs whitespace-nowrap"
-              >
-                {t("auth.viewOffer")}
-              </Button>
-            </div>
+          {/* Bottom Content Card */}
+          <div className="relative z-10 bg-white rounded-2xl shadow-xl p-6 mt-8">
+            <h2 className="text-xl font-bold text-gray-800 mb-4">{title}</h2>
 
-            {blurb || features.length ? (
-              <p className="mt-3 text-[11px] text-slate-500  transition-colors">
-                {blurb || t("auth.manageCampaigns")}
-              </p>
-            ) : null}
+            {features.length > 0 && (
+              <ul className="space-y-3 mb-6">
+                {features.map((item, index) => (
+                  <li key={index} className="flex items-center gap-3">
+                    <HiCheckCircle className="w-5 h-5 text-cyan-500 flex-shrink-0" />
+                    <span className="text-sm text-gray-600">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
 
-            {ctaLabel ? (
-              <div className="mt-2">
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  className="text-xs whitespace-nowrap"
-                >
-                  {ctaLabel}
-                </Button>
-                {helper ? (
-                  <p className="text-[11px] text-slate-500  mt-2 transition-colors">
-                    {helper}
-                  </p>
-                ) : null}
-              </div>
-            ) : null}
+            {ctaLabel && (
+              <button className="flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-teal-500 text-white px-5 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-shadow">
+                <HiGift className="w-5 h-5" />
+                <span>{ctaLabel}</span>
+              </button>
+            )}
+
+            {helper && (
+              <p className="text-xs text-gray-400 mt-2 ms-1">{helper}</p>
+            )}
           </div>
         </aside>
 
-        {/* RIGHT SIDE – auth card */}
-        <main className="bg-white flex items-center justify-center px-4 md:px-8 py-8 transition-colors">
-          <div className="w-full max-w-md bg-white  rounded-xl shadow-[0_22px_50px_rgba(15,23,42,0.14)] px-6 md:px-8 py-7 transition-colors">
-            {children}
-          </div>
+        {/* RIGHT SIDE - Auth Form */}
+        <main className="bg-white flex items-center justify-center px-4 md:px-8 py-8">
+          <div className="w-full max-w-md">{children}</div>
         </main>
       </div>
     </div>

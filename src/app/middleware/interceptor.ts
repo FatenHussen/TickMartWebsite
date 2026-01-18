@@ -2,7 +2,7 @@ import axios from "axios";
 
 // Use proxy in development, direct URL in production
 const BASE_URL = import.meta.env.DEV
-  ? "/api" // Use Vite proxy in development
+  ? "https://tikmool.octopus-software.online/api"
   : "https://tikmool.octopus-software.online/api/";
 
 const _axios = axios.create({
@@ -11,6 +11,7 @@ const _axios = axios.create({
     "Content-Type": "application/json",
     Accept: "application/json",
     "X-CLIENT": "web",
+    "Accept-Language": "en",
   },
   withCredentials: true, // Enable sending HttpOnly cookies automatically
 });
@@ -18,8 +19,6 @@ const _axios = axios.create({
 // Response interceptor
 _axios.interceptors.response.use(
   (response) => {
-
-
     return response;
   },
   (error) => {
@@ -35,7 +34,7 @@ _axios.interceptors.response.use(
       console.error("Error:", error.message);
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 export default _axios;
