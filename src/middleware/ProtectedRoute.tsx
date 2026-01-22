@@ -1,33 +1,29 @@
 import React from "react";
 import { Navigate, useLocation } from "react-router";
 import { paths } from "@/app/routes/path/paths";
+import { useAuthStore } from "@/store/auth";
 
 const authRoutes = [
   paths.auth.jwt.signIn,
   paths.auth.jwt.signUp,
   paths.auth.jwt.otp,
-  paths.auth.jwt.reset,
+  paths.auth.jwt.forgotPassword,
+  paths.auth.jwt.changePassword,
 ];
-const protectedRoutes: string[] = [];
 
 export default function ProtectedRoute({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  // TODO: wire up real auth store when available.
-  const isAuthenticated = false;
+  const { authenticated } = useAuthStore();
   const location = useLocation();
 
   const isAuthRoute = authRoutes.includes(location.pathname);
-  const isProtectedRoute = protectedRoutes.includes(location.pathname);
 
-  if (isAuthenticated && isAuthRoute) {
-    return <Navigate to="/" replace />;
-  }
-
-  if (!isAuthenticated && isProtectedRoute) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+  // If authenticated and trying to access auth routes, redirect to home
+  if (authenticated && isAuthRoute) {
+    return <Navigate to={paths.client.home} replace />;
   }
 
   return <>{children}</>;

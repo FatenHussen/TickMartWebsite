@@ -1,9 +1,7 @@
 import { Link } from "react-router-dom";
+import type { BreadcrumbItem } from "../types";
 
-type BreadcrumbItem = {
-  label: string;
-  path?: string;
-};
+export type { BreadcrumbItem };
 
 type BreadcrumbsProps = {
   items: BreadcrumbItem[];

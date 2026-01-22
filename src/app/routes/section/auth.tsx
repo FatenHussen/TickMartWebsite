@@ -1,5 +1,4 @@
 import { Suspense } from "react";
-import { Outlet } from "react-router";
 import type { RouteObject } from "react-router";
 
 import SignIn from "../../../features/auth/view/Sign-in";
@@ -8,11 +7,12 @@ import Otp from "../../../features/auth/view/Otp";
 import ForgotPassword from "../../../features/auth/view/ForgotPassword";
 import ChangePassword from "../../../features/auth/view/ChangePassword";
 import { ROOTS } from "../path/paths";
+import GuestGuard from "../guards/GuestGuard";
 
-const SuspenseOutlet = function SuspenseOutlet() {
+const SuspenseGuestGuard = function SuspenseGuestGuard() {
   return (
     <Suspense fallback={<div />}>
-      <Outlet />
+      <GuestGuard />
     </Suspense>
   );
 };
@@ -20,32 +20,27 @@ const SuspenseOutlet = function SuspenseOutlet() {
 export const authRoutes: RouteObject[] = [
   {
     path: ROOTS.AUTH,
-    element: <SuspenseOutlet />,
+    element: <SuspenseGuestGuard />,
     children: [
       {
-        path: "",
-        children: [
-          {
-            path: "sign-in",
-            element: <SignIn />,
-          },
-          {
-            path: "sign-up",
-            element: <SignUp />,
-          },
-          {
-            path: "otp",
-            element: <Otp />,
-          },
-          {
-            path: "forgot-password",
-            element: <ForgotPassword />,
-          },
-          {
-            path: "change-password",
-            element: <ChangePassword />,
-          },
-        ],
+        path: "sign-in",
+        element: <SignIn />,
+      },
+      {
+        path: "sign-up",
+        element: <SignUp />,
+      },
+      {
+        path: "otp",
+        element: <Otp />,
+      },
+      {
+        path: "forgot-password",
+        element: <ForgotPassword />,
+      },
+      {
+        path: "change-password",
+        element: <ChangePassword />,
       },
     ],
   },

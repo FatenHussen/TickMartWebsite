@@ -1,6 +1,6 @@
 import type { RouteObject } from "react-router";
 
-import { Navigate } from "react-router";
+// import { Navigate } from "react-router";
 import { authRoutes } from "./auth";
 
 // import { authRoutes } from "./auth";
@@ -16,11 +16,6 @@ import { TrackOrderRoutes } from "./trackOrder";
 // ----------------------------------------------------------------------
 
 export const routesSection: RouteObject[] = [
-  {
-    path: "/",
-    element: <Navigate to="/" replace />,
-  },
-
   // Auth
   ...authRoutes,
 

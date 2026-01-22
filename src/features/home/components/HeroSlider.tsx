@@ -5,17 +5,10 @@ import { HiChevronLeft, HiChevronRight } from "react-icons/hi2";
 
 import { useTranslation } from "react-i18next";
 import Button from "@/shared/ui/Button";
+import type { SlideData } from "../types";
 
 import image1 from "@/assets/images/testHero.png";
 import "./hero-slider.css";
-
-type SlideData = {
-  id: number;
-  title: string;
-  subtitle: string;
-  description: string;
-  image: string;
-};
 
 const slides: SlideData[] = [
   {

@@ -9,15 +9,18 @@ import {
   HiChevronDown,
   HiSearch,
   HiMenu,
+  HiLogin,
 } from "react-icons/hi";
 import LanguageToggle from "./LanguageToggle";
 import { paths } from "@/app/routes/path/paths";
 import { useState } from "react";
+import { useAuthStore } from "@/store/auth";
 
 export default function Navbar() {
   const { isRTL } = useLanguage();
   const { t } = useTranslation();
   const location = useLocation();
+  const { authenticated } = useAuthStore();
   const [showCategoriesDropdown, setShowCategoriesDropdown] = useState(false);
   const [showLocationDropdown, setShowLocationDropdown] = useState(false);
   const [deliveryAddress, setDeliveryAddress] = useState("123 Main Street, Downtown");
@@ -30,15 +33,15 @@ export default function Navbar() {
   };
 
   const navItems = [
-    { path: "/home", label: t("home.home") || "Home" },
-    { 
-      path: "/categories", 
+    { path: paths.client.home, label: t("home.home") || "Home" },
+    {
+      path: paths.client.categories,
       label: t("categories.mainCategories") || "Categories",
-      hasDropdown: true 
+      hasDropdown: true
     },
+    { path: paths.client.cart, label: t("cart.cart") || "Cart" },
     { path: paths.client.orders, label: t("orders.myOrders") || "My Orders" },
-    { path: "/points-rewards", label: (t("home.yourPoints") || "Points") + " & " + (t("home.rewards") || "Rewards") },
-    { path: "/help-support", label: "Help & Support" },
+    { path: paths.client.store, label: t("store.store") || "Store" },
   ];
 
   return (
@@ -48,7 +51,7 @@ export default function Navbar() {
         <div className="page-container">
           <div className="flex items-center justify-between py-3 gap-4">
             {/* Logo */}
-            <Link to="/home" className="flex items-center gap-2">
+            <Link to={paths.client.home} className="flex items-center gap-2">
               <div className="w-10 h-10 bg-primary-light rounded-lg flex items-center justify-center">
                 <span className="text-white text-xl font-bold">∞</span>
               </div>
@@ -136,11 +139,15 @@ export default function Navbar() {
                   0
                 </span>
               </Link>
-              <button className="w-10 h-10 rounded-full bg-primary-light overflow-hidden">
-                <div className="w-full h-full bg-gray-bold flex items-center justify-center">
-                  <span className="text-custom-primary font-semibold">U</span>
-                </div>
-              </button>
+              {!authenticated && (
+                <Link
+                  to={paths.auth.jwt.signIn}
+                  className="flex items-center gap-2 px-4 py-2 bg-primary-light text-white rounded-lg font-medium hover:bg-primary transition-colors"
+                >
+                  <HiLogin className="w-5 h-5" />
+                  <span>{t("auth.login") || "Login"}</span>
+                </Link>
+              )}
               <LanguageToggle />
             </div>
           </div>
@@ -187,25 +194,25 @@ export default function Navbar() {
                     >
                       <div className="py-2">
                         <Link
-                          to="/categories"
+                          to={paths.client.categories}
                           className="block px-4 py-2 hover:bg-blue-off text-custom-primary"
                         >
-                          All Categories
+                          {t("categories.allCategories") || "All Categories"}
                         </Link>
                         <Link
-                          to="/categories/1"
+                          to={`${paths.client.categories}/1`}
                           className="block px-4 py-2 hover:bg-blue-off text-custom-primary"
                         >
                           {t("home.food") || "Food"}
                         </Link>
                         <Link
-                          to="/categories/2"
+                          to={`${paths.client.categories}/2`}
                           className="block px-4 py-2 hover:bg-blue-off text-custom-primary"
                         >
                           {t("home.grocery") || "Grocery"}
                         </Link>
                         <Link
-                          to="/categories/3"
+                          to={`${paths.client.categories}/3`}
                           className="block px-4 py-2 hover:bg-blue-off text-custom-primary"
                         >
                           {t("home.pharmacy") || "Pharmacy"}

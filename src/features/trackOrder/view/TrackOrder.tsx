@@ -28,6 +28,29 @@ export default function TrackOrder() {
   return (
     <div className="bg-custom-primary">
       <div className="page-container py-6" dir={isRTL ? "rtl" : "ltr"}>
+        {/* Header Section */}
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-custom-primary mb-2">
+            {t("trackOrder.title")}
+          </h1>
+          <div className="flex items-center gap-2 text-sm text-custom-secondary">
+            <span>
+              {t("orders.order")} #{orderData.orderNumber}
+            </span>
+            <span>•</span>
+            <span>
+              {t("orders.status")}:{" "}
+              <span className="font-medium" style={{ color: "#f97316" }}>
+                {t(`orders.${orderData.status}`)}
+              </span>
+            </span>
+            <span>•</span>
+            <span>
+              {t("trackOrder.eta")}: {orderData.eta}
+            </span>
+          </div>
+        </div>
+
         <SideContentLayout
           sidebar={
             <TrackOrderSidebar

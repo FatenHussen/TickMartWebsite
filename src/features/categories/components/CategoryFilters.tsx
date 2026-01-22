@@ -1,18 +1,12 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { HiStar } from "react-icons/hi";
+import type { FilterState } from "../types";
+
+export type { FilterState };
 
 type CategoryFiltersProps = {
   onFiltersChange?: (filters: FilterState) => void;
-};
-
-export type FilterState = {
-  minPrice: string;
-  maxPrice: string;
-  brands: string[];
-  ratings: string[];
-  delivery: string[];
-  offers: string[];
 };
 
 export default function CategoryFilters({

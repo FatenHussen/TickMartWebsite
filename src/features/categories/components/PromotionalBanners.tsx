@@ -1,16 +1,6 @@
+import type { PromotionalBanner } from "../types";
 
-type PromotionalBanner = {
-  id: number;
-  title: string;
-  subtitle: string;
-  buttonText: string;
-  gradientColors: {
-    from: string;
-    to: string;
-  };
-  buttonColor: string;
-  buttonHoverColor?: string;
-};
+export type { PromotionalBanner };
 
 type PromotionalBannersProps = {
   banners?: PromotionalBanner[];

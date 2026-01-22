@@ -1,6 +1,7 @@
 import { cn } from "@/shared/lib/utils";
+import type { BadgeVariant } from "../types";
 
-export type BadgeVariant = "primary" | "success" | "outline" | "warning";
+export type { BadgeVariant };
 
 export type StoreBadgeProps = {
   label: string;

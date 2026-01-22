@@ -57,6 +57,12 @@ export type OrderSummaryLegacy = {
 
 export type RepeatBasketOption = "schedule" | "one_time";
 
+export type DeliveryFrequency =
+  | "every_3_days"
+  | "weekly"
+  | "every_2_weeks"
+  | "monthly";
+
 export type OrderStatus =
   | "pending"
   | "preparing"

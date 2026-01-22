@@ -1,3 +1,12 @@
+// ==================== Hero Slider Types ====================
+export type SlideData = {
+  id: number;
+  title: string;
+  subtitle: string;
+  description: string;
+  image: string;
+};
+
 // ==================== Section Item Types ====================
 export interface SectionItemBadge {
   id: number;

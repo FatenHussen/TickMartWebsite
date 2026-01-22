@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useLanguage } from "@/context/LanguageContext";
 import { useNavigate } from "react-router-dom";
 import SideContentLayout from "@/layout/SideContentLayout";
-import CheckoutProgressIndicator from "@/shared/component/CheckoutProgressIndicator";
+import { CheckoutProgressIndicator, SuccessPopup } from "@/shared/component";
 import {
   mockCheckoutAddresses,
   mockCheckoutPaymentMethods,
@@ -12,7 +12,7 @@ import {
   ReviewDeliveryDetailsSidebar,
   ReviewAddressCard,
   ReviewPaymentCard,
-  ReviewOrderItemsTable,
+  OrderItemsTable,
 } from "../components";
 
 export default function ReviewConfirm() {
@@ -20,6 +20,7 @@ export default function ReviewConfirm() {
   const navigate = useNavigate();
   const [selectedAddress] = useState(mockCheckoutAddresses[0]);
   const [selectedPaymentMethod] = useState(mockCheckoutPaymentMethods[0]);
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
 
   const handleConfirmOrder = () => {
     console.log("Order confirmed", {
@@ -27,6 +28,16 @@ export default function ReviewConfirm() {
       paymentMethod: selectedPaymentMethod,
       orderSummary: mockReviewOrderSummary,
     });
+    setShowSuccessPopup(true);
+  };
+
+  const handleClosePopup = () => {
+    setShowSuccessPopup(false);
+  };
+
+  const handleBackToHome = () => {
+    setShowSuccessPopup(false);
+    navigate("/");
   };
 
   const handleEditAddress = () => {
@@ -35,6 +46,10 @@ export default function ReviewConfirm() {
 
   const handleEditPayment = () => {
     navigate("/cart/checkout");
+  };
+
+  const handleMoveToWishlist = (itemId: number | string) => {
+    console.log("Move to wishlist:", itemId);
   };
 
   return (
@@ -75,13 +90,21 @@ export default function ReviewConfirm() {
             />
           </div>
 
-          {/* Order Items Title */}
-          <h2 className="text-lg font-bold text-custom-primary">Order Items</h2>
-
           {/* Order Items Table */}
-          <ReviewOrderItemsTable items={mockReviewOrderSummary.items} />
+          <OrderItemsTable
+            items={mockReviewOrderSummary.items}
+            onMoveToWishlist={handleMoveToWishlist}
+          />
         </div>
       </SideContentLayout>
+
+      {/* Success Popup */}
+      <SuccessPopup
+        isOpen={showSuccessPopup}
+        onClose={handleClosePopup}
+        pointsEarned={mockReviewOrderSummary.pointsEarned}
+        onPrimaryClick={handleBackToHome}
+      />
     </div>
   );
 }

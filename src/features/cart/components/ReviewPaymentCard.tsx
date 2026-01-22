@@ -6,7 +6,7 @@ type ReviewPaymentCardProps = {
 };
 
 export default function ReviewPaymentCard({
-  paymentMethod,
+  // paymentMethod,
   onEdit,
 }: ReviewPaymentCardProps) {
   return (

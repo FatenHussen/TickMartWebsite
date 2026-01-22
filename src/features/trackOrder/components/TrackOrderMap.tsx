@@ -159,40 +159,30 @@ export default function TrackOrderMap({ order }: TrackOrderMapProps) {
       className="bg-custom-primary rounded-2xl border border-custom-secondary shadow-sm overflow-hidden"
       dir={isRTL ? "rtl" : "ltr"}
     >
-      {/* Header */}
-      <div className="p-4 border-b border-custom-secondary">
-        <h2 className="text-lg font-bold text-custom-primary mb-3">
-          {t("trackOrder.title")}
-        </h2>
-
-        {/* Order Status Bar */}
-        <div className="bg-custom-secondary rounded-lg p-3 space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-custom-primary">
-              {t("orders.order")} #{order.orderNumber}
-            </span>
-            <span
-              className="text-xs font-semibold px-2 py-1 rounded"
-              style={{
-                backgroundColor: "rgba(249, 115, 22, 0.1)",
-                color: "#f97316",
-              }}
-            >
-              {t(`orders.${order.status}`)}
-            </span>
-          </div>
-          <div className="text-xs text-custom-secondary">
-            {t("trackOrder.etaLabel")}: {order.eta}
-          </div>
-        </div>
-      </div>
-
       {/* Map Container */}
-      <div className="relative" style={{ height: "600px", minHeight: "400px" }}>
+      <div className="relative" style={{ height: "650px", minHeight: "500px" }}>
         {/* Leaflet Map */}
         <div ref={mapRef} className="w-full h-full" />
 
-        {/* Custom Zoom Controls */}
+        {/* ETA Badge - Top Left */}
+        <div
+          className={cn(
+            "absolute top-4 left-4 bg-custom-primary rounded-lg shadow-lg border border-custom-secondary px-3 py-2",
+            isRTL && "right-4 left-auto"
+          )}
+          style={{ zIndex: 1000 }}
+        >
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-custom-secondary">
+              {t("trackOrder.eta")}:
+            </span>
+            <span className="text-sm font-semibold text-custom-primary">
+              {order.eta}
+            </span>
+          </div>
+        </div>
+
+        {/* Custom Zoom Controls - Bottom Right */}
         <div
           className={cn(
             "absolute bottom-4 right-4 flex flex-col gap-1 bg-custom-primary rounded-lg shadow-lg border border-custom-secondary overflow-hidden",
@@ -219,17 +209,20 @@ export default function TrackOrderMap({ order }: TrackOrderMapProps) {
           </button>
         </div>
 
-        {/* Notification Box */}
+        {/* Notification Box - Bottom Left */}
         <div
           className={cn(
-            "absolute bottom-4 left-4 bg-custom-primary rounded-lg shadow-lg border border-custom-secondary p-3 max-w-xs",
+            "absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm rounded-lg shadow-lg border border-blue-200 p-3 max-w-xs",
             isRTL && "right-4 left-auto"
           )}
           style={{ zIndex: 1000 }}
         >
           <div className="flex items-start gap-2">
-            <HiLocationMarker className="w-4 h-4 text-custom-accent shrink-0 mt-0.5" />
-            <p className="text-xs text-custom-secondary">
+            <div
+              className="w-2 h-2 rounded-full shrink-0 mt-1.5"
+              style={{ backgroundColor: "#3b82f6" }}
+            />
+            <p className="text-xs text-gray-600">
               {t("trackOrder.notificationMessage")}
             </p>
           </div>

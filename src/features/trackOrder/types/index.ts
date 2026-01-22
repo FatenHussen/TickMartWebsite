@@ -4,6 +4,7 @@ export type PaymentMethod = "cash_on_delivery" | "credit_card" | "paypal";
 
 export type Driver = {
   name: string;
+  image?: string;
   vehicleType: string;
   phoneNumber: string;
   vehicle: string;

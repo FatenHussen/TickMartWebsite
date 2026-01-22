@@ -5,9 +5,9 @@ import type { Order, OrderStatus } from "../types";
 type OrdersTableProps = {
   orders: Order[];
   onViewDetails: (orderId: number | string) => void;
-  onTrackOnMap?: (orderId: number | string) => void;
+  onTrackOrder?: (orderId: number | string) => void;
   onReorder?: (orderId: number | string) => void;
-  onCancelOrder?: (orderId: number | string) => void;
+  onAddComplaint?: (orderId: number | string) => void;
 };
 
 const getStatusVariant = (status: OrderStatus): string => {
@@ -50,9 +50,9 @@ const getStatusLabel = (status: OrderStatus): string => {
 export default function OrdersTable({
   orders,
   onViewDetails,
-  onTrackOnMap,
+  onTrackOrder,
   onReorder,
-  onCancelOrder,
+  onAddComplaint,
 }: OrdersTableProps) {
   return (
     <div className="overflow-x-auto">
@@ -98,19 +98,20 @@ export default function OrdersTable({
                     Order #{order.orderNumber}
                   </div>
                   <div className="text-sm text-custom-secondary mt-0.5">
-                    {order.date}
+                    {order.dateTime}
                   </div>
                 </div>
               </td>
 
               {/* STORE */}
               <td className="py-4 px-4 text-sm text-custom-primary">
-                {order.store}
+                {order.items[0]?.store || "-"}
               </td>
 
               {/* ITEMS */}
               <td className="py-4 px-4 text-sm text-custom-primary">
-                {order.items}
+                {order.items.length} {order.items.length === 1 ? "item" : "items"}
+                {order.additionalInfo && <span className="text-custom-secondary ml-1">{order.additionalInfo}</span>}
               </td>
 
               {/* STATUS */}
@@ -128,7 +129,7 @@ export default function OrdersTable({
 
               {/* AMOUNT */}
               <td className="py-4 px-4 font-semibold text-custom-primary">
-                {order.amount}
+                {order.total}
               </td>
 
               {/* ACTIONS */}
@@ -143,13 +144,13 @@ export default function OrdersTable({
                       View Details
                     </button>
                   )}
-                  {order.actions.trackOnMap && onTrackOnMap && (
+                  {order.actions.trackOrder && onTrackOrder && (
                     <button
                       type="button"
-                      onClick={() => onTrackOnMap(order.id)}
+                      onClick={() => onTrackOrder(order.id)}
                       className="text-sm font-medium text-custom-accent hover:underline"
                     >
-                      Track on Map
+                      Track Order
                     </button>
                   )}
                   {order.actions.reorder && onReorder && (
@@ -161,13 +162,13 @@ export default function OrdersTable({
                       Reorder
                     </button>
                   )}
-                  {order.actions.cancelOrder && onCancelOrder && (
+                  {order.actions.addComplaint && onAddComplaint && (
                     <button
                       type="button"
-                      onClick={() => onCancelOrder(order.id)}
+                      onClick={() => onAddComplaint(order.id)}
                       className="text-sm font-medium text-custom-secondary hover:underline"
                     >
-                      Cancel Order
+                      Add Complaint
                     </button>
                   )}
                 </div>

@@ -13,18 +13,16 @@ export default function OrderDetails() {
   const order: OrderDetailsType = mockOrderDetails;
 
   const handleMoveToWishlist = (itemId: number | string) => {
-    // TODO: Implement move to wishlist
     console.log("Move to wishlist:", itemId);
   };
 
   const handleTrackOnMap = () => {
-    // TODO: Navigate to map tracking
     console.log("Track order on map");
   };
 
   return (
     <div className="bg-custom-primary">
-      <div className="page-container py-6 " dir={isRTL ? "rtl" : "ltr"}>
+      <div className="page-container py-6" dir={isRTL ? "rtl" : "ltr"}>
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-2xl sm:text-3xl font-bold text-custom-primary mb-2">
@@ -43,6 +41,7 @@ export default function OrderDetails() {
           }
           sidebarPosition="right"
           gapClassName="gap-6"
+          columnTemplate="1fr 362px"
         >
           <div className="space-y-6">
             <OrderStatusTimeline currentStatus={order.status} />

@@ -304,5 +304,14 @@
     "oldest": "Oldest",
     "amountHighToLow": "Amount: High to Low",
     "amountLowToHigh": "Amount: Low to High"
+  },
+  "successPopup": {
+    "title": "THANK YOU!",
+    "subtitle": "Thank You For Your Order!",
+    "description": "Your Basket Is Confirmed And We've Started Preparing Your Items.",
+    "youEarned": "You earned",
+    "points": "Points!",
+    "pointsDescription": "You can use your points later for discounts and special offers.",
+    "backToHome": "Back to home page"
   }
 }

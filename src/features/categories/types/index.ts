@@ -116,3 +116,31 @@ export type Store = {
   deliveryTime?: string;
   tags?: string[];
 };
+
+// Component Types
+export type FilterState = {
+  minPrice: string;
+  maxPrice: string;
+  brands: string[];
+  ratings: string[];
+  delivery: string[];
+  offers: string[];
+};
+
+export type BreadcrumbItem = {
+  label: string;
+  path?: string;
+};
+
+export type PromotionalBanner = {
+  id: number;
+  title: string;
+  subtitle: string;
+  buttonText: string;
+  gradientColors: {
+    from: string;
+    to: string;
+  };
+  buttonColor: string;
+  buttonHoverColor?: string;
+};

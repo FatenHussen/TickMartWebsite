@@ -1,12 +1,7 @@
 import { cn } from "@/shared/lib/utils";
+import type { AttributeOption } from "../types";
 
-export interface AttributeOption {
-  attribute: string;
-  type: "color" | "square";
-  values: string[];
-  availableValues?: string[];
-  disabledValues?: string[];
-}
+export type { AttributeOption };
 
 export interface AttributeSelectorProps {
   attribute: AttributeOption;

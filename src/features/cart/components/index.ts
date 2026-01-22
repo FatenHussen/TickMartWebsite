@@ -20,5 +20,4 @@ export { default as CheckoutOrderSummary } from "./CheckoutOrderSummary";
 export { default as ReviewDeliveryDetailsSidebar } from "./ReviewDeliveryDetailsSidebar";
 export { default as ReviewAddressCard } from "./ReviewAddressCard";
 export { default as ReviewPaymentCard } from "./ReviewPaymentCard";
-export { default as ReviewOrderItemsTable } from "./ReviewOrderItemsTable";
 export { default as ReviewPointsSummary } from "./ReviewPointsSummary";

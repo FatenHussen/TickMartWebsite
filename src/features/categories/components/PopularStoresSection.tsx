@@ -1,20 +1,9 @@
 import { useTranslation } from "react-i18next";
 import SliderSection from "@/shared/component/SliderSection";
 import StoreCard from "@/shared/component/StoreCard";
+import type { Store } from "../types";
 
-export type Store = {
-  id: number;
-  name: string;
-  type: string;
-  location: string;
-  rating: number;
-  reviews: number;
-  image: string;
-  status?: "open" | "closed";
-  badges?: string[];
-  deliveryTime?: string;
-  tags?: string[];
-};
+export type { Store };
 
 type PopularStoresSectionProps = {
   stores: Store[];

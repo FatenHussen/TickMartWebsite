@@ -129,7 +129,7 @@ function SectionByDisplayType({
 
 type SectionProps = {
   section: Section;
-  showViewAll: boolean | null;
+  showViewAll: boolean | any;
   onViewAll: () => void;
   onItemClick: (item: SectionItem) => void;
 };

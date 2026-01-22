@@ -1,12 +1,9 @@
 import { useTranslation } from "react-i18next";
 import { cn } from "@/shared/lib/utils";
 import Button from "@/shared/ui/Button";
+import type { SizeOption } from "../types";
 
-export type SizeOption = {
-  id: string;
-  label: string;
-  available?: boolean;
-};
+export type { SizeOption };
 
 export type ProductSizeSelectorProps = {
   sizes: SizeOption[];

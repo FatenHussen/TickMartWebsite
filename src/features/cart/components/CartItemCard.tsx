@@ -1,7 +1,7 @@
 import { HiMinus, HiPlus, HiTrash } from "react-icons/hi";
-import { useTranslation } from "react-i18next";
+// import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContext";
-import Badge from "@/shared/component/Badge";
+// import Badge from "@/shared/component/Badge";
 import type { CartItem } from "../types";
 
 type CartItemCardProps = {
@@ -17,7 +17,7 @@ export default function CartItemCard({
   onRemove,
   onMoveToWishlist,
 }: CartItemCardProps) {
-  const { t } = useTranslation();
+  // const { t } = useTranslation();
   const { isRTL } = useLanguage();
 
   const handleDecrease = () => {
@@ -29,7 +29,10 @@ export default function CartItemCard({
   };
 
   return (
-    <div className="bg-transparent rounded-2xl  border border-summary p-4 relative" dir={isRTL ? "rtl" : "ltr"}>
+    <div
+      className="bg-transparent rounded-2xl  border border-summary p-4 relative"
+      dir={isRTL ? "rtl" : "ltr"}
+    >
       {/* Delete button - top right */}
       <button
         onClick={() => onRemove(item.id)}
@@ -57,11 +60,15 @@ export default function CartItemCard({
 
         {/* Product Details - Middle Section */}
         <div className="flex-1 min-w-0">
-          <h3 className="text-lg font-bold text-custom-primary mb-1">{item.name}</h3>
+          <h3 className="text-lg font-bold text-custom-primary mb-1">
+            {item.name}
+          </h3>
           {item.description && (
-            <p className="text-sm text-custom-secondary mb-2">{item.description}</p>
+            <p className="text-sm text-custom-secondary mb-2">
+              {item.description}
+            </p>
           )}
-          
+
           {/* Tags */}
           <div className="flex items-center gap-2 mb-3 flex-wrap">
             <span className="px-2.5 py-1 rounded-md text-xs font-semibold bg-green-100 text-green-800">
@@ -81,9 +88,13 @@ export default function CartItemCard({
                 {item.originalPrice}
               </span>
             )}
-            <span className="text-xl font-bold text-custom-primary">{item.price}</span>
+            <span className="text-xl font-bold text-custom-primary">
+              {item.price}
+            </span>
             {item.savingsText && (
-              <p className="text-sm text-green-600 mt-1 font-medium">{item.savingsText}</p>
+              <p className="text-sm text-green-600 mt-1 font-medium">
+                {item.savingsText}
+              </p>
             )}
           </div>
         </div>
@@ -110,7 +121,7 @@ export default function CartItemCard({
               <HiPlus className="w-4 h-4 text-custom-primary" />
             </button>
           </div>
-          
+
           {/* Save for later */}
           <button
             onClick={() => onMoveToWishlist?.(item.id)}

@@ -1,12 +1,9 @@
 import { useTranslation } from "react-i18next";
 import { HiOutlineTruck } from "react-icons/hi";
 import { cn } from "@/shared/lib/utils";
+import type { DeliveryOption } from "../types";
 
-export type DeliveryOption = {
-  id: string;
-  label: string;
-  icon?: React.ReactNode;
-};
+export type { DeliveryOption };
 
 export type ProductActionsProps = {
   deliveryOptions?: DeliveryOption[];

@@ -16,10 +16,11 @@ export const mockTrackOrderData: TrackOrderData = {
   totalAmount: "$10.50",
   driver: {
     name: "Ahmed Hassan",
+    image: "https://ui-avatars.com/api/?name=Ahmed+Hassan&background=3b82f6&color=fff&size=128",
     vehicleType: "Motorcycle Delivery",
-    phoneNumber: "+001 50 123 4567",
+    phoneNumber: "+971 50 123 4567",
     vehicle: "Honda CB 150R",
-    plateNumber: "D123-1234",
+    plateNumber: "DXB-1234",
     location: {
       lat: 40.7282,
       lng: -73.8567,

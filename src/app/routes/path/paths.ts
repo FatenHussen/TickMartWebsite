@@ -20,10 +20,12 @@ export const paths = {
   },
   client: {
     home: "/home",
-    cart: "/cart",
+    categories: ROOTS.CATEGORIES,
+    cart: ROOTS.CART,
     orders: "/cart/orders",
     checkout: "/cart/checkout",
     review: "/cart/review",
+    store: ROOTS.STORE,
     brandProducts: "/brand/:brandId/products",
     trackOrder: "/track-order/:orderId",
   },

@@ -6,14 +6,9 @@ import {
   StoreSchedule,
 } from "./index";
 import type { StoreMeta } from "../data/mockData";
+import type { StoreContactItem } from "../types";
 
-type ContactType = "call" | "mobile" | "email" | "accepting";
-
-export type StoreContactItem = {
-  type: ContactType;
-  label: string;
-  value?: string;
-};
+export type { StoreContactItem };
 
 export type StoreDetailsCardProps = {
   store: StoreMeta;

@@ -1,8 +1,7 @@
-import { HiLocationMarker, HiQuestionMarkCircle, HiCreditCard } from "react-icons/hi";
+import { HiPhone, HiQuestionMarkCircle } from "react-icons/hi";
+import { HiTruck } from "react-icons/hi2";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContext";
-import { cn } from "@/shared/lib/utils";
-import Button from "@/shared/ui/Button";
 import type { TrackOrderData } from "../types";
 
 type TrackOrderSidebarProps = {
@@ -20,209 +19,224 @@ export default function TrackOrderSidebar({
   const { isRTL } = useLanguage();
 
   return (
-    <div className="bg-blue-off rounded-2xl border border-custom-secondary shadow-sm p-6 space-y-6" dir={isRTL ? "rtl" : "ltr"}>
-      {/* Order Summary */}
-      <div>
-        <h3 className="text-base font-semibold text-custom-primary mb-4">
+    <div
+      className="bg-blue-off rounded-2xl border border-custom-secondary shadow-sm"
+      dir={isRTL ? "rtl" : "ltr"}
+    >
+      {/* Order Summary Section */}
+      <div className="p-5 border-b border-custom-secondary">
+        <h3 className="text-base font-bold text-custom-primary mb-4">
           {t("trackOrder.orderSummary")}
         </h3>
+
         <div className="space-y-3">
-          <div>
-            <div className="text-xs text-custom-secondary mb-1">
-              {t("orders.order")} #{order.orderNumber}
+          {/* Order Number & Status */}
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-xs text-custom-secondary mb-0.5">
+                {t("orders.order")} Number
+              </div>
+              <div className="text-sm font-medium text-custom-primary">
+                #{order.orderNumber}
+              </div>
             </div>
-            <div
-              className="text-sm font-semibold"
-              style={{ color: "#f97316" }}
+            <span
+              className="text-xs font-semibold px-2.5 py-1 rounded"
+              style={{
+                backgroundColor: "rgba(249, 115, 22, 0.1)",
+                color: "#f97316",
+              }}
             >
               {t(`orders.${order.status}`)}
-            </div>
+            </span>
           </div>
+
+          {/* Store */}
           <div>
-            <div className="text-xs text-custom-secondary mb-1">
+            <div className="text-xs text-custom-secondary mb-0.5">
               {t("trackOrder.store")}
             </div>
-            <div className="text-sm font-medium text-custom-primary">
+            <div className="text-sm font-medium text-custom-accent">
               {order.store}
             </div>
           </div>
+        </div>
 
-          {/* Items */}
-          <div>
-            <div className="text-xs text-custom-secondary mb-2">
-              {t("trackOrder.items")}
-            </div>
-            <div className="space-y-1.5">
-              {order.items.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex items-center justify-between text-sm"
-                >
-                  <span className="text-custom-primary">
-                    {item.name} x{item.quantity}
-                  </span>
-                  <span className="font-medium text-custom-primary">
-                    {item.price}
-                  </span>
-                </div>
-              ))}
-            </div>
+        {/* Items */}
+        <div className="mt-4 pt-4 border-t border-custom-secondary">
+          <div className="text-xs text-custom-secondary mb-2">
+            {t("trackOrder.items")}
           </div>
+          <div className="space-y-2">
+            {order.items.map((item) => (
+              <div
+                key={item.id}
+                className="flex items-center justify-between text-sm"
+              >
+                <span className="text-custom-secondary">
+                  {item.name} x{item.quantity}
+                </span>
+                <span className="font-medium text-custom-primary">
+                  {item.price}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
 
-          {/* Payment Method */}
-          <div>
-            <div className="text-xs text-custom-secondary mb-1">
+        {/* Payment & Summary */}
+        <div className="mt-4 pt-4 border-t border-custom-secondary space-y-2">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-custom-secondary">
               {t("checkout.paymentMethod")}
-            </div>
-            <div className="text-sm font-medium text-custom-primary">
+            </span>
+            <span className="font-medium text-custom-primary">
               {order.paymentMethod === "cash_on_delivery"
                 ? t("trackOrder.cashOnDelivery")
                 : order.paymentMethod}
-            </div>
+            </span>
           </div>
-
-          {/* Summary */}
-          <div className="pt-3 border-t border-custom-secondary space-y-2">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-custom-secondary">
-                {t("trackOrder.itemsSubtotal")}
-              </span>
-              <span className="font-medium text-custom-primary">
-                {order.itemsSubtotal}
-              </span>
-            </div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-custom-secondary">
-                {t("checkout.deliveryFees")}
-              </span>
-              <span
-                className="font-medium"
-                style={
-                  order.deliveryIsFree
-                    ? { color: "var(--color-green)" }
-                    : undefined
-                }
-              >
-                {order.deliveryFee}
-              </span>
-            </div>
-            <div className="flex items-center justify-between pt-2 border-t border-custom-secondary">
-              <span className="text-base font-bold text-custom-primary">
-                {t("orders.total")}
-              </span>
-              <span className="text-lg font-bold text-custom-accent">
-                {order.totalAmount}
-              </span>
-            </div>
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-custom-secondary">
+              {t("trackOrder.itemsSubtotal")}
+            </span>
+            <span className="font-medium text-custom-primary">
+              {order.itemsSubtotal}
+            </span>
+          </div>
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-custom-secondary">
+              {t("checkout.deliveryFees")}
+            </span>
+            <span
+              className="font-medium"
+              style={
+                order.deliveryIsFree ? { color: "#22c55e" } : undefined
+              }
+            >
+              {order.deliveryFee}
+            </span>
           </div>
         </div>
-      </div>
 
-      {/* Driver Details */}
-      <div>
-        <h3 className="text-base font-semibold text-custom-primary mb-4">
-          {t("trackOrder.driverDetails")}
-        </h3>
-        <div className="space-y-3">
-          <div>
-            <div className="text-xs text-custom-secondary mb-1">
-              {t("trackOrder.driverName")}
-            </div>
-            <div className="text-sm font-medium text-custom-primary">
-              {order.driver.name}
-            </div>
-          </div>
-          <div>
-            <div className="text-xs text-custom-secondary mb-1">
-              {t("trackOrder.vehicleType")}
-            </div>
-            <div className="text-sm font-medium text-custom-primary">
-              {order.driver.vehicleType}
-            </div>
-          </div>
-          <div>
-            <div className="text-xs text-custom-secondary mb-1">
-              {t("trackOrder.phoneNumber")}
-            </div>
-            <button
-              type="button"
-              onClick={onCallDriver}
-              className="text-sm font-medium text-custom-accent hover:underline"
-            >
-              {order.driver.phoneNumber}
-            </button>
-          </div>
-          <div>
-            <div className="text-xs text-custom-secondary mb-1">
-              {t("trackOrder.vehicle")}
-            </div>
-            <div className="text-sm font-medium text-custom-primary">
-              {order.driver.vehicle}
-            </div>
-          </div>
-          <div>
-            <div className="text-xs text-custom-secondary mb-1">
-              {t("trackOrder.plateNumber")}
-            </div>
-            <div className="text-sm font-medium text-custom-primary">
-              {order.driver.plateNumber}
-            </div>
-          </div>
-
-          {/* Status Message */}
-          <div
-            className="p-3 rounded-lg flex items-center gap-2"
-            style={{ backgroundColor: "rgba(59, 130, 246, 0.1)" }}
-          >
-            <HiLocationMarker
-              className="w-5 h-5 shrink-0"
-              style={{ color: "var(--color-accent-primary)" }}
-            />
-            <span className="text-sm text-custom-primary">
-              {t("trackOrder.driverOnWay")}
+        {/* Total */}
+        <div className="mt-3 pt-3 border-t border-custom-secondary">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-bold text-custom-primary">
+              {t("orders.total")}
+            </span>
+            <span className="text-base font-bold text-custom-primary">
+              {order.totalAmount}
             </span>
           </div>
         </div>
       </div>
 
-      {/* Delivery Status */}
-      <div>
-        <h3 className="text-base font-semibold text-custom-primary mb-4">
-          {t("trackOrder.deliveryStatus")}
+      {/* Driver Details Section */}
+      <div className="p-5 border-b border-custom-secondary">
+        <h3 className="text-base font-bold text-custom-primary mb-4">
+          {t("trackOrder.driverDetails")}
         </h3>
-        <div className="space-y-3">
+
+        {/* Driver Profile */}
+        <div className="flex items-center gap-3 mb-4">
+          <img
+            src={order.driver.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(order.driver.name)}&background=3b82f6&color=fff&size=128`}
+            alt={order.driver.name}
+            className="w-10 h-10 rounded-full object-cover"
+          />
           <div>
-            <div className="text-xs text-custom-secondary mb-1">
-              {t("trackOrder.eta")}
+            <div className="text-sm font-semibold text-custom-primary">
+              {order.driver.name}
             </div>
-            <div className="text-base font-semibold text-custom-primary">
-              {t("trackOrder.etaValue", { minutes: order.eta })}
+            <div className="text-xs text-custom-secondary">
+              {order.driver.vehicleType}
             </div>
           </div>
-
-          {/* Instructions */}
-          <div className="flex items-start gap-2">
-            <div
-              className="w-2 h-2 rounded-full shrink-0 mt-1.5"
-              style={{ backgroundColor: "var(--color-accent-primary)" }}
-            />
-            <p className="text-xs text-custom-secondary flex-1">
-              {t("trackOrder.otpInstructions")}
-            </p>
-          </div>
-
-          {/* Help Link */}
-          <button
-            type="button"
-            onClick={onNeedHelp}
-            className="flex items-center gap-2 text-sm text-custom-accent hover:underline"
-          >
-            <HiQuestionMarkCircle className="w-4 h-4" />
-            {t("trackOrder.needHelp")}
-          </button>
         </div>
+
+        {/* Driver Info Grid */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-custom-secondary">
+              {t("trackOrder.phoneNumber")}
+            </span>
+            <button
+              type="button"
+              onClick={onCallDriver}
+              className="flex items-center gap-1.5 text-sm font-medium text-custom-accent hover:underline"
+            >
+              <HiPhone className="w-3.5 h-3.5" />
+              {order.driver.phoneNumber}
+            </button>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-custom-secondary">
+              {t("trackOrder.vehicle")}
+            </span>
+            <span className="text-sm font-medium text-custom-primary">
+              {order.driver.vehicle}
+            </span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-custom-secondary">
+              {t("trackOrder.plateNumber")}
+            </span>
+            <span className="text-sm font-medium text-custom-primary">
+              {order.driver.plateNumber}
+            </span>
+          </div>
+        </div>
+
+        {/* Status Banner */}
+        <div
+          className="mt-4 p-3 rounded-lg flex items-center justify-center gap-2"
+          style={{ backgroundColor: "#1f2937" }}
+        >
+          <HiTruck className="w-4 h-4 text-white" />
+          <span className="text-sm text-white">
+            {t("trackOrder.driverOnWay")}
+          </span>
+        </div>
+      </div>
+
+      {/* Delivery Status Section */}
+      <div className="p-5">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-base font-bold text-custom-primary">
+            {t("trackOrder.deliveryStatus")}
+          </h3>
+          <div className="flex items-center gap-1">
+            <span className="text-sm text-custom-secondary">
+              {t("trackOrder.eta")}:
+            </span>
+            <span className="text-sm font-semibold" style={{ color: "#22c55e" }}>
+              {order.eta}
+            </span>
+          </div>
+        </div>
+
+        {/* OTP Instructions */}
+        <div className="flex items-start gap-2 mb-4">
+          <div
+            className="w-2 h-2 rounded-full shrink-0 mt-1.5"
+            style={{ backgroundColor: "#22c55e" }}
+          />
+          <p className="text-xs text-custom-secondary flex-1">
+            {t("trackOrder.otpInstructions")}
+          </p>
+        </div>
+
+        {/* Help Link */}
+        <button
+          type="button"
+          onClick={onNeedHelp}
+          className="flex items-center gap-2 text-sm text-custom-secondary hover:text-custom-accent transition-colors"
+        >
+          <HiQuestionMarkCircle className="w-4 h-4" />
+          {t("trackOrder.needHelp")}
+        </button>
       </div>
     </div>
   );
 }
-

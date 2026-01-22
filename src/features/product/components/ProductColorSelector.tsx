@@ -1,13 +1,9 @@
 import { useTranslation } from "react-i18next";
 import { cn } from "@/shared/lib/utils";
 import Button from "@/shared/ui/Button";
+import type { ColorOption } from "../types";
 
-export type ColorOption = {
-  id: string;
-  name: string;
-  value: string; // CSS color value or image URL
-  isImage?: boolean;
-};
+export type { ColorOption };
 
 export type ProductColorSelectorProps = {
   colors: ColorOption[];

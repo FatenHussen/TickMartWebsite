@@ -1,7 +1,8 @@
 import { useTranslation } from "react-i18next";
 import Button from "@/shared/ui/Button";
+import type { AuthMethod } from "../types";
 
-export type AuthMethod = "email" | "phone";
+export type { AuthMethod };
 
 type AuthMethodTabsProps = {
   value: AuthMethod;

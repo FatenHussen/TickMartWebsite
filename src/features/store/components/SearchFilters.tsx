@@ -5,17 +5,9 @@ import Button from "@/shared/ui/Button";
 import Input from "@/shared/ui/Input";
 import Label from "@/shared/ui/Label";
 import { cn } from "@/shared/lib/utils";
+import type { SearchFilterState } from "../types";
 
-export type SearchFilterState = {
-  category: string;
-  subcategories: string[];
-  sizes: string[];
-  colors: string[];
-  minPrice: string;
-  maxPrice: string;
-  ratings: number[];
-  offers: string[];
-};
+export type { SearchFilterState };
 
 type SearchFiltersProps = {
   onFiltersChange?: (filters: SearchFilterState) => void;

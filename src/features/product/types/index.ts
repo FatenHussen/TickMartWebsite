@@ -32,3 +32,31 @@ export type ProductFilters = {
   sortBy?: string;
 };
 
+// Component Types
+export interface AttributeOption {
+  attribute: string;
+  type: "color" | "square";
+  values: string[];
+  availableValues?: string[];
+  disabledValues?: string[];
+}
+
+export type DeliveryOption = {
+  id: string;
+  label: string;
+  icon?: React.ReactNode;
+};
+
+export type ColorOption = {
+  id: string;
+  name: string;
+  value: string;
+  isImage?: boolean;
+};
+
+export type SizeOption = {
+  id: string;
+  label: string;
+  available?: boolean;
+};
+
