@@ -1,0 +1,171 @@
+import { useState, useMemo, useCallback, useEffect } from "react";
+import type {
+  AttributeMapItem,
+  ShopVariant,
+  ProductImage,
+  SelectedAttributes,
+} from "../types/productDetails";
+
+interface UseVariantSelectorParams {
+  attributesMap: AttributeMapItem[];
+  shopVariants: ShopVariant[];
+  defaultImages: ProductImage[];
+  basePrice: number;
+  basePriceAfterDiscount: number;
+}
+
+interface AvailableAttribute extends AttributeMapItem {
+  availableValues: string[]; // Values available (exist in any variant)
+  disabledValues: string[]; // Values that don't exist in any variant
+}
+
+interface UseVariantSelectorReturn {
+  selectedAttributes: SelectedAttributes;
+  setAttributeValue: (attributeName: string, value: string) => void;
+  selectedVariant: ShopVariant | null;
+  currentPrice: number;
+  currentPriceAfterDiscount: number;
+  currentImages: string[];
+  currentQuantity: number;
+  isVariantSelected: boolean;
+  availableAttributes: AvailableAttribute[];
+}
+
+export function useVariantSelector({
+  attributesMap,
+  shopVariants,
+  defaultImages,
+  basePrice,
+  basePriceAfterDiscount,
+}: UseVariantSelectorParams): UseVariantSelectorReturn {
+  const [selectedAttributes, setSelectedAttributes] =
+    useState<SelectedAttributes>({});
+
+  // Initialize with first available variant's attributes
+  useEffect(() => {
+    if (shopVariants.length > 0 && Object.keys(selectedAttributes).length === 0) {
+      const firstVariant = shopVariants[0];
+      const initialAttrs: SelectedAttributes = {};
+      firstVariant.attributes.forEach((attr) => {
+        initialAttrs[attr.attribute] = attr.value;
+      });
+      setSelectedAttributes(initialAttrs);
+    }
+  }, [shopVariants, selectedAttributes]);
+
+  // Set a single attribute value - auto-select first available option for other attributes
+  const setAttributeValue = useCallback(
+    (attributeName: string, value: string) => {
+      // Find first variant that has this attribute value
+      const variantWithValue = shopVariants.find((variant) =>
+        variant.attributes.some(
+          (attr) => attr.attribute === attributeName && attr.value === value
+        )
+      );
+
+      if (variantWithValue) {
+        // Set all attributes from this variant
+        const newAttrs: SelectedAttributes = {};
+        variantWithValue.attributes.forEach((attr) => {
+          newAttrs[attr.attribute] = attr.value;
+        });
+        setSelectedAttributes(newAttrs);
+      }
+    },
+    [shopVariants]
+  );
+
+  // Calculate available values for each attribute
+  // A value is available if it exists in ANY variant (not restricted by other selections)
+  // This allows users to always change any attribute freely
+  const availableAttributes = useMemo((): AvailableAttribute[] => {
+    return attributesMap.map((attr) => {
+      const availableValues: string[] = [];
+      const disabledValues: string[] = [];
+
+      attr.values.forEach((value) => {
+        // Check if there's ANY variant with this value (regardless of other attributes)
+        const hasAnyVariant = shopVariants.some((variant) =>
+          variant.attributes.some(
+            (a) => a.attribute === attr.attribute && a.value === value
+          )
+        );
+
+        if (hasAnyVariant) {
+          availableValues.push(value);
+        } else {
+          disabledValues.push(value);
+        }
+      });
+
+      return {
+        ...attr,
+        availableValues,
+        disabledValues,
+      };
+    });
+  }, [attributesMap, shopVariants]);
+
+  // Find the matching variant based on selected attributes
+  const selectedVariant = useMemo(() => {
+    if (attributesMap.length === 0 || shopVariants.length === 0) {
+      return null;
+    }
+
+    return (
+      shopVariants.find((variant) => {
+        return variant.attributes.every((attr) => {
+          return selectedAttributes[attr.attribute] === attr.value;
+        });
+      }) || null
+    );
+  }, [selectedAttributes, shopVariants, attributesMap.length]);
+
+  // Current price - from variant or base price
+  const currentPrice = useMemo(() => {
+    return selectedVariant?.price ?? basePrice;
+  }, [selectedVariant, basePrice]);
+
+  // Current price after discount
+  const currentPriceAfterDiscount = useMemo(() => {
+    if (selectedVariant && basePrice > 0) {
+      // Calculate discount ratio and apply to variant price
+      const discountRatio = basePriceAfterDiscount / basePrice;
+      return Math.round(selectedVariant.price * discountRatio);
+    }
+    return basePriceAfterDiscount;
+  }, [selectedVariant, basePrice, basePriceAfterDiscount]);
+
+  // Current images - from variant or default
+  const currentImages = useMemo(() => {
+    if (selectedVariant?.images && selectedVariant.images.length > 0) {
+      return selectedVariant.images.map((img) => img.path);
+    }
+    return defaultImages.map((img) => img.path);
+  }, [selectedVariant, defaultImages]);
+
+  // Current quantity
+  const currentQuantity = useMemo(() => {
+    return selectedVariant?.quantity ?? 0;
+  }, [selectedVariant]);
+
+  // Check if all attributes are selected
+  const isVariantSelected = useMemo(() => {
+    return (
+      attributesMap.length === 0 ||
+      (selectedVariant !== null && selectedVariant.quantity > 0)
+    );
+  }, [attributesMap, selectedVariant]);
+
+  return {
+    selectedAttributes,
+    setAttributeValue,
+    selectedVariant,
+    currentPrice,
+    currentPriceAfterDiscount,
+    currentImages,
+    currentQuantity,
+    isVariantSelected,
+    availableAttributes,
+  };
+}

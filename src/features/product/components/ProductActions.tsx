@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { HiCurrencyDollar } from "react-icons/hi";
+import { HiOutlineTruck } from "react-icons/hi";
 import { cn } from "@/shared/lib/utils";
 
 export type DeliveryOption = {
@@ -22,25 +22,29 @@ export default function ProductActions({
     deliveryOptions.length > 0
       ? deliveryOptions
       : [
-          { id: "cod1", label: t("product.cashOnDelivery") },
-          { id: "cod2", label: t("product.cashOnDelivery") },
-          { id: "cod3", label: t("product.cashOnDelivery") },
-          { id: "cod4", label: t("product.cashOnDelivery") },
+          { id: "cod1", label: t("product.cashOnDelivery", "Cash on delivery") },
+          { id: "cod2", label: t("product.cashOnDelivery", "Cash on delivery") },
+          { id: "cod3", label: t("product.cashOnDelivery", "Cash on delivery") },
+          { id: "cod4", label: t("product.cashOnDelivery", "Cash on delivery") },
         ];
 
   return (
     <div className={cn("flex flex-col gap-4", className)}>
-      {/* Delivery Options */}
+      {/* Delivery Options - 4 columns grid */}
       {defaultDeliveryOptions.length > 0 && (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           {defaultDeliveryOptions.map((option) => (
             <button
               key={option.id}
               type="button"
-              className="flex items-center justify-center gap-2 rounded-xl border border-custom-secondary bg-custom-secondary px-3 py-2 text-xs font-semibold text-primary transition-all hover:border-primary hover:bg-custom-hover"
+              className="flex flex-col items-center justify-center gap-1 rounded-lg border border-gray-200 bg-white px-3 py-3 text-center transition-all hover:border-primary-light hover:shadow-sm"
             >
-              {option.icon || <HiCurrencyDollar className="h-4 w-4" />}
-              <span className="whitespace-nowrap">{option.label}</span>
+              {option.icon || (
+                <HiOutlineTruck className="h-5 w-5 text-primary-light" />
+              )}
+              <span className="text-xs font-medium text-gray-700 whitespace-nowrap">
+                {option.label}
+              </span>
             </button>
           ))}
         </div>

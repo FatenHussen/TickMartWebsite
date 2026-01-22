@@ -77,6 +77,7 @@
     "in30Minutes": "في 30 دقيقة",
     "orderFromStores": "اطلب من متاجرك المحلية المفضلة واحصل على كل شيء يتم توصيله إلى بابك",
     "shopNow": "تسوق الآن",
+    "searchProducts": "ابحث عن المنتجات والمتاجر...",
     "categories": "الفئات",
     "viewAll": "عرض الكل",
     "food": "طعام",
@@ -111,7 +112,7 @@
     "delivery": "توصيل",
     "dineIn": "تناول الطعام",
     "subscriptions": "اشتراكات",
-    "freeDelivery": "توصيل مجاني",
+    "freeDelivery": "توصيل فوري",
     "sold": "مباع",
     "popular": "شائع",
     "organic": "عضوي",
@@ -214,7 +215,8 @@
     "deliveryFees": "رسوم التوصيل",
     "storeDiscounts": "خصومات المتجر",
     "couponDiscount": "خصم الكوبون",
-    "estimatedDelivery": "وقت التوصيل المتوقع"
+    "estimatedDelivery": "وقت التوصيل المتوقع",
+    "reviewConfirm": "المراجعة والتأكيد"
   },
   "cart": {
     "myShoppingCart": "سلة التسوق الخاصة بي",

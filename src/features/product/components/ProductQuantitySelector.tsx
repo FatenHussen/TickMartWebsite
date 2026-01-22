@@ -1,6 +1,5 @@
 import { HiMinus, HiPlus } from "react-icons/hi";
 import { cn } from "@/shared/lib/utils";
-import Button from "@/shared/ui/Button";
 
 export type ProductQuantitySelectorProps = {
   quantity: number;
@@ -30,49 +29,51 @@ export default function ProductQuantitySelector({
   };
 
   return (
-    <div className={cn("flex items-center gap-3", className)}>
-      {/* Quantity Selector */}
-      <div className="flex items-center gap-3">
-        <Button
+    <div className={cn("flex items-center gap-4", className)}>
+      {/* Quantity Selector - Bordered design */}
+      <div className="flex items-center border border-primary-light rounded-lg overflow-hidden">
+        <button
           type="button"
-          variant="outline"
-          size="sm"
           onClick={handleDecrease}
           disabled={quantity <= min}
-          className="h-10 w-10 rounded-lg p-0"
+          className={cn(
+            "h-10 w-10 flex items-center justify-center text-primary-light transition-colors",
+            "hover:bg-primary-light/10",
+            "disabled:opacity-40 disabled:cursor-not-allowed"
+          )}
           aria-label="Decrease quantity"
         >
-          <HiMinus className="h-5 w-5" />
-        </Button>
+          <HiMinus className="h-4 w-4" />
+        </button>
 
-        <span className="min-w-[2.5rem] text-center text-base font-semibold text-text-primary">
+        <span className="min-w-12 text-center text-base font-semibold text-text-primary">
           {quantity}
         </span>
 
-        <Button
+        <button
           type="button"
-          variant="outline"
-          size="sm"
           onClick={handleIncrease}
           disabled={max !== undefined && quantity >= max}
-          className="h-10 w-10 rounded-lg p-0"
+          className={cn(
+            "h-10 w-10 flex items-center justify-center text-primary-light transition-colors",
+            "hover:bg-primary-light/10",
+            "disabled:opacity-40 disabled:cursor-not-allowed"
+          )}
           aria-label="Increase quantity"
         >
-          <HiPlus className="h-5 w-5" />
-        </Button>
+          <HiPlus className="h-4 w-4" />
+        </button>
       </div>
 
-      {/* Add To Cart Button */}
+      {/* Add To Cart Button - Gradient cyan */}
       {onAddToCart && (
-        <Button
+        <button
           type="button"
-          variant="primary"
-          size="lg"
           onClick={onAddToCart}
-          className="ml-auto rounded-xl bg-gradient-to-r from-sky-400 to-sky-600 px-6 py-3 font-semibold text-white hover:from-sky-500 hover:to-sky-700"
+          className="flex-1 h-10 rounded-full bg-linear-to-r from-cyan-400 to-cyan-500 px-8 font-semibold text-white transition-all hover:from-cyan-500 hover:to-cyan-600 hover:shadow-lg"
         >
           {addToCartText}
-        </Button>
+        </button>
       )}
     </div>
   );

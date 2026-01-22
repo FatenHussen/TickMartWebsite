@@ -77,6 +77,7 @@
     "in30Minutes": "in 30 Minutes",
     "orderFromStores": "Order from your favorite local stores and get everything delivered to your door",
     "shopNow": "Shop Now",
+    "searchProducts": "Search products and stores...",
     "categories": "Categories",
     "viewAll": "View all",
     "food": "Food",
@@ -111,7 +112,7 @@
     "delivery": "Delivery",
     "dineIn": "Dine-in",
     "subscriptions": "Subscriptions",
-    "freeDelivery": "Free delivery",
+    "freeDelivery": "Instant Delivery",
     "sold": "Sold",
     "popular": "Popular",
     "organic": "Organic",
@@ -214,7 +215,8 @@
     "deliveryFees": "Delivery fees",
     "storeDiscounts": "Store discounts",
     "couponDiscount": "Coupon discount",
-    "estimatedDelivery": "Estimated delivery"
+    "estimatedDelivery": "Estimated delivery",
+    "reviewConfirm": "Review & confirm"
   },
   "cart": {
     "myShoppingCart": "My Shopping Cart",

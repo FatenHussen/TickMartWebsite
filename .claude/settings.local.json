@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir /s /b \"d:\\\\octopus\\\\Tikmool all\\\\tikmool\\\\tikmool-website\\\\src\\\\features\\\\categories\")"
+    ]
+  }
+}

@@ -18,7 +18,7 @@ export default function SectionsRenderer({ sections }: SectionsRendererProps) {
             console.warn(
               `[SectionsRenderer] Missing slider variant`,
               section.id,
-              section.variant
+              section.variant,
             );
             return null;
           }
@@ -45,4 +45,3 @@ export default function SectionsRenderer({ sections }: SectionsRendererProps) {
     </>
   );
 }
-

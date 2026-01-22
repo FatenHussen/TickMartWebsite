@@ -159,3 +159,21 @@ export type CheckoutOrderSummary = {
   estimatedDelivery?: string;
   deliveryNote?: string;
 };
+
+export type ReviewOrderSummary = {
+  items: CartItem[];
+  numOfItems: number;
+  subtotal: string;
+  shipping: string;
+  discounts: string;
+  tax: string;
+  couponDiscount: string;
+  pointsRedeemed: number;
+  pointsValue: string;
+  total: string;
+  estimatedDelivery: string;
+  pointsEarned: number;
+  pointsBefore: number;
+  pointsNewBalance: number;
+  pointsSavings: string;
+};

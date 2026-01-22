@@ -22,6 +22,8 @@ export const paths = {
     home: "/home",
     cart: "/cart",
     orders: "/cart/orders",
+    checkout: "/cart/checkout",
+    review: "/cart/review",
     brandProducts: "/brand/:brandId/products",
     trackOrder: "/track-order/:orderId",
   },
@@ -29,6 +31,7 @@ export const paths = {
 
 // ==================== API Endpoints ====================
 const API_BASE = {
+  USER: "user",
   USER_AUTH: "user/auth",
   ADMIN: "admin",
 };
@@ -48,5 +51,17 @@ export const endpoints = {
   location: {
     governorates: `${API_BASE.ADMIN}/governorates`,
     cities: `${API_BASE.ADMIN}/cities`,
+  },
+  sections: {
+    getByPage: (pageSlug: string) => `${API_BASE.USER}/sections?page_slug=${pageSlug}`,
+  },
+  categories: {
+    list: `${API_BASE.USER}/categories`,
+  },
+  product: {
+    details: (productId: number, lat: number, lng: number, shopId: number) =>
+      `${API_BASE.USER}/products/${productId}?lat=${lat}&lng=${lng}&shop_id=${shopId}`,
+    listByCategory: (categoryId: number, page?: number) =>
+      `${API_BASE.USER}/products?category_id=${categoryId}${page ? `&page=${page}` : ""}`,
   },
 };

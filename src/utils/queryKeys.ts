@@ -15,4 +15,14 @@ export const queryKeys = {
     governorates: "governorates",
     cities: "cities",
   },
+  sections: {
+    list: "sections",
+  },
+  categories: {
+    list: "categories",
+  },
+  product: {
+    details: "product_details",
+    listByCategory: "products_by_category",
+  },
 } as const;

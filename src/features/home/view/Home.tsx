@@ -3,11 +3,12 @@ import HeroSlider from "../components/HeroSlider";
 import Categories from "../components/Categories";
 import InfoCards from "../components/InfoCards";
 import FullBleedSection from "@/shared/component/FullBleedSection";
-import SectionsRenderer from "@/shared/component/sections/SectionsRenderer";
-import { homeSections } from "../sections/home.sections.mock";
+import ApiSectionsRenderer from "@/shared/component/sections/ApiSectionsRenderer";
+import { useSectionsByPosition } from "../hooks/useSections";
 
 export default function Home() {
   const { isRTL } = useLanguage();
+  const { beforeSections, afterSections } = useSectionsByPosition("home");
 
   return (
     <div className="min-h-screen bg-custom-primary" dir={isRTL ? "rtl" : "ltr"}>
@@ -16,13 +17,23 @@ export default function Home() {
         <InfoCards />
       </div>
 
+      {/* Sections before Categories */}
+      {beforeSections.length > 0 && (
+        <FullBleedSection>
+          <ApiSectionsRenderer sections={beforeSections} />
+        </FullBleedSection>
+      )}
+
       <FullBleedSection>
         <Categories />
       </FullBleedSection>
 
-      <FullBleedSection>
-        <SectionsRenderer sections={homeSections} />
-      </FullBleedSection>
+      {/* Sections after Categories */}
+      {afterSections.length > 0 && (
+        <FullBleedSection>
+          <ApiSectionsRenderer sections={afterSections} />
+        </FullBleedSection>
+      )}
     </div>
   );
 }

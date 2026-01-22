@@ -4,6 +4,7 @@ import Cart from "@/features/cart/view/Cart";
 import MyOrders from "@/features/cart/view/MyOrders";
 import OrderDetails from "@/features/cart/view/OrderDetails";
 import Checkout from "@/features/cart/view/Checkout";
+import ReviewConfirm from "@/features/cart/view/ReviewConfirm";
 
 export const CartRoutes: any[] = [
   {
@@ -25,6 +26,10 @@ export const CartRoutes: any[] = [
       {
         path: "checkout",
         element: <Checkout />,
+      },
+      {
+        path: "review",
+        element: <ReviewConfirm />,
       },
     ],
   },

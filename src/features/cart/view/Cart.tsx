@@ -1,14 +1,21 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContext";
+import { useNavigate, Link } from "react-router-dom";
 import SideContentLayout from "@/layout/SideContentLayout";
-import { CartTable, CartSummary } from "../components";
+import { CartSummary } from "../components";
+import CartItemCard from "../components/CartItemCard";
+import ScheduleDelivery from "../components/ScheduleDelivery";
+import CheckoutProgressIndicator from "@/shared/component/CheckoutProgressIndicator";
+import Button from "@/shared/ui/Button";
+import { HiArrowLeft } from "react-icons/hi";
 import { mockCartItems, mockCartSummary } from "../data/mockData";
 import type { CartItem, OrderSummary } from "../types";
 
 export default function Cart() {
   const { t } = useTranslation();
   const { isRTL } = useLanguage();
+  const navigate = useNavigate();
   const [items, setItems] = useState<CartItem[]>(mockCartItems);
   const [summary] = useState<OrderSummary>(mockCartSummary);
 
@@ -43,13 +50,17 @@ export default function Cart() {
   };
 
   const handleCheckout = () => {
-    // TODO: Navigate to checkout page
-    console.log("Proceed to checkout");
+    navigate("/cart/checkout");
   };
 
   return (
     <div className="bg-custom-primary">
       <div className="page-container py-6" dir={isRTL ? "rtl" : "ltr"}>
+        {/* Progress Indicator */}
+        <div className="mb-8">
+          <CheckoutProgressIndicator currentStep="cart" />
+        </div>
+
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-2xl sm:text-3xl font-bold text-custom-primary mb-2">
@@ -64,27 +75,60 @@ export default function Cart() {
           sidebarPosition="right"
           gapClassName="gap-6"
         >
-          <div>
+          <div className="space-y-6">
             {items.length === 0 ? (
               <div className="text-center py-12 bg-custom-primary rounded-2xl border border-custom-secondary">
                 <p className="text-custom-secondary text-lg mb-4">
                   {t("cart.yourCartIsEmpty")}
                 </p>
-                <a
-                  href="/home"
+                <Link
+                  to="/home"
                   className="text-custom-accent hover:underline font-medium"
                 >
                   {t("cart.continueShopping")}
-                </a>
+                </Link>
               </div>
             ) : (
-              <CartTable
-                items={items}
-                onQuantityChange={handleQuantityChange}
-                onRemove={handleRemoveItem}
-                onMoveToWishlist={handleMoveToWishlist}
-                onUpdateCart={handleUpdateCart}
-              />
+              <>
+                {/* Cart Items */}
+                <div className="space-y-4 bg-cart-items rounded-2xl p-4">
+                  {items.map((item) => (
+                    <CartItemCard
+                      key={item.id}
+                      item={item}
+                      onQuantityChange={handleQuantityChange}
+                      onRemove={handleRemoveItem}
+                      onMoveToWishlist={handleMoveToWishlist}
+                    />
+                  ))}
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex items-center justify-between">
+                  <Link to="/home">
+                    <Button
+                      variant="primary"
+                      className="bg-primary-light hover:opacity-90 text-white flex items-center gap-2"
+                    >
+                      <HiArrowLeft className="w-5 h-5" />
+                      {t("cart.returnToShop")}
+                    </Button>
+                  </Link>
+                  <Button
+                    variant="outline"
+                    onClick={handleUpdateCart}
+                    className="bg-gray-bold hover:bg-custom-hover"
+                  >
+                    {t("cart.updateCart")}
+                  </Button>
+                </div>
+
+                {/* Schedule Delivery Section */}
+                <ScheduleDelivery
+                  onSaveSchedule={() => console.log("Save schedule")}
+                  onCancelSchedule={() => console.log("Cancel schedule")}
+                />
+              </>
             )}
           </div>
         </SideContentLayout>

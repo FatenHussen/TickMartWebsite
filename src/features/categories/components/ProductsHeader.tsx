@@ -1,13 +1,8 @@
-import { HiViewGrid, HiViewList } from "react-icons/hi";
 import { useTranslation } from "react-i18next";
-import Button from "@/shared/ui/Button";
-import Select from "@/shared/ui/Select";
 
 type ProductsHeaderProps = {
   categoryName: string;
   subcategoryName?: string;
-  viewMode: "grid" | "list";
-  onViewModeChange: (mode: "grid" | "list") => void;
   sortBy?: string;
   onSortChange?: (sort: string) => void;
 };
@@ -15,8 +10,6 @@ type ProductsHeaderProps = {
 export default function ProductsHeader({
   categoryName,
   subcategoryName,
-  viewMode,
-  onViewModeChange,
   sortBy = "recommended",
   onSortChange,
 }: ProductsHeaderProps) {
@@ -24,68 +17,43 @@ export default function ProductsHeader({
   const displayName = subcategoryName || categoryName;
 
   const sortOptions = [
-    { value: "recommended", label: t("categories.sortMostOrdered") },
-    { value: "priceLow", label: t("categories.sortPriceLow") },
-    { value: "priceHigh", label: t("categories.sortPriceHigh") },
-    { value: "rating", label: t("categories.sortRating") },
-    { value: "newest", label: t("categories.sortNewest") },
+    { value: "recommended", label: t("categories.sortRecommended", "Recommended") },
+    { value: "priceLow", label: t("categories.sortPriceLow", "Price: Low to High") },
+    { value: "priceHigh", label: t("categories.sortPriceHigh", "Price: High to Low") },
+    { value: "rating", label: t("categories.sortRating", "Rating") },
+    { value: "newest", label: t("categories.sortNewest", "Newest") },
   ];
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 shadow-sm rounded-lg p-4 border border-custom-primary rtl:flex-row-reverse">
-      {/* Category Info */}
-      <div className="flex items-center gap-2 rtl:flex-row-reverse">
-        <div className="w-1 h-6 bg-primary-light rounded-full" />
-        <div>
-          <p className="text-xs text-custom-tertiary uppercase tracking-wide">
-            {t("categories.showingProductsIn")}
-          </p>
-          <h2 className="text-lg font-bold text-custom-primary mt-0.5">
-            {displayName}
-          </h2>
-        </div>
-      </div>
+    <div className="flex items-center justify-between mb-6">
+      {/* Left: Showing products in X */}
+      <p className="text-sm text-gray-600">
+        {t("categories.showingProductsIn", "Showing products in")}{" "}
+        <span className="font-semibold text-primary-light">{displayName}</span>
+      </p>
 
-      {/* Controls */}
-      <div className="flex items-center gap-4 flex-wrap rtl:flex-row-reverse">
-        {/* Sort Dropdown */}
-        <Select
-          options={sortOptions}
-          value={sortBy}
-          onChange={onSortChange}
-          className="min-w-[180px]"
-        />
-
-        {/* View Mode Toggle */}
-        <div className="flex items-center gap-1 border border-custom-primary rounded-lg p-1 bg-custom-primary">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onViewModeChange("grid")}
-            className={`p-2! min-w-0! ${
-              viewMode === "grid"
-                ? "bg-primary-light! text-white! shadow-sm"
-                : "text-custom-secondary hover:bg-custom-hover!"
-            }`}
-            aria-label="Grid view"
-            title="Grid view"
+      {/* Right: Sort by dropdown */}
+      <div className="flex items-center gap-2">
+        <span className="text-sm text-gray-500">
+          {t("categories.sortBy", "Sort by:")}
+        </span>
+        <div className="relative">
+          <select
+            value={sortBy}
+            onChange={(e) => onSortChange?.(e.target.value)}
+            className="appearance-none bg-white border border-gray-200 rounded-lg px-4 py-2 pr-8 text-sm font-medium text-gray-700 cursor-pointer hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-light focus:border-transparent"
           >
-            <HiViewGrid className="w-5 h-5" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onViewModeChange("list")}
-            className={`p-2! min-w-0! ${
-              viewMode === "list"
-                ? "bg-primary-light! text-white! shadow-sm"
-                : "text-custom-secondary hover:bg-custom-hover!"
-            }`}
-            aria-label="List view"
-            title="List view"
-          >
-            <HiViewList className="w-5 h-5" />
-          </Button>
+            {sortOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
+            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
         </div>
       </div>
     </div>

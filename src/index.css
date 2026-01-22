@@ -18,6 +18,9 @@ body {
   --color-primary-light: #4cdaf6;
   --color-secondary: #ffd700;
   --color-blue-off: #e4f0fb;
+  --color-blue-light: #77beff;
+  --color-blue-very-light: #e5f3ff;
+  --color-blue-border: #eff6ff;
   --color-white: #ffffff;
   --color-green: #16a34a;
   --color-gray-light: #8b8b8b;
@@ -209,6 +212,64 @@ body {
 
   .bg-blue-off {
     background-color: var(--color-blue-off);
+  }
+  /* Gradient Border - Note: border-image doesn't work with border-radius */
+  .border-summary {
+    border: 1px solid transparent;
+    border-image: linear-gradient(
+      180deg,
+      var(--color-blue-light) 0%,
+      var(--color-blue-very-light) 100%
+    ) 1;
+  }
+
+  /* Gradient Border with Rounded Corners (alternative method using pseudo-element) */
+  .border-summary-rounded {
+    position: relative;
+    background: var(--color-bg-primary);
+    border-radius: 0.75rem;
+  }
+
+  .border-summary-rounded::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 0.75rem;
+    padding: 1px;
+    background: linear-gradient(
+      180deg,
+      var(--color-blue-light) 0%,
+      var(--color-blue-very-light) 100%
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+
+  /* Cart Summary Gradient Background */
+  .bg-cart-summary {
+    background: linear-gradient(
+      180deg,
+      var(--color-blue-light) 0%,
+      var(--color-blue-very-light) 100%
+    );
+  }
+
+  /* Cart Items Container - Gradient Background from #E4F0FB to #E5F3FF */
+  .bg-cart-items {
+    background: linear-gradient(
+      180deg,
+      var(--color-blue-off) 0%,
+      var(--color-blue-very-light) 100%
+    );
+    border: 1px solid var(--color-blue-border);
+    /* Drop shadows matching design: X 0, Y 4, Blur 6, Spread -4 and X 0, Y 10, Blur 15, Spread -3 */
+    box-shadow: 
+      0 4px 6px -4px rgba(0, 174, 209, 0.1),
+      0 10px 15px -3px rgba(0, 174, 209, 0.1);
   }
 }
 

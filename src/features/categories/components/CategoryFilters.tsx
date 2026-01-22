@@ -1,9 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { HiStar } from "react-icons/hi";
-import Button from "@/shared/ui/Button";
-import Input from "@/shared/ui/Input";
-import Label from "@/shared/ui/Label";
 
 type CategoryFiltersProps = {
   onFiltersChange?: (filters: FilterState) => void;
@@ -31,38 +28,15 @@ export default function CategoryFilters({
     offers: [],
   });
 
-  const handleBrandChange = (brand: string) => {
-    const newBrands = filters.brands.includes(brand)
-      ? filters.brands.filter((b) => b !== brand)
-      : [...filters.brands, brand];
-    const newFilters = { ...filters, brands: newBrands };
-    setFilters(newFilters);
-    onFiltersChange?.(newFilters);
-  };
-
-  const handleRatingChange = (rating: string) => {
-    const newRatings = filters.ratings.includes(rating)
-      ? filters.ratings.filter((r) => r !== rating)
-      : [...filters.ratings, rating];
-    const newFilters = { ...filters, ratings: newRatings };
-    setFilters(newFilters);
-    onFiltersChange?.(newFilters);
-  };
-
-  const handleDeliveryChange = (option: string) => {
-    const newDelivery = filters.delivery.includes(option)
-      ? filters.delivery.filter((d) => d !== option)
-      : [...filters.delivery, option];
-    const newFilters = { ...filters, delivery: newDelivery };
-    setFilters(newFilters);
-    onFiltersChange?.(newFilters);
-  };
-
-  const handleOfferChange = (offer: string) => {
-    const newOffers = filters.offers.includes(offer)
-      ? filters.offers.filter((o) => o !== offer)
-      : [...filters.offers, offer];
-    const newFilters = { ...filters, offers: newOffers };
+  const handleCheckboxChange = (
+    field: "brands" | "ratings" | "delivery" | "offers",
+    value: string
+  ) => {
+    const currentValues = filters[field];
+    const newValues = currentValues.includes(value)
+      ? currentValues.filter((v) => v !== value)
+      : [...currentValues, value];
+    const newFilters = { ...filters, [field]: newValues };
     setFilters(newFilters);
     onFiltersChange?.(newFilters);
   };
@@ -87,145 +61,146 @@ export default function CategoryFilters({
   };
 
   const brands = ["Organic Valley", "Fresh Farms", "Nature's Best"];
-  const ratings = ["4.5 & up", "4.0 & up"];
+  const ratings = ["4.5", "4.0"];
   const deliveryOptions = ["Free delivery", "Express delivery"];
   const offerOptions = ["On sale", "Subscription available"];
 
   return (
-    <div className="space-y-6">
-      <h3 className="text-lg font-bold text-custom-primary">Filters</h3>
+    <div className="space-y-5">
+      <h3 className="text-base font-bold text-gray-900">
+        {t("categories.filters", "Filters")}
+      </h3>
 
       {/* Price Range */}
       <div>
-        <Label className="mb-3">
-          Price Range
-        </Label>
-        <div className="flex items-center gap-2 rtl:flex-row-reverse">
-          <Input
+        <p className="text-sm font-semibold text-gray-700 mb-2">
+          {t("categories.priceRange", "Price Range")}
+        </p>
+        <div className="flex items-center gap-2">
+          <input
             type="number"
-            placeholder={t("categories.minPrice") || "Min"}
+            placeholder={t("categories.min", "Min")}
             value={filters.minPrice}
             onChange={(e) => handlePriceChange("minPrice", e.target.value)}
-            className="text-sm"
+            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary-light"
           />
-          <span className="text-custom-secondary">-</span>
-          <Input
+          <span className="text-gray-400">-</span>
+          <input
             type="number"
-            placeholder={t("categories.maxPrice") || "Max"}
+            placeholder={t("categories.max", "Max")}
             value={filters.maxPrice}
             onChange={(e) => handlePriceChange("maxPrice", e.target.value)}
-            className="text-sm"
+            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary-light"
           />
         </div>
       </div>
 
       {/* Brand */}
       <div>
-        <Label className="mb-3">
-          Brand
-        </Label>
+        <p className="text-sm font-semibold text-gray-700 mb-2">
+          {t("categories.brand", "Brand")}
+        </p>
         <div className="space-y-2">
           {brands.map((brand) => (
-            <Label
+            <label
               key={brand}
-              className="flex items-center gap-2 cursor-pointer rtl:flex-row-reverse font-normal"
+              className="flex items-center gap-2 cursor-pointer"
             >
               <input
                 type="checkbox"
                 checked={filters.brands.includes(brand)}
-                onChange={() => handleBrandChange(brand)}
-                className="w-4 h-4 text-primary-light rounded border-custom-primary focus:ring-primary-light"
+                onChange={() => handleCheckboxChange("brands", brand)}
+                className="w-4 h-4 rounded border-gray-300 text-primary-light focus:ring-primary-light"
               />
-              <span className="text-sm text-custom-secondary">{brand}</span>
-            </Label>
+              <span className="text-sm text-gray-600">{brand}</span>
+            </label>
           ))}
         </div>
       </div>
 
       {/* Rating */}
       <div>
-        <Label className="mb-3">
-          Rating
-        </Label>
+        <p className="text-sm font-semibold text-gray-700 mb-2">
+          {t("categories.rating", "Rating")}
+        </p>
         <div className="space-y-2">
           {ratings.map((rating) => (
-            <Label
+            <label
               key={rating}
-              className="flex items-center gap-2 cursor-pointer rtl:flex-row-reverse font-normal"
+              className="flex items-center gap-2 cursor-pointer"
             >
               <input
                 type="checkbox"
                 checked={filters.ratings.includes(rating)}
-                onChange={() => handleRatingChange(rating)}
-                className="w-4 h-4 text-primary-light rounded border-custom-primary focus:ring-primary-light"
+                onChange={() => handleCheckboxChange("ratings", rating)}
+                className="w-4 h-4 rounded border-gray-300 text-primary-light focus:ring-primary-light"
               />
               <HiStar className="w-4 h-4 text-yellow-400" />
-              <span className="text-sm text-custom-secondary">{rating}</span>
-            </Label>
+              <span className="text-sm text-gray-600">{rating} & up</span>
+            </label>
           ))}
         </div>
       </div>
 
       {/* Delivery */}
       <div>
-        <Label className="mb-3">
-          Delivery
-        </Label>
+        <p className="text-sm font-semibold text-gray-700 mb-2">
+          {t("categories.delivery", "Delivery")}
+        </p>
         <div className="space-y-2">
           {deliveryOptions.map((option) => (
-            <Label
+            <label
               key={option}
-              className="flex items-center gap-2 cursor-pointer rtl:flex-row-reverse font-normal"
+              className="flex items-center gap-2 cursor-pointer"
             >
               <input
                 type="checkbox"
                 checked={filters.delivery.includes(option)}
-                onChange={() => handleDeliveryChange(option)}
-                className="w-4 h-4 text-primary-light rounded border-custom-primary focus:ring-primary-light"
+                onChange={() => handleCheckboxChange("delivery", option)}
+                className="w-4 h-4 rounded border-gray-300 text-primary-light focus:ring-primary-light"
               />
-              <span className="text-sm text-custom-secondary">{option}</span>
-            </Label>
+              <span className="text-sm text-gray-600">{option}</span>
+            </label>
           ))}
         </div>
       </div>
 
       {/* Offers */}
       <div>
-        <Label className="mb-3">
-          Offers
-        </Label>
+        <p className="text-sm font-semibold text-gray-700 mb-2">
+          {t("categories.offers", "Offers")}
+        </p>
         <div className="space-y-2">
           {offerOptions.map((offer) => (
-            <Label
+            <label
               key={offer}
-              className="flex items-center gap-2 cursor-pointer rtl:flex-row-reverse font-normal"
+              className="flex items-center gap-2 cursor-pointer"
             >
               <input
                 type="checkbox"
                 checked={filters.offers.includes(offer)}
-                onChange={() => handleOfferChange(offer)}
-                className="w-4 h-4 text-primary-light rounded border-custom-primary focus:ring-primary-light"
+                onChange={() => handleCheckboxChange("offers", offer)}
+                className="w-4 h-4 rounded border-gray-300 text-primary-light focus:ring-primary-light"
               />
-              <span className="text-sm text-custom-secondary">{offer}</span>
-            </Label>
+              <span className="text-sm text-gray-600">{offer}</span>
+            </label>
           ))}
         </div>
       </div>
 
       {/* Action Buttons */}
-      <div className="space-y-3 pt-2">
-        <Button
-          variant="primary"
+      <div className="space-y-2 pt-2">
+        <button
           onClick={() => onFiltersChange?.(filters)}
-          className="w-full"
+          className="w-full py-2.5 bg-primary-light text-white text-sm font-semibold rounded-lg hover:bg-primary-light/90 transition-colors"
         >
-          Apply filters
-        </Button>
+          {t("categories.applyFilters", "Apply filters")}
+        </button>
         <button
           onClick={handleReset}
-          className="w-full text-sm text-custom-secondary hover:text-custom-accent text-center"
+          className="w-full py-2 text-sm text-primary-light hover:underline"
         >
-          Reset
+          {t("categories.reset", "Reset")}
         </button>
       </div>
     </div>

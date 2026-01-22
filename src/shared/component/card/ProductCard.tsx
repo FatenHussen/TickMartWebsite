@@ -14,7 +14,9 @@ export type ProductCardProps = {
   rating: number;
   image: string;
 
-  badge?: { label: string; className?: string } | { label: string; className?: string }[]; // Single badge or array for multiple badges
+  badge?:
+    | { label: string; className?: string }
+    | { label: string; className?: string }[]; // Single badge or array for multiple badges
   category?: string; // Category label like "Drinks"
   isFavorite?: boolean;
   sold?: number; // Quantity sold like 1238
@@ -47,12 +49,14 @@ export default function ProductCard({
   t,
   className,
 }: ProductCardProps) {
+  console.log(id);
+
   return (
     <div
       className={cn(
         "relative overflow-hidden rounded-2xl bg-custom-primary shadow-sm transition hover:shadow-md",
         onClick && "cursor-pointer",
-        className
+        className,
       )}
       onClick={() => onClick?.(id)}
       role={onClick ? "button" : undefined}
@@ -79,17 +83,13 @@ export default function ProductCard({
                 <Badge
                   key={idx}
                   label={t ? t(`home.${b.label}`) : b.label}
-                  className={cn(
-                    b.className || "bg-blue-500 text-white"
-                  )}
+                  className={cn(b.className || "bg-blue-500 text-white")}
                 />
               ))
             ) : (
               <Badge
                 label={t ? t(`home.${badge.label}`) : badge.label}
-                className={cn(
-                  badge.className || "bg-blue-500 text-white"
-                )}
+                className={cn(badge.className || "bg-blue-500 text-white")}
               />
             )}
           </div>
@@ -112,7 +112,7 @@ export default function ProductCard({
               "h-5 w-5",
               isFavorite
                 ? "fill-primary-light text-primary-light"
-                : "fill-none text-primary-light"
+                : "fill-none text-primary-light",
             )}
           />
         </Button>
@@ -132,13 +132,17 @@ export default function ProductCard({
 
         {/* Category */}
         {category && (
-          <p className="mt-1 text-xs text-custom-secondary line-clamp-1">{category}</p>
+          <p className="mt-1 text-xs text-custom-secondary line-clamp-1">
+            {category}
+          </p>
         )}
 
         {/* Price Section */}
         <div className="mt-3">
           <div className="flex items-baseline gap-2">
-            <span className="text-lg font-bold text-custom-primary">{price}</span>
+            <span className="text-lg font-bold text-custom-primary">
+              {price}
+            </span>
             {originalPrice && (
               <span className="text-sm text-custom-tertiary line-through">
                 {originalPrice}
@@ -150,7 +154,10 @@ export default function ProductCard({
           {(savings || sold) && (
             <div className="flex justify-between items-center gap-2 mt-1">
               {savings && (
-                <p className="text-sm font-medium" style={{ color: 'var(--color-green)' }}>
+                <p
+                  className="text-sm font-medium"
+                  style={{ color: "var(--color-green)" }}
+                >
                   {savings}
                 </p>
               )}

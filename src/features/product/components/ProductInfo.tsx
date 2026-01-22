@@ -1,7 +1,6 @@
 import { cn } from "@/shared/lib/utils";
 import Rating from "@/shared/component/Rating";
 import Badge from "@/shared/component/Badge";
-import Button from "@/shared/ui/Button";
 
 export type ProductInfoProps = {
   category?: string;
@@ -33,8 +32,8 @@ export default function ProductInfo({
   className,
 }: ProductInfoProps) {
   return (
-    <div className={cn("flex flex-col gap-4", className)}>
-      {/* Badges */}
+    <div className={cn("flex flex-col gap-3", className)}>
+      {/* Badges - Top */}
       {badges.length > 0 && (
         <div className="flex flex-wrap items-center gap-2">
           {badges.map((badge, idx) => (
@@ -43,96 +42,90 @@ export default function ProductInfo({
               label={badge.label}
               className={cn(
                 "rounded-full px-3 py-1 text-xs font-semibold",
-                badge.className
+                badge.className,
               )}
             />
           ))}
         </div>
       )}
 
-      {/* Category & Brand */}
+      {/* Category & Brand - Small gray text */}
       {(category || brand) && (
-        <div className="flex flex-col  gap-2 text-sm text-gray">
+        <div className="flex flex-col gap-0.5 text-sm text-gray">
           {category && <span>{category}</span>}
           {brand && <span>{brand}</span>}
         </div>
       )}
 
-      {/* Product Name */}
-      <h1 className="text-4xl font-semibold tracking-tight text-text-primary">
+      {/* Product Name - Large bold */}
+      <h1 className="text-2xl font-bold tracking-tight text-text-primary lg:text-3xl">
         {name}
       </h1>
 
-      {/* SKU & Origin (blue link-like) */}
+      {/* SKU & Origin - Blue links */}
       {(sku || origin) && (
         <div className="flex flex-col gap-1 text-sm">
           {sku && (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               <span className="text-gray">SKU:</span>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="h-auto p-0 font-medium text-primary-light"
-              >
-                {sku}
-              </Button>
+              <span className="font-medium text-primary-light">{sku}</span>
             </div>
           )}
-
           {origin && (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               <span className="text-gray">Origin:</span>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="h-auto p-0 font-medium text-primary-light"
-              >
-                {origin}
-              </Button>
+              <span className="font-medium text-primary-light">{origin}</span>
             </div>
           )}
         </div>
       )}
 
-      {/* Pricing */}
-      <section className="flex flex-row justify-between gap-2">
-        <div className="flex flex-col gap-2">
-          <div className="flex items-end gap-3">
-            <span className="text-2xl font-semibold text-text-primary">
-              {price}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            {originalPrice && (
-              <span className="text-lg text-gray line-through">
-                {originalPrice}
-              </span>
-            )}
-            {savings && (
-              <p className="text-sm font-semibold text-green">{savings}</p>
-            )}
-          </div>
+      {/* Pricing Row */}
+      <div className="flex items-center justify-between">
+        {/* Left: Price */}
+        <div className="flex flex-col gap-1">
+          <span className="text-2xl font-bold text-text-primary">{price}</span>
+          {(originalPrice || savings) && (
+            <div className="flex items-center gap-2">
+              {originalPrice && (
+                <span className="text-sm text-gray line-through">
+                  {originalPrice}
+                </span>
+              )}
+              {savings && (
+                <span className="text-sm font-semibold text-green">{savings}</span>
+              )}
+            </div>
+          )}
         </div>
 
-        {/* Sold + Rating aligned like screenshot */}
+        {/* Right: Sold + Rating */}
         {(sold !== undefined || rating !== undefined) && (
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2 text-sm">
             {sold !== undefined && (
-              <span className="text-sm text-slate-500">
-                {sold.toLocaleString()} Sold
-              </span>
+              <span className="text-gray">{sold.toLocaleString()} Sold</span>
             )}
-
-            {rating !== undefined && (
-              <div className="flex items-center gap-2">
-                <Rating rating={rating} size="lg" />
-              </div>
+            {sold !== undefined && rating !== undefined && (
+              <span className="text-gray">•</span>
             )}
+            {rating !== undefined && <Rating rating={rating} size="sm" />}
           </div>
         )}
-      </section>
+      </div>
+
+      {/* Secondary Badges (15% OFF, Most Ordered) - Below price */}
+      {badges.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge
+            label="15% OFF"
+            className="rounded-full bg-primary-light px-3 py-1 text-xs font-semibold text-white"
+          />
+          <Badge
+            label="Most Ordered"
+            className="rounded-full bg-yellow-400 px-3 py-1 text-xs font-semibold text-black"
+          />
+        </div>
+      )}
     </div>
   );
 }
