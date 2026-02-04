@@ -1,5 +1,13 @@
-import React from "react";
-import { HiTruck, HiCheck, HiX, HiCube, HiShoppingBag } from "react-icons/hi";
+import {
+  HiTruck,
+  HiCheck,
+  HiX,
+  HiCube,
+  HiShoppingBag,
+  HiClock,
+  HiClipboardList,
+  HiLocationMarker,
+} from "react-icons/hi";
 import type { IconType } from "react-icons";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContext";
@@ -29,93 +37,91 @@ type OrderCardProps = {
   onTrackOrder?: () => void;
   onReorder?: () => void;
   onAddComplaint?: () => void;
+  onCancelOrder?: () => void;
   refundStatus?: string;
 };
 
-// Helper: Get status UI configuration
+// Helper: Get status UI configuration with colors from design
 const getStatusUI = (
   status: OrderStatus,
-  t: (key: string) => string
+  t: (key: string) => string,
 ): {
   label: string;
   icon: IconType;
-  pillClasses: string;
-  iconWrapClasses: string;
-  style?: React.CSSProperties;
+  cardGradient: string;
+  badgeBackgroundColor: string;
+  badgeTextColor: string;
+  buttonColor: string;
+  iconBgColor: string;
 } => {
-  const basePill =
-    "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium";
-  const baseIconWrap = "w-4 h-4";
-
   switch (status) {
-    case "delivered":
-      return {
-        label: t("orders.delivered"),
-        icon: HiCheck,
-        pillClasses: cn(basePill),
-        iconWrapClasses: cn(baseIconWrap, "text-white"),
-        style: {
-          backgroundColor: "rgba(22, 163, 74, 0.1)",
-          color: "var(--color-green)",
-        },
-      };
     case "out_for_delivery":
       return {
         label: t("orders.out_for_delivery"),
         icon: HiTruck,
-        pillClasses: cn(basePill),
-        iconWrapClasses: cn(baseIconWrap),
-        style: {
-          backgroundColor: "rgba(59, 130, 246, 0.1)",
-          color: "var(--color-accent-primary)",
-        },
+        cardGradient:
+          "linear-gradient(to bottom, #FFFFFF 0%, #D4EEF7 30%, #A8DCF0 60%, #7FCCE8 100%)",
+        badgeBackgroundColor: "#7FCCE8",
+        badgeTextColor: "#006A8A",
+        buttonColor: "#006A8A",
+        iconBgColor: "#006A8A",
+      };
+    case "delivered":
+      return {
+        label: t("orders.delivered"),
+        icon: HiCheck,
+        cardGradient:
+          "linear-gradient(to bottom, #FFFFFF 0%, #DCFCE7 30%, #98CFA9 60%, #16A34A 100%)",
+        badgeBackgroundColor: "#98CFA9",
+        badgeTextColor: "#166534",
+        buttonColor: "#16A34A",
+        iconBgColor: "#16A34A",
       };
     case "preparing":
       return {
         label: t("orders.preparing"),
         icon: HiCube,
-        pillClasses: cn(basePill),
-        iconWrapClasses: cn(baseIconWrap),
-        style: {
-          backgroundColor: "rgba(234, 179, 8, 0.1)",
-          color: "#ca8a04",
-        },
+        cardGradient:
+          "linear-gradient(to bottom, #FFFFFF 0%, #FEF9C3 30%, #FDE047 60%, #EAB308 100%)",
+        badgeBackgroundColor: "#FDE047",
+        badgeTextColor: "#854D0E",
+        buttonColor: "#CA8A04",
+        iconBgColor: "#CA8A04",
       };
     case "cancelled":
       return {
         label: t("orders.cancelled"),
         icon: HiX,
-        pillClasses: cn(basePill),
-        iconWrapClasses: cn(baseIconWrap),
-        style: {
-          backgroundColor: "rgba(239, 68, 68, 0.1)",
-          color: "#dc2626",
-        },
+        cardGradient:
+          "linear-gradient(to bottom, #FFFFFF 0%, #FEE2E2 30%, #FECACA 60%, #EF4444 100%)",
+        badgeBackgroundColor: "#FECACA",
+        badgeTextColor: "#991B1B",
+        buttonColor: "#DC2626",
+        iconBgColor: "#DC2626",
+      };
+    case "pending":
+      return {
+        label: t("orders.pending"),
+        icon: HiClock,
+        cardGradient:
+          "linear-gradient(to bottom, #FFFFFF 0%, #FED7AA 30%, #FDBA74 60%, #F97316 100%)",
+        badgeBackgroundColor: "#FDBA74",
+        badgeTextColor: "#9A3412",
+        buttonColor: "#EA580C",
+        iconBgColor: "#EA580C",
       };
     default:
       return {
         label: t("orders.pending"),
-        icon: HiCube,
-        pillClasses: cn(basePill, "bg-custom-tertiary text-custom-secondary"),
-        iconWrapClasses: cn(baseIconWrap, "text-custom-secondary"),
-        style: undefined,
+        icon: HiClock,
+        cardGradient:
+          "linear-gradient(to bottom, #FFFFFF 0%, #FED7AA 30%, #FDBA74 60%, #F97316 100%)",
+        badgeBackgroundColor: "#FDBA74",
+        badgeTextColor: "#9A3412",
+        buttonColor: "#EA580C",
+        iconBgColor: "#EA580C",
       };
   }
-};
-
-// Helper: Format more items text with pluralization
-// Note: Currently unused as component receives additionalInfo as prop.
-// Available for use when component API is refactored to accept count/storeCount.
-export const formatMoreItems = (
-  remainingCount: number,
-  storeCount: number,
-  t: (key: string, opts?: { count?: number; storeCount?: number }) => string,
-  _isRtl: boolean
-): string => {
-  return t("orders.moreItemsFromStore", {
-    count: remainingCount,
-    storeCount,
-  });
 };
 
 // Helper: Extract last 4 digits from payment method
@@ -123,7 +129,6 @@ const extractLast4 = (paymentMethod: string): string => {
   if (paymentMethod.includes("ending")) {
     return paymentMethod.split("ending")[1]?.trim() || "1234";
   }
-  // Try to extract last 4 digits from any string
   const digits = paymentMethod.match(/\d{4}/g);
   return digits?.[digits.length - 1] || "1234";
 };
@@ -141,6 +146,7 @@ export default function OrderCard({
   onTrackOrder,
   onReorder,
   onAddComplaint,
+  onCancelOrder,
   refundStatus,
 }: OrderCardProps) {
   const { t } = useTranslation();
@@ -149,138 +155,90 @@ export default function OrderCard({
   const StatusIcon = statusUI.icon;
   const last4 = extractLast4(paymentMethod);
 
-  const cardClasses =
-    "bg-custom-primary rounded-xl border border-custom-secondary shadow-sm p-6 hover:shadow-md transition-shadow";
-  const headerClasses = "flex items-center justify-between mb-2";
-  const orderNumberClasses = "font-semibold text-custom-primary text-base";
-  const dateTimeClasses = "text-sm text-custom-secondary mt-0.5";
-  const storeIconWrapClasses =
-    "w-6 h-6 rounded-lg flex items-center justify-center";
-  const itemImageClasses =
-    "w-16 h-16 rounded-lg shrink-0 overflow-hidden bg-custom-tertiary";
-  const itemNameClasses = "text-sm font-medium text-custom-primary mb-0.5";
-  const itemMetaClasses = "text-xs text-custom-secondary";
-  const qtyClasses = "text-xs text-custom-secondary";
-  const priceClasses = "text-sm font-semibold text-custom-primary mt-0.5";
-  const totalLabelClasses = "text-sm text-custom-secondary mb-1";
-  const totalValueClasses = "font-semibold text-xl text-custom-primary";
-  const paymentLabelClasses = "text-sm text-custom-secondary";
-
   return (
-    <div className={cardClasses} dir={isRTL ? "rtl" : "ltr"}>
-      {/* Header: Order Number, Store Icon, and Status */}
-      <div className={headerClasses}>
-        <div className="flex items-center gap-3">
-          <div>
-            <div className={orderNumberClasses}>
-              {t("orders.order")} #{orderNumber}
+    <div
+      className="rounded-2xl overflow-hidden shadow-md hover:shadow-lg transition-shadow px-2"
+      dir={isRTL ? "rtl" : "ltr"}
+      style={{ background: statusUI.cardGradient }}
+    >
+      {/* Top Section with Gradient */}
+      <div
+        className="p-4 rounded-4xl "
+        style={{
+          background: "linear-gradient(to bottom, #FFFFFF 80%, #FFFFFF 30%)",
+        }}
+      >
+        {/* Header: Order Icon + Info | Status Badge */}
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex items-center gap-3">
+            {/* Order Icon */}
+            <div
+              className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+              style={{ backgroundColor: statusUI.iconBgColor }}
+            >
+              <HiClipboardList className="w-5 h-5 text-white" />
             </div>
-            <div className={dateTimeClasses}>{dateTime}</div>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          {/* Store Icon */}
-          <div
-            className={storeIconWrapClasses}
-            style={{ backgroundColor: "rgba(22, 163, 74, 0.1)" }}
-          >
-            <HiShoppingBag
-              className="w-5 h-5"
-              style={{ color: "var(--color-green)" }}
-            />
+            <div>
+              <div className="font-semibold text-gray-900 text-sm">
+                {t("orders.order")} #{orderNumber}
+              </div>
+              <div className="text-xs text-gray-600">{dateTime}</div>
+            </div>
           </div>
           {/* Status Badge */}
-          <div className={statusUI.pillClasses} style={statusUI.style}>
-            <StatusIcon
-              className={statusUI.iconWrapClasses}
-              style={
-                statusUI.style ? { color: statusUI.style.color } : undefined
-              }
-            />
+          <div
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium"
+            style={{
+              backgroundColor: statusUI.badgeBackgroundColor,
+              color: statusUI.badgeTextColor,
+            }}
+          >
+            <StatusIcon className="w-3.5 h-3.5" />
             <span>{statusUI.label}</span>
           </div>
         </div>
-      </div>
 
-      {/* Items List */}
-      <div className="space-y-3 mb-4 mt-4">
-        {items.map((item, index) => (
-          <div key={index} className="flex items-start gap-3">
-            {/* Item Image */}
-            <div className={itemImageClasses}>
-              {item.image ? (
-                <img
-                  src={item.image}
-                  alt={item.name}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-custom-tertiary">
-                  <HiShoppingBag className="w-6 h-6 text-custom-secondary" />
-                </div>
-              )}
+        {/* Middle Row: Total/Payment | Address/Buttons */}
+        <div className="flex items-start justify-between gap-4">
+          {/* Left: Total and Payment */}
+          <div>
+            <div className="text-xs text-gray-600 mb-0.5">
+              {t("orders.total")}
             </div>
-            <div className="flex-1 min-w-0">
-              <div className={itemNameClasses}>{item.name}</div>
-              <div className={itemMetaClasses}>
-                {item.category} • {item.store}
-              </div>
-            </div>
-            <div className={cn("shrink-0", isRTL ? "text-left" : "text-right")}>
-              <div className={qtyClasses}>
-                {t("orders.qty")}: {item.quantity}
-              </div>
-              <div className={priceClasses}>{item.price}</div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Additional Info */}
-      {additionalInfo && (
-        <div className="text-sm text-custom-secondary mb-4">
-          {additionalInfo}
-        </div>
-      )}
-
-      {/* Bottom Section: Delivery Address, Total, Payment, and Actions */}
-      <div className="mt-6">
-        {/* Delivery Address */}
-        {deliveryAddress && (
-          <div className="text-sm text-custom-secondary mb-4">
-            {t("orders.deliveredTo")}: {deliveryAddress}
-          </div>
-        )}
-
-        {/* Main Content: Total, Payment, and Actions */}
-        <div className="flex items-end justify-between gap-2">
-          {/* Left Side: Total and Payment */}
-          <div className="flex-1">
-            {/* Total */}
-            <div className="mb-2">
-              <div className={totalLabelClasses}>{t("orders.total")}</div>
-              <div className={totalValueClasses}>{total}</div>
-            </div>
-
-            {/* Payment Method */}
-            <div className={paymentLabelClasses}>
-              <div>
-                {t("orders.payment")}: {t("orders.visaEnding")}
-              </div>
-              <div>{last4}</div>
+            <div className="font-bold text-xl text-gray-900">{total}</div>
+            <div className="text-xs text-gray-600 mt-1">
+              {t("orders.payment")}:{" "}
+              {paymentMethod.includes("ending")
+                ? `${t("orders.visaEnding")} ${last4}`
+                : paymentMethod}
             </div>
           </div>
 
-          {/* Right Side: Action Buttons */}
+          {/* Right: Address and Buttons */}
           <div className="flex flex-col items-end gap-2">
-            <div className="flex items-center gap-1">
+            {/* Delivery Address */}
+            {deliveryAddress && (
+              <div className="flex items-center gap-1.5 text-xs text-gray-600">
+                <HiLocationMarker className="w-3.5 h-3.5 shrink-0" />
+                <span>
+                  {t("orders.deliveredTo")}: {deliveryAddress}
+                </span>
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex items-center gap-2">
               {onViewDetails && (
                 <Button
                   type="button"
-                  variant="primary"
+                  variant="outline"
                   size="sm"
                   onClick={onViewDetails}
-                  className="bg-custom-accent hover:opacity-90 text-custom-inverse px-4 py-2 rounded-lg text-sm font-medium"
+                  className="bg-white hover:bg-gray-50 px-3 py-1.5 rounded-lg text-xs font-medium border"
+                  style={{
+                    borderColor: statusUI.buttonColor,
+                    color: statusUI.buttonColor,
+                  }}
                 >
                   {t("orders.viewDetails")}
                 </Button>
@@ -288,10 +246,11 @@ export default function OrderCard({
               {onTrackOrder && (
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="primary"
                   size="sm"
                   onClick={onTrackOrder}
-                  className="bg-custom-primary border border-custom-accent hover:bg-custom-hover text-custom-accent px-4 py-2 rounded-lg text-sm font-medium"
+                  className="text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:opacity-90"
+                  style={{ backgroundColor: statusUI.buttonColor }}
                 >
                   {t("orders.trackOrder")}
                 </Button>
@@ -299,21 +258,35 @@ export default function OrderCard({
               {onReorder && (
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="primary"
                   size="sm"
                   onClick={onReorder}
-                  className="bg-custom-primary border border-custom-accent hover:bg-custom-hover text-custom-accent px-4 py-2 rounded-lg text-sm font-medium"
+                  className="text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:opacity-90"
+                  style={{ backgroundColor: statusUI.buttonColor }}
                 >
                   {t("orders.reorder")}
                 </Button>
               )}
+              {onCancelOrder &&
+                (status === "pending" || status === "preparing") && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={onCancelOrder}
+                    className="bg-white border border-red-500 hover:bg-red-50 text-red-600 px-3 py-1.5 rounded-lg text-xs font-medium"
+                  >
+                    {t("orders.cancelOrder")}
+                  </Button>
+                )}
             </div>
+
             {/* Add Complaint Link */}
             {onAddComplaint && (
               <button
                 type="button"
                 onClick={onAddComplaint}
-                className="text-sm text-custom-secondary hover:underline"
+                className="text-xs text-gray-500 hover:underline"
               >
                 {t("orders.addComplaint")}
               </button>
@@ -322,15 +295,62 @@ export default function OrderCard({
         </div>
       </div>
 
-      {/* Refund Status (for cancelled orders) */}
-      {refundStatus && (
-        <div
-          className="text-sm mb-4 font-medium"
-          style={{ color: "var(--color-green)" }}
-        >
-          {refundStatus}
+      {/* Bottom Section: Items List with White Background */}
+      <div className=" p-4 ">
+        {/* Items List */}
+        <div className="space-y-3">
+          {items.map((item, index) => (
+            <div key={index} className="flex items-center gap-3">
+              {/* Item Image */}
+              <div className="w-10 h-10 rounded-lg shrink-0 overflow-hidden bg-gray-100">
+                {item.image ? (
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <HiShoppingBag className="w-5 h-5 text-gray-400" />
+                  </div>
+                )}
+              </div>
+              {/* Item Info */}
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-medium text-gray-900 truncate">
+                  {item.name}
+                </div>
+                <div className="text-xs text-gray-500">{item.store}</div>
+              </div>
+              {/* Qty and Price */}
+              <div
+                className={cn("shrink-0", isRTL ? "text-left" : "text-right")}
+              >
+                <div className="text-xs text-gray-500">
+                  {t("orders.qty")}: {item.quantity}
+                </div>
+                <div className="text-sm font-semibold text-gray-900">
+                  {item.price}
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
-      )}
+
+        {/* Additional Info */}
+        {additionalInfo && (
+          <div className="text-xs text-blue-600 mt-3 cursor-pointer hover:underline">
+            {additionalInfo}
+          </div>
+        )}
+
+        {/* Refund Status */}
+        {refundStatus && (
+          <div className="text-xs text-green-600 font-medium mt-2">
+            {refundStatus}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

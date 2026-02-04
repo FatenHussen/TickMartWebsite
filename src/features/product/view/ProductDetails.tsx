@@ -17,7 +17,11 @@ import {
 import ProductReviews from "@/shared/component/ProductReviews";
 import FullBleedSection from "@/shared/component/FullBleedSection";
 import { useProductDetails } from "../hooks/useProductDetails";
+import { useProductRatings } from "../hooks/useProductRatings";
 import { useVariantSelector } from "../hooks/useVariantSelector";
+import { toast } from "sonner";
+import { useCartStore } from "@/store/cart";
+import type { CartItem } from "@/features/cart/types";
 
 function ProductDetails() {
   const { t } = useTranslation();
@@ -42,6 +46,15 @@ function ProductDetails() {
     shopId,
   });
 
+  const productIdNum = parseInt(productId || "0", 10);
+  const {
+    reviews,
+    averageRating,
+    totalReviews,
+    ratingDistribution,
+    isLoading: isRatingsLoading,
+  } = useProductRatings(productIdNum);
+
   // Variant selector hook
   const {
     selectedAttributes,
@@ -62,15 +75,45 @@ function ProductDetails() {
 
   const [quantity, setQuantity] = useState(1);
   const [isFavorite, setIsFavorite] = useState(false);
+  const addItem = useCartStore((s) => s.addItem);
 
   const handleAddToCart = () => {
-    console.log("Add to cart:", {
-      productId,
-      variantId: selectedVariant?.variant_id,
-      attributes: selectedAttributes,
+    if (!product) return;
+    const price = currentPriceAfterDiscount ?? currentPrice ?? 0;
+    const lineId = `${product.id}-${selectedVariant?.variant_id ?? "base"}`;
+    const imagePath = currentImages?.[0] ?? product?.images?.[0]?.path ?? "";
+    const cartItem: CartItem = {
+      id: lineId,
+      name: product.name,
+      description: product.description,
+      category: product.category?.name,
+      image: imagePath,
+      price: `£${price.toFixed(2)}`,
+      priceNumeric: price,
       quantity,
-    });
-    // Implement add to cart logic
+      subtotal: `£${(price * quantity).toFixed(2)}`,
+      storeId: shopId,
+      hasFreeDelivery: product.is_instant_delivery ? true : undefined,
+      productId: product.id,
+      variantId: selectedVariant?.variant_id,
+      shopId: selectedVariant?.shop_id ?? shopId,
+      selectedAttributes:
+        Object.keys(selectedAttributes).length > 0
+          ? { ...selectedAttributes }
+          : undefined,
+    };
+    if (
+      currentPriceAfterDiscount != null &&
+      currentPrice != null &&
+      currentPriceAfterDiscount < currentPrice
+    ) {
+      cartItem.originalPrice = `£${currentPrice.toFixed(2)}`;
+      cartItem.savingsText = `${t("product.youSaved", "You saved")} £${(
+        currentPrice - currentPriceAfterDiscount
+      ).toFixed(2)}`;
+    }
+    addItem(cartItem);
+    toast.success(t("cart.addedToCart", "Added to cart"));
   };
 
   const handleToggleFavorite = () => {
@@ -113,7 +156,9 @@ function ProductDetails() {
   // Calculate savings
   const savings =
     product.price > product.price_after_discount
-      ? `${t("product.youSaved", "You saved")} ${product.price - product.price_after_discount}`
+      ? `${t("product.youSaved", "You saved")} ${
+          product.price - product.price_after_discount
+        }`
       : undefined;
 
   // Format price
@@ -218,18 +263,18 @@ function ProductDetails() {
 
         {/* Product Reviews */}
         <div className="page-container">
-          <ProductReviews
-            averageRating={4.5}
-            totalReviews={0}
-            ratingDistribution={{
-              "5": 0,
-              "4": 0,
-              "3": 0,
-              "2": 0,
-              "1": 0,
-            }}
-            reviews={[]}
-          />
+          {isRatingsLoading ? (
+            <div className="mt-10 flex justify-center py-8">
+              <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary-light" />
+            </div>
+          ) : (
+            <ProductReviews
+              averageRating={averageRating}
+              totalReviews={totalReviews}
+              ratingDistribution={ratingDistribution}
+              reviews={reviews}
+            />
+          )}
         </div>
       </div>
     </div>

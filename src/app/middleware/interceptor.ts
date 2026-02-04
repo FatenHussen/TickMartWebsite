@@ -1,5 +1,16 @@
 import axios from "axios";
+import { toast } from "sonner";
 import { useAuthStore } from "@/store/auth";
+
+const MUTATION_METHODS = ["post", "put", "patch", "delete"] as const;
+
+function isMutationMethod(
+  method: string
+): method is (typeof MUTATION_METHODS)[number] {
+  return MUTATION_METHODS.includes(
+    method.toLowerCase() as (typeof MUTATION_METHODS)[number]
+  );
+}
 
 const BASE_URL = import.meta.env.DEV
   ? "https://tikmool.octopus-software.online/api"
@@ -26,28 +37,48 @@ _axios.interceptors.request.use(
   },
   (error) => {
     return Promise.reject(error);
-  },
+  }
 );
 
 // Response interceptor
 _axios.interceptors.response.use(
   (response) => {
+    if (isMutationMethod(response.config.method ?? "")) {
+      const message =
+        (response.data?.message as string) ||
+        (response.data?.data?.message as string) ||
+        "Operation completed successfully.";
+      toast.success(message);
+    }
     return response;
   },
   (error) => {
     if (error.response) {
-      // Handle 401 Unauthorized - clear auth state
       if (error.response.status === 401) {
         useAuthStore.getState().logoutLocal();
       }
+      const message =
+        (error.response?.data?.message as string) ||
+        (error.response?.data?.data?.message as string) ||
+        error.message ||
+        "Something went wrong.";
+      if (isMutationMethod(error.config?.method ?? "")) {
+        toast.error(message);
+      }
       console.error("API Error:", error.response.data);
     } else if (error.request) {
+      if (isMutationMethod(error.config?.method ?? "")) {
+        toast.error("Network error. Please try again.");
+      }
       console.error("Network Error:", error.request);
     } else {
+      if (isMutationMethod(error.config?.method ?? "")) {
+        toast.error(error.message || "Something went wrong.");
+      }
       console.error("Error:", error.message);
     }
     return Promise.reject(error);
-  },
+  }
 );
 
 export default _axios;

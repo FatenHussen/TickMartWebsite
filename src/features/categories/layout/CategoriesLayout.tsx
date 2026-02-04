@@ -37,12 +37,8 @@ export default function CategoriesLayout({
           sidebar={sidebar}
           sidebarPosition={actualSidebarPosition}
           sidebarClassName={cn(
-            "lg:fixed lg:top-8 lg:h-[calc(100vh-4rem)] lg:overflow-y-auto lg:z-10 lg:w-[320px] scrollbar-custom",
-            "h-auto lg:max-h-[calc(100vh-4rem)]",
-            isRTL
-              ? "lg:pr-2 lg:pl-0 lg:right-[max(1rem,calc((100vw-1280px)/2))]"
-              : "lg:pl-2 lg:pr-0 lg:left-[max(1rem,calc((100vw-1280px)/2))]",
-            sidebarClassName
+            "lg:w-[320px] scrollbar-custom h-auto",
+            sidebarClassName,
           )}
           contentClassName={cn(contentClassName)}
           containerClassName={cn("", containerClassName)}

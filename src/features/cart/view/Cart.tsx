@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContext";
 import { useNavigate, Link } from "react-router-dom";
@@ -9,34 +9,46 @@ import ScheduleDelivery from "../components/ScheduleDelivery";
 import CheckoutProgressIndicator from "@/shared/component/CheckoutProgressIndicator";
 import Button from "@/shared/ui/Button";
 import { HiArrowLeft } from "react-icons/hi";
-import { mockCartItems, mockCartSummary } from "../data/mockData";
+import { useCartStore } from "@/store/cart";
 import type { CartItem, OrderSummary } from "../types";
+
+function parseSubtotal(s: string): number {
+  return parseFloat(String(s).replace(/[^0-9.]/g, "")) || 0;
+}
 
 export default function Cart() {
   const { t } = useTranslation();
   const { isRTL } = useLanguage();
   const navigate = useNavigate();
-  const [items, setItems] = useState<CartItem[]>(mockCartItems);
-  const [summary] = useState<OrderSummary>(mockCartSummary);
+  const items = useCartStore((s) => s.items);
+  const updateQuantity = useCartStore((s) => s.updateQuantity);
+  const removeItem = useCartStore((s) => s.removeItem);
+
+  const summary = useMemo<OrderSummary>(() => {
+    const numOfItems = items.reduce((sum, i) => sum + i.quantity, 0);
+    const subtotalNum = items.reduce(
+      (sum, i) => sum + parseSubtotal(i.subtotal),
+      0
+    );
+    const subtotal = `£${subtotalNum.toFixed(2)}`;
+    return {
+      numOfItems,
+      subtotal,
+      shipping: "Free",
+      shippingIsFree: true,
+      storeDiscounts: "£0.00",
+      tax: "0%",
+      couponDiscount: "£0.00",
+      total: subtotal,
+    };
+  }, [items]);
 
   const handleQuantityChange = (itemId: number | string, quantity: number) => {
-    setItems((prev) =>
-      prev.map((item) => {
-        if (item.id === itemId) {
-          const newQuantity = Math.max(1, quantity);
-          const priceValue = parseFloat(item.price.replace("$", ""));
-          const newSubtotal = `$${(priceValue * newQuantity).toFixed(2)}`;
-          return { ...item, quantity: newQuantity, subtotal: newSubtotal };
-        }
-        return item;
-      })
-    );
-    // TODO: Recalculate totals
+    updateQuantity(itemId, quantity);
   };
 
   const handleRemoveItem = (itemId: number | string) => {
-    setItems((prev) => prev.filter((item) => item.id !== itemId));
-    // TODO: Recalculate totals
+    removeItem(itemId);
   };
 
   const handleMoveToWishlist = (itemId: number | string) => {

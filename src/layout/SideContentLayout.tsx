@@ -86,11 +86,11 @@ export default function SideContentLayout({
             (isLeft && !isRTL
               ? "grid-cols-1 lg:grid-cols-[320px_1fr]"
               : !isLeft && !isRTL
-              ? "grid-cols-1 lg:grid-cols-[1fr_320px]"
-              : isLeft && isRTL
-              ? "grid-cols-1 lg:grid-cols-[1fr_320px]"
-              : "grid-cols-1 lg:grid-cols-[320px_1fr]"),
-          gapClassName ?? "gap-6"
+                ? "grid-cols-1 lg:grid-cols-[1fr_320px]"
+                : isLeft && isRTL
+                  ? "grid-cols-1 lg:grid-cols-[1fr_320px]"
+                  : "grid-cols-1 lg:grid-cols-[320px_1fr]"),
+          gapClassName ?? "gap-6",
         )}
         style={
           columnTemplate

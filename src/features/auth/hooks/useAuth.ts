@@ -28,7 +28,7 @@ export function useLogin() {
       if (data.data.user && data.data.token) {
         setAuth(data.data.user, data.data.token);
       }
-      qc.invalidateQueries({ queryKey: [queryKeys.auth.login] });
+      qc.invalidateQueries({ queryKey: queryKeys.auth.login() });
       navigate(paths.client.home);
     },
     onError: (err) => {
@@ -80,7 +80,7 @@ export function useSendOtp() {
       return _AuthApi.sendOtp(payload);
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: [queryKeys.auth.sendOtp] });
+      qc.invalidateQueries({ queryKey: queryKeys.auth.sendOtp() });
     },
     onError: (err) => {
       console.error("[send-otp] error:", err);
@@ -115,7 +115,7 @@ export function useVerifyOtp() {
       }
 
       clearOtp();
-      qc.invalidateQueries({ queryKey: [queryKeys.auth.verifyOtp] });
+      qc.invalidateQueries({ queryKey: queryKeys.auth.verifyOtp() });
       navigate(paths.client.home);
     },
     onError: (err) => {
@@ -143,7 +143,7 @@ export function useForgotPassword() {
       }
 
       setIsPasswordReset(true);
-      qc.invalidateQueries({ queryKey: [queryKeys.auth.sendPassword] });
+      qc.invalidateQueries({ queryKey: queryKeys.auth.sendPassword() });
       navigate(paths.auth.jwt.otp);
     },
     onError: (err) => {
@@ -190,7 +190,7 @@ export function useResetPassword() {
     mutationFn: (payload: ResetPasswordPayload) =>
       _AuthApi.resetPassword(payload),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: [queryKeys.auth.resetPassword] });
+      qc.invalidateQueries({ queryKey: queryKeys.auth.resetPassword() });
       navigate(paths.auth.jwt.signIn);
     },
     onError: (err) => {
@@ -206,7 +206,7 @@ export function useMe() {
   const token = useAuthStore((state) => state.token);
 
   const query = useQuery({
-    queryKey: [queryKeys.auth.me],
+    queryKey: queryKeys.auth.me(),
     queryFn: async () => {
       const response = await _AuthApi.me();
       return response.data.user;

@@ -16,6 +16,16 @@ export type CartItem = {
   modifiers?: string[]; // e.g., "+ Extra cheese, + Garlic bread"
   storeId: number | string;
   hasFreeDelivery?: boolean;
+  /** For API: product id from product details */
+  productId?: number;
+  /** For API: variant id when product has variants */
+  variantId?: number;
+  /** For API: shop id (same as storeId but typed for API) */
+  shopId?: number;
+  /** For API: selected attribute key-value for variant */
+  selectedAttributes?: Record<string, string>;
+  /** Numeric price per unit for recalculating subtotal */
+  priceNumeric?: number;
 };
 
 export type StoreInfo = {

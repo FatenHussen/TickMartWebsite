@@ -1,6 +1,7 @@
 import React from "react";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { LanguageProvider } from "@/context/LanguageContext";
+import { CurrencyProvider } from "@/context/CurrencyContext";
 import "@/i18n/config";
 
 type AppProps = {
@@ -10,7 +11,9 @@ type AppProps = {
 export default function App({ children }: AppProps) {
   return (
     <LanguageProvider>
-      <ThemeProvider>{children}</ThemeProvider>
+      <CurrencyProvider>
+        <ThemeProvider>{children}</ThemeProvider>
+      </CurrencyProvider>
     </LanguageProvider>
   );
 }

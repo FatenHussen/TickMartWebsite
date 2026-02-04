@@ -6,6 +6,7 @@ export const ROOTS = {
   STORE: "/store",
   CART: "/cart",
   TRACK_ORDER: "/track-order",
+  ACCOUNT: "/account",
 };
 
 export const paths = {
@@ -28,42 +29,34 @@ export const paths = {
     store: ROOTS.STORE,
     brandProducts: "/brand/:brandId/products",
     trackOrder: "/track-order/:orderId",
+    // New routes for sections API
+    brands: "/brands",
+    recipes: "/recipes",
+    products: "/products",
+    baskets: "/baskets",
+    brandDetails: (id: number | string) => `/brand/${id}`,
+    productDetails: (id: number | string) => `${ROOTS.PRODUCT}/${id}`,
+    recipeDetails: (id: number | string) => `/recipe/${id}`,
+    basketDetails: (id: number | string) => `/basket/${id}`,
+    shopDetails: (id: number | string) => `/shop_details/${id}`,
   },
-};
-
-// ==================== API Endpoints ====================
-const API_BASE = {
-  USER: "user",
-  USER_AUTH: "user/auth",
-  ADMIN: "admin",
-};
-
-export const endpoints = {
-  auth: {
-    login: `${API_BASE.USER_AUTH}/login`,
-    register: `${API_BASE.USER_AUTH}/register`,
-    sendOtp: `${API_BASE.USER_AUTH}/send-otp`,
-    verifyOtp: `${API_BASE.USER_AUTH}/verify-otp`,
-    sendPassword: `${API_BASE.USER_AUTH}/send-password`,
-    verifyPassword: `${API_BASE.USER_AUTH}/verify-password`,
-    resetPassword: `${API_BASE.USER_AUTH}/reset-password`,
-    me: `${API_BASE.USER_AUTH}/me`,
-    logout: `${API_BASE.USER_AUTH}/logout`,
-  },
-  location: {
-    governorates: `${API_BASE.ADMIN}/governorates`,
-    cities: `${API_BASE.ADMIN}/cities`,
-  },
-  sections: {
-    getByPage: (pageSlug: string) => `${API_BASE.USER}/sections?page_slug=${pageSlug}`,
-  },
-  categories: {
-    list: `${API_BASE.USER}/categories`,
-  },
-  product: {
-    details: (productId: number, lat: number, lng: number, shopId: number) =>
-      `${API_BASE.USER}/products/${productId}?lat=${lat}&lng=${lng}&shop_id=${shopId}`,
-    listByCategory: (categoryId: number, page?: number) =>
-      `${API_BASE.USER}/products?category_id=${categoryId}${page ? `&page=${page}` : ""}`,
+  account: {
+    root: ROOTS.ACCOUNT,
+    profile: `${ROOTS.ACCOUNT}/profile`,
+    addresses: `${ROOTS.ACCOUNT}/addresses`,
+    addAddress: `${ROOTS.ACCOUNT}/addresses/add`,
+    editAddress: (id: number | string) =>
+      `${ROOTS.ACCOUNT}/addresses/${id}/edit`,
+    paymentMethods: `${ROOTS.ACCOUNT}/payment-methods`,
+    orders: `${ROOTS.ACCOUNT}/orders`,
+    baskets: `${ROOTS.ACCOUNT}/baskets`,
+    packages: `${ROOTS.ACCOUNT}/packages`,
+    wishlist: `${ROOTS.ACCOUNT}/wishlist`,
+    pointsRewards: `${ROOTS.ACCOUNT}/points-rewards`,
+    notifications: `${ROOTS.ACCOUNT}/notifications`,
+    reviews: `${ROOTS.ACCOUNT}/reviews`,
+    helpSupport: `${ROOTS.ACCOUNT}/help-support`,
+    settings: `${ROOTS.ACCOUNT}/settings`,
+    delete: `${ROOTS.ACCOUNT}/delete`,
   },
 };

@@ -35,7 +35,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         case "ghost":
           return `${base} text-primary hover:bg-primary/10 focus:ring-primary bg-transparent`;
         case "danger":
-          return `${base} bg-red-500 hover:bg-red-600 text-white focus:ring-red-500`;
+          return `${base} bg-red hover:bg-red-600 text-white focus:ring-red`;
         default:
           return base;
       }

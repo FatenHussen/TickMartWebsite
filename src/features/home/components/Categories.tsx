@@ -1,12 +1,20 @@
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import SliderSection from "@/shared/component/SliderSection";
 import { useHomeCategories } from "../hooks/useCategories";
+import { paths } from "@/app/routes/path/paths";
 
-const PLACEHOLDER_ICON = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&h=400&fit=crop";
+const PLACEHOLDER_ICON =
+  "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&h=400&fit=crop";
 
 export default function Categories() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { categories, isLoading } = useHomeCategories();
+
+  const handleViewAll = () => {
+    navigate(paths.client.categories);
+  };
 
   if (isLoading) {
     return (
@@ -24,11 +32,10 @@ export default function Categories() {
     <SliderSection
       title={t("home.categories")}
       viewAllLabel={t("home.viewAll")}
+      onViewAllClick={handleViewAll}
       items={categories}
       renderItem={(category) => (
-        <button
-          className="flex flex-col items-center gap-3 bg-transparent w-full hover:opacity-80 transition-opacity"
-        >
+        <button className="flex flex-col items-center gap-3 bg-transparent w-full hover:opacity-80 transition-opacity">
           <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 rounded-full overflow-hidden shadow-md hover:shadow-lg transition-shadow">
             <img
               src={category.icon || PLACEHOLDER_ICON}

@@ -187,6 +187,23 @@ export interface CitiesResponse {
   data: City;
 }
 
+export interface Area {
+  id: number;
+  name: string;
+  city_id: number;
+  created_at?: string;
+}
+
+export interface AreasResponse {
+  status: boolean;
+  message: string;
+  data:
+    | {
+        items: Area[];
+      }
+    | Area[];
+}
+
 // ==================== User Types ====================
 export interface User {
   id: number;

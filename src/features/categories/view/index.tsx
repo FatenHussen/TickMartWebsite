@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import CategoriesLayout from "../layout/CategoriesLayout";
 import CategoriesSidebar from "../components/CategoriesSidebar";
@@ -8,6 +9,7 @@ import HeroBanner from "../components/HeroBanner";
 import ProductCard from "@/shared/component/card/ProductCard";
 import { useCategories } from "../hooks/useCategories";
 import { useProductsByCategory } from "../hooks/useProductsByCategory";
+import { paths } from "@/app/routes/path/paths";
 import type { ApiCategory, CategoryChild } from "../types";
 
 // Badge color mapping
@@ -19,20 +21,24 @@ const badgeColorMap: Record<string, string> = {
 
 export default function CategoriesView() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   // Selected state
-  const [selectedCategory, setSelectedCategory] = useState<ApiCategory | null>(null);
-  const [selectedSubcategory, setSelectedSubcategory] = useState<CategoryChild | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<ApiCategory | null>(
+    null,
+  );
+  const [selectedSubcategory, setSelectedSubcategory] =
+    useState<CategoryChild | null>(null);
   const [sortBy, setSortBy] = useState<string>("recommended");
 
   // Fetch categories
-  const { data: categories = [], isLoading: categoriesLoading } = useCategories();
+  const { data: categories = [], isLoading: categoriesLoading } =
+    useCategories();
 
   // Fetch products by selected subcategory (or category if no subcategory)
   const categoryIdForProducts = selectedSubcategory?.id || selectedCategory?.id;
-  const { data: productsData, isLoading: productsLoading } = useProductsByCategory(
-    categoryIdForProducts
-  );
+  const { data: productsData, isLoading: productsLoading } =
+    useProductsByCategory(categoryIdForProducts);
 
   // Handle category selection
   const handleCategorySelect = (category: ApiCategory) => {
@@ -50,10 +56,16 @@ export default function CategoriesView() {
     setSelectedSubcategory(subcategory);
   };
 
+  // Handle product click - navigate to product details
+  const handleProductClick = (productId: number) => {
+    navigate(paths.client.productDetails(productId));
+  };
+
   // Auto-select first category on load
   useEffect(() => {
     if (categories.length > 0 && !selectedCategory) {
-      const firstCategoryWithChildren = categories.find((c) => c.children.length > 0) || categories[0];
+      const firstCategoryWithChildren =
+        categories.find((c) => c.children.length > 0) || categories[0];
       handleCategorySelect(firstCategoryWithChildren);
     }
   }, [categories, selectedCategory]);
@@ -78,7 +90,7 @@ export default function CategoriesView() {
             title={t("categories.springCollection", "Spring Collection 2024")}
             subtitle={t(
               "categories.discoverTrends",
-              "Discover the latest trends in fashion. Up to 40% off on selected items."
+              "Discover the latest trends in fashion. Up to 40% off on selected items.",
             )}
             buttonText={t("categories.shopNow", "Shop Now")}
             onButtonClick={() => console.log("Shop now clicked")}
@@ -127,19 +139,23 @@ export default function CategoriesView() {
                     product.budges && product.budges.length > 0
                       ? product.budges.map((b) => ({
                           label: b.name,
-                          className: badgeColorMap[b.color] || "bg-blue-500 text-white",
+                          className:
+                            badgeColorMap[b.color] || "bg-blue-500 text-white",
                         }))
                       : undefined
                   }
                   deliveryInfo={t("home.freeDelivery", "Free Delivery")}
-                  onClick={(id) => console.log("Product clicked:", id)}
+                  onClick={handleProductClick}
                 />
               ))}
             </div>
           ) : (
             <div className="flex items-center justify-center h-64 bg-white rounded-2xl">
               <p className="text-gray-500">
-                {t("categories.noProducts", "No products found in this category")}
+                {t(
+                  "categories.noProducts",
+                  "No products found in this category",
+                )}
               </p>
             </div>
           )}

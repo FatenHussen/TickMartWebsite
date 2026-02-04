@@ -26,6 +26,7 @@ body {
   --color-gray-light: #8b8b8b;
   --color-gray: #bbbbbb;
   --color-gray-bold: #ebebeb;
+  --color-red: #EF4444;
 
   /* Background Colors */
   --color-bg-primary: #ffffff;
@@ -431,4 +432,25 @@ body {
   .ab-track {
     animation: none;
   }
+}
+
+/* Account Mobile Menu Animation */
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out forwards;
+}
+
+/* Account Sidebar Gradient Background */
+.bg-account-sidebar {
+  background: linear-gradient(180deg, #4CDAF6 0%, #2C8090 100%);
 }

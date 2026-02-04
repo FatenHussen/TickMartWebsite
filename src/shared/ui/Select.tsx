@@ -1,52 +1,72 @@
 import { forwardRef } from "react";
+import Label from "./Label";
 import { cn } from "@/shared/lib/utils";
+import type { LabelProps } from "./Label";
+import type { FormError } from "@/types/forms";
 
-type SelectOption = {
-  value: string;
+export interface SelectOption {
+  value: string | number;
   label: string;
-};
-
-type SelectProps = {
-  options: SelectOption[];
-  value?: string;
-  onChange?: (value: string) => void;
-  placeholder?: string;
-  className?: string;
-  label?: string;
   disabled?: boolean;
-};
+}
+
+export interface SelectProps extends Omit<
+  React.SelectHTMLAttributes<HTMLSelectElement>,
+  "children"
+> {
+  label?: string;
+  labelProps?: Omit<LabelProps, "children" | "htmlFor">;
+  error?: FormError;
+  helperText?: string;
+  required?: boolean;
+  options: SelectOption[];
+  placeholder?: string;
+}
 
 const Select = forwardRef<HTMLSelectElement, SelectProps>(
   (
     {
+      label,
+      labelProps,
+      error,
+      required,
+      id,
+      helperText,
       options,
-      value,
-      onChange,
       placeholder,
       className,
-      label,
-      disabled = false,
-      ...props
+      disabled,
+      ...selectProps
     },
-    ref
+    ref,
   ) => {
-    const baseStyles =
-      "px-4 py-2 rounded-lg border border-custom-primary bg-custom-primary text-custom-primary text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary-light focus:border-primary-light transition-all cursor-pointer hover:border-primary-light disabled:opacity-50 disabled:cursor-not-allowed";
+    const selectId =
+      id || `select-${label?.toLowerCase().replace(/\s+/g, "-")}`;
+    const errorMessage = error?.message as string | undefined;
+    const hasError = !!error || !!errorMessage;
 
     return (
-      <div className="flex flex-col gap-2">
+      <div className="space-y-2">
         {label && (
-          <label className="text-sm font-medium text-custom-secondary whitespace-nowrap">
+          <Label
+            htmlFor={selectId}
+            required={required}
+            error={hasError}
+            {...labelProps}
+          >
             {label}
-          </label>
+          </Label>
         )}
         <select
           ref={ref}
-          value={value}
-          onChange={(e) => onChange?.(e.target.value)}
+          id={selectId}
           disabled={disabled}
-          className={cn(baseStyles, className)}
-          {...props}
+          className={cn(
+            "w-full px-4 py-2.5 rounded-lg border bg-white dark:bg-bg-primary text-text-primary focus:outline-none focus:ring-2 focus:ring-[#4CDAF6] focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed",
+            hasError ? "border-red-500 focus:ring-red-500" : "border-[#4CDAF6]",
+            className,
+          )}
+          {...selectProps}
         >
           {placeholder && (
             <option value="" disabled>
@@ -54,14 +74,26 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
             </option>
           )}
           {options.map((option) => (
-            <option key={option.value} value={option.value}>
+            <option
+              key={option.value}
+              value={option.value}
+              disabled={option.disabled}
+            >
               {option.label}
             </option>
           ))}
         </select>
+        {errorMessage && (
+          <p className="text-sm text-red-600 dark:text-red-400">
+            {errorMessage}
+          </p>
+        )}
+        {helperText && !errorMessage && (
+          <p className="text-sm text-text-secondary">{helperText}</p>
+        )}
       </div>
     );
-  }
+  },
 );
 
 Select.displayName = "Select";

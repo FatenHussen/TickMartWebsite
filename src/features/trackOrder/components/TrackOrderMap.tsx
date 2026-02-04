@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { HiChevronUp, HiChevronDown, HiLocationMarker } from "react-icons/hi";
+import { HiChevronUp, HiChevronDown } from "react-icons/hi";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContext";
 import { cn } from "@/shared/lib/utils";

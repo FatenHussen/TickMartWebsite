@@ -151,8 +151,8 @@ export const mockCartSummary: OrderSummary = {
 export const mockOrders: Order[] = [
   {
     id: 1,
-    orderNumber: "EV-2024-00123",
-    dateTime: "05 Feb 2025, 08:28 PM",
+    orderNumber: "1234",
+    dateTime: "07 Feb 2025, 11:42 AM",
     status: "delivered",
     items: [
       {
@@ -173,7 +173,7 @@ export const mockOrders: Order[] = [
     additionalInfo: "+1 more item from 1 store",
     deliveryAddress: "Home, 123 Main Street",
     total: "$42.96",
-    paymentMethod: "Visa ending 1234",
+    paymentMethod: "Syriatel Cash",
     actions: {
       viewDetails: true,
       reorder: true,
@@ -182,8 +182,8 @@ export const mockOrders: Order[] = [
   },
   {
     id: 2,
-    orderNumber: "EV-2024-00124",
-    dateTime: "06 Feb 2025, 02:15 PM",
+    orderNumber: "1234",
+    dateTime: "07 Feb 2025, 11:42 AM",
     status: "out_for_delivery",
     items: [
       {
@@ -204,7 +204,7 @@ export const mockOrders: Order[] = [
     additionalInfo: "+5 more items from 1 store",
     deliveryAddress: "Home, 123 Main Street",
     total: "$42.96",
-    paymentMethod: "Visa ending 1234",
+    paymentMethod: "Syriatel Cash",
     actions: {
       viewDetails: true,
       trackOrder: true,
@@ -213,7 +213,7 @@ export const mockOrders: Order[] = [
   },
   {
     id: 3,
-    orderNumber: "EV-2024-00125",
+    orderNumber: "1234",
     dateTime: "07 Feb 2025, 11:42 AM",
     status: "preparing",
     items: [
@@ -234,7 +234,7 @@ export const mockOrders: Order[] = [
     ],
     deliveryAddress: "Home, 123 Main Street",
     total: "$42.96",
-    paymentMethod: "Visa ending 1234",
+    paymentMethod: "Syriatel Cash",
     actions: {
       viewDetails: true,
       trackOrder: true,
@@ -243,8 +243,8 @@ export const mockOrders: Order[] = [
   },
   {
     id: 4,
-    orderNumber: "EV-2024-00126",
-    dateTime: "08 Feb 2025, 09:30 AM",
+    orderNumber: "1234",
+    dateTime: "07 Feb 2025, 11:42 AM",
     status: "cancelled",
     items: [
       {
@@ -264,11 +264,41 @@ export const mockOrders: Order[] = [
     ],
     additionalInfo: "Cancelled order",
     total: "$42.96",
-    paymentMethod: "Visa ending 1234",
+    paymentMethod: "Syriatel Cash",
     refundStatus: "Refund processed",
     actions: {
       viewDetails: true,
       reorder: true,
+      addComplaint: true,
+    },
+  },
+  {
+    id: 5,
+    orderNumber: "1234",
+    dateTime: "07 Feb 2025, 11:42 AM",
+    status: "pending",
+    items: [
+      {
+        name: "Fresh Apples",
+        category: "Fruits",
+        store: "FreshMart",
+        quantity: 2,
+        price: "$8.99",
+      },
+      {
+        name: "Organic Bananas",
+        category: "Fruits",
+        store: "FreshMart",
+        quantity: 1,
+        price: "$4.99",
+      },
+    ],
+    additionalInfo: "+1 more item from 1 store",
+    deliveryAddress: "Home, 123 Main Street",
+    total: "$42.96",
+    paymentMethod: "Syriatel Cash",
+    actions: {
+      viewDetails: true,
       addComplaint: true,
     },
   },

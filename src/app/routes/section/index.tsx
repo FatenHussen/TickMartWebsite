@@ -7,11 +7,11 @@ import { authRoutes } from "./auth";
 import { HomeRoutes } from "./home";
 import { CategoriesRoutes } from "./categories";
 import { ProductsRoutes } from "./product";
+import { SectionsRoutes } from "./sections";
 import { StoreRoutes } from "./store";
 import { CartRoutes } from "./cart";
 import { TrackOrderRoutes } from "./trackOrder";
-// import { storeRoutes } from "./store";
-// import { profileRoutes } from "./profile";
+import { AccountRoutes } from "./account";
 
 // ----------------------------------------------------------------------
 
@@ -28,6 +28,9 @@ export const routesSection: RouteObject[] = [
   // Products
   ...ProductsRoutes,
 
+  // Sections (Brands, Recipes, Products, Baskets)
+  ...SectionsRoutes,
+
   // Store
   ...StoreRoutes,
 
@@ -37,11 +40,8 @@ export const routesSection: RouteObject[] = [
   // Track Order
   ...TrackOrderRoutes,
 
-  //   // Store
-  //   ...storeRoutes,
-
-  //   // Profile
-  //   ...profileRoutes,
+  // Account
+  ...AccountRoutes,
 
   // No match
   { path: "*", element: <h2>error 404</h2> },

@@ -4,5 +4,9 @@ export { default as CheckoutProgressIndicator } from "./CheckoutProgressIndicato
 export type { ProgressStep, ProgressStepStatus } from "./ProgressIndicator";
 
 // Popups
+export { default as BasePopup } from "./BasePopup";
+export type { BasePopupProps } from "./BasePopup";
 export { default as SuccessPopup } from "./SuccessPopup";
 export type { SuccessPopupProps } from "./SuccessPopup";
+export { default as LogoutPopup } from "./LogoutPopup";
+export type { LogoutPopupProps } from "./LogoutPopup";
