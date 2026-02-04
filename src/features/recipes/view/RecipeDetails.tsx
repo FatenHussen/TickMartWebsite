@@ -1,0 +1,509 @@
+import { useState } from "react";
+import { useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { useLanguage } from "@/context/LanguageContext";
+import { useRecipeDetails } from "../hooks/useRecipes";
+import { useSectionsByPosition } from "@/features/home/hooks/useSections";
+import ApiSectionsRenderer from "@/shared/component/sections/ApiSectionsRenderer";
+import FullBleedSection from "@/shared/component/FullBleedSection";
+import Rating from "@/shared/component/Rating";
+import Badge from "@/shared/component/Badge";
+import Button from "@/shared/ui/Button";
+import {
+  HiHeart,
+  HiCheck,
+  HiMinus,
+  HiPlus,
+  HiXMark,
+  HiPlay,
+} from "react-icons/hi2";
+import type { RecipeItem } from "../types";
+
+const badgeColorMap: Record<string, string> = {
+  success: "bg-green-500 text-white",
+  warning: "bg-yellow-500 text-white",
+  danger: "bg-red-500 text-white",
+  primary: "bg-blue-500 text-white",
+};
+
+// Step colors for cooking steps
+const stepColors = [
+  "bg-cyan-500",
+  "bg-blue-500",
+  "bg-orange-500",
+  "bg-red-500",
+  "bg-purple-500",
+  "bg-green-500",
+];
+
+export default function RecipeDetails() {
+  const { t } = useTranslation();
+  const { isRTL } = useLanguage();
+  const { id } = useParams<{ id: string }>();
+  const recipeId = parseInt(id || "0", 10);
+
+  const { data: recipe, isLoading, error } = useRecipeDetails(recipeId);
+
+  const { beforeSections, afterSections } =
+    useSectionsByPosition("recipe_details");
+
+  // State for ingredient quantities
+  const [quantities, setQuantities] = useState<Record<number, number>>({});
+
+  // Separate banner sections (display_type_id: 1) from other sections
+  const bannerSections = beforeSections.filter((s) => s.display_type_id === 1);
+  const otherBeforeSections = beforeSections.filter(
+    (s) => s.display_type_id !== 1
+  );
+
+  const getQuantity = (index: number, defaultQty: number) => {
+    return quantities[index] ?? defaultQty;
+  };
+
+  const updateQuantity = (
+    index: number,
+    delta: number,
+    min: number,
+    max: number,
+    defaultQty: number
+  ) => {
+    const current = getQuantity(index, defaultQty);
+    const newQty = Math.max(min, Math.min(max, current + delta));
+    setQuantities((prev) => ({ ...prev, [index]: newQty }));
+  };
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div
+        className="min-h-screen bg-custom-primary flex items-center justify-center"
+        dir={isRTL ? "rtl" : "ltr"}
+      >
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-light"></div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error || !recipe) {
+    return (
+      <div
+        className="min-h-screen bg-custom-primary flex items-center justify-center"
+        dir={isRTL ? "rtl" : "ltr"}
+      >
+        <div className="text-center">
+          <p className="text-custom-primary text-lg">
+            {t("recipes.recipeNotFound")}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const hasDiscount = recipe.discount && parseFloat(recipe.discount) > 0;
+  const imageUrl = recipe.image.startsWith("http")
+    ? recipe.image
+    : `https://tikmool.octopus-software.online/storage/${recipe.image}`;
+
+  // Calculate totals based on current quantities
+  const calculateItemTotal = (item: RecipeItem, index: number) => {
+    const qty = getQuantity(index, item.terms.default_quantity);
+    return item.main_item.price * qty;
+  };
+
+  const itemsSubtotal =
+    recipe.items?.reduce((sum, item, index) => {
+      return sum + calculateItemTotal(item, index);
+    }, 0) || 0;
+
+  return (
+    <div className="min-h-screen bg-custom-primary" dir={isRTL ? "rtl" : "ltr"}>
+      {/* Banner Sections - Full Width (display_type_id: 1) - BEFORE main content */}
+      {bannerSections.length > 0 && (
+        <div className="w-full">
+          <ApiSectionsRenderer sections={bannerSections} />
+        </div>
+      )}
+
+      <div className="page-container py-6">
+        {/* Recipe Hero Section */}
+        <div className="bg-custom-secondary rounded-2xl p-6 shadow-sm border border-custom-primary mb-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Left: Recipe Image and Info */}
+            <div>
+              <div className="relative mb-4">
+                <img
+                  src={imageUrl}
+                  alt={recipe.name}
+                  className="w-full h-80 object-cover rounded-xl"
+                />
+                {/* Rating Badge */}
+                {recipe.rating > 0 && (
+                  <div className="absolute bottom-4 left-4 bg-custom-primary/90 backdrop-blur-sm rounded-lg px-2 py-1">
+                    <Rating rating={recipe.rating} size="sm" />
+                  </div>
+                )}
+                {/* Favorite Button */}
+                <button className="absolute top-4 right-4 h-10 w-10 rounded-full bg-custom-primary/90 backdrop-blur-sm flex items-center justify-center hover:bg-custom-primary transition">
+                  <HiHeart className="h-5 w-5 text-primary-light" />
+                </button>
+              </div>
+
+              {/* Recipe Title and Description */}
+              <h1 className="text-2xl font-bold text-custom-primary mb-2">
+                {recipe.name}
+              </h1>
+              {recipe.description && (
+                <p className="text-custom-secondary text-sm mb-4">
+                  {recipe.description}
+                </p>
+              )}
+
+              {/* Meta info: Time, Servings */}
+              <div className="flex items-center gap-4 text-sm text-custom-secondary mb-4">
+                <span className="flex items-center gap-1">
+                  <span className="text-green-500">⏱</span>{" "}
+                  {t("recipes.readyIn")} 25 min
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="text-custom-tertiary">👥</span>{" "}
+                  {t("recipes.serves")} 2-4
+                </span>
+              </div>
+
+              {/* Tags/Badges */}
+              {recipe.badges && recipe.badges.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {recipe.badges.map((badge) => (
+                    <span
+                      key={badge.id}
+                      className="px-3 py-1 rounded-full text-xs font-medium bg-cyan-100 text-cyan-700 dark:bg-cyan-900 dark:text-cyan-300"
+                    >
+                      {badge.name}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Right: Shopping List Summary */}
+            <div className="bg-custom-primary rounded-xl p-6 border border-custom-primary">
+              <h2 className="text-lg font-bold text-custom-primary mb-1">
+                {t("recipes.shoppingListFor")} {recipe.name}
+              </h2>
+              <p className="text-sm text-custom-secondary mb-4">
+                {t("recipes.getIngredientsDesc")}
+              </p>
+
+              {/* Ingredients Checklist */}
+              {recipe.items && recipe.items.length > 0 && (
+                <div className="space-y-2 mb-4">
+                  {recipe.items.slice(0, 4).map((item, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <div className="h-5 w-5 rounded bg-cyan-500 flex items-center justify-center">
+                        <HiCheck className="h-3 w-3 text-white" />
+                      </div>
+                      <span className="text-sm text-custom-primary flex-1">
+                        {item.main_item.name}
+                      </span>
+                      <span className="text-sm text-custom-secondary">
+                        {getQuantity(index, item.terms.default_quantity)}x
+                      </span>
+                    </div>
+                  ))}
+                  {recipe.items.length > 4 && (
+                    <button className="text-sm text-cyan-600 dark:text-cyan-400 hover:underline mt-2">
+                      {t("recipes.viewFullList")} ↓
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* Pricing Summary */}
+              <div className="border-t border-custom-primary pt-4 space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-custom-secondary">
+                    {t("recipes.itemsSubtotal")}
+                  </span>
+                  <span className="font-medium text-custom-primary">
+                    ${itemsSubtotal.toFixed(2)}
+                  </span>
+                </div>
+                {hasDiscount && recipe.totals && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-custom-secondary">
+                      {t("recipes.recipeDiscount")}
+                    </span>
+                    <span className="font-medium text-red-500">
+                      -${recipe.totals.discount_value.toFixed(2)}
+                    </span>
+                  </div>
+                )}
+                <div className="flex justify-between text-base font-bold pt-2 border-t border-custom-primary">
+                  <span className="text-custom-primary">
+                    {t("recipes.total")}
+                  </span>
+                  <span className="text-custom-primary">
+                    $
+                    {recipe.totals?.total_after_discount.toFixed(2) ||
+                      itemsSubtotal.toFixed(2)}
+                  </span>
+                </div>
+                <p className="text-xs text-custom-tertiary">
+                  {t("recipes.pricesMayChange")}
+                </p>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="mt-6 space-y-3">
+                <Button
+                  variant="primary"
+                  className="w-full bg-cyan-500 hover:bg-cyan-600 text-white py-3"
+                >
+                  {t("recipes.addAllToCart")}
+                </Button>
+                <button className="w-full text-center text-sm text-cyan-600 dark:text-cyan-400 hover:underline flex items-center justify-center gap-1">
+                  <HiHeart className="h-4 w-4" />
+                  {t("recipes.saveToBaskets")}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Other Sections before main content */}
+        {otherBeforeSections.length > 0 && (
+          <FullBleedSection>
+            <ApiSectionsRenderer sections={otherBeforeSections} />
+          </FullBleedSection>
+        )}
+
+        {/* Ingredients Table */}
+        {recipe.items && recipe.items.length > 0 && (
+          <div className="bg-custom-secondary rounded-2xl shadow-sm border border-custom-primary mb-6 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="bg-gray-800 dark:bg-gray-900 text-white text-sm">
+                    <th className="text-start py-4 px-6 font-semibold">
+                      {t("recipes.product")}
+                    </th>
+                    <th className="text-start py-4 px-6 font-semibold">
+                      {t("recipes.companyBrand")}
+                    </th>
+                    <th className="text-start py-4 px-6 font-semibold">
+                      {t("recipes.variantOption")}
+                    </th>
+                    <th className="text-center py-4 px-6 font-semibold">
+                      {t("recipes.quantity")}
+                    </th>
+                    <th className="text-end py-4 px-6 font-semibold">
+                      {t("recipes.price")}
+                    </th>
+                    <th className="text-center py-4 px-6 font-semibold">
+                      {t("recipes.action")}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {recipe.items.map((item, index) => {
+                    const qty = getQuantity(index, item.terms.default_quantity);
+                    const itemTotal = item.main_item.price * qty;
+
+                    return (
+                      <tr
+                        key={index}
+                        className="border-b border-custom-primary hover:bg-custom-primary/50 transition"
+                      >
+                        {/* Product */}
+                        <td className="py-4 px-6">
+                          <div className="flex items-center gap-3">
+                            {item.main_item.image_url && (
+                              <img
+                                src={item.main_item.image_url}
+                                alt={item.main_item.name}
+                                className="w-12 h-12 rounded-lg object-cover"
+                              />
+                            )}
+                            <span className="font-medium text-custom-primary">
+                              {item.main_item.name}
+                            </span>
+                          </div>
+                        </td>
+
+                        {/* Company/Brand */}
+                        <td className="py-4 px-6 text-sm text-custom-secondary">
+                          -
+                        </td>
+
+                        {/* Variant/Option */}
+                        <td className="py-4 px-6">
+                          <select className="border border-custom-primary rounded-lg px-3 py-2 text-sm bg-custom-primary text-custom-primary focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                            <option>{t("recipes.regularSize")}</option>
+                            {item.alternatives.map((alt, altIndex) => (
+                              <option
+                                key={altIndex}
+                                value={alt.shop_product_variant_id}
+                              >
+                                {alt.name}
+                              </option>
+                            ))}
+                          </select>
+                        </td>
+
+                        {/* Quantity */}
+                        <td className="py-4 px-6">
+                          <div className="flex items-center justify-center gap-2">
+                            <button
+                              onClick={() =>
+                                updateQuantity(
+                                  index,
+                                  -1,
+                                  item.terms.min_quantity,
+                                  item.terms.max_quantity,
+                                  item.terms.default_quantity
+                                )
+                              }
+                              className="w-8 h-8 rounded-full border border-custom-primary flex items-center justify-center hover:bg-custom-primary transition text-custom-primary"
+                            >
+                              <HiMinus className="h-4 w-4" />
+                            </button>
+                            <span className="w-8 text-center font-medium text-custom-primary">
+                              {qty}
+                            </span>
+                            <button
+                              onClick={() =>
+                                updateQuantity(
+                                  index,
+                                  1,
+                                  item.terms.min_quantity,
+                                  item.terms.max_quantity,
+                                  item.terms.default_quantity
+                                )
+                              }
+                              className="w-8 h-8 rounded-full border border-custom-primary flex items-center justify-center hover:bg-custom-primary transition text-custom-primary"
+                            >
+                              <HiPlus className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </td>
+
+                        {/* Price */}
+                        <td className="py-4 px-6 text-end font-semibold text-custom-primary">
+                          ${itemTotal.toFixed(2)}
+                        </td>
+
+                        {/* Action */}
+                        <td className="py-4 px-6 text-center">
+                          <button className="text-red-500 hover:text-red-700 transition">
+                            <HiXMark className="h-5 w-5" />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* Cooking Video and Steps Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+          {/* Cooking Video */}
+          <div className="lg:col-span-1">
+            <div className="bg-custom-secondary rounded-2xl p-6 shadow-sm border border-custom-primary h-full">
+              <h2 className="text-xl font-bold text-custom-primary mb-4">
+                {t("recipes.cookingVideo")}
+              </h2>
+
+              <div className="relative rounded-xl overflow-hidden mb-4">
+                <img
+                  src={imageUrl}
+                  alt="Video thumbnail"
+                  className="w-full h-40 object-cover"
+                />
+                <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                  <div className="w-14 h-14 rounded-full bg-red-600 flex items-center justify-center">
+                    <HiPlay className="h-6 w-6 text-white ms-1" />
+                  </div>
+                </div>
+              </div>
+
+              <h3 className="font-semibold text-custom-primary mb-2">
+                {t("recipes.howToMake")} {recipe.name}
+              </h3>
+              <p className="text-sm text-custom-secondary mb-4">
+                {t("recipes.watchOurChef")}
+              </p>
+
+              <Button
+                variant="primary"
+                className="w-full bg-red-600 hover:bg-red-700 text-white"
+              >
+                <HiPlay className="h-4 w-4 me-2" />
+                {t("recipes.playOnYouTube")}
+              </Button>
+            </div>
+          </div>
+
+          {/* Cooking Steps */}
+          <div className="lg:col-span-2">
+            <div className="bg-custom-secondary rounded-2xl p-6 shadow-sm border border-custom-primary h-full">
+              <h2 className="text-xl font-bold text-custom-primary mb-6">
+                {t("recipes.cookingSteps")}
+              </h2>
+
+              {recipe.steps && recipe.steps.length > 0 ? (
+                <div className="space-y-6">
+                  {recipe.steps.map((step, index) => (
+                    <div key={step.step_number} className="flex gap-4">
+                      {/* Step Number Circle */}
+                      <div
+                        className={`shrink-0 w-8 h-8 rounded-full ${
+                          stepColors[index % stepColors.length]
+                        } flex items-center justify-center text-white font-bold text-sm`}
+                      >
+                        {step.step_number}
+                      </div>
+
+                      {/* Step Content */}
+                      <div className="flex-1">
+                        <p className="text-custom-primary mb-2">
+                          {step.instruction}
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {step.time_minutes && (
+                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-cyan-100 dark:bg-cyan-900 text-cyan-700 dark:text-cyan-300 text-xs">
+                              ⏱ {step.time_minutes}
+                            </span>
+                          )}
+                          {step.heat_level && (
+                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300 text-xs">
+                              🔥 {step.heat_level}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-custom-secondary">
+                  {t("recipes.noCookingSteps")}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Sections after main content */}
+        {afterSections.length > 0 && (
+          <FullBleedSection>
+            <ApiSectionsRenderer sections={afterSections} />
+          </FullBleedSection>
+        )}
+      </div>
+    </div>
+  );
+}

@@ -19,7 +19,8 @@
     "change": "تغيير",
     "resend": "إعادة الإرسال",
     "customer": "عميل",
-    "marketer": "مسوق"
+    "marketer": "مسوق",
+    "loading": "جاري التحميل..."
   },
   "auth": {
     "createAccount": "إنشاء حسابك",
@@ -68,6 +69,7 @@
     "passwordTooShort": "يجب أن تكون كلمة المرور 8 أحرف على الأقل",
     "passwordsDoNotMatch": "كلمات المرور غير متطابقة",
     "phoneTooShort": "رقم الهاتف قصير جداً",
+    "phoneInvalid": "رقم هاتف غير صحيح",
     "selectGovernorate": "يرجى اختيار محافظة",
     "selectCity": "يرجى اختيار مدينة",
     "acceptTerms": "يجب عليك قبول الشروط"
@@ -220,6 +222,7 @@
   },
   "cart": {
     "myShoppingCart": "سلة التسوق الخاصة بي",
+    "addedToCart": "تمت الإضافة إلى السلة",
     "yourCartIsEmpty": "سلة التسوق فارغة",
     "continueShopping": "متابعة التسوق",
     "product": "المنتج",
@@ -313,5 +316,389 @@
     "points": "نقطة!",
     "pointsDescription": "يمكنك استخدام نقاطك لاحقاً للحصول على خصومات وعروض خاصة.",
     "backToHome": "العودة للصفحة الرئيسية"
+  },
+  "logoutPopup": {
+    "title": "تسجيل الخروج من حسابك؟",
+    "description": "ستحتاج إلى تسجيل الدخول مرة أخرى للوصول إلى حسابك.\nسيتم حفظ جميع سلتك وطلباتك بأمان.",
+    "logout": "تسجيل الخروج"
+  },
+  "baskets": {
+    "myBaskets": "سلاتي",
+    "myBasketsDescription": "إدارة السلال المتكررة، التوصيلات المجدولة، وسلال المناسبات الخاصة.",
+    "activeAndUpcoming": "السلال النشطة والقادمة",
+    "pausedBaskets": "السلال المتوقفة",
+    "noBasketsFound": "لم يتم العثور على سلات.",
+    "items": "عناصر",
+    "active": "نشط",
+    "paused": "متوقف",
+    "expired": "منتهي",
+    "scheduled": "مجدول",
+    "occasion": "مناسبة",
+    "suggested": "مقترح",
+    "nextDelivery": "التوصيل القادم",
+    "scheduledFor": "مجدول لـ",
+    "pausedSince": "متوقف منذ",
+    "createdOn": "تم الإنشاء في",
+    "viewBasketDetails": "عرض تفاصيل السلة",
+    "editItems": "تعديل العناصر",
+    "editSchedule": "تعديل الجدول",
+    "reschedule": "إعادة الجدولة",
+    "pauseBasket": "إيقاف السلة",
+    "resumeBasket": "استئناف السلة",
+    "deleteBasket": "حذف السلة",
+    "subscription": "اشتراك",
+    "oneTime": "مرة واحدة",
+    "deletePopup": {
+      "title": "حذف هذه السلة؟",
+      "description": "هل أنت متأكد من حذف هذه السلة من حسابك؟",
+      "warning": "سيؤدي حذف هذه السلة إلى إزالتها من سلاتك المحفوظة وإيقاف أي توصيلات قادمة مرتبطة بها. ستبقى الطلبات والإيصالات السابقة في سجلك.",
+      "infoNote": "يمكنك دائماً إنشاء سلة جديدة لاحقاً بنفس العناصر.",
+      "confirmButton": "حذف السلة",
+      "cancelButton": "الاحتفاظ بالسلة"
+    },
+    "filters": {
+      "all": "الكل",
+      "active": "نشط",
+      "paused": "متوقف",
+      "expired": "منتهي",
+      "suggested": "مقترح",
+      "scheduled": "مجدول",
+      "occasion": "مناسبة"
+    },
+    "sort": {
+      "nextDelivery": "ترتيب حسب: التوصيل القادم",
+      "created": "ترتيب حسب: تاريخ الإنشاء",
+      "name": "ترتيب حسب: الاسم",
+      "price": "ترتيب حسب: السعر"
+    }
+  },
+  "account": {
+    "title": "حسابي",
+    "menu": {
+      "profile": "الملف الشخصي",
+      "addresses": "العناوين",
+      "paymentMethods": "طرق الدفع",
+      "myOrders": "طلباتي",
+      "myBaskets": "سلاتي",
+      "myPackages": "طرودي",
+      "wishlist": "قائمة الأمنيات",
+      "pointsRewards": "النقاط والمكافآت",
+      "notifications": "الإشعارات",
+      "myReviews": "تقييماتي",
+      "helpSupport": "المساعدة والدعم",
+      "settings": "الإعدادات",
+      "deleteAccount": "حذف / تعطيل الحساب",
+      "logout": "تسجيل الخروج"
+    },
+    "profile": {
+      "title": "حسابي",
+      "subtitle": "معلومات الملف الشخصي",
+      "editProfile": "تعديل الملف الشخصي",
+      "fullName": "الاسم الكامل",
+      "mobileNumber": "رقم الهاتف",
+      "emailAddress": "البريد الإلكتروني",
+      "security": "الأمان",
+      "changePassword": "تغيير كلمة المرور",
+      "changePasswordDesc": "قم بتحديث كلمة مرور تسجيل الدخول.",
+      "loginActivityNote": "قد نعرض نشاط تسجيل الدخول الأخير هنا.",
+      "deleteAccount": "حذف / تعطيل الحساب",
+      "deleteAccountDesc": "حذف أو تعطيل حسابك قد يؤدي إلى إزالة عناوينك، سجل الطلبات، النقاط، المكافآت والاشتراكات.",
+      "manageAccountStatus": "إدارة حالة الحساب"
+    },
+    "addresses": {
+      "title": "العناوين المحفوظة",
+      "subtitle": "إدارة أماكن توصيل طلباتك",
+      "addNewAddress": "إضافة عنوان جديد",
+      "default": "افتراضي",
+      "setAsDefault": "تعيين كافتراضي",
+      "edit": "تعديل",
+      "delete": "حذف",
+      "noAddresses": "لا توجد عناوين. أضف عنوانك الأول للبدء."
+    },
+    "addAddress": {
+      "title": "إضافة عنوان جديد",
+      "subtitle": "املأ التفاصيل لإضافة عنوان توصيل جديد",
+      "addressLabel": "تسمية العنوان",
+      "labels": {
+        "home": "المنزل",
+        "work": "العمل",
+        "other": "أخرى"
+      },
+      "area": "المنطقة",
+      "selectArea": "اختر المنطقة",
+      "streetName": "اسم الشارع",
+      "streetNamePlaceholder": "أدخل اسم الشارع",
+      "nearestLandmark": "أقرب معلم",
+      "nearestLandmarkPlaceholder": "أدخل أقرب معلم",
+      "buildingNumber": "رقم المبنى",
+      "buildingNumberPlaceholder": "مثال: 12B",
+      "floorApartment": "الطابق / الشقة",
+      "floorApartmentPlaceholder": "مثال: 3A",
+      "contactPhone": "رقم الهاتف",
+      "contactPhonePlaceholder": "أدخل رقم الهاتف",
+      "selectLocation": "اختر الموقع على الخريطة",
+      "setAsDefault": "تعيين كعنوان افتراضي",
+      "setAsDefaultDesc": "استخدم هذا العنوان كعنوان التوصيل الافتراضي",
+      "saveAddress": "حفظ العنوان"
+    },
+    "editAddress": {
+      "title": "تعديل العنوان",
+      "subtitle": "قم بتحديث تفاصيل عنوان التوصيل",
+      "updateAddress": "تحديث العنوان"
+    },
+    "paymentMethods": {
+      "title": "طرق الدفع",
+      "subtitle": "اختر كيف تفضل الدفع لطلباتك.",
+      "note": "قد تتغير طرق الدفع المتاحة حسب موقعك ونوع طلبك.",
+      "howPaymentsWork": "كيف تعمل المدفوعات",
+      "howPaymentsWork1": "الدفع عند الاستلام متاح للمتاجر والمناطق المحددة.",
+      "howPaymentsWork2": "يستخدم الدفع عبر الإنترنت بوابات الدفع والمحافظ الإلكترونية المكونة من قبل المنصة.",
+      "howPaymentsWork3": "ستظهر القائمة النهائية للخيارات دائماً على صفحة الدفع قبل التأكيد."
+    },
+    "pointsRewards": {
+      "title": "النقاط والمكافآت",
+      "description": "عرض نقاطك وقيمتها وتاريخ انتهائها وكيفية استبدالها.",
+      "points": "نقطة",
+      "pointValue": "قيمة النقطة",
+      "estimatedValue": "القيمة المقدرة",
+      "inRewards": "في المكافآت",
+      "nextReward": "المكافأة التالية عند",
+      "yourPoints": {
+        "title": "نقاطك"
+      },
+      "expiry": {
+        "nextExpiry": "الانتهاء القادم",
+        "willExpire": "سينتهي"
+      },
+      "howToEarn": {
+        "title": "الانتهاء وكيفية الكسب",
+        "placeOrders": "تقديم طلبات من المتاجر المشاركة",
+        "joinCampaigns": "الانضمام إلى الحملات الخاصة (مثل ضعف النقاط اليوم)",
+        "usePackages": "استخدام باقات الاشتراك المؤهلة"
+      },
+      "redeem": {
+        "title": "استبدل نقاطك",
+        "description": "اختر من المكافآت والعروض المتاحة.",
+        "options": {
+          "orderDiscount": {
+            "title": "خصم الطلب"
+          },
+          "freeDelivery": {
+            "title": "قسيمة توصيل مجاني",
+            "coupon": "توصيل مجاني",
+            "groceriesOnly": "البقالة فقط",
+            "minOrder": "الحد الأدنى للطلب"
+          },
+          "giftVoucher": {
+            "title": "قسيمة هدية",
+            "singleUse": "استخدام واحد غير قابل للاسترداد."
+          },
+          "discount": "خصم",
+          "voucher": "قسيمة",
+          "minPoints": "الحد الأدنى",
+          "validStores": "صالح في المتاجر المحددة",
+          "redeemPoints": "استبدال النقاط",
+          "redeemForFreeDelivery": "استبدال للتوصيل المجاني",
+          "generateVoucher": "إنشاء قسيمة"
+        }
+      },
+      "vendorOffers": {
+        "title": "عروض البائعين الخاصة",
+        "description": "خصومات حصرية % لأصحاب النقاط في بائعين محددين.",
+        "viewOffers": "عرض عروض البائعين"
+      },
+      "conditions": {
+        "title": "شروط الاستبدال",
+        "expiryRule": "تنتهي النقاط بعد 12 شهراً من تاريخ الكسب",
+        "minRedemption": "يختلف الحد الأدنى للاستبدال حسب نوع المكافأة",
+        "noTransfer": "لا يمكن نقل النقاط بين الحسابات",
+        "storeRestrictions": "قد يكون لبعض المكافآت قيود على المتاجر"
+      },
+      "history": {
+        "title": "سجل النقاط",
+        "filters": {
+          "all": "الكل",
+          "earned": "مكتسبة",
+          "redeemed": "مستبدلة",
+          "expired": "منتهية"
+        },
+        "types": {
+          "earned": "مكتسبة",
+          "redeemed": "مستبدلة",
+          "expired": "منتهية"
+        },
+        "table": {
+          "date": "التاريخ",
+          "description": "الوصف",
+          "type": "النوع",
+          "points": "النقاط",
+          "balance": "الرصيد"
+        },
+        "noHistory": "لا يوجد سجل نقاط"
+      }
+    },
+    "myReviews": {
+      "title": "تقييماتي",
+      "description": "جميع التقييمات التي قدمتها للمنتجات والمتاجر والتوصيل والسلات.",
+      "editDeleteNote": "يمكنك تعديل أو حذف تقييماتك في أي وقت.",
+      "reviewType": "نوع التقييم",
+      "filters": {
+        "all": "الكل",
+        "products": "المنتجات",
+        "stores": "المتاجر",
+        "delivery": "التوصيل",
+        "scheduledBaskets": "السلات المجدولة",
+        "recipes": "وصفات الطبخ"
+      },
+      "sortBy": "ترتيب حسب",
+      "sort": {
+        "newest": "الأحدث أولاً",
+        "oldest": "الأقدم أولاً",
+        "highestRating": "أعلى تقييم",
+        "lowestRating": "أقل تقييم"
+      },
+      "ratingFilter": {
+        "all": "جميع التقييمات",
+        "fiveStars": "5 نجوم",
+        "fourStars": "4 نجوم",
+        "threeStars": "3 نجوم",
+        "twoStars": "نجمتان",
+        "oneStar": "نجمة واحدة"
+      },
+      "clearFilters": "مسح الفلاتر",
+      "noReviewsFound": "لا توجد تقييمات تطابق فلاترك.",
+      "types": {
+        "product": "تقييم منتج",
+        "store": "تقييم متجر",
+        "delivery": "تقييم توصيل",
+        "scheduledBasket": "تقييم سلة مجدولة",
+        "recipe": "تقييم وصفة"
+      },
+      "from": "من",
+      "reviewedOn": "تم التقييم في",
+      "ratedOn": "تم التقييم في",
+      "triedOn": "تم التجربة في",
+      "order": "الطلب",
+      "deliveryFor": "توصيل للطلب",
+      "deliveredOn": "تم التوصيل في",
+      "editReview": "تعديل التقييم",
+      "editRating": "تعديل التقييم",
+      "delete": "حذف",
+      "viewDetails": "عرض التفاصيل",
+      "rateNow": "قيم الآن",
+      "unreviewed": {
+        "title": "العناصر التي لم تقيمها بعد",
+        "description": "ساعد العملاء الآخرين من خلال مشاركة تجربتك مع هذه المشتريات الأخيرة."
+      }
+    },
+    "settings": {
+      "title": "تفضيلات التطبيق",
+      "language": {
+        "label": "اللغة",
+        "english": "الإنجليزية",
+        "arabic": "العربية"
+      },
+      "currency": {
+        "label": "العملة",
+        "usd": "دولار أمريكي ($)",
+        "eur": "يورو (€)",
+        "gbp": "جنيه إسترليني (£)",
+        "syp": "ليرة سورية (ل.س)",
+        "helperText": "سيتم عرض الأسعار بالعملة المحددة"
+      },
+      "theme": {
+        "label": "المظهر",
+        "light": "فاتح",
+        "dark": "داكن",
+        "system": "النظام"
+      },
+      "privacy": {
+        "title": "الخصوصية والبيانات",
+        "viewPrivacyPolicy": "عرض سياسة الخصوصية",
+        "viewTermsConditions": "عرض الشروط والأحكام",
+        "description": "نحترم خصوصيتك ونمنحك السيطرة على بياناتك. تعرف على المزيد حول كيفية جمع واستخدام معلوماتك."
+      },
+      "cancel": "إلغاء",
+      "saveChanges": "حفظ التغييرات"
+    }
+  },
+  "packages": {
+    "myPackages": "باقات اشتراكاتي",
+    "myPackagesDescription": "إدارة اشتراكاتك النشطة ومزاياها",
+    "premiumPlus": "بريميوم بلس",
+    "goldMember": "العضوية الذهبية",
+    "basicPlus": "الأساسية بلس",
+    "monthDuration": "مدة شهر واحد",
+    "month": "شهر",
+    "currentPlan": "الخطة الحالية",
+    "subscribe": "اشترك",
+    "features": {
+      "higherDiscounts20": "خصومات أعلى بنسبة 20%",
+      "higherDiscounts15": "خصومات أعلى بنسبة 15%",
+      "higherDiscounts10": "خصومات أعلى بنسبة 10%",
+      "freeDeliveries5": "5 توصيلات مجانية شهرياً",
+      "freeDeliveries3": "3 توصيلات مجانية شهرياً",
+      "freeDeliveries2": "توصيلتان مجانيتان شهرياً",
+      "unlimitedOrders": "طلبات غير محدودة",
+      "orders20": "حتى 20 طلب شهرياً",
+      "orders10": "حتى 10 طلبات شهرياً",
+      "bonusPoints50": "50 نقطة مكافأة شهرياً",
+      "bonusPoints25": "25 نقطة مكافأة شهرياً",
+      "bonusPoints10": "10 نقاط مكافأة شهرياً"
+    },
+    "promoBanner": {
+      "title": "مجموعة الربيع 2024",
+      "description": "اكتشف أحدث صيحات الموضة. خصم يصل إلى 40% على العناصر المختارة.",
+      "shopNow": "تسوق الآن"
+    }
+  },
+  "wishlist": {
+    "title": "قائمة الأمنيات",
+    "description": "المنتجات التي حفظتها للشراء لاحقاً",
+    "allStores": "جميع المتاجر",
+    "allCategories": "جميع الفئات",
+    "clearFilters": "مسح الفلاتر",
+    "noItemsFound": "لا توجد منتجات في قائمة أمنياتك.",
+    "removeFromWishlist": "إزالة من قائمة الأمنيات",
+    "new": "جديد",
+    "youSaved": "وفرت",
+    "sold": "مباع",
+    "freeDelivery": "توصيل مجاني"
+  },
+  "recipes": {
+    "title": "وصفات الطبخ",
+    "allRecipes": "جميع الوصفات",
+    "noRecipesFound": "لم يتم العثور على وصفات",
+    "failedToLoad": "فشل تحميل الوصفات",
+    "page": "صفحة",
+    "of": "من",
+    "recipeNotFound": "لم يتم العثور على الوصفة",
+    "shoppingListFor": "قائمة التسوق لـ",
+    "getIngredientsDesc": "احصل على جميع المكونات اللازمة لهذه الوصفة بنقرة واحدة",
+    "viewFullList": "عرض القائمة الكاملة",
+    "itemsSubtotal": "المجموع الفرعي للعناصر",
+    "recipeDiscount": "خصم الوصفة",
+    "total": "المجموع",
+    "pricesMayChange": "* قد يتغير السعر حسب التوفر",
+    "addAllToCart": "أضف الكل إلى السلة",
+    "saveToBaskets": "احفظ هذه الوصفة في سلاتي",
+    "readyIn": "جاهز في",
+    "serves": "يكفي",
+    "ingredients": "المكونات",
+    "product": "المنتج",
+    "companyBrand": "الشركة / العلامة التجارية",
+    "variantOption": "النوع / الخيار",
+    "quantity": "الكمية",
+    "price": "السعر",
+    "action": "الإجراء",
+    "regularSize": "الحجم العادي",
+    "cookingSteps": "خطوات الطبخ",
+    "noCookingSteps": "لا توجد خطوات طبخ متاحة.",
+    "cookingVideo": "فيديو الطبخ",
+    "howToMake": "طريقة تحضير",
+    "watchOurChef": "شاهد الشيف يوضح التقنية المثالية لهذه الوصفة اللذيذة.",
+    "playOnYouTube": "تشغيل على يوتيوب",
+    "orders": "طلب",
+    "youSaved": "وفرت"
   }
 }

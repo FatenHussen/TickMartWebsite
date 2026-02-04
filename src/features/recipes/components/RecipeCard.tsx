@@ -1,0 +1,145 @@
+import { useTranslation } from "react-i18next";
+import { cn } from "@/shared/lib/utils";
+import { HiHeart } from "react-icons/hi2";
+import Button from "@/shared/ui/Button";
+import Rating from "@/shared/component/Rating";
+import Badge from "@/shared/component/Badge";
+import type { Recipe } from "../types";
+import { mapActionPageSlugToRoute } from "@/utils/routeMapper";
+import { useNavigate } from "react-router-dom";
+
+export type RecipeCardProps = {
+  recipe: Recipe;
+  className?: string;
+};
+
+const badgeColorMap: Record<string, string> = {
+  success: "bg-green-500 text-white",
+  warning: "bg-yellow-500 text-white",
+  danger: "bg-red-500 text-white",
+  primary: "bg-blue-500 text-white",
+};
+
+export default function RecipeCard({ recipe, className }: RecipeCardProps) {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const hasDiscount = recipe.discount && parseFloat(recipe.discount) > 0;
+  const topBadge = recipe.budges?.find(
+    (b) => (b.postion === "top" || b.postion === null) && b.color
+  );
+
+  const handleClick = () => {
+    const route = mapActionPageSlugToRoute("recipe_details", recipe.id);
+    navigate(route);
+  };
+
+  // Build image URL
+  const imageUrl = recipe.image.startsWith("http")
+    ? recipe.image
+    : `https://tikmool.octopus-software.online/storage/${recipe.image}`;
+
+  return (
+    <div
+      className={cn(
+        "relative overflow-hidden rounded-2xl bg-custom-secondary shadow-sm transition hover:shadow-md cursor-pointer",
+        className
+      )}
+      onClick={handleClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") handleClick();
+      }}
+    >
+      {/* Image Section */}
+      <div className="relative h-48 w-full">
+        <img
+          src={imageUrl}
+          alt={recipe.name}
+          className="h-full w-full object-cover"
+          loading="lazy"
+        />
+
+        {/* Discount Badge */}
+        {hasDiscount && (
+          <div className="absolute left-3 top-3 z-10">
+            <Badge
+              label={`-${recipe.discount}%`}
+              className="bg-red-500 text-white"
+            />
+          </div>
+        )}
+
+        {/* Top Badge (if no discount) */}
+        {!hasDiscount && topBadge && (
+          <div className="absolute left-3 top-3 z-10">
+            <Badge
+              label={topBadge.name}
+              className={
+                badgeColorMap[topBadge.color] || "bg-blue-500 text-white"
+              }
+            />
+          </div>
+        )}
+
+        {/* Favorite Button (top-right) */}
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          aria-label="Toggle favorite"
+          onClick={(e) => {
+            e.stopPropagation();
+            // TODO: Implement favorite functionality
+          }}
+          className="absolute right-3 top-3 z-10 h-9 w-9 p-0 rounded-full bg-custom-primary/90 backdrop-blur-sm border-2 border-primary-light hover:bg-custom-primary"
+        >
+          <HiHeart className="h-5 w-5 fill-none text-primary-light" />
+        </Button>
+
+        {/* Rating (bottom-left) */}
+        {recipe.rating > 0 && (
+          <div className="absolute left-3 bottom-3 z-10 bg-custom-primary/90 backdrop-blur-sm rounded-sm">
+            <Rating rating={recipe.rating} size="sm" className="px-2 py-1" />
+          </div>
+        )}
+      </div>
+
+      {/* Info Section */}
+      <div className="bg-custom-secondary px-4 pb-4 pt-4">
+        {/* Recipe Name */}
+        <h3 className="text-base font-bold text-custom-primary line-clamp-1">
+          {recipe.name}
+        </h3>
+
+        {/* Description */}
+        {recipe.description && (
+          <p className="mt-1 text-xs text-custom-secondary line-clamp-2">
+            {recipe.description}
+          </p>
+        )}
+
+        {/* Price Section */}
+        <div className="mt-3">
+          <div className="flex items-baseline gap-2">
+            <span className="text-lg font-bold text-custom-primary">
+              {recipe.price_after_discount}
+            </span>
+            {hasDiscount && recipe.price && (
+              <span className="text-sm text-custom-tertiary line-through">
+                {recipe.price}
+              </span>
+            )}
+          </div>
+
+          {/* Orders Count */}
+          {recipe.orders_count > 0 && (
+            <p className="text-sm font-medium text-custom-secondary mt-1">
+              {recipe.orders_count.toLocaleString()} {t("recipes.orders")}
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

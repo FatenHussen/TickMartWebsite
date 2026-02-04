@@ -19,7 +19,8 @@
     "change": "Change",
     "resend": "Resend",
     "customer": "Customer",
-    "marketer": "Marketer"
+    "marketer": "Marketer",
+    "loading": "Loading..."
   },
   "auth": {
     "createAccount": "Create your account",
@@ -68,6 +69,7 @@
     "passwordTooShort": "Password must be at least 8 characters",
     "passwordsDoNotMatch": "Passwords do not match",
     "phoneTooShort": "Phone number is too short",
+    "phoneInvalid": "Invalid phone number",
     "selectGovernorate": "Please select a governorate",
     "selectCity": "Please select a city",
     "acceptTerms": "You must accept the terms"
@@ -220,6 +222,7 @@
   },
   "cart": {
     "myShoppingCart": "My Shopping Cart",
+    "addedToCart": "Added to cart",
     "yourCartIsEmpty": "Your cart is empty",
     "continueShopping": "Continue shopping",
     "product": "Product",
@@ -313,5 +316,389 @@
     "points": "Points!",
     "pointsDescription": "You can use your points later for discounts and special offers.",
     "backToHome": "Back to home page"
+  },
+  "logoutPopup": {
+    "title": "Logout of your account?",
+    "description": "You'll need to signin again to access your account.\nAll your baskets and orders will be saved securely.",
+    "logout": "Logout"
+  },
+  "baskets": {
+    "myBaskets": "My Baskets",
+    "myBasketsDescription": "Manage your recurring baskets, scheduled deliveries, and special occasion baskets.",
+    "activeAndUpcoming": "Active & Upcoming Baskets",
+    "pausedBaskets": "Paused Baskets",
+    "noBasketsFound": "No baskets found.",
+    "items": "items",
+    "active": "Active",
+    "paused": "Paused",
+    "expired": "Expired",
+    "scheduled": "Scheduled",
+    "occasion": "Occasion",
+    "suggested": "Suggested",
+    "nextDelivery": "Next delivery",
+    "scheduledFor": "Scheduled for",
+    "pausedSince": "Paused since",
+    "createdOn": "Created on",
+    "viewBasketDetails": "View Basket Details",
+    "editItems": "Edit Items",
+    "editSchedule": "Edit Schedule",
+    "reschedule": "Reschedule",
+    "pauseBasket": "Pause Basket",
+    "resumeBasket": "Resume Basket",
+    "deleteBasket": "Delete basket",
+    "subscription": "Subscription",
+    "oneTime": "One-time",
+    "deletePopup": {
+      "title": "Delete this basket?",
+      "description": "Are you sure you want to delete this basket from your account?",
+      "warning": "Deleting this basket will remove it from your saved baskets and stop any upcoming deliveries linked to it. Previous orders and receipts will stay in your history.",
+      "infoNote": "You can always create a new basket later with the same items.",
+      "confirmButton": "Delete basket",
+      "cancelButton": "Keep basket"
+    },
+    "filters": {
+      "all": "All",
+      "active": "Active",
+      "paused": "Paused",
+      "expired": "Expired",
+      "suggested": "Suggested",
+      "scheduled": "Scheduled",
+      "occasion": "Occasion"
+    },
+    "sort": {
+      "nextDelivery": "Sort by: Next delivery",
+      "created": "Sort by: Created",
+      "name": "Sort by: Name",
+      "price": "Sort by: Price"
+    }
+  },
+  "account": {
+    "title": "My Account",
+    "menu": {
+      "profile": "Profile",
+      "addresses": "Addresses",
+      "paymentMethods": "Payment methods",
+      "myOrders": "My orders",
+      "myBaskets": "My baskets",
+      "myPackages": "My packages",
+      "wishlist": "Wishlist",
+      "pointsRewards": "Points & rewards",
+      "notifications": "Notifications",
+      "myReviews": "My reviews",
+      "helpSupport": "Help & support",
+      "settings": "Settings",
+      "deleteAccount": "Delete / deactivate account",
+      "logout": "Logout"
+    },
+    "profile": {
+      "title": "My Account",
+      "subtitle": "Profile information",
+      "editProfile": "Edit profile",
+      "fullName": "Full name",
+      "mobileNumber": "Mobile number",
+      "emailAddress": "Email address",
+      "security": "Security",
+      "changePassword": "Change password",
+      "changePasswordDesc": "Update your login password.",
+      "loginActivityNote": "We may show your recent login activity here.",
+      "deleteAccount": "Delete / deactivate account",
+      "deleteAccountDesc": "Deleting or deactivating your account can remove your addresses, order history, points, rewards and subscriptions.",
+      "manageAccountStatus": "Manage account status"
+    },
+    "addresses": {
+      "title": "Saved addresses",
+      "subtitle": "Manage where we deliver your orders",
+      "addNewAddress": "Add new address",
+      "default": "Default",
+      "setAsDefault": "Set as default",
+      "edit": "Edit",
+      "delete": "Delete",
+      "noAddresses": "No addresses found. Add your first address to get started."
+    },
+    "addAddress": {
+      "title": "Add new address",
+      "subtitle": "Fill in the details to add a new delivery address",
+      "addressLabel": "Address label",
+      "labels": {
+        "home": "Home",
+        "work": "Work",
+        "other": "Other"
+      },
+      "area": "Area",
+      "selectArea": "Select area",
+      "streetName": "Street name",
+      "streetNamePlaceholder": "Enter street name",
+      "nearestLandmark": "Nearest landmark",
+      "nearestLandmarkPlaceholder": "Enter nearest landmark",
+      "buildingNumber": "Building number",
+      "buildingNumberPlaceholder": "e.g., 12B",
+      "floorApartment": "Floor / Apartment",
+      "floorApartmentPlaceholder": "e.g., 3A",
+      "contactPhone": "Contact phone",
+      "contactPhonePlaceholder": "Enter phone number",
+      "selectLocation": "Select location on map",
+      "setAsDefault": "Set as default address",
+      "setAsDefaultDesc": "Use this address as your default delivery address",
+      "saveAddress": "Save address"
+    },
+    "editAddress": {
+      "title": "Edit address",
+      "subtitle": "Update your delivery address details",
+      "updateAddress": "Update address"
+    },
+    "paymentMethods": {
+      "title": "Payment methods",
+      "subtitle": "Choose how you prefer to pay for your orders.",
+      "note": "Available payment methods may change depending on your location and order type.",
+      "howPaymentsWork": "How payments work",
+      "howPaymentsWork1": "Cash on delivery is available for selected stores and areas.",
+      "howPaymentsWork2": "Online payment uses the gateways and wallets configured by the platform.",
+      "howPaymentsWork3": "The final list of options will always appear on the checkout page before you confirm."
+    },
+    "pointsRewards": {
+      "title": "Points & rewards",
+      "description": "View your points, value, expiry and how to redeem them.",
+      "points": "pts",
+      "pointValue": "Point value",
+      "estimatedValue": "Estimated value",
+      "inRewards": "in rewards",
+      "nextReward": "Next reward at",
+      "yourPoints": {
+        "title": "Your points"
+      },
+      "expiry": {
+        "nextExpiry": "Next expiry",
+        "willExpire": "will expire"
+      },
+      "howToEarn": {
+        "title": "Expiry & how to earn",
+        "placeOrders": "Place orders from participating stores",
+        "joinCampaigns": "Join special campaigns (e.g. 2x points today)",
+        "usePackages": "Use eligible subscription packages"
+      },
+      "redeem": {
+        "title": "Redeem your points",
+        "description": "Choose from available rewards and offers.",
+        "options": {
+          "orderDiscount": {
+            "title": "Order discount"
+          },
+          "freeDelivery": {
+            "title": "Free delivery coupon",
+            "coupon": "free delivery",
+            "groceriesOnly": "Groceries only",
+            "minOrder": "Min order"
+          },
+          "giftVoucher": {
+            "title": "Gift voucher",
+            "singleUse": "Single use non-refundable."
+          },
+          "discount": "discount",
+          "voucher": "voucher",
+          "minPoints": "Min",
+          "validStores": "Valid on selected stores",
+          "redeemPoints": "Redeem points",
+          "redeemForFreeDelivery": "Redeem for free delivery",
+          "generateVoucher": "Generate voucher"
+        }
+      },
+      "vendorOffers": {
+        "title": "Vendor special offers",
+        "description": "Exclusive % discounts for points owners at specific vendors.",
+        "viewOffers": "View vendor offers"
+      },
+      "conditions": {
+        "title": "Redemption conditions",
+        "expiryRule": "Points expire 12 months after earning date",
+        "minRedemption": "Minimum redemption varies by reward type",
+        "noTransfer": "Points cannot be transferred between accounts",
+        "storeRestrictions": "Some rewards may have store restrictions"
+      },
+      "history": {
+        "title": "Points history",
+        "filters": {
+          "all": "All",
+          "earned": "Earned",
+          "redeemed": "Redeemed",
+          "expired": "Expired"
+        },
+        "types": {
+          "earned": "Earned",
+          "redeemed": "Redeemed",
+          "expired": "Expired"
+        },
+        "table": {
+          "date": "Date",
+          "description": "Description",
+          "type": "Type",
+          "points": "Points",
+          "balance": "Balance"
+        },
+        "noHistory": "No points history found"
+      }
+    },
+    "myReviews": {
+      "title": "My reviews",
+      "description": "All the ratings you've given to products, stores, delivery and baskets.",
+      "editDeleteNote": "You can edit or delete your reviews at any time.",
+      "reviewType": "Review type",
+      "filters": {
+        "all": "All",
+        "products": "Products",
+        "stores": "Stores",
+        "delivery": "Delivery",
+        "scheduledBaskets": "Scheduled baskets",
+        "recipes": "Cooking recipes"
+      },
+      "sortBy": "Sort by",
+      "sort": {
+        "newest": "Newest first",
+        "oldest": "Oldest first",
+        "highestRating": "Highest rating",
+        "lowestRating": "Lowest rating"
+      },
+      "ratingFilter": {
+        "all": "All ratings",
+        "fiveStars": "5 stars",
+        "fourStars": "4 stars",
+        "threeStars": "3 stars",
+        "twoStars": "2 stars",
+        "oneStar": "1 star"
+      },
+      "clearFilters": "Clear filters",
+      "noReviewsFound": "No reviews found matching your filters.",
+      "types": {
+        "product": "Product review",
+        "store": "Store review",
+        "delivery": "Delivery review",
+        "scheduledBasket": "Scheduled basket review",
+        "recipe": "Recipe review"
+      },
+      "from": "From",
+      "reviewedOn": "Reviewed on",
+      "ratedOn": "Rated on",
+      "triedOn": "Tried on",
+      "order": "Order",
+      "deliveryFor": "Delivery for",
+      "deliveredOn": "Delivered on",
+      "editReview": "Edit review",
+      "editRating": "Edit rating",
+      "delete": "Delete",
+      "viewDetails": "View details",
+      "rateNow": "Rate now",
+      "unreviewed": {
+        "title": "Items you haven't reviewed yet",
+        "description": "Help other customers by sharing your experience with these recent purchases."
+      }
+    },
+    "settings": {
+      "title": "App preferences",
+      "language": {
+        "label": "Language",
+        "english": "English",
+        "arabic": "Arabic"
+      },
+      "currency": {
+        "label": "Currency",
+        "usd": "USD ($)",
+        "eur": "EUR (€)",
+        "gbp": "GBP (£)",
+        "syp": "SYP (ل.س)",
+        "helperText": "Prices will be displayed in your selected currency"
+      },
+      "theme": {
+        "label": "Theme",
+        "light": "Light",
+        "dark": "Dark",
+        "system": "System"
+      },
+      "privacy": {
+        "title": "Privacy & data",
+        "viewPrivacyPolicy": "View privacy policy",
+        "viewTermsConditions": "View terms & conditions",
+        "description": "We respect your privacy and give you control over your data. Learn more about how we collect and use your information."
+      },
+      "cancel": "Cancel",
+      "saveChanges": "Save changes"
+    }
+  },
+  "packages": {
+    "myPackages": "My subscription packages",
+    "myPackagesDescription": "Manage your active subscriptions and benefits",
+    "premiumPlus": "Premium Plus",
+    "goldMember": "Gold Member",
+    "basicPlus": "Basic Plus",
+    "monthDuration": "1 month duration",
+    "month": "month",
+    "currentPlan": "Current Plan",
+    "subscribe": "Subscribe",
+    "features": {
+      "higherDiscounts20": "20% higher discounts",
+      "higherDiscounts15": "15% higher discounts",
+      "higherDiscounts10": "10% higher discounts",
+      "freeDeliveries5": "5 free deliveries per month",
+      "freeDeliveries3": "3 free deliveries per month",
+      "freeDeliveries2": "2 free deliveries per month",
+      "unlimitedOrders": "Unlimited orders",
+      "orders20": "Up to 20 orders per month",
+      "orders10": "Up to 10 orders per month",
+      "bonusPoints50": "50 bonus points monthly",
+      "bonusPoints25": "25 bonus points monthly",
+      "bonusPoints10": "10 bonus points monthly"
+    },
+    "promoBanner": {
+      "title": "Spring Collection 2024",
+      "description": "Discover the latest trends in fashion. Up to 40% off on selected items.",
+      "shopNow": "Shop Now"
+    }
+  },
+  "wishlist": {
+    "title": "Wishlist",
+    "description": "Products you saved to buy later",
+    "allStores": "All stores",
+    "allCategories": "All categories",
+    "clearFilters": "Clear filters",
+    "noItemsFound": "No items found in your wishlist.",
+    "removeFromWishlist": "Remove from wishlist",
+    "new": "New",
+    "youSaved": "You saved",
+    "sold": "Sold",
+    "freeDelivery": "Free Delivery"
+  },
+  "recipes": {
+    "title": "Cooking Recipes",
+    "allRecipes": "All Recipes",
+    "noRecipesFound": "No recipes found",
+    "failedToLoad": "Failed to load recipes",
+    "page": "Page",
+    "of": "of",
+    "recipeNotFound": "Recipe not found",
+    "shoppingListFor": "Shopping list for",
+    "getIngredientsDesc": "Get all ingredients needed for this recipe with one click",
+    "viewFullList": "View full list",
+    "itemsSubtotal": "Items subtotal",
+    "recipeDiscount": "Recipe discount",
+    "total": "Total",
+    "pricesMayChange": "* Price may change based on availability",
+    "addAllToCart": "Add all to cart",
+    "saveToBaskets": "Save this recipe to my baskets",
+    "readyIn": "Ready in",
+    "serves": "Serves",
+    "ingredients": "Ingredients",
+    "product": "PRODUCT",
+    "companyBrand": "COMPANY / BRAND",
+    "variantOption": "VARIANT / OPTION",
+    "quantity": "QUANTITY",
+    "price": "PRICE",
+    "action": "ACTION",
+    "regularSize": "Regular size",
+    "cookingSteps": "Cooking Steps",
+    "noCookingSteps": "No cooking steps available.",
+    "cookingVideo": "Cooking Video",
+    "howToMake": "How to Make",
+    "watchOurChef": "Watch our chef demonstrate the perfect technique for this delicious recipe.",
+    "playOnYouTube": "Play on YouTube",
+    "orders": "Orders",
+    "youSaved": "You saved"
   }
 }
