@@ -28,7 +28,7 @@ export const _LocationApi = {
 
   getCities: async (governorateId: number): Promise<CitiesResponse> => {
     const res = await _axios.get<CitiesResponse>(
-      `${apiRoutes.location.cities}/${governorateId}`,
+      `${apiRoutes.location.cities}?governorate_id=${governorateId}`,
     );
     return res.data;
   },

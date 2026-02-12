@@ -2,30 +2,25 @@ import { useTranslation } from "react-i18next";
 import { HiTrash, HiShoppingCart, HiInformationCircle } from "react-icons/hi";
 import Button from "@/shared/ui/Button";
 import { BasePopup } from "@/shared/component";
-import type { Basket } from "../types";
 
 type DeleteBasketPopupProps = {
   isOpen: boolean;
-  basket: Basket | null;
+  basketName: string;
+  nextRunDate?: string;
+  isDeleting?: boolean;
   onClose: () => void;
   onConfirm: () => void;
 };
 
 export default function DeleteBasketPopup({
   isOpen,
-  basket,
+  basketName,
+  nextRunDate,
+  isDeleting = false,
   onClose,
   onConfirm,
 }: DeleteBasketPopupProps) {
   const { t } = useTranslation();
-
-  if (!basket) return null;
-
-  const getScheduleTypeLabel = () => {
-    return basket.scheduleType === "recurring"
-      ? t("baskets.subscription")
-      : t("baskets.oneTime");
-  };
 
   return (
     <BasePopup
@@ -44,13 +39,17 @@ export default function DeleteBasketPopup({
             type="button"
             variant="primary"
             onClick={onConfirm}
+            disabled={isDeleting}
             className="w-full bg-red-500 hover:bg-red-600 text-white py-3 rounded-lg font-medium"
           >
-            {t("baskets.deletePopup.confirmButton")}
+            {isDeleting
+              ? t("common.loading")
+              : t("baskets.deletePopup.confirmButton")}
           </Button>
           <button
             type="button"
             onClick={onClose}
+            disabled={isDeleting}
             className="w-full text-center text-sm text-teal-600 hover:text-teal-700 font-medium py-2"
           >
             {t("baskets.deletePopup.cancelButton")}
@@ -67,19 +66,17 @@ export default function DeleteBasketPopup({
           <div className="flex-1 min-w-0 text-start">
             <div className="flex items-center gap-2">
               <span className="font-medium text-gray-900 truncate">
-                {basket.name}
+                {basketName}
               </span>
               <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-teal-100 text-teal-700">
-                {getScheduleTypeLabel()}
+                {t("baskets.scheduled")}
               </span>
             </div>
-            <div className="text-xs text-gray-500 mt-0.5">
-              {basket.nextDelivery
-                ? `${t("baskets.nextDelivery")}: ${basket.nextDelivery}`
-                : basket.scheduledFor
-                ? `${t("baskets.scheduledFor")}: ${basket.scheduledFor}`
-                : basket.scheduleInfo}
-            </div>
+            {nextRunDate && (
+              <div className="text-xs text-gray-500 mt-0.5">
+                {t("baskets.nextDelivery")}: {nextRunDate}
+              </div>
+            )}
           </div>
         </div>
       </div>

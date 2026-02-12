@@ -213,3 +213,31 @@ export interface User {
 }
 
 export type UserRole = "customer" | "seller";
+
+// ==================== Seller Registration Types ====================
+export type SellerSignUpFormValues = {
+  emailOrPhone: string;
+  password: string;
+  confirmPassword: string;
+  sellerName: string;
+  storeName: string;
+  storeAddress: string;
+  commercialRegisterNumber: string;
+  commercialRegisterDate: string;
+  gender: string;
+  country: string;
+  storeCity: string;
+};
+
+export interface SellerRegisterPayload {
+  email?: string;
+  phone?: string;
+  password: string;
+  seller_name: string;
+  store_name: string;
+  address: string;
+  commercial_register_number: string;
+  commercial_register_date: string;
+  gender: string;
+  country: string;
+}

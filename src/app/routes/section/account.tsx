@@ -15,6 +15,9 @@ const PaymentMethods = lazy(
 );
 const MyOrders = lazy(() => import("@/features/account/view/MyOrders"));
 const MyBaskets = lazy(() => import("@/features/account/view/MyBaskets"));
+const ScheduledBasketDetails = lazy(
+  () => import("@/features/account/view/ScheduledBasketDetails"),
+);
 const MyPackages = lazy(() => import("@/features/account/view/MyPackages"));
 const Wishlist = lazy(() => import("@/features/account/view/Wishlist"));
 const PointsRewards = lazy(
@@ -112,6 +115,14 @@ export const AccountRoutes: RouteObject[] = [
         element: (
           <Suspense fallback={<PageLoader />}>
             <MyBaskets />
+          </Suspense>
+        ),
+      },
+      {
+        path: "baskets/:id",
+        element: (
+          <Suspense fallback={<PageLoader />}>
+            <ScheduledBasketDetails />
           </Suspense>
         ),
       },

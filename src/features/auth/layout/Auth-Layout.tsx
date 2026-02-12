@@ -23,7 +23,7 @@ export default function AuthLayout({
   children,
 }: AuthLayoutProps) {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="relative w-full min-h-screen grid lg:grid-cols-[1fr_1fr] overflow-hidden">
         {/* Theme and Language toggles */}
         <div className="absolute top-4 right-4 z-20 flex gap-2">
@@ -32,7 +32,7 @@ export default function AuthLayout({
         </div>
 
         {/* LEFT SIDE - Cyan/Teal gradient background */}
-        <aside className="relative bg-gradient-to-br from-cyan-400 via-cyan-500 to-teal-500 px-8 md:px-12 py-10 flex flex-col min-h-[400px] lg:min-h-screen overflow-hidden">
+        <aside className="relative bg-gradient-to-br from-cyan-400 via-cyan-500 to-teal-500 dark:from-gray-800 dark:via-gray-800 dark:to-gray-900 px-8 md:px-12 py-10 flex flex-col min-h-[400px] lg:min-h-screen overflow-hidden">
           {/* Decorative elements */}
           <div className="absolute top-10 left-10 w-20 h-20 bg-yellow-300 rounded-full opacity-80" />
           <div className="absolute top-20 left-24 w-4 h-4 bg-yellow-300 rounded-full opacity-60" />
@@ -73,35 +73,35 @@ export default function AuthLayout({
           </div>
 
           {/* Bottom Content Card */}
-          <div className="relative z-10 bg-white rounded-2xl shadow-xl p-6 mt-8">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">{title}</h2>
+          <div className="relative z-10 bg-white dark:bg-gray-700 rounded-2xl shadow-xl p-6 mt-8">
+            <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-4">{title}</h2>
 
             {features.length > 0 && (
               <ul className="space-y-3 mb-6">
                 {features.map((item, index) => (
                   <li key={index} className="flex items-center gap-3">
-                    <HiCheckCircle className="w-5 h-5 text-cyan-500 flex-shrink-0" />
-                    <span className="text-sm text-gray-600">{item}</span>
+                    <HiCheckCircle className="w-5 h-5 text-cyan-500 dark:text-cyan-400 flex-shrink-0" />
+                    <span className="text-sm text-gray-600 dark:text-gray-300">{item}</span>
                   </li>
                 ))}
               </ul>
             )}
 
             {ctaLabel && (
-              <button className="flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-teal-500 text-white px-5 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-shadow">
+              <button className="flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-teal-500 dark:from-cyan-600 dark:to-teal-600 text-white px-5 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-shadow">
                 <HiGift className="w-5 h-5" />
                 <span>{ctaLabel}</span>
               </button>
             )}
 
             {helper && (
-              <p className="text-xs text-gray-400 mt-2 ms-1">{helper}</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-2 ms-1">{helper}</p>
             )}
           </div>
         </aside>
 
         {/* RIGHT SIDE - Auth Form */}
-        <main className="bg-white flex items-center justify-center px-4 md:px-8 py-8">
+        <main className="bg-white dark:bg-gray-900 flex items-center justify-center px-4 md:px-8 py-8">
           <div className="w-full max-w-md">{children}</div>
         </main>
       </div>

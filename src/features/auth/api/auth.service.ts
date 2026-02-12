@@ -15,6 +15,7 @@ import type {
   VerifyPasswordResponse,
   ResetPasswordPayload,
   ResetPasswordResponse,
+  SellerRegisterPayload,
 } from "../types";
 
 export type {
@@ -32,6 +33,7 @@ export type {
   VerifyPasswordResponse,
   ResetPasswordPayload,
   ResetPasswordResponse,
+  SellerRegisterPayload,
 };
 
 export const _AuthApi = {
@@ -98,6 +100,16 @@ export const _AuthApi = {
     const res = await _axios.get<{
       data: { user: LoginResponse["data"]["user"] };
     }>(apiRoutes.auth.me);
+    return res.data;
+  },
+
+  sellerRegister: async (
+    payload: SellerRegisterPayload,
+  ): Promise<RegisterResponse> => {
+    const res = await _axios.post<RegisterResponse>(
+      apiRoutes.auth.sellerRegister,
+      payload,
+    );
     return res.data;
   },
 

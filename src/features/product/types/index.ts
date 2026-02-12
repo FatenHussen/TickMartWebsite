@@ -15,7 +15,9 @@ export type Product = {
   originalPrice?: string;
   rating: number;
   image: string;
-  badge?: { label: string; className?: string } | { label: string; className?: string }[];
+  badge?:
+    | { label: string; className?: string }
+    | { label: string; className?: string }[];
   category?: string;
   isFavorite?: boolean;
   sold?: number;
@@ -60,3 +62,5 @@ export type SizeOption = {
   available?: boolean;
 };
 
+// Export brand types
+export * from "./brand";

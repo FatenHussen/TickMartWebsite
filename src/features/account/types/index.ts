@@ -266,3 +266,51 @@ export interface AddressesResponse {
     };
   };
 }
+
+// ==================== Profile API Types ====================
+export interface ProfileData {
+  id: number;
+  name: string;
+  phone: string;
+  email: string;
+  city: string;
+  image: string;
+}
+
+export interface ProfileResponse {
+  status: boolean;
+  message: string;
+  data: ProfileData;
+}
+
+export interface UpdateProfilePayload {
+  name: string;
+  image?: File | string;
+  city_id: number;
+}
+
+export interface UpdatePasswordPayload {
+  old_password: string;
+  new_password: string;
+  new_password_confirmation: string;
+}
+
+export interface UpdateEmailPayload {
+  email: string;
+}
+
+export interface UpdatePhonePayload {
+  phone: string;
+}
+
+export interface VerifyProfilePayload {
+  code: string;
+  email?: string;
+  phone?: string;
+}
+
+export interface GenericApiResponse {
+  status: boolean;
+  message: string;
+  data?: any;
+}

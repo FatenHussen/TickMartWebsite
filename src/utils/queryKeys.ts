@@ -21,6 +21,7 @@ export const queryKeys = {
     resetPassword: () => ["auth", "resetPassword"] as const,
     me: () => ["auth", "me"] as const,
     logout: () => ["auth", "logout"] as const,
+    sellerRegister: () => ["auth", "sellerRegister"] as const,
   },
 
   /**
@@ -108,5 +109,83 @@ export const queryKeys = {
       id !== undefined
         ? (["recipes", "details", id] as const)
         : (["recipes", "details"] as const),
+  },
+
+  /**
+   * Brand query keys
+   */
+  brands: {
+    all: () => ["brands"] as const,
+    list: (page?: number) =>
+      page !== undefined
+        ? (["brands", "list", page] as const)
+        : (["brands", "list"] as const),
+    details: (id?: number | string) =>
+      id !== undefined
+        ? (["brands", "details", id] as const)
+        : (["brands", "details"] as const),
+    products: (brandId?: number, page?: number) =>
+      brandId !== undefined
+        ? page !== undefined
+          ? (["brands", "products", brandId, page] as const)
+          : (["brands", "products", brandId] as const)
+        : (["brands", "products"] as const),
+  },
+
+  /**
+   * Scheduled Basket query keys (user account)
+   */
+  scheduledBaskets: {
+    all: () => ["scheduledBaskets"] as const,
+    list: (page?: number) =>
+      page !== undefined
+        ? (["scheduledBaskets", "list", page] as const)
+        : (["scheduledBaskets", "list"] as const),
+    details: (id?: number | string) =>
+      id !== undefined
+        ? (["scheduledBaskets", "details", id] as const)
+        : (["scheduledBaskets", "details"] as const),
+  },
+
+  /**
+   * Basket query keys
+   */
+  baskets: {
+    all: () => ["baskets"] as const,
+    list: (isSchedule?: 0 | 1, page?: number) =>
+      isSchedule !== undefined
+        ? page !== undefined
+          ? (["baskets", "list", isSchedule, page] as const)
+          : (["baskets", "list", isSchedule] as const)
+        : page !== undefined
+        ? (["baskets", "list", page] as const)
+        : (["baskets", "list"] as const),
+    details: (id?: number | string) =>
+      id !== undefined
+        ? (["baskets", "details", id] as const)
+        : (["baskets", "details"] as const),
+  },
+
+  /**
+   * Shop query keys
+   */
+  shop: {
+    all: () => ["shop"] as const,
+    list: (page?: number) =>
+      page !== undefined
+        ? (["shop", "list", page] as const)
+        : (["shop", "list"] as const),
+    details: (id?: number) =>
+      id !== undefined
+        ? (["shop", "details", id] as const)
+        : (["shop", "details"] as const),
+  },
+
+  /**
+   * Profile query keys
+   */
+  profile: {
+    all: () => ["profile"] as const,
+    details: () => ["profile", "details"] as const,
   },
 } as const;

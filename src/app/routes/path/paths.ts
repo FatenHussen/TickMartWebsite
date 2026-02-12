@@ -50,6 +50,8 @@ export const paths = {
     paymentMethods: `${ROOTS.ACCOUNT}/payment-methods`,
     orders: `${ROOTS.ACCOUNT}/orders`,
     baskets: `${ROOTS.ACCOUNT}/baskets`,
+    basketDetails: (id: number | string) =>
+      `${ROOTS.ACCOUNT}/baskets/${id}`,
     packages: `${ROOTS.ACCOUNT}/packages`,
     wishlist: `${ROOTS.ACCOUNT}/wishlist`,
     pointsRewards: `${ROOTS.ACCOUNT}/points-rewards`,

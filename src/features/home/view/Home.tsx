@@ -2,6 +2,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import HeroSlider from "../components/HeroSlider";
 import Categories from "../components/Categories";
 import InfoCards from "../components/InfoCards";
+import AllProductsSection from "../components/AllProductsSection";
 import FullBleedSection from "@/shared/component/FullBleedSection";
 import ApiSectionsRenderer from "@/shared/component/sections/ApiSectionsRenderer";
 import { useSectionsByPosition } from "../hooks/useSections";
@@ -34,6 +35,9 @@ export default function Home() {
           <ApiSectionsRenderer sections={afterSections} />
         </FullBleedSection>
       )}
+
+      {/* All Products Section */}
+      <AllProductsSection />
     </div>
   );
 }

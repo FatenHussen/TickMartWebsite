@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContext";
@@ -9,12 +9,10 @@ import FullBleedSection from "@/shared/component/FullBleedSection";
 import Rating from "@/shared/component/Rating";
 import Badge from "@/shared/component/Badge";
 import Button from "@/shared/ui/Button";
+import ProductItemsTable, { type ProductItemData } from "@/shared/component/table/ProductItemsTable";
 import {
   HiHeart,
   HiCheck,
-  HiMinus,
-  HiPlus,
-  HiXMark,
   HiPlay,
 } from "react-icons/hi2";
 import type { RecipeItem } from "../types";
@@ -70,6 +68,57 @@ export default function RecipeDetails() {
     const current = getQuantity(index, defaultQty);
     const newQty = Math.max(min, Math.min(max, current + delta));
     setQuantities((prev) => ({ ...prev, [index]: newQty }));
+  };
+
+  // Convert recipe items to ProductItemData format
+  const recipeItems = useMemo<ProductItemData[]>(() => {
+    if (!recipe?.items) return [];
+
+    return recipe.items.map((item, index) => {
+      const qty = getQuantity(index, item.terms.default_quantity);
+      const itemTotal = item.main_item.price * qty;
+
+      return {
+        id: index,
+        name: item.main_item.name,
+        image: item.main_item.image_url,
+        quantity: qty,
+        unit_price: item.main_item.price,
+        subtotal: itemTotal,
+        min_quantity: item.terms.min_quantity,
+        max_quantity: item.terms.max_quantity,
+        can_adjust: true,
+        variants: item.alternatives.map((alt) => ({
+          id: alt.shop_product_variant_id,
+          name: alt.name,
+        })),
+        selectedVariantId: item.alternatives[0]?.shop_product_variant_id,
+      };
+    });
+  }, [recipe?.items, quantities]);
+
+  // Handle quantity change from ProductItemsTable
+  const handleItemQuantityChange = (itemId: number, newQuantity: number) => {
+    if (!recipe?.items) return;
+    const item = recipe.items[itemId];
+    if (!item) return;
+
+    setQuantities((prev) => ({
+      ...prev,
+      [itemId]: newQuantity,
+    }));
+  };
+
+  // Handle variant change from ProductItemsTable
+  const handleItemVariantChange = (itemId: number, variantId: number | string) => {
+    // TODO: Implement variant change logic if needed
+    console.log("Variant changed:", itemId, variantId);
+  };
+
+  // Handle remove item from ProductItemsTable
+  const handleRemoveItem = (itemId: number) => {
+    // TODO: Implement remove item logic if needed
+    console.log("Remove item:", itemId);
   };
 
   // Loading state
@@ -280,132 +329,17 @@ export default function RecipeDetails() {
 
         {/* Ingredients Table */}
         {recipe.items && recipe.items.length > 0 && (
-          <div className="bg-custom-secondary rounded-2xl shadow-sm border border-custom-primary mb-6 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="bg-gray-800 dark:bg-gray-900 text-white text-sm">
-                    <th className="text-start py-4 px-6 font-semibold">
-                      {t("recipes.product")}
-                    </th>
-                    <th className="text-start py-4 px-6 font-semibold">
-                      {t("recipes.companyBrand")}
-                    </th>
-                    <th className="text-start py-4 px-6 font-semibold">
-                      {t("recipes.variantOption")}
-                    </th>
-                    <th className="text-center py-4 px-6 font-semibold">
-                      {t("recipes.quantity")}
-                    </th>
-                    <th className="text-end py-4 px-6 font-semibold">
-                      {t("recipes.price")}
-                    </th>
-                    <th className="text-center py-4 px-6 font-semibold">
-                      {t("recipes.action")}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {recipe.items.map((item, index) => {
-                    const qty = getQuantity(index, item.terms.default_quantity);
-                    const itemTotal = item.main_item.price * qty;
-
-                    return (
-                      <tr
-                        key={index}
-                        className="border-b border-custom-primary hover:bg-custom-primary/50 transition"
-                      >
-                        {/* Product */}
-                        <td className="py-4 px-6">
-                          <div className="flex items-center gap-3">
-                            {item.main_item.image_url && (
-                              <img
-                                src={item.main_item.image_url}
-                                alt={item.main_item.name}
-                                className="w-12 h-12 rounded-lg object-cover"
-                              />
-                            )}
-                            <span className="font-medium text-custom-primary">
-                              {item.main_item.name}
-                            </span>
-                          </div>
-                        </td>
-
-                        {/* Company/Brand */}
-                        <td className="py-4 px-6 text-sm text-custom-secondary">
-                          -
-                        </td>
-
-                        {/* Variant/Option */}
-                        <td className="py-4 px-6">
-                          <select className="border border-custom-primary rounded-lg px-3 py-2 text-sm bg-custom-primary text-custom-primary focus:outline-none focus:ring-2 focus:ring-cyan-500">
-                            <option>{t("recipes.regularSize")}</option>
-                            {item.alternatives.map((alt, altIndex) => (
-                              <option
-                                key={altIndex}
-                                value={alt.shop_product_variant_id}
-                              >
-                                {alt.name}
-                              </option>
-                            ))}
-                          </select>
-                        </td>
-
-                        {/* Quantity */}
-                        <td className="py-4 px-6">
-                          <div className="flex items-center justify-center gap-2">
-                            <button
-                              onClick={() =>
-                                updateQuantity(
-                                  index,
-                                  -1,
-                                  item.terms.min_quantity,
-                                  item.terms.max_quantity,
-                                  item.terms.default_quantity
-                                )
-                              }
-                              className="w-8 h-8 rounded-full border border-custom-primary flex items-center justify-center hover:bg-custom-primary transition text-custom-primary"
-                            >
-                              <HiMinus className="h-4 w-4" />
-                            </button>
-                            <span className="w-8 text-center font-medium text-custom-primary">
-                              {qty}
-                            </span>
-                            <button
-                              onClick={() =>
-                                updateQuantity(
-                                  index,
-                                  1,
-                                  item.terms.min_quantity,
-                                  item.terms.max_quantity,
-                                  item.terms.default_quantity
-                                )
-                              }
-                              className="w-8 h-8 rounded-full border border-custom-primary flex items-center justify-center hover:bg-custom-primary transition text-custom-primary"
-                            >
-                              <HiPlus className="h-4 w-4" />
-                            </button>
-                          </div>
-                        </td>
-
-                        {/* Price */}
-                        <td className="py-4 px-6 text-end font-semibold text-custom-primary">
-                          ${itemTotal.toFixed(2)}
-                        </td>
-
-                        {/* Action */}
-                        <td className="py-4 px-6 text-center">
-                          <button className="text-red-500 hover:text-red-700 transition">
-                            <HiXMark className="h-5 w-5" />
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <ProductItemsTable
+            items={recipeItems}
+            onQuantityChange={handleItemQuantityChange}
+            onVariantChange={handleItemVariantChange}
+            onRemoveItem={handleRemoveItem}
+            showCompanyColumn={false}
+            showVariantColumn={true}
+            showActionColumn={true}
+            currencySymbol="$"
+            className="mb-6"
+          />
         )}
 
         {/* Cooking Video and Steps Section */}

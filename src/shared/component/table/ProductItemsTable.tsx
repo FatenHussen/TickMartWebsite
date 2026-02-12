@@ -1,0 +1,280 @@
+import { useTranslation } from "react-i18next";
+import { useLanguage } from "@/context/LanguageContext";
+import { HiMinus, HiPlus, HiXMark } from "react-icons/hi2";
+import { cn } from "@/shared/lib/utils";
+
+export interface ProductItemCompany {
+  id: number;
+  name: string;
+  is_default?: boolean;
+  has_custom_price?: boolean;
+  effective_price?: number;
+}
+
+export interface ProductItemVariant {
+  id: number | string;
+  name: string;
+  value?: string | number;
+}
+
+export interface ProductItemData {
+  id: number;
+  name: string;
+  image?: string;
+  quantity: number;
+  unit_price: number;
+  subtotal: number;
+  min_quantity?: number;
+  max_quantity?: number;
+  can_adjust?: boolean;
+  is_required?: boolean;
+  companies?: ProductItemCompany[];
+  variants?: ProductItemVariant[];
+  selectedCompanyId?: number;
+  selectedVariantId?: number | string;
+  variant?: (string | number)[]; // For basket items
+}
+
+export interface ProductItemsTableProps {
+  items: ProductItemData[];
+  onQuantityChange?: (itemId: number, newQuantity: number) => void;
+  onCompanyChange?: (itemId: number, companyId: number) => void;
+  onVariantChange?: (itemId: number, variantId: number | string) => void;
+  onRemoveItem?: (itemId: number) => void;
+  readonly?: boolean;
+  showCompanyColumn?: boolean;
+  showVariantColumn?: boolean;
+  showActionColumn?: boolean;
+  currencySymbol?: string;
+  className?: string;
+}
+
+export default function ProductItemsTable({
+  items,
+  onQuantityChange,
+  onCompanyChange,
+  onVariantChange,
+  onRemoveItem,
+  readonly = false,
+  showCompanyColumn = true,
+  showVariantColumn = true,
+  showActionColumn = true,
+  currencySymbol = "$",
+  className,
+}: ProductItemsTableProps) {
+  const { t } = useTranslation();
+  const { isRTL } = useLanguage();
+
+  const handleQuantityIncrease = (item: ProductItemData) => {
+    if (readonly || !item.can_adjust) return;
+    const maxQty = item.max_quantity ?? 999;
+    if (item.quantity < maxQty) {
+      onQuantityChange?.(item.id, item.quantity + 1);
+    }
+  };
+
+  const handleQuantityDecrease = (item: ProductItemData) => {
+    if (readonly || !item.can_adjust) return;
+    const minQty = item.min_quantity ?? 1;
+    if (item.quantity > minQty) {
+      onQuantityChange?.(item.id, item.quantity - 1);
+    }
+  };
+
+  const handleCompanySelect = (itemId: number, companyId: number) => {
+    if (readonly) return;
+    onCompanyChange?.(itemId, companyId);
+  };
+
+  const handleVariantSelect = (itemId: number, variantId: number | string) => {
+    if (readonly) return;
+    onVariantChange?.(itemId, variantId);
+  };
+
+  const formatVariant = (variant?: (string | number)[]) => {
+    if (!variant || variant.length === 0) return "-";
+    return variant.join(", ");
+  };
+
+  return (
+    <div className={cn("bg-custom-secondary rounded-2xl shadow-sm border border-custom-primary overflow-hidden", className)}>
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead>
+            <tr className="bg-gray-800 dark:bg-gray-900 text-white text-sm">
+              <th className={cn(isRTL ? "text-right" : "text-left", "py-4 px-6 font-semibold")}>
+                {t("recipes.product")}
+              </th>
+              {showCompanyColumn && (
+                <th className={cn(isRTL ? "text-right" : "text-left", "py-4 px-6 font-semibold")}>
+                  {t("recipes.companyBrand")}
+                </th>
+              )}
+              {showVariantColumn && (
+                <th className={cn(isRTL ? "text-right" : "text-left", "py-4 px-6 font-semibold")}>
+                  {t("recipes.variantOption")}
+                </th>
+              )}
+              <th className="text-center py-4 px-6 font-semibold">
+                {t("recipes.quantity")}
+              </th>
+              <th className={cn(isRTL ? "text-left" : "text-right", "py-4 px-6 font-semibold")}>
+                {t("recipes.price")}
+              </th>
+              {showActionColumn && !readonly && (
+                <th className="text-center py-4 px-6 font-semibold">
+                  {t("recipes.action")}
+                </th>
+              )}
+            </tr>
+          </thead>
+          <tbody>
+            {items.map((item) => {
+              const minQty = item.min_quantity ?? 1;
+              const maxQty = item.max_quantity ?? 999;
+
+              return (
+                <tr
+                  key={item.id}
+                  className="border-b border-custom-primary hover:bg-custom-primary/50 transition"
+                >
+                  {/* Product */}
+                  <td className="py-4 px-6">
+                    <div className="flex items-center gap-3">
+                      {item.image && (
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="w-12 h-12 rounded-lg object-cover"
+                        />
+                      )}
+                      <span className="font-medium text-custom-primary">
+                        {item.name}
+                        {item.is_required && (
+                          <span className="text-red-500 ml-1">*</span>
+                        )}
+                      </span>
+                    </div>
+                  </td>
+
+                  {/* Company/Brand */}
+                  {showCompanyColumn && (
+                    <td className="py-4 px-6">
+                      {item.companies && item.companies.length > 0 ? (
+                        <select
+                          value={item.selectedCompanyId ?? item.companies.find((c) => c.is_default)?.id}
+                          onChange={(e) => handleCompanySelect(item.id, Number(e.target.value))}
+                          disabled={readonly}
+                          className={cn(
+                            "border border-custom-primary rounded-lg px-3 py-2 text-sm bg-custom-primary text-custom-primary focus:outline-none focus:ring-2 focus:ring-cyan-500",
+                            readonly && "opacity-50 cursor-not-allowed"
+                          )}
+                        >
+                          {item.companies.map((company) => (
+                            <option key={company.id} value={company.id}>
+                              {company.name}
+                              {company.is_default && ` (${t("common.default")})`}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <span className="text-sm text-custom-secondary">-</span>
+                      )}
+                    </td>
+                  )}
+
+                  {/* Variant/Option */}
+                  {showVariantColumn && (
+                    <td className="py-4 px-6">
+                      {item.variants && item.variants.length > 0 ? (
+                        <select
+                          value={item.selectedVariantId ?? item.variants[0]?.id}
+                          onChange={(e) => handleVariantSelect(item.id, e.target.value)}
+                          disabled={readonly}
+                          className={cn(
+                            "border border-custom-primary rounded-lg px-3 py-2 text-sm bg-custom-primary text-custom-primary focus:outline-none focus:ring-2 focus:ring-cyan-500",
+                            readonly && "opacity-50 cursor-not-allowed"
+                          )}
+                        >
+                          {item.variants.map((variant) => (
+                            <option key={variant.id} value={variant.id}>
+                              {variant.name}
+                            </option>
+                          ))}
+                        </select>
+                      ) : item.variant ? (
+                        <span className="text-sm text-custom-primary">
+                          {formatVariant(item.variant)}
+                        </span>
+                      ) : (
+                        <span className="text-sm text-custom-secondary">-</span>
+                      )}
+                    </td>
+                  )}
+
+                  {/* Quantity */}
+                  <td className="py-4 px-6">
+                    {!readonly && item.can_adjust !== false ? (
+                      <div className="flex items-center justify-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleQuantityDecrease(item)}
+                          disabled={item.quantity <= minQty}
+                          className={cn(
+                            "w-8 h-8 rounded-full border border-custom-primary flex items-center justify-center hover:bg-custom-primary transition text-custom-primary",
+                            item.quantity <= minQty && "opacity-50 cursor-not-allowed"
+                          )}
+                          aria-label={t("cart.decreaseQuantity")}
+                        >
+                          <HiMinus className="h-4 w-4" />
+                        </button>
+                        <span className="w-8 text-center font-medium text-custom-primary">
+                          {item.quantity}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleQuantityIncrease(item)}
+                          disabled={item.quantity >= maxQty}
+                          className={cn(
+                            "w-8 h-8 rounded-full border border-custom-primary flex items-center justify-center hover:bg-custom-primary transition text-custom-primary",
+                            item.quantity >= maxQty && "opacity-50 cursor-not-allowed"
+                          )}
+                          aria-label={t("cart.increaseQuantity")}
+                        >
+                          <HiPlus className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="text-center font-medium text-custom-primary">
+                        {item.quantity}
+                      </div>
+                    )}
+                  </td>
+
+                  {/* Price */}
+                  <td className={cn("py-4 px-6 font-semibold text-custom-primary", isRTL ? "text-left" : "text-right")}>
+                    {currencySymbol}{item.subtotal.toFixed(2)}
+                  </td>
+
+                  {/* Action */}
+                  {showActionColumn && !readonly && (
+                    <td className="py-4 px-6 text-center">
+                      <button
+                        type="button"
+                        onClick={() => onRemoveItem?.(item.id)}
+                        className="text-red-500 hover:text-red-700 transition"
+                        aria-label={t("cart.removeItem")}
+                      >
+                        <HiXMark className="h-5 w-5" />
+                      </button>
+                    </td>
+                  )}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}

@@ -1,3 +1,5 @@
+import type { PaginationData } from "@/shared/types/pagination";
+
 // ==================== Hero Slider Types ====================
 export type SlideData = {
   id: number;
@@ -93,25 +95,29 @@ export interface ShopItem {
 // Basket Item (display_type_id: 4)
 export interface BasketItem {
   id: number;
-  title: string;
-  desc: string | null;
-  image: string;
+  name: string;
   category: string;
+  image: string;
+  num_varieties: number;
+  offer_ends_at: string;
   original_price: number;
   discount_value: string;
   discount_type: "percentage" | "fixed";
   discount_amount: number;
-  price_after_discount: number;
+  final_price: number;
   rating: number;
-  num_sold: number;
   saving: number;
+  num_sold: number;
   is_on_offer: boolean;
-  offer_ends_at: string;
   next_delivery_date: string;
-  top_badges: SectionItemBadge[];
-  bottom_badges: SectionItemBadge[];
-  items_count: number;
   delivery_price: number;
+  // Optional fields that may exist in some responses
+  desc?: string | null;
+  title?: string; // For backward compatibility
+  top_badges?: SectionItemBadge[];
+  bottom_badges?: SectionItemBadge[];
+  items_count?: number;
+  price_after_discount?: number; // For backward compatibility
 }
 
 // Base interface for backward compatibility
@@ -196,18 +202,21 @@ export interface Category {
   icon: string | null;
 }
 
-export interface CategoriesPagination {
-  current_page: number;
-  last_page: number;
-  per_page: number;
-  total: number;
-}
-
 export interface CategoriesResponse {
   status: boolean;
   message: string;
   data: {
     items: Category[];
-    pagination: CategoriesPagination;
+    pagination: PaginationData;
+  };
+}
+
+// ==================== Products List Types ====================
+export interface ProductsListResponse {
+  status: boolean;
+  message: string;
+  data: {
+    items: ProductItem[];
+    pagination: PaginationData;
   };
 }

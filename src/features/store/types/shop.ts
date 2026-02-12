@@ -34,3 +34,40 @@ export interface ShopDetailsResponse {
   message: string;
   data: ShopDetailsData;
 }
+
+// Shop List API Response Types
+export interface ShopListItem {
+  id: number;
+  name: string;
+  description: string | null;
+  logo_url: string | null;
+  is_active: boolean;
+  average_rating: number;
+  ratings_count: number;
+  is_open_now: boolean;
+  created_at: string;
+  vendor: {
+    id: number;
+    name: string;
+    owner_name: string;
+    logo_url: string | null;
+    is_active: boolean;
+    average_rating: number;
+    ratings_count: number;
+    created_at: string;
+  };
+}
+
+export interface ShopsListResponse {
+  status: boolean;
+  message: string;
+  data: {
+    items: ShopListItem[];
+    pagination: {
+      current_page: number;
+      last_page: number;
+      per_page: number;
+      total: number;
+    };
+  };
+}

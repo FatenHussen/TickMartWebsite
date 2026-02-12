@@ -23,8 +23,13 @@ export function useCities(governorateId: number | null) {
         return [];
       }
       const response = await _LocationApi.getCities(governorateId);
-      if (response.data) {
-        return [response.data];
+      // Handle response format: { data: { items: City[], pagination: ... } }
+      if (response.data && typeof response.data === "object" && "items" in response.data) {
+        return response.data.items;
+      }
+      // Fallback for direct array response
+      if (Array.isArray(response.data)) {
+        return response.data;
       }
       return [];
     },

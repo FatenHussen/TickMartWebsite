@@ -1,16 +1,9 @@
 import { Link } from "react-router-dom";
 import { HiStar, HiShoppingBag, HiCube } from "react-icons/hi";
+import type { BrandDetails } from "../types/brand";
 
 type BrandHeaderProps = {
-  brand: {
-    id: number | string;
-    name: string;
-    logo: string;
-    rating: number;
-    storeCount: number;
-    productCount: number;
-    description?: string;
-  };
+  brand: BrandDetails;
   onViewDetails?: () => void;
 };
 
@@ -26,7 +19,7 @@ export default function BrandHeader({
           {/* Brand Logo */}
           <div className="w-16 h-16 rounded-lg bg-custom-primary border border-custom-secondary flex items-center justify-center shrink-0">
             <img
-              src={brand.logo}
+              src={brand.image}
               alt={brand.name}
               className="max-w-full max-h-full object-contain"
             />
@@ -57,8 +50,8 @@ export default function BrandHeader({
               <div className="flex items-center gap-2">
                 <HiShoppingBag className="w-5 h-5 text-custom-secondary" />
                 <span className="text-sm text-custom-secondary">
-                  {brand.storeCount}{" "}
-                  {brand.storeCount === 1 ? "store" : "stores"}
+                  {brand.shops_count}{" "}
+                  {brand.shops_count === 1 ? "store" : "stores"}
                 </span>
               </div>
 
@@ -66,7 +59,7 @@ export default function BrandHeader({
               <div className="flex items-center gap-2">
                 <HiCube className="w-5 h-5 text-custom-secondary" />
                 <span className="text-sm text-custom-secondary">
-                  {brand.productCount.toLocaleString()} products
+                  {brand.products_count.toLocaleString()} products
                 </span>
               </div>
             </div>

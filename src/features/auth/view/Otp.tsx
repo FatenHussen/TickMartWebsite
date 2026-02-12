@@ -4,6 +4,8 @@ import { Link, useNavigate } from "react-router-dom";
 import OTPInput from "react-otp-input";
 import type { InputHTMLAttributes } from "react";
 import Button from "@/shared/ui/Button";
+import ThemeToggle from "@/components/ThemeToggle";
+import LanguageToggle from "@/components/LanguageToggle";
 import { useOtpStore } from "@/store/otp";
 import {
   useVerifyOtp,
@@ -104,17 +106,23 @@ export default function Otp() {
   };
 
   return (
-    <div className="min-h-screen grid lg:grid-cols-2">
+    <div className="relative min-h-screen grid lg:grid-cols-2 bg-white dark:bg-gray-900">
+      {/* Theme and Language toggles */}
+      <div className="absolute top-4 end-4 z-20 flex gap-2">
+        <LanguageToggle />
+        <ThemeToggle />
+      </div>
+
       {/* Left Side - Illustration */}
-      <div className="hidden lg:flex bg-cyan-50 flex-col">
+      <div className="hidden lg:flex bg-cyan-50 dark:bg-gray-800 flex-col">
         {/* Header */}
         <div className="p-8">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-cyan-500 rounded-xl flex items-center justify-center">
               <span className="text-white text-xl font-bold">T</span>
             </div>
-            <span className="text-lg font-semibold text-gray-800">
-              App Everything
+            <span className="text-lg font-semibold text-gray-800 dark:text-white">
+              {t("auth.appEverything")}
             </span>
           </div>
         </div>
@@ -132,47 +140,46 @@ export default function Otp() {
 
         {/* Promo Card */}
         <div className="p-8">
-          <div className="bg-white rounded-2xl shadow-lg p-5">
+          <div className="bg-white dark:bg-gray-700 rounded-2xl shadow-lg p-5">
             <div className="flex gap-4">
-              <div className="w-16 h-16 rounded-xl bg-orange-100 flex items-center justify-center overflow-hidden">
+              <div className="w-16 h-16 rounded-xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center overflow-hidden">
                 <span className="text-3xl">🍝</span>
               </div>
               <div className="flex-1">
-                <p className="text-[10px] text-orange-500 font-medium uppercase tracking-wider">
-                  Sponsored
+                <p className="text-[10px] text-orange-500 dark:text-orange-400 font-medium uppercase tracking-wider">
+                  {t("auth.sponsored")}
                 </p>
-                <h3 className="text-sm font-bold text-gray-900 mt-1">
-                  Get 30% Off Your First Order!
+                <h3 className="text-sm font-bold text-gray-900 dark:text-white mt-1">
+                  {t("auth.get30Off")}
                 </h3>
-                <p className="text-xs text-gray-500 mt-1">
-                  Enjoy exclusive deals from top restaurants. Limited time offer
-                  for new customers.
+                <p className="text-xs text-gray-500 dark:text-gray-300 mt-1">
+                  {t("auth.enjoyExclusiveDeals")}
                 </p>
-                <button className="text-xs text-cyan-500 font-semibold mt-2 hover:underline">
-                  View offer →
+                <button className="text-xs text-cyan-500 dark:text-cyan-400 font-semibold mt-2 hover:underline">
+                  {t("auth.viewOffer")}
                 </button>
               </div>
             </div>
-            <p className="text-[10px] text-gray-400 mt-4">
-              Manage ad campaigns from your dashboard
+            <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-4">
+              {t("auth.manageCampaigns")}
             </p>
           </div>
         </div>
       </div>
 
       {/* Right Side - OTP Form */}
-      <div className="flex items-center justify-center px-6 py-12 bg-white">
+      <div className="flex items-center justify-center px-6 py-12 bg-white dark:bg-gray-900">
         <div className="w-full max-w-md">
           <form onSubmit={handleSubmit} className="space-y-8">
             {/* Header */}
             <div className="text-center space-y-2">
-              <h1 className="text-xl font-bold text-gray-900">
+              <h1 className="text-xl font-bold text-gray-900 dark:text-white">
                 {t("auth.enterVerificationCode")}
               </h1>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
                 {t("auth.sentCodeTo")}
                 <br />
-                <span className="font-semibold text-cyan-500">
+                <span className="font-semibold text-cyan-500 dark:text-cyan-400">
                   {getMaskedContact()}
                 </span>
               </p>
@@ -189,13 +196,13 @@ export default function Otp() {
               renderInput={(props: InputHTMLAttributes<HTMLInputElement>) => (
                 <input
                   {...props}
-                  className="!w-14 h-14 rounded-xl border-2 border-gray-200 text-center text-xl font-semibold text-gray-800 focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100 transition-all [appearance:textfield]"
+                  className="!w-14 h-14 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-center text-xl font-semibold text-gray-800 dark:text-white focus:outline-none focus:border-cyan-500 dark:focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 dark:focus:ring-cyan-900 transition-all [appearance:textfield]"
                 />
               )}
             />
 
             {/* Timer */}
-            <p className="text-center text-sm text-gray-500">
+            <p className="text-center text-sm text-gray-500 dark:text-gray-400">
               {t("auth.resendCodeIn")}{" "}
               <span className="font-semibold">{formatTime(timer)}</span>
             </p>
@@ -204,11 +211,11 @@ export default function Otp() {
             <div className="flex items-center justify-center gap-4 text-sm">
               <Link
                 to={paths.auth.jwt.signUp}
-                className="text-cyan-500 font-medium hover:underline"
+                className="text-cyan-500 dark:text-cyan-400 font-medium hover:underline"
               >
                 {t("auth.changeEmailPhone")}
               </Link>
-              <span className="text-gray-300">|</span>
+              <span className="text-gray-300 dark:text-gray-600">|</span>
               <button
                 type="button"
                 onClick={handleResend}
@@ -218,7 +225,7 @@ export default function Otp() {
                   isSendingPassword ||
                   (!email && !phone)
                 }
-                className="text-cyan-500 font-medium hover:underline disabled:text-gray-400 disabled:cursor-not-allowed disabled:no-underline"
+                className="text-cyan-500 dark:text-cyan-400 font-medium hover:underline disabled:text-gray-400 dark:disabled:text-gray-600 disabled:cursor-not-allowed disabled:no-underline"
               >
                 {isSendingOtp || isSendingPassword
                   ? t("common.sending")
@@ -235,7 +242,7 @@ export default function Otp() {
               isLoading={isPending}
               disabled={code.length !== OTP_LENGTH}
             >
-              {t("common.signUp")}
+              {t("common.verify")}
             </Button>
           </form>
         </div>

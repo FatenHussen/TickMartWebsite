@@ -2,6 +2,8 @@ import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import InputField from "@/shared/ui/InputField";
 import Button from "@/shared/ui/Button";
+import ThemeToggle from "@/components/ThemeToggle";
+import LanguageToggle from "@/components/LanguageToggle";
 import { useResetPassword } from "@/features/auth/hooks/useAuth";
 import type { ChangePasswordFormValues } from "@/features/auth/types";
 
@@ -30,9 +32,15 @@ export default function ChangePassword() {
   };
 
   return (
-    <div className="min-h-screen grid lg:grid-cols-2">
+    <div className="relative min-h-screen grid lg:grid-cols-2 bg-white dark:bg-gray-900">
+      {/* Theme and Language toggles */}
+      <div className="absolute top-4 end-4 z-20 flex gap-2">
+        <LanguageToggle />
+        <ThemeToggle />
+      </div>
+
       {/* Left Side - Illustration */}
-      <div className="hidden lg:flex bg-gray-100 items-center justify-center p-8">
+      <div className="hidden lg:flex bg-gray-100 dark:bg-gray-800 items-center justify-center p-8">
         <div className="max-w-lg">
           <img
             src="https://i.ibb.co/ZxYJK1q/security-illustration.png"
@@ -43,7 +51,7 @@ export default function ChangePassword() {
       </div>
 
       {/* Right Side - Form */}
-      <div className="flex items-center justify-center px-6 py-12 bg-white">
+      <div className="flex items-center justify-center px-6 py-12 bg-white dark:bg-gray-900">
         <div className="w-full max-w-md space-y-8">
           {/* Logo */}
           <div className="text-center">
@@ -51,13 +59,13 @@ export default function ChangePassword() {
               <div className="w-10 h-10 bg-cyan-500 rounded-full flex items-center justify-center">
                 <span className="text-white text-xl">🌀</span>
               </div>
-              <span className="text-xl font-bold text-gray-800">Tikmool</span>
+              <span className="text-xl font-bold text-gray-800 dark:text-white">Tikmool</span>
             </div>
 
-            <h1 className="text-2xl font-bold text-gray-900">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
               {t("auth.changePassword")}
             </h1>
-            <p className="text-sm text-gray-500 mt-2">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
               {t("auth.changePasswordDescription")}
             </p>
           </div>
@@ -91,7 +99,7 @@ export default function ChangePassword() {
                 })}
                 error={errors.newPassword}
               />
-              <p className="text-[11px] text-gray-400">
+              <p className="text-[11px] text-gray-400 dark:text-gray-500">
                 {t("auth.passwordHelper")}
               </p>
             </div>

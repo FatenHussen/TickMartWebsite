@@ -513,9 +513,9 @@ function BasketSection({
             <BasketCard
               key={item.id}
               id={item.id}
-              name={item.title}
+              name={item.name || item.title || ""}
               description={item.desc || ""}
-              price={`${item.price_after_discount}`}
+              price={`${item.final_price ?? item.price_after_discount ?? 0}`}
               originalPrice={
                 item.original_price > 0 ? `${item.original_price}` : undefined
               }

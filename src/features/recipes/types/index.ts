@@ -1,3 +1,5 @@
+import type { PaginationData } from "@/shared/types/pagination";
+
 // ============ Recipe Badge Types ============
 export interface RecipeBadge {
   id: number;
@@ -82,19 +84,12 @@ export interface RecipeDetails {
 }
 
 // ============ API Response Types ============
-export interface Pagination {
-  current_page: number;
-  last_page: number;
-  per_page: number;
-  total: number;
-}
-
 export interface RecipesResponse {
   status: boolean;
   message: string;
   data: {
     items: Recipe[];
-    pagination: Pagination;
+    pagination: PaginationData;
   };
 }
 

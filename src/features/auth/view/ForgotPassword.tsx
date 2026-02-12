@@ -3,6 +3,8 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import InputField from "@/shared/ui/InputField";
 import Button from "@/shared/ui/Button";
+import ThemeToggle from "@/components/ThemeToggle";
+import LanguageToggle from "@/components/LanguageToggle";
 import { useForgotPassword } from "@/features/auth/hooks/useAuth";
 import { paths } from "@/app/routes/path/paths";
 import { detectEmailOrPhone } from "@/shared/lib/utils";
@@ -37,18 +39,24 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div className="min-h-screen grid lg:grid-cols-2">
+    <div className="relative min-h-screen grid lg:grid-cols-2 bg-white dark:bg-gray-900">
+      {/* Theme and Language toggles */}
+      <div className="absolute top-4 end-4 z-20 flex gap-2">
+        <LanguageToggle />
+        <ThemeToggle />
+      </div>
+
       {/* Left Side - Image */}
       <div className="hidden lg:block">
         <img
           src="https://images.unsplash.com/photo-1567401893414-76b7b1e5a7a5?w=800"
           alt="Fashion store"
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover opacity-90 dark:opacity-70"
         />
       </div>
 
       {/* Right Side - Form */}
-      <div className="flex items-center justify-center px-6 py-12 bg-white">
+      <div className="flex items-center justify-center px-6 py-12 bg-white dark:bg-gray-900">
         <div className="w-full max-w-md space-y-8">
           {/* Logo */}
           <div className="text-center">
@@ -56,13 +64,13 @@ export default function ForgotPassword() {
               <div className="w-10 h-10 bg-cyan-500 rounded-full flex items-center justify-center">
                 <span className="text-white text-xl">🌀</span>
               </div>
-              <span className="text-xl font-bold text-gray-800">Tikmool</span>
+              <span className="text-xl font-bold text-gray-800 dark:text-white">Tikmool</span>
             </div>
 
-            <h1 className="text-2xl font-bold text-gray-900">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
               {t("auth.forgotPassword")}
             </h1>
-            <p className="text-sm text-gray-500 mt-2">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
               {t("auth.forgotPasswordDescription")}
             </p>
           </div>
@@ -70,7 +78,7 @@ export default function ForgotPassword() {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             {/* Email Input */}
             <InputField
-              label={t("common.email")}
+              label={t("auth.emailOrPhone")}
               type="text"
               placeholder="example@gmail.com"
               {...register("emailOrPhone", {
@@ -110,11 +118,11 @@ export default function ForgotPassword() {
             </Button>
 
             {/* Sign In Link */}
-            <p className="text-center text-sm text-gray-500">
+            <p className="text-center text-sm text-gray-500 dark:text-gray-400">
               {t("auth.goTo")}{" "}
               <Link
                 to={paths.auth.jwt.signIn}
-                className="text-cyan-500 font-semibold hover:underline"
+                className="text-cyan-500 dark:text-cyan-400 font-semibold hover:underline"
               >
                 {t("common.signIn")}
               </Link>
