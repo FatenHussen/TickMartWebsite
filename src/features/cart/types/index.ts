@@ -3,6 +3,8 @@ export type CartItem = {
   name: string;
   description?: string;
   category?: string; // e.g., "Shoes"
+  /** For API: category id from product when cart_type is default */
+  category_id?: number;
   store?: string; // e.g., "Fashion Hub"
   size?: string; // e.g., "Size: 8"
   color?: string; // e.g., "Color: White"
@@ -26,7 +28,101 @@ export type CartItem = {
   selectedAttributes?: Record<string, string>;
   /** Numeric price per unit for recalculating subtotal */
   priceNumeric?: number;
+  /** For API: shop_product_variant_id (from product variant, recipe item, or basket item) */
+  shop_product_variant_id?: number;
+  /** For API: cannot mix instant and non-instant delivery in same cart */
+  is_instant_delivery?: boolean;
 };
+
+export type CartType = "default" | "recipe" | "basket";
+
+/** Schedule item from GET user/schedules */
+export interface ScheduleItem {
+  id: number;
+  name: string;
+  interval_days: number;
+  discount_type: "percentage" | "fixed";
+  discount_value: number;
+  is_active: boolean;
+}
+
+export interface SchedulesResponse {
+  status: boolean;
+  message: string;
+  data: {
+    items: ScheduleItem[];
+    pagination: {
+      current_page: number;
+      last_page: number;
+      per_page: number;
+      total: number;
+    };
+  };
+}
+
+/** Create scheduled basket payload for POST user/scheduled-baskets */
+export interface CreateScheduledBasketPayload {
+  name: string;
+  category_id: number;
+  schedule_id: number;
+  is_active: boolean;
+  start_date: string; // YYYY-MM-DD
+  items: Array<{
+    product_id: number;
+    shop_product_variant_id: number;
+    quantity: number;
+  }>;
+}
+
+export type OrderPreviewItem = {
+  shop_product_variant_id: number;
+  quantity: number;
+};
+
+export interface OrderPreviewPayload {
+  coupon?: string;
+  cart_type: CartType;
+  address_id: number;
+  is_instant_delivery: boolean;
+  items: OrderPreviewItem[];
+  recipe_id?: number;
+  admin_basket_id?: number;
+}
+
+export interface OrderCreatePayload {
+  address_id: number;
+  cart_type: CartType;
+  is_instant_delivery: boolean;
+  items: OrderPreviewItem[];
+  coupon?: string;
+  recipe_id?: number;
+  admin_basket_id?: number;
+  affiliate_id?: string;
+  payment_method_id?: string;
+  notes?: string;
+}
+
+export interface CouponPreviewResponse {
+  provided: boolean;
+  valid: boolean;
+  applied: boolean;
+  code: string | null;
+  discount: number;
+  excluded_items: number[];
+  fail_reasons: string[];
+}
+
+export interface OrderPreviewResponse {
+  subtotal_before_discount: number;
+  subtotal_after_product_discount: number;
+  basket_discount_percent: number;
+  basket_discount_amount: number;
+  coupon?: CouponPreviewResponse;
+  delivery_price: number;
+  total_quantity: number;
+  subtotal: number;
+  total: number;
+}
 
 export type StoreInfo = {
   id: number | string;
@@ -48,12 +144,20 @@ export type CartStoreGroup = {
 export type OrderSummary = {
   numOfItems: number;
   subtotal: string;
-  shipping: string; // "Free" or price
+  subtotalBeforeDiscount?: string;
+  productDiscount?: string;
+  shipping: string;
   shippingIsFree: boolean;
-  storeDiscounts: string; // negative value like "-$67.00"
-  tax: string; // e.g., "10%"
-  couponDiscount: string; // e.g., "$0.00"
+  storeDiscounts: string;
+  basketDiscount?: string;
+  tax: string;
+  couponDiscount: string;
   total: string;
+  couponFeedback?: {
+    valid: boolean;
+    applied: boolean;
+    fail_reasons: string[];
+  };
 };
 
 // Legacy type for backward compatibility

@@ -1,5 +1,4 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { _ProfileApi } from "../api/profile.service";
@@ -55,7 +54,6 @@ export function useUpdateProfile() {
  */
 export function useUpdatePassword() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
 
   return useMutation({
     mutationFn: (payload: UpdatePasswordPayload) =>

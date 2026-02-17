@@ -23,11 +23,6 @@ export default function Addresses() {
     navigate(paths.account.addAddress);
   };
 
-  const handleSetAsDefault = (id: number | string) => {
-    // TODO: Set address as default
-    console.log("Set as default:", id);
-  };
-
   const handleEdit = (id: number | string) => {
     navigate(paths.account.editAddress(id));
   };
@@ -77,19 +72,7 @@ export default function Addresses() {
         </div>
       ) : (
         <div className="space-y-4">
-          {addresses.map((address) => {
-            // Format first line: street + building + floor/apartment
-            const firstLineParts = [
-              address.street_name,
-              address.building_number,
-              address.floor_apartment,
-            ].filter(Boolean);
-            const firstLine = firstLineParts.join(", ");
-
-            // Format second line: area only
-            const secondLine = address.area.name;
-
-            return (
+          {addresses.map((address) => (
               <div
                 key={address.id}
                 className="bg-white dark:bg-bg-primary rounded-2xl p-6 border-2 transition-all hover:shadow-lg hover:border-[#4CDAF6]/50"
@@ -223,8 +206,7 @@ export default function Addresses() {
                   </div>
                 </div>
               </div>
-            );
-          })}
+            ))}
         </div>
       )}
     </div>

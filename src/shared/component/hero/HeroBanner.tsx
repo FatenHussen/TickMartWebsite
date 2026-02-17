@@ -1,4 +1,5 @@
 import Button from "@/shared/ui/Button";
+import { useTranslation } from "react-i18next";
 
 type HeroBannerProps = {
   title: string;
@@ -15,12 +16,14 @@ export default function HeroBanner({
   title,
   subtitle,
   description,
-  buttonText = "Shop Now",
+  buttonText,
   image,
   imagePosition = "right",
   onButtonClick,
   className,
 }: HeroBannerProps) {
+  const { t } = useTranslation();
+  const resolvedButtonText = buttonText || t("common.shopNow");
   const imageOrder = {
     left: "order-1",
     right: "order-2",
@@ -66,7 +69,7 @@ export default function HeroBanner({
               onClick={onButtonClick}
               className="bg-custom-secondary text-custom-primary hover:opacity-90 font-semibold"
             >
-              {buttonText}
+              {resolvedButtonText}
             </Button>
           </div>
         </div>

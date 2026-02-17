@@ -40,6 +40,8 @@ export const paths = {
     basketDetails: (id: number | string) => `/basket/${id}`,
     shopDetails: (id: number | string) => `/shop_details/${id}`,
   },
+  becomeVendor: "/become-vendor",
+  becomeMarketer: "/become-marketer",
   account: {
     root: ROOTS.ACCOUNT,
     profile: `${ROOTS.ACCOUNT}/profile`,

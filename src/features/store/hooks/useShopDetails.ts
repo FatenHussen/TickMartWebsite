@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import { _ShopApi } from "../api/shopApi";
-import { queryKeys } from "@/utils/queryKeys";
 
 export function useShopDetails(shopId: number) {
   return useQuery({

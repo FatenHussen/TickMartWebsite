@@ -82,20 +82,24 @@ function ProductDetails() {
     const price = currentPriceAfterDiscount ?? currentPrice ?? 0;
     const lineId = `${product.id}-${selectedVariant?.variant_id ?? "base"}`;
     const imagePath = currentImages?.[0] ?? product?.images?.[0]?.path ?? "";
+    const isInstant = !!product.is_instant_delivery;
     const cartItem: CartItem = {
       id: lineId,
       name: product.name,
       description: product.description,
       category: product.category?.name,
+      category_id: product.category?.id,
       image: imagePath,
       price: `£${price.toFixed(2)}`,
       priceNumeric: price,
       quantity,
       subtotal: `£${(price * quantity).toFixed(2)}`,
       storeId: shopId,
-      hasFreeDelivery: product.is_instant_delivery ? true : undefined,
+      hasFreeDelivery: isInstant ? true : undefined,
+      is_instant_delivery: isInstant,
       productId: product.id,
       variantId: selectedVariant?.variant_id,
+      shop_product_variant_id: selectedVariant?.variant_id,
       shopId: selectedVariant?.shop_id ?? shopId,
       selectedAttributes:
         Object.keys(selectedAttributes).length > 0
@@ -112,8 +116,24 @@ function ProductDetails() {
         currentPrice - currentPriceAfterDiscount
       ).toFixed(2)}`;
     }
-    addItem(cartItem);
-    toast.success(t("cart.addedToCart", "Added to cart"));
+    const result = addItem(cartItem);
+    if (result === "success") {
+      toast.success(t("cart.addedToCart", "Added to cart"));
+    } else if (result === "wrong_cart_type") {
+      toast.error(
+        t(
+          "cart.cartContainsDifferentType",
+          "Your cart contains recipes or baskets. Clear it to add products.",
+        ),
+      );
+    } else {
+      toast.error(
+        t(
+          "cart.cannotMixInstantDelivery",
+          "Cannot mix instant delivery and scheduled delivery items in the same cart.",
+        ),
+      );
+    }
   };
 
   const handleToggleFavorite = () => {

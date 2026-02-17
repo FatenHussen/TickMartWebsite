@@ -117,7 +117,7 @@ export default function AllBaskets() {
         {/* Main Layout with Sidebar */}
         <SideContentLayout
           sidebar={sidebar}
-          sidebarPosition={isRTL ? "right" : "left"}
+          sidebarPosition="left"
           sidebarClassName="lg:w-[280px]"
           gapClassName="gap-6"
         >

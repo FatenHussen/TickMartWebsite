@@ -1,10 +1,14 @@
 import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/context/LanguageContext";
+import { toast } from "sonner";
 import ProductItemsTable, { type ProductItemData } from "@/shared/component/table/ProductItemsTable";
 import BasePopup from "@/shared/component/BasePopup";
 import Button from "@/shared/ui/Button";
 import { HiMapPin, HiCalendar, HiCreditCard, HiClock, HiPlus } from "react-icons/hi2";
+import { useCartStore } from "@/store/cart";
+import { paths } from "@/app/routes/path/paths";
 import type { BasketDetailsData, BasketDetailItem } from "../types/basket";
 
 interface SubscriptionBasketDetailsProps {
@@ -16,6 +20,8 @@ export default function SubscriptionBasketDetails({
 }: SubscriptionBasketDetailsProps) {
   const { t } = useTranslation();
   const { isRTL } = useLanguage();
+  const navigate = useNavigate();
+  const addBasket = useCartStore((s) => s.addBasket);
 
   const [selectedScheduleId] = useState<number | null>(
     basket.schedules?.[0]?.id ?? null
@@ -148,14 +154,31 @@ export default function SubscriptionBasketDetails({
     setAddedExtras((prev) => [...prev, extra]);
   };
 
-  // Handle confirm order
+  // Handle confirm order - add basket to cart
   const handleConfirmOrder = () => {
-    console.log("Confirm basket order", {
-      basketId: basket.id,
-      scheduleId: selectedScheduleId,
-      repeatOption,
-      items: productItems,
+    const allItems = [...basket.items, ...addedExtras];
+    const items = allItems.map((item) => {
+      const selectedAltId = selectedAlternatives[item.id];
+      const shop_product_variant_id =
+        selectedAltId ?? item.shop_product_variant_id;
+      const quantity = itemQuantities[item.id] ?? item.quantity;
+      const selectedAlt = selectedAltId
+        ? item.alternatives.find((a) => a.shop_product_variant_id === selectedAltId)
+        : null;
+      const priceNumeric = selectedAlt?.price ?? item.unit_price;
+      return {
+        shop_product_variant_id,
+        quantity,
+        name: item.product.name,
+        image: item.product.image,
+        priceNumeric,
+        storeId: 0,
+      };
     });
+
+    addBasket({ admin_basket_id: basket.id, items });
+    toast.success(t("cart.addedToCart", "Added to cart"));
+    navigate(paths.client.cart);
   };
 
   const handleAddMoreItems = () => {

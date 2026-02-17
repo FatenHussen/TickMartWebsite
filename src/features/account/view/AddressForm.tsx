@@ -246,7 +246,7 @@ export default function AddressForm() {
             placeholder={
               isLoadingCities ? t("common.loading") : t("auth.selectCity")
             }
-            options={cities.map((city) => ({
+            options={(cities ?? []).map((city: { id: number; name: string }) => ({
               value: city.id,
               label: city.name,
             }))}

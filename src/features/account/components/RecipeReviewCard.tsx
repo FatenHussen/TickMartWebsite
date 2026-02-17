@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { HiPencil, HiClipboardList } from "react-icons/hi";
+import { HiClipboardList } from "react-icons/hi";
 import StarRating from "./StarRating";
 import type { RecipeReview } from "../types";
 

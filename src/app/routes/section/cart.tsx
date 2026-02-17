@@ -1,4 +1,5 @@
 import AppLayout from "@/layout/AppLayout";
+import AuthGuard from "@/app/routes/guards/AuthGuard";
 import { ROOTS } from "../path/paths";
 import Cart from "@/features/cart/view/Cart";
 import MyOrders from "@/features/cart/view/MyOrders";
@@ -9,7 +10,11 @@ import ReviewConfirm from "@/features/cart/view/ReviewConfirm";
 export const CartRoutes: any[] = [
   {
     path: ROOTS.CART,
-    element: <AppLayout />,
+    element: (
+      <AuthGuard>
+        <AppLayout />
+      </AuthGuard>
+    ),
     children: [
       {
         path: "",

@@ -4,7 +4,6 @@ import type {
   CreateAddressPayload,
   UpdateAddressPayload,
   AddressesResponse,
-  CreateAddressResponse,
 } from "../types";
 
 export interface CreateAddressResponse {

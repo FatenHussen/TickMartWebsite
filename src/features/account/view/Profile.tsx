@@ -144,10 +144,10 @@ export default function Profile() {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-text-primary dark:text-white">
+          <h1 className="text-2xl font-bold text-custom-primary">
             {t("account.profile.title")}
           </h1>
-          <p className="text-text-secondary dark:text-gray-400 text-sm mt-1">
+          <p className="text-custom-secondary text-sm mt-1">
             {t("account.profile.subtitle")}
           </p>
         </div>
@@ -155,11 +155,11 @@ export default function Profile() {
 
       {/* Profile Card */}
       <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm">
+        <div className="bg-custom-primary rounded-2xl p-6 shadow-sm">
           {/* Profile Info Header */}
           <div className="flex items-center gap-4 mb-8">
             <div className="relative">
-              <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-primary/20 dark:border-primary/30">
+              <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-custom-primary">
                 {currentAvatar ? (
                   <img
                     src={currentAvatar}

@@ -19,7 +19,6 @@ import {
   HiQuestionMarkCircle,
   HiCog,
   HiTrash,
-  HiLogout,
 } from "react-icons/hi";
 import type { IconType } from "react-icons";
 

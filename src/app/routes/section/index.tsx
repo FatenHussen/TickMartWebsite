@@ -12,6 +12,7 @@ import { StoreRoutes } from "./store";
 import { CartRoutes } from "./cart";
 import { TrackOrderRoutes } from "./trackOrder";
 import { AccountRoutes } from "./account";
+import { MarketerRoutes } from "./marketer";
 
 // ----------------------------------------------------------------------
 
@@ -42,6 +43,9 @@ export const routesSection: RouteObject[] = [
 
   // Account
   ...AccountRoutes,
+
+  // Marketer
+  ...MarketerRoutes,
 
   // No match
   { path: "*", element: <h2>error 404</h2> },

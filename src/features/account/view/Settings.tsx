@@ -14,7 +14,7 @@ export default function Settings() {
   const { t } = useTranslation();
   const { isRTL, language, setLanguage } = useLanguage();
   const { theme, setTheme } = useTheme();
-  const { currency, setCurrency, getCurrencySymbol } = useCurrency();
+  const { currency, setCurrency } = useCurrency();
 
   // Local state for form (to allow cancel)
   const [localLanguage, setLocalLanguage] = useState(language);

@@ -8,11 +8,13 @@ import type { ReviewOrderSummary } from "../types";
 type ReviewDeliveryDetailsSidebarProps = {
   summary: ReviewOrderSummary;
   onConfirmOrder: () => void;
+  isLoading?: boolean;
 };
 
 export default function ReviewDeliveryDetailsSidebar({
   summary,
   onConfirmOrder,
+  isLoading = false,
 }: ReviewDeliveryDetailsSidebarProps) {
   return (
     <div
@@ -85,6 +87,7 @@ export default function ReviewDeliveryDetailsSidebar({
           variant="primary"
           size="lg"
           fullWidth
+          disabled={isLoading}
           onClick={onConfirmOrder}
           className="text-white rounded-xl mb-3"
           style={{

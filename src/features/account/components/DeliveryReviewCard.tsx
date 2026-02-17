@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { HiPencil, HiTruck } from "react-icons/hi";
+import { HiTruck } from "react-icons/hi";
 import StarRating from "./StarRating";
 import type { DeliveryReview } from "../types";
 

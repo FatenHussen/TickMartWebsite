@@ -1,5 +1,4 @@
 import { useEffect, useRef } from "react";
-import { useTranslation } from "react-i18next";
 import L from "leaflet";
 import { cn } from "@/shared/lib/utils";
 
@@ -42,7 +41,6 @@ export default function LocationPickerMap({
   onLocationChange,
   className,
 }: LocationPickerMapProps) {
-  const { t } = useTranslation();
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markerRef = useRef<L.Marker | null>(null);
@@ -109,7 +107,7 @@ export default function LocationPickerMap({
     if (
       markerRef.current &&
       mapInstanceRef.current &&
-      mapInstanceRef.current._loaded &&
+      (mapInstanceRef.current as { _loaded?: boolean })._loaded &&
       lat !== undefined &&
       lng !== undefined
     ) {

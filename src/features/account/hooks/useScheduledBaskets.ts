@@ -1,11 +1,23 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { queryKeys } from "@/utils/queryKeys";
 import { _ScheduledBasketApi } from "../api/scheduledBasketApi";
 import type { UpdateScheduledBasketPayload } from "../types/scheduledBasket";
 
+// Query keys defined locally to avoid stale module cache issues
+const scheduledBasketsKeys = {
+  all: () => ["scheduledBaskets"] as const,
+  list: (page?: number) =>
+    page !== undefined
+      ? (["scheduledBaskets", "list", page] as const)
+      : (["scheduledBaskets", "list"] as const),
+  details: (id?: number | string) =>
+    id !== undefined
+      ? (["scheduledBaskets", "details", id] as const)
+      : (["scheduledBaskets", "details"] as const),
+};
+
 export function useScheduledBaskets(page?: number) {
   return useQuery({
-    queryKey: queryKeys.scheduledBaskets.list(page),
+    queryKey: scheduledBasketsKeys.list(page),
     queryFn: () => _ScheduledBasketApi.getScheduledBaskets(page),
     select: (response) => response.data,
   });
@@ -13,7 +25,7 @@ export function useScheduledBaskets(page?: number) {
 
 export function useScheduledBasketDetails(id: number | string) {
   return useQuery({
-    queryKey: queryKeys.scheduledBaskets.details(id),
+    queryKey: scheduledBasketsKeys.details(id),
     queryFn: () => _ScheduledBasketApi.getScheduledBasketDetails(id),
     select: (response) => response.data,
     enabled: !!id,
@@ -33,10 +45,10 @@ export function useUpdateScheduledBasket() {
     }) => _ScheduledBasketApi.updateScheduledBasket(id, payload),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({
-        queryKey: queryKeys.scheduledBaskets.details(variables.id),
+        queryKey: scheduledBasketsKeys.details(variables.id),
       });
       queryClient.invalidateQueries({
-        queryKey: queryKeys.scheduledBaskets.list(),
+        queryKey: scheduledBasketsKeys.list(),
       });
     },
   });
@@ -50,7 +62,7 @@ export function useDeleteScheduledBasket() {
       _ScheduledBasketApi.deleteScheduledBasket(id),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: queryKeys.scheduledBaskets.all(),
+        queryKey: scheduledBasketsKeys.all(),
       });
     },
   });

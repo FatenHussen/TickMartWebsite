@@ -1,78 +1,166 @@
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContext";
 import { HiSearch } from "react-icons/hi";
 import { cn } from "@/shared/lib/utils";
 import OrderCard from "@/features/cart/components/OrderCard";
-import { mockOrders } from "@/features/cart/data/mockData";
+import OrderDetailsModal from "../components/OrderDetailsModal";
+import { useOrders } from "../hooks/useOrders";
+import { paths } from "@/app/routes/path/paths";
 import type { OrderStatus } from "@/features/cart/types";
+import type { Order } from "@/features/cart/types";
+import type { OrderListItem } from "../types/order";
+
+function formatOrderDate(createdAt: string): string {
+  try {
+    const d = new Date(createdAt);
+    return d.toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  } catch {
+    return createdAt;
+  }
+}
+
+function formatPrice(value: number): string {
+  return `£${value.toLocaleString()}`;
+}
+
+function toOrderStatus(apiStatus: string): OrderStatus {
+  if (apiStatus === "out_delivery") return "out_for_delivery";
+  if (
+    ["pending", "preparing", "out_for_delivery", "delivered", "cancelled"].includes(
+      apiStatus
+    )
+  ) {
+    return apiStatus as OrderStatus;
+  }
+  return "pending";
+}
+
+function mapOrderToCard(item: OrderListItem): Order {
+  const status = toOrderStatus(item.status);
+  const cartTypeLabel =
+    item.cart_type === "admin_cart"
+      ? "Basket"
+      : item.cart_type === "recipe"
+        ? "Recipe"
+        : "Products";
+
+  return {
+    id: item.id,
+    orderNumber: String(item.id),
+    dateTime: formatOrderDate(item.created_at),
+    status,
+    items: [
+      {
+        name: `${item.total_quantity} ${item.total_quantity === 1 ? "item" : "items"}`,
+        category: "",
+        store: cartTypeLabel,
+        quantity: item.total_quantity,
+        price: formatPrice(item.total),
+      },
+    ],
+    additionalInfo: undefined,
+    deliveryAddress: undefined,
+    total: formatPrice(item.total_with_delivery),
+    paymentMethod: "-",
+    actions: {
+      viewDetails: true,
+      trackOrder: status !== "delivered" && status !== "cancelled",
+      reorder: status === "delivered",
+      addComplaint: status === "delivered",
+    },
+  };
+}
 
 export default function MyOrders() {
   const { t } = useTranslation();
   const { isRTL } = useLanguage();
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState<OrderStatus | "all">("all");
   const [sortBy, setSortBy] = useState("newest");
+  const [page, setPage] = useState(1);
+  const [selectedOrderId, setSelectedOrderId] = useState<number | string | null>(
+    null
+  );
+
+  const { data: ordersData, pagination, isLoading } = useOrders(page);
 
   const filteredOrders = useMemo(() => {
-    let orders = mockOrders;
+    let orders = ordersData.map(mapOrderToCard);
 
-    // Filter by status
     if (activeFilter !== "all") {
-      orders = orders.filter((order) => order.status === activeFilter);
+      orders = orders.filter((o) => o.status === activeFilter);
     }
 
-    // Filter by search query
     if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
+      const q = searchQuery.toLowerCase();
       orders = orders.filter(
-        (order) =>
-          order.orderNumber.toLowerCase().includes(query) ||
-          order.items.some(
-            (item) =>
-              item.name.toLowerCase().includes(query) ||
-              item.store.toLowerCase().includes(query)
+        (o) =>
+          o.orderNumber.toLowerCase().includes(q) ||
+          o.items.some(
+            (i) =>
+              i.name.toLowerCase().includes(q) ||
+              i.store.toLowerCase().includes(q)
           )
       );
     }
 
-    // Sort orders
     if (sortBy === "newest") {
       orders = [...orders].sort((a, b) => {
-        return b.id > a.id ? 1 : -1;
+        return Number(b.id) > Number(a.id) ? 1 : -1;
       });
     } else if (sortBy === "oldest") {
       orders = [...orders].sort((a, b) => {
-        return a.id > b.id ? 1 : -1;
+        return Number(a.id) > Number(b.id) ? 1 : -1;
+      });
+    } else if (sortBy === "amount_high") {
+      orders = [...orders].sort((a, b) => {
+        const numA = parseFloat(a.total.replace(/[^0-9.]/g, "")) || 0;
+        const numB = parseFloat(b.total.replace(/[^0-9.]/g, "")) || 0;
+        return numB - numA;
+      });
+    } else if (sortBy === "amount_low") {
+      orders = [...orders].sort((a, b) => {
+        const numA = parseFloat(a.total.replace(/[^0-9.]/g, "")) || 0;
+        const numB = parseFloat(b.total.replace(/[^0-9.]/g, "")) || 0;
+        return numA - numB;
       });
     }
 
     return orders;
-  }, [activeFilter, searchQuery, sortBy]);
+  }, [ordersData, activeFilter, searchQuery, sortBy]);
 
   const handleViewDetails = (orderId: number | string) => {
-    // TODO: Navigate to order details
-    console.log("View details:", orderId);
+    setSelectedOrderId(orderId);
+  };
+
+  const handleCardClick = (orderId: number | string, e: React.MouseEvent) => {
+    if ((e.target as HTMLElement).closest("button")) return;
+    setSelectedOrderId(orderId);
   };
 
   const handleTrackOrder = (orderId: number | string) => {
-    // TODO: Navigate to track order
-    console.log("Track order:", orderId);
+    navigate(paths.client.trackOrder.replace(":orderId", String(orderId)));
   };
 
-  const handleReorder = (orderId: number | string) => {
+  const handleReorder = (_orderId: number | string) => {
     // TODO: Reorder logic
-    console.log("Reorder:", orderId);
   };
 
-  const handleAddComplaint = (orderId: number | string) => {
-    // TODO: Add complaint logic
-    console.log("Add complaint:", orderId);
+  const handleAddComplaint = (_orderId: number | string) => {
+    // TODO: Add complaint
   };
 
-  const handleCancelOrder = (orderId: number | string) => {
-    // TODO: Cancel order logic
-    console.log("Cancel order:", orderId);
+  const handleCancelOrder = (_orderId: number | string) => {
+    // TODO: Cancel order
   };
 
   const filterButtons: { value: OrderStatus | "all"; label: string }[] = [
@@ -93,7 +181,6 @@ export default function MyOrders() {
 
   return (
     <div className="space-y-6" dir={isRTL ? "rtl" : "ltr"}>
-      {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-text-primary mb-2">
           {t("orders.myOrders")}
@@ -103,9 +190,7 @@ export default function MyOrders() {
         </p>
       </div>
 
-      {/* Search Bar and Filters */}
       <div className="flex flex-col lg:flex-row gap-4 mb-6">
-        {/* Search Bar */}
         <div className="flex-1">
           <div className="relative">
             <HiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-text-secondary" />
@@ -118,8 +203,6 @@ export default function MyOrders() {
             />
           </div>
         </div>
-
-        {/* Sort Dropdown */}
         <div className="lg:w-auto">
           <select
             value={sortBy}
@@ -135,7 +218,6 @@ export default function MyOrders() {
         </div>
       </div>
 
-      {/* Filter Buttons */}
       <div className="flex flex-wrap gap-2 mb-6">
         {filterButtons.map((filter) => (
           <button
@@ -153,54 +235,102 @@ export default function MyOrders() {
         ))}
       </div>
 
-      {/* Order Cards */}
-      {filteredOrders.length === 0 ? (
+      {isLoading ? (
+        <div className="py-14 text-center text-text-secondary">
+          {t("common.loading")}
+        </div>
+      ) : filteredOrders.length === 0 ? (
         <div className="py-14 text-center text-text-secondary">
           {t("orders.noOrdersFound")}
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {filteredOrders.map((order) => (
-            <OrderCard
-              key={order.id}
-              orderNumber={order.orderNumber}
-              status={order.status}
-              dateTime={order.dateTime}
-              items={order.items}
-              additionalInfo={order.additionalInfo}
-              deliveryAddress={order.deliveryAddress}
-              total={order.total}
-              paymentMethod={order.paymentMethod}
-              refundStatus={order.refundStatus}
-              onViewDetails={
-                order.actions.viewDetails
-                  ? () => handleViewDetails(order.id)
-                  : undefined
-              }
-              onTrackOrder={
-                order.actions.trackOrder
-                  ? () => handleTrackOrder(order.id)
-                  : undefined
-              }
-              onReorder={
-                order.actions.reorder
-                  ? () => handleReorder(order.id)
-                  : undefined
-              }
-              onAddComplaint={
-                order.actions.addComplaint
-                  ? () => handleAddComplaint(order.id)
-                  : undefined
-              }
-              onCancelOrder={
-                order.status === "pending" || order.status === "preparing"
-                  ? () => handleCancelOrder(order.id)
-                  : undefined
-              }
-            />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {filteredOrders.map((order) => (
+              <div
+                key={order.id}
+                role="button"
+                tabIndex={0}
+                onClick={(e) => handleCardClick(order.id, e)}
+                onKeyDown={(e) =>
+                  e.key === "Enter" && handleCardClick(order.id, e as unknown as React.MouseEvent)
+                }
+                className="cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-2xl"
+              >
+                <OrderCard
+                key={order.id}
+                orderNumber={order.orderNumber}
+                status={order.status}
+                dateTime={order.dateTime}
+                items={order.items}
+                additionalInfo={order.additionalInfo}
+                deliveryAddress={order.deliveryAddress}
+                total={order.total}
+                paymentMethod={order.paymentMethod}
+                refundStatus={order.refundStatus}
+                onViewDetails={() => handleViewDetails(order.id)}
+                onTrackOrder={
+                  order.actions.trackOrder
+                    ? () => handleTrackOrder(order.id)
+                    : undefined
+                }
+                onReorder={
+                  order.actions.reorder
+                    ? () => handleReorder(order.id)
+                    : undefined
+                }
+                onAddComplaint={
+                  order.actions.addComplaint
+                    ? () => handleAddComplaint(order.id)
+                    : undefined
+                }
+                onCancelOrder={
+                  order.status === "pending" || order.status === "preparing"
+                    ? () => handleCancelOrder(order.id)
+                    : undefined
+                }
+              />
+              </div>
+            ))}
+          </div>
+
+          {pagination && pagination.last_page > 1 && (
+            <div className="flex justify-center gap-2 mt-6">
+              <button
+                type="button"
+                disabled={page <= 1}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                className="px-4 py-2 rounded-lg border disabled:opacity-50"
+              >
+                Previous
+              </button>
+              <span className="flex items-center px-4">
+                {pagination.current_page} / {pagination.last_page}
+              </span>
+              <button
+                type="button"
+                disabled={page >= pagination.last_page}
+                onClick={() =>
+                  setPage((p) => Math.min(pagination.last_page, p + 1))
+                }
+                className="px-4 py-2 rounded-lg border disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
+          )}
+        </>
       )}
+
+      <OrderDetailsModal
+        orderId={selectedOrderId}
+        isOpen={selectedOrderId != null}
+        onClose={() => setSelectedOrderId(null)}
+        onTrackOrder={(id) => {
+          setSelectedOrderId(null);
+          navigate(paths.client.trackOrder.replace(":orderId", String(id)));
+        }}
+      />
     </div>
   );
 }

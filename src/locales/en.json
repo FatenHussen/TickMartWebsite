@@ -29,7 +29,20 @@
     "save": "Save",
     "saveChanges": "Save changes",
     "send": "Send",
-    "close": "Close"
+    "close": "Close",
+    "viewAll": "View all",
+    "shopNow": "Shop Now"
+  },
+  "navbar": {
+    "deliveringTo": "Delivering to",
+    "addAddress": "Add address",
+    "addNewAddress": "Add new address",
+    "noAddresses": "No addresses yet",
+    "searchForAddress": "Search for address...",
+    "menu": "Menu",
+    "account": "Account",
+    "becomeVendor": "Become a vendor",
+    "becomeMarketer": "Become a marketer"
   },
   "auth": {
     "createAccount": "Create your account",
@@ -261,7 +274,21 @@
     "youSaved": "You saved",
     "specialOfferToday": "Special Offer Today",
     "orderNow": "Order Now",
-    "noReviewsMatch": "No reviews match your filter."
+    "noReviewsMatch": "No reviews match your filter.",
+    "filters": {
+      "showingNearby": "Showing products for this brand near",
+      "changeLocation": "Change location",
+      "freeDeliveryOnly": "Free delivery only",
+      "inStockOnly": "In stock only",
+      "sortBy": "Sort by:",
+      "allCategories": "All categories",
+      "allStores": "All stores",
+      "bestMatch": "Best match",
+      "priceLowToHigh": "Price: Low to High",
+      "priceHighToLow": "Price: High to Low",
+      "rating": "Rating",
+      "newest": "Newest"
+    }
   },
   "store": {
     "store": "Store",
@@ -328,7 +355,14 @@
     "freeDelivery": "Free delivery",
     "decreaseQuantity": "Decrease quantity",
     "increaseQuantity": "Increase quantity",
-    "removeItem": "Remove item"
+    "removeItem": "Remove item",
+    "loadingPreview": "Loading order summary...",
+    "addAddressForPreview": "Add a delivery address to see pricing and delivery details.",
+    "addAddress": "Add Address",
+    "subtotalBeforeDiscount": "Subtotal before discount",
+    "itemsSubtotal": "Items subtotal",
+    "productDiscount": "Product discount",
+    "basketDiscount": "Basket discount"
   },
   "trackOrder": {
     "title": "Track your order",
@@ -762,6 +796,21 @@
     "orders": "Orders",
     "youSaved": "You saved"
   },
+  "marketer": {
+    "title": "Become a marketer",
+    "subtitle": "Please review and accept the terms before joining the marketer program.",
+    "termsTitle": "Marketer Terms & Conditions",
+    "lastUpdated": "Last updated: 2026-01-01",
+    "scopeOfProgram": "Scope of the Program",
+    "agreeDisclaimer": "By clicking 'I agree' you confirm you accept all marketer terms and conditions.",
+    "iAgree": "I agree",
+    "thankYouTitle": "Thank you for your application!",
+    "thankYouMessage1": "Your request to join as a marketer has been submitted.",
+    "thankYouMessage2": "Please wait while our team reviews your application.",
+    "thankYouMessage3": "You'll be notified once it's approved.",
+    "thankYouMessage4": "Approval may take up to 24-48 hours depending on review.",
+    "backToHome": "Back to home"
+  },
   "brands": {
     "title": "Brand",
     "allBrands": "All Brands",
@@ -770,7 +819,11 @@
     "page": "Page",
     "of": "of",
     "brandNotFound": "Brand not found",
-    "noProductsFound": "No products found for this brand"
+    "noProductsFound": "No products found for this brand",
+    "viewDetails": "View brand details",
+    "stores": "stores",
+    "store": "store",
+    "products": "products"
   },
   "pagination": {
     "page": "Page",
@@ -885,5 +938,37 @@
     "startDate": "Start date",
     "intervalDays": "Interval days",
     "savedSuccessfully": "Basket saved successfully"
+  },
+  "footer": {
+    "product": "Product",
+    "useCases": "Use Cases",
+    "resources": "Resources",
+    "company": "Company",
+    "getOurApp": "Get our app",
+    "downloadOnThe": "Download on the",
+    "appStore": "App Store",
+    "getItOn": "Get it on",
+    "googlePlay": "Google Play",
+    "copyright": "© 2025 Tikmool. All rights reserved.",
+    "landingPage": "Landing Page",
+    "popupBuilder": "Popup Builder",
+    "webDesign": "Web-design",
+    "content": "Content",
+    "integrations": "Integrations",
+    "webDesigners": "Web-designers",
+    "marketers": "Marketers",
+    "smallBusiness": "Small Business",
+    "websiteBuilder": "Website Builder",
+    "academy": "Academy",
+    "blog": "Blog",
+    "themes": "Themes",
+    "hosting": "Hosting",
+    "developers": "Developers",
+    "support": "Support",
+    "aboutUs": "About Us",
+    "careers": "Careers",
+    "faqs": "FAQs",
+    "teams": "Teams",
+    "contactUs": "Contact Us"
   }
 }

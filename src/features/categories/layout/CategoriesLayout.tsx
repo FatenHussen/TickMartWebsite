@@ -1,8 +1,6 @@
 import React from "react";
 import SideContentLayout from "@/layout/SideContentLayout";
 import { cn } from "@/shared/lib/utils";
-import { useLanguage } from "@/context/LanguageContext";
-
 type CategoriesLayoutProps = {
   sidebar: React.ReactNode;
   children: React.ReactNode;
@@ -26,7 +24,6 @@ export default function CategoriesLayout({
   header,
   footer,
 }: CategoriesLayoutProps) {
-  const { isRTL } = useLanguage();
   // Keep original position, let SideContentLayout handle RTL logic
   const actualSidebarPosition = sidebarPosition;
 

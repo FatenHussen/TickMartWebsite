@@ -1,7 +1,6 @@
 import type { RouteObject } from "react-router";
 import { lazy, Suspense } from "react";
 import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import AuthGuard from "@/app/routes/guards/AuthGuard";
 
 // Lazy load account components

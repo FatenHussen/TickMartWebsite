@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { HiStar, HiShoppingBag, HiCube } from "react-icons/hi";
 import type { BrandDetails } from "../types/brand";
 
@@ -11,6 +12,7 @@ export default function BrandHeader({
   brand,
   onViewDetails,
 }: BrandHeaderProps) {
+  const { t } = useTranslation();
   return (
     <div className="bg-blue-off/50 rounded-2xl border border-custom-secondary shadow-sm p-6">
       <div className="flex items-start justify-between gap-6">
@@ -51,7 +53,7 @@ export default function BrandHeader({
                 <HiShoppingBag className="w-5 h-5 text-custom-secondary" />
                 <span className="text-sm text-custom-secondary">
                   {brand.shops_count}{" "}
-                  {brand.shops_count === 1 ? "store" : "stores"}
+                  {brand.shops_count === 1 ? t("brands.store") : t("brands.stores")}
                 </span>
               </div>
 
@@ -59,7 +61,7 @@ export default function BrandHeader({
               <div className="flex items-center gap-2">
                 <HiCube className="w-5 h-5 text-custom-secondary" />
                 <span className="text-sm text-custom-secondary">
-                  {brand.products_count.toLocaleString()} products
+                  {brand.products_count.toLocaleString()} {t("brands.products")}
                 </span>
               </div>
             </div>
@@ -73,7 +75,7 @@ export default function BrandHeader({
             onClick={onViewDetails}
             className="text-sm font-medium text-custom-accent hover:underline"
           >
-            View brand details
+            {t("brands.viewDetails")}
           </Link>
         </div>
       </div>

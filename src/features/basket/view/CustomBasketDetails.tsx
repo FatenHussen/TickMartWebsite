@@ -1,8 +1,11 @@
 import { useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContext";
+import { toast } from "sonner";
 import ProductItemsTable, { type ProductItemData } from "@/shared/component/table/ProductItemsTable";
 import Button from "@/shared/ui/Button";
 import { HiClock, HiHome, HiChevronRight } from "react-icons/hi2";
+import { useCartStore } from "@/store/cart";
 import type { BasketDetailsData } from "../types/basket";
 
 interface CustomBasketDetailsProps {
@@ -12,7 +15,9 @@ interface CustomBasketDetailsProps {
 export default function CustomBasketDetails({
   basket,
 }: CustomBasketDetailsProps) {
+  const { t } = useTranslation();
   const { isRTL } = useLanguage();
+  const addBasket = useCartStore((s) => s.addBasket);
 
   const [itemQuantities, setItemQuantities] = useState<Record<number, number>>(
     {}
@@ -81,10 +86,27 @@ export default function CustomBasketDetails({
 
   // Handle add to cart
   const handleAddToCart = () => {
-    console.log("Add basket to cart", {
-      basketId: basket.id,
-      items: productItems,
+    const items = basket.items.map((item) => {
+      const selectedAltId = selectedAlternatives[item.id];
+      const shop_product_variant_id =
+        selectedAltId ?? item.shop_product_variant_id;
+      const quantity = itemQuantities[item.id] ?? item.quantity;
+      const selectedAlt = selectedAltId
+        ? item.alternatives.find((a) => a.shop_product_variant_id === selectedAltId)
+        : null;
+      const priceNumeric = selectedAlt?.price ?? item.unit_price;
+      return {
+        shop_product_variant_id,
+        quantity,
+        name: item.product.name,
+        image: item.product.image,
+        priceNumeric,
+        storeId: 0,
+      };
     });
+
+    addBasket({ admin_basket_id: basket.id, items });
+    toast.success(t("cart.addedToCart", "Added to cart"));
   };
 
   // Format date
@@ -156,7 +178,7 @@ export default function CustomBasketDetails({
                 {basket.is_on_offer && (
                   <div className="flex items-center gap-2">
                     <HiClock className="w-4 h-4 text-gray-400" />
-                    <span>Ends on: {formatDate(basket.offer_ends_at)}</span>
+                    <span>Ends on: {formatDate(basket.offer_ends_at ?? "")}</span>
                   </div>
                 )}
               </div>

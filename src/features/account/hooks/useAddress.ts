@@ -9,9 +9,10 @@ import type {
   Address,
 } from "../types";
 
-export function useAddresses() {
+export function useAddresses(enabled = true) {
   return useQuery<Address[]>({
     queryKey: queryKeys.addresses.list(),
+    enabled,
     queryFn: async () => {
       const response = await _AddressApi.getAddresses();
       return response.data.items;

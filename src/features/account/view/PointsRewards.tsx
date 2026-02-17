@@ -5,7 +5,6 @@ import { Button } from "@/shared/ui";
 import { HiExclamationCircle } from "react-icons/hi";
 import { cn } from "@/shared/lib/utils";
 import { mockPointsHistory } from "../data/mockData";
-import type { PointsHistoryItem } from "../types";
 
 type PointsHistoryFilter = "all" | "earned" | "redeemed" | "expired";
 

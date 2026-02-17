@@ -29,7 +29,20 @@
     "save": "حفظ",
     "saveChanges": "حفظ التغييرات",
     "send": "إرسال",
-    "close": "إغلاق"
+    "close": "إغلاق",
+    "viewAll": "عرض الكل",
+    "shopNow": "تسوق الآن"
+  },
+  "navbar": {
+    "deliveringTo": "التوصيل إلى",
+    "addAddress": "إضافة عنوان",
+    "addNewAddress": "إضافة عنوان جديد",
+    "noAddresses": "لا توجد عناوين",
+    "searchForAddress": "ابحث عن عنوان...",
+    "menu": "القائمة",
+    "account": "الحساب",
+    "becomeVendor": "كن بائعاً",
+    "becomeMarketer": "كن مسوقاً"
   },
   "auth": {
     "createAccount": "إنشاء حسابك",
@@ -261,7 +274,21 @@
     "youSaved": "وفرت",
     "specialOfferToday": "عرض خاص اليوم",
     "orderNow": "اطلب الآن",
-    "noReviewsMatch": "لا توجد تقييمات تطابق الفلتر الخاص بك."
+    "noReviewsMatch": "لا توجد تقييمات تطابق الفلتر الخاص بك.",
+    "filters": {
+      "showingNearby": "عرض المنتجات لهذه العلامة التجارية بالقرب من",
+      "changeLocation": "تغيير الموقع",
+      "freeDeliveryOnly": "التوصيل المجاني فقط",
+      "inStockOnly": "المتوفرة فقط",
+      "sortBy": "ترتيب حسب:",
+      "allCategories": "جميع الفئات",
+      "allStores": "جميع المتاجر",
+      "bestMatch": "الأفضل تطابقاً",
+      "priceLowToHigh": "السعر: من الأقل للأعلى",
+      "priceHighToLow": "السعر: من الأعلى للأقل",
+      "rating": "التقييم",
+      "newest": "الأحدث"
+    }
   },
   "store": {
     "store": "المتجر",
@@ -328,7 +355,14 @@
     "freeDelivery": "توصيل مجاني",
     "decreaseQuantity": "تقليل الكمية",
     "increaseQuantity": "زيادة الكمية",
-    "removeItem": "إزالة العنصر"
+    "removeItem": "إزالة العنصر",
+    "loadingPreview": "جاري تحميل ملخص الطلب...",
+    "addAddressForPreview": "أضف عنوان التوصيل لمعاينة الأسعار وتفاصيل التوصيل.",
+    "addAddress": "إضافة عنوان",
+    "subtotalBeforeDiscount": "المجموع قبل الخصم",
+    "itemsSubtotal": "مجموع العناصر",
+    "productDiscount": "خصم المنتجات",
+    "basketDiscount": "خصم السلة"
   },
   "trackOrder": {
     "title": "تتبع طلبك",
@@ -762,6 +796,21 @@
     "orders": "طلب",
     "youSaved": "وفرت"
   },
+  "marketer": {
+    "title": "كن مسوقاً",
+    "subtitle": "يرجى مراجعة وقبول الشروط قبل الانضمام إلى برنامج المسوقين.",
+    "termsTitle": "شروط وأحكام المسوقين",
+    "lastUpdated": "آخر تحديث: 2026-01-01",
+    "scopeOfProgram": "نطاق البرنامج",
+    "agreeDisclaimer": "بالنقر على 'أوافق' فإنك تؤكد قبولك لجميع شروط وأحكام المسوقين.",
+    "iAgree": "أوافق",
+    "thankYouTitle": "شكراً لتقديم طلبك!",
+    "thankYouMessage1": "تم تقديم طلبك للانضمام كمسوق.",
+    "thankYouMessage2": "يرجى الانتظار بينما يراجع فريقنا طلبك.",
+    "thankYouMessage3": "سيتم إخطارك بمجرد الموافقة عليه.",
+    "thankYouMessage4": "قد تستغرق الموافقة من 24 إلى 48 ساعة حسب المراجعة.",
+    "backToHome": "العودة للرئيسية"
+  },
   "brands": {
     "title": "العلامة التجارية",
     "allBrands": "جميع العلامات التجارية",
@@ -770,7 +819,11 @@
     "page": "صفحة",
     "of": "من",
     "brandNotFound": "لم يتم العثور على العلامة التجارية",
-    "noProductsFound": "لم يتم العثور على منتجات لهذه العلامة التجارية"
+    "noProductsFound": "لم يتم العثور على منتجات لهذه العلامة التجارية",
+    "viewDetails": "عرض تفاصيل العلامة",
+    "stores": "متاجر",
+    "store": "متجر",
+    "products": "منتجات"
   },
   "pagination": {
     "page": "صفحة",
@@ -885,5 +938,37 @@
     "startDate": "تاريخ البدء",
     "intervalDays": "عدد الأيام",
     "savedSuccessfully": "تم حفظ السلة بنجاح"
+  },
+  "footer": {
+    "product": "المنتج",
+    "useCases": "حالات الاستخدام",
+    "resources": "الموارد",
+    "company": "الشركة",
+    "getOurApp": "حمّل تطبيقنا",
+    "downloadOnThe": "حمّل من",
+    "appStore": "آب ستور",
+    "getItOn": "احصل عليه من",
+    "googlePlay": "جوجل بلاي",
+    "copyright": "© 2025 تيكمول. جميع الحقوق محفوظة.",
+    "landingPage": "الصفحة الرئيسية",
+    "popupBuilder": "منشئ النوافذ",
+    "webDesign": "تصميم الويب",
+    "content": "المحتوى",
+    "integrations": "التكاملات",
+    "webDesigners": "مصممو الويب",
+    "marketers": "المسوقون",
+    "smallBusiness": "الأعمال الصغيرة",
+    "websiteBuilder": "منشئ المواقع",
+    "academy": "الأكاديمية",
+    "blog": "المدونة",
+    "themes": "القوالب",
+    "hosting": "الاستضافة",
+    "developers": "المطورون",
+    "support": "الدعم",
+    "aboutUs": "من نحن",
+    "careers": "الوظائف",
+    "faqs": "الأسئلة الشائعة",
+    "teams": "الفرق",
+    "contactUs": "اتصل بنا"
   }
 }

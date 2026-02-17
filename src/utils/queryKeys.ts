@@ -133,6 +133,17 @@ export const queryKeys = {
   },
 
   /**
+   * Schedules query keys (delivery frequency options)
+   */
+  schedules: {
+    all: () => ["schedules"] as const,
+    list: (page?: number) =>
+      page !== undefined
+        ? (["schedules", "list", page] as const)
+        : (["schedules", "list"] as const),
+  },
+
+  /**
    * Scheduled Basket query keys (user account)
    */
   scheduledBaskets: {
@@ -179,6 +190,33 @@ export const queryKeys = {
       id !== undefined
         ? (["shop", "details", id] as const)
         : (["shop", "details"] as const),
+  },
+
+  /**
+   * Order query keys
+   */
+  orders: {
+    all: () => ["orders"] as const,
+    list: (page?: number) => ["orders", "list", page] as const,
+    details: (id: number | string) => ["orders", "details", id] as const,
+    preview: (
+      addressId?: number | null,
+      items?: unknown,
+      cartType?: string,
+      recipeId?: number,
+      adminBasketId?: number,
+      coupon?: string
+    ) =>
+      [
+        "orders",
+        "preview",
+        addressId,
+        items,
+        cartType,
+        recipeId,
+        adminBasketId,
+        coupon,
+      ] as const,
   },
 
   /**

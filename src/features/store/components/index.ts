@@ -6,9 +6,7 @@ export { default as StorePerks } from "./StorePerks";
 export { default as StoreSchedule } from "./StoreSchedule";
 export { default as StoreDetailsCard } from "./StoreDetailsCard";
 export { NewArrivalsSlider, TopRatedSlider } from "@/shared/component/slider/presets";
-export { default as PromotionalBanner } from "./PromotionalBanner";
 export { default as SearchFilters } from "./SearchFilters";
 
 export type { BadgeVariant, StoreBadgeProps } from "./StoreBadge";
-export type { PromotionalBannerProps } from "./PromotionalBanner";
 export type { SearchFilterState } from "./SearchFilters";

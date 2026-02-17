@@ -2,12 +2,12 @@ import { useState, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContext";
+import { toast } from "sonner";
 import { useRecipeDetails } from "../hooks/useRecipes";
 import { useSectionsByPosition } from "@/features/home/hooks/useSections";
 import ApiSectionsRenderer from "@/shared/component/sections/ApiSectionsRenderer";
 import FullBleedSection from "@/shared/component/FullBleedSection";
 import Rating from "@/shared/component/Rating";
-import Badge from "@/shared/component/Badge";
 import Button from "@/shared/ui/Button";
 import ProductItemsTable, { type ProductItemData } from "@/shared/component/table/ProductItemsTable";
 import {
@@ -15,14 +15,8 @@ import {
   HiCheck,
   HiPlay,
 } from "react-icons/hi2";
+import { useCartStore } from "@/store/cart";
 import type { RecipeItem } from "../types";
-
-const badgeColorMap: Record<string, string> = {
-  success: "bg-green-500 text-white",
-  warning: "bg-yellow-500 text-white",
-  danger: "bg-red-500 text-white",
-  primary: "bg-blue-500 text-white",
-};
 
 // Step colors for cooking steps
 const stepColors = [
@@ -45,8 +39,13 @@ export default function RecipeDetails() {
   const { beforeSections, afterSections } =
     useSectionsByPosition("recipe_details");
 
-  // State for ingredient quantities
+  // State for ingredient quantities and selected variants
   const [quantities, setQuantities] = useState<Record<number, number>>({});
+  const [selectedVariants, setSelectedVariants] = useState<
+    Record<number, number>
+  >({});
+
+  const addRecipe = useCartStore((s) => s.addRecipe);
 
   // Separate banner sections (display_type_id: 1) from other sections
   const bannerSections = beforeSections.filter((s) => s.display_type_id === 1);
@@ -56,18 +55,6 @@ export default function RecipeDetails() {
 
   const getQuantity = (index: number, defaultQty: number) => {
     return quantities[index] ?? defaultQty;
-  };
-
-  const updateQuantity = (
-    index: number,
-    delta: number,
-    min: number,
-    max: number,
-    defaultQty: number
-  ) => {
-    const current = getQuantity(index, defaultQty);
-    const newQty = Math.max(min, Math.min(max, current + delta));
-    setQuantities((prev) => ({ ...prev, [index]: newQty }));
   };
 
   // Convert recipe items to ProductItemData format
@@ -81,7 +68,7 @@ export default function RecipeDetails() {
       return {
         id: index,
         name: item.main_item.name,
-        image: item.main_item.image_url,
+        image: item.main_item.image_url ?? undefined,
         quantity: qty,
         unit_price: item.main_item.price,
         subtotal: itemTotal,
@@ -92,10 +79,12 @@ export default function RecipeDetails() {
           id: alt.shop_product_variant_id,
           name: alt.name,
         })),
-        selectedVariantId: item.alternatives[0]?.shop_product_variant_id,
+        selectedVariantId:
+          selectedVariants[index] ??
+          item.alternatives[0]?.shop_product_variant_id,
       };
     });
-  }, [recipe?.items, quantities]);
+  }, [recipe?.items, quantities, selectedVariants]);
 
   // Handle quantity change from ProductItemsTable
   const handleItemQuantityChange = (itemId: number, newQuantity: number) => {
@@ -111,14 +100,43 @@ export default function RecipeDetails() {
 
   // Handle variant change from ProductItemsTable
   const handleItemVariantChange = (itemId: number, variantId: number | string) => {
-    // TODO: Implement variant change logic if needed
-    console.log("Variant changed:", itemId, variantId);
+    setSelectedVariants((prev) => ({
+      ...prev,
+      [itemId]: Number(variantId),
+    }));
   };
 
   // Handle remove item from ProductItemsTable
   const handleRemoveItem = (itemId: number) => {
     // TODO: Implement remove item logic if needed
     console.log("Remove item:", itemId);
+  };
+
+  const handleAddAllToCart = () => {
+    if (!recipe?.items?.length || !recipeItems.length) return;
+
+    const items = recipeItems.map((ri) => {
+      const variantId =
+        ri.selectedVariantId ?? ri.variants?.[0]?.id;
+      const shop_product_variant_id =
+        typeof variantId === "number" ? variantId : Number(variantId);
+      return {
+        shop_product_variant_id,
+        quantity: ri.quantity,
+        name: ri.name,
+        image: ri.image ?? "",
+        priceNumeric: ri.unit_price,
+        storeId: 0,
+      };
+    });
+
+    if (items.some((i) => !i.shop_product_variant_id || Number.isNaN(i.shop_product_variant_id))) {
+      toast.error(t("recipes.invalidRecipeItems", "Some ingredients are invalid."));
+      return;
+    }
+
+    addRecipe({ recipe_id: recipe.id, items });
+    toast.success(t("cart.addedToCart", "Added to cart"));
   };
 
   // Loading state
@@ -308,6 +326,7 @@ export default function RecipeDetails() {
                 <Button
                   variant="primary"
                   className="w-full bg-cyan-500 hover:bg-cyan-600 text-white py-3"
+                  onClick={handleAddAllToCart}
                 >
                   {t("recipes.addAllToCart")}
                 </Button>

@@ -1,6 +1,5 @@
 import { cn } from "@/shared/lib/utils";
 import React, { useEffect, useState } from "react";
-import { useLanguage } from "@/context/LanguageContext";
 
 type SideContentLayoutProps = {
   sidebar: React.ReactNode;
@@ -36,7 +35,6 @@ export default function SideContentLayout({
   footer,
   columnTemplate,
 }: SideContentLayoutProps) {
-  const { isRTL } = useLanguage();
   const isLeft = sidebarPosition === "left";
 
   const [isLargeScreen, setIsLargeScreen] = useState(false);
@@ -61,35 +59,23 @@ export default function SideContentLayout({
       // Otherwise, treat as custom template (e.g., "1fr 1fr")
       return columnTemplate;
     }
-    // Default behavior
-    if (isLeft && !isRTL) return "320px 1fr";
-    if (!isLeft && !isRTL) return "1fr 320px";
-    if (isLeft && isRTL) return "1fr 320px";
-    return "320px 1fr";
+    // Default: sidebar keeps its visual position regardless of RTL/LTR
+    return isLeft ? "320px 1fr" : "1fr 320px";
   };
 
   const gridTemplate = getGridTemplate();
 
   return (
-    <div
-      className={
-        cn?.("w-full", containerClassName) ??
-        `w-full ${containerClassName ?? ""}`
-      }
-    >
+    <div className={cn("w-full", containerClassName)}>
       {header && <div className="mb-4">{header}</div>}
 
       <div
         className={cn(
           "grid items-start",
           !columnTemplate &&
-            (isLeft && !isRTL
+            (isLeft
               ? "grid-cols-1 lg:grid-cols-[320px_1fr]"
-              : !isLeft && !isRTL
-                ? "grid-cols-1 lg:grid-cols-[1fr_320px]"
-                : isLeft && isRTL
-                  ? "grid-cols-1 lg:grid-cols-[1fr_320px]"
-                  : "grid-cols-1 lg:grid-cols-[320px_1fr]"),
+              : "grid-cols-1 lg:grid-cols-[1fr_320px]"),
           gapClassName ?? "gap-6",
         )}
         style={
@@ -102,18 +88,14 @@ export default function SideContentLayout({
       >
         {/* Sidebar */}
         <div className={isLeft ? "" : "lg:order-2"}>
-          <div
-            className={
-              cn?.("", sidebarClassName) ?? `${sidebarClassName ?? ""}`
-            }
-          >
+          <div className={cn("", sidebarClassName)}>
             {sidebar}
           </div>
         </div>
 
         {/* Main Content */}
         <div className={isLeft ? "" : "lg:order-1"}>
-          <div className={cn?.("", contentClassName) ?? contentClassName ?? ""}>
+          <div className={cn("", contentClassName)}>
             {children}
           </div>
         </div>

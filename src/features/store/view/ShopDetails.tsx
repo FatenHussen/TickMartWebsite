@@ -170,7 +170,7 @@ export default function ShopDetails() {
                 const hasDiscount =
                   product.price > product.price_after_discount;
                 const topBadge = product.budges?.find(
-                  (b) => b.postion === "top" || b.position === "top"
+                  (b) => b.postion === "top"
                 );
 
                 return (
@@ -182,7 +182,7 @@ export default function ShopDetails() {
                     originalPrice={
                       hasDiscount ? `£${product.price.toFixed(2)}` : undefined
                     }
-                    rating={product.rating || 0}
+                    rating={(product as { rating?: number }).rating || 0}
                     image={product.image}
                     category={product.category}
                     savings={

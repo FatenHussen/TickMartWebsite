@@ -44,7 +44,7 @@ export default function HeroBanner({
           {subtitle ||
             t(
               "categories.discoverTrends",
-              "Discover the latest trends in fashion. Up to 40% off on selected items."
+              "Discover the latest trends in fashion. Up to 40% off on selected items.",
             )}
         </p>
         <button

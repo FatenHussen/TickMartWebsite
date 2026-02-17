@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { _ProductsApi, type ProductsFilters } from "../api/products.service";
-import { queryKeys } from "@/utils/queryKeys";
 import type { ProductItem } from "../types";
 
 export function useProducts(filters?: {

@@ -1,34 +1,135 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContext";
 import { useNavigate } from "react-router-dom";
 import SideContentLayout from "@/layout/SideContentLayout";
 import { CheckoutProgressIndicator, SuccessPopup } from "@/shared/component";
-import {
-  mockCheckoutAddresses,
-  mockCheckoutPaymentMethods,
-  mockReviewOrderSummary,
-} from "../data/mockData";
+import { useAddresses } from "@/features/account/hooks/useAddress";
+import { useOrderPreview } from "../hooks/useOrderPreview";
+import { useCartStore } from "@/store/cart";
+import { useCheckoutStore } from "@/store/checkout";
+import { _OrderApi } from "../api/orderApi";
 import {
   ReviewDeliveryDetailsSidebar,
   ReviewAddressCard,
   ReviewPaymentCard,
   OrderItemsTable,
 } from "../components";
+import { mockCheckoutPaymentMethods } from "../data/mockData";
+import { paths } from "@/app/routes/path/paths";
+import type { DeliveryAddress, ReviewOrderSummary } from "../types";
+import type { Address } from "@/features/account/types";
+
+function mapAddressToDeliveryAddress(addr: Address): DeliveryAddress {
+  const parts = [
+    addr.street_name,
+    addr.building_number,
+    addr.floor_apartment,
+    addr.nearest_landmark,
+  ].filter(Boolean);
+  return {
+    id: addr.id,
+    fullName: addr.label,
+    phoneNumber: addr.contact_phone,
+    address: [...parts, addr.area?.name].filter(Boolean).join(", "),
+    tags: [addr.label, addr.is_default ? "Default" : null].filter(
+      (x): x is string => x != null
+    ),
+    isDefault: addr.is_default,
+  };
+}
 
 export default function ReviewConfirm() {
+  const { t } = useTranslation();
   const { isRTL } = useLanguage();
   const navigate = useNavigate();
-  const [selectedAddress] = useState(mockCheckoutAddresses[0]);
-  const [selectedPaymentMethod] = useState(mockCheckoutPaymentMethods[0]);
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleConfirmOrder = () => {
-    console.log("Order confirmed", {
-      address: selectedAddress,
-      paymentMethod: selectedPaymentMethod,
-      orderSummary: mockReviewOrderSummary,
-    });
-    setShowSuccessPopup(true);
+  const { addressId, coupon, paymentMethodId, additionalNotes } = useCheckoutStore();
+  const {
+    items: cartItems,
+    cart_type,
+    recipe_id,
+    admin_basket_id,
+    getPreviewItems,
+    clearCart,
+  } = useCartStore();
+
+  const { data: addressesData = [] } = useAddresses();
+  const checkoutAddresses = useMemo<DeliveryAddress[]>(
+    () => addressesData.map(mapAddressToDeliveryAddress),
+    [addressesData]
+  );
+
+  const selectedAddress =
+    addressId != null
+      ? checkoutAddresses.find((a) => a.id === addressId)
+      : checkoutAddresses[0];
+  const selectedPaymentMethod =
+    mockCheckoutPaymentMethods.find((p) => p.id === paymentMethodId) ??
+    mockCheckoutPaymentMethods[0];
+
+  const addressIdNum = addressId ? Number(addressId) : null;
+  const { data: preview } = useOrderPreview(
+    addressIdNum,
+    coupon || undefined
+  );
+
+  const reviewSummary = useMemo<ReviewOrderSummary | null>(() => {
+    if (!preview) return null;
+    const couponDiscount = preview.coupon?.applied ? preview.coupon.discount : 0;
+    return {
+      items: cartItems,
+      numOfItems: preview.total_quantity,
+      subtotal: `£${preview.subtotal.toFixed(2)}`,
+      shipping:
+        preview.delivery_price === 0
+          ? "Free"
+          : `£${preview.delivery_price.toFixed(2)}`,
+      discounts: `-£${(preview.basket_discount_amount ?? 0).toFixed(2)}`,
+      tax: "0%",
+      couponDiscount: `-£${couponDiscount.toFixed(2)}`,
+      pointsRedeemed: 0,
+      pointsValue: "£0.00",
+      total: `£${preview.total.toFixed(2)}`,
+      estimatedDelivery: "2:00 PM - 4:00 PM",
+      pointsEarned: 0,
+      pointsBefore: 0,
+      pointsNewBalance: 0,
+      pointsSavings: "£0.00",
+    };
+  }, [preview, cartItems]);
+
+  const handleConfirmOrder = async () => {
+    if (!addressId || !preview) return;
+
+    setIsSubmitting(true);
+    try {
+      const isInstantDelivery = cartItems.some(
+        (i) => i.is_instant_delivery ?? !!i.hasFreeDelivery
+      );
+      const payload = {
+        address_id: Number(addressId),
+        cart_type,
+        is_instant_delivery: isInstantDelivery,
+        items: getPreviewItems(),
+        ...(coupon && { coupon }),
+        ...(recipe_id != null && { recipe_id }),
+        ...(admin_basket_id != null && { admin_basket_id }),
+        ...(paymentMethodId && { payment_method_id: paymentMethodId }),
+        ...(additionalNotes && { notes: additionalNotes }),
+      };
+
+      await _OrderApi.postOrder(payload);
+      useCheckoutStore.getState().reset();
+      clearCart();
+      setShowSuccessPopup(true);
+    } catch (err) {
+      console.error("Order failed:", err);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleClosePopup = () => {
@@ -37,40 +138,77 @@ export default function ReviewConfirm() {
 
   const handleBackToHome = () => {
     setShowSuccessPopup(false);
-    navigate("/");
+    navigate(paths.client.home);
   };
 
   const handleEditAddress = () => {
-    navigate("/cart/checkout");
+    navigate(paths.client.checkout);
   };
 
   const handleEditPayment = () => {
-    navigate("/cart/checkout");
+    navigate(paths.client.checkout);
   };
 
   const handleMoveToWishlist = (itemId: number | string) => {
     console.log("Move to wishlist:", itemId);
   };
 
+  if (cartItems.length === 0 && !showSuccessPopup) {
+    navigate(paths.client.cart);
+    return null;
+  }
+
+  if (checkoutAddresses.length === 0) {
+    navigate(paths.client.checkout);
+    return null;
+  }
+
+  if (!addressId && checkoutAddresses.length > 0) {
+    navigate(paths.client.checkout);
+    return null;
+  }
+
+  if (addressId && !selectedAddress && checkoutAddresses.length > 0) {
+    navigate(paths.client.checkout);
+    return null;
+  }
+
+  const fallbackSummary: ReviewOrderSummary = {
+    items: cartItems,
+    numOfItems: cartItems.reduce((s, i) => s + i.quantity, 0),
+    subtotal: "£0.00",
+    shipping: "-",
+    discounts: "£0.00",
+    tax: "0%",
+    couponDiscount: "£0.00",
+    pointsRedeemed: 0,
+    pointsValue: "£0.00",
+    total: "£0.00",
+    estimatedDelivery: "-",
+    pointsEarned: 0,
+    pointsBefore: 0,
+    pointsNewBalance: 0,
+    pointsSavings: "£0.00",
+  };
+
   return (
     <div className="page-container py-6" dir={isRTL ? "rtl" : "ltr"}>
-      {/* Progress Indicator */}
       <div className="mb-8">
         <CheckoutProgressIndicator currentStep="review" />
       </div>
 
-      {/* Confirmation Message */}
       <div className="text-center mb-8">
         <p className="text-custom-secondary text-base">
-          Please check all details before Confirming your order.
+          {t("checkout.reviewMessage", "Please check all details before confirming your order.")}
         </p>
       </div>
 
       <SideContentLayout
         sidebar={
           <ReviewDeliveryDetailsSidebar
-            summary={mockReviewOrderSummary}
+            summary={reviewSummary ?? fallbackSummary}
             onConfirmOrder={handleConfirmOrder}
+            isLoading={isSubmitting}
           />
         }
         sidebarPosition="right"
@@ -78,31 +216,30 @@ export default function ReviewConfirm() {
         columnTemplate="1fr 362px"
       >
         <div className="space-y-6">
-          {/* Address and Payment Cards */}
           <div className="grid grid-cols-2 gap-4">
-            <ReviewAddressCard
-              address={selectedAddress}
-              onEdit={handleEditAddress}
-            />
+            {selectedAddress && (
+              <ReviewAddressCard
+                address={selectedAddress}
+                onEdit={handleEditAddress}
+              />
+            )}
             <ReviewPaymentCard
               paymentMethod={selectedPaymentMethod}
               onEdit={handleEditPayment}
             />
           </div>
 
-          {/* Order Items Table */}
           <OrderItemsTable
-            items={mockReviewOrderSummary.items}
+            items={cartItems}
             onMoveToWishlist={handleMoveToWishlist}
           />
         </div>
       </SideContentLayout>
 
-      {/* Success Popup */}
       <SuccessPopup
         isOpen={showSuccessPopup}
         onClose={handleClosePopup}
-        pointsEarned={mockReviewOrderSummary.pointsEarned}
+        pointsEarned={reviewSummary?.pointsEarned ?? 0}
         onPrimaryClick={handleBackToHome}
       />
     </div>

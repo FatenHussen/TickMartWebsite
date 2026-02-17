@@ -18,18 +18,19 @@ export function useGovernorates() {
 export function useCities(governorateId: number | null) {
   return useQuery<City[]>({
     queryKey: queryKeys.location.cities(governorateId || undefined),
-    queryFn: async () => {
+    queryFn: async (): Promise<City[]> => {
       if (!governorateId) {
         return [];
       }
       const response = await _LocationApi.getCities(governorateId);
       // Handle response format: { data: { items: City[], pagination: ... } }
-      if (response.data && typeof response.data === "object" && "items" in response.data) {
-        return response.data.items;
+      const data = (response as { data?: unknown }).data;
+      if (data && typeof data === "object" && "items" in data) {
+        return (data as { items: City[] }).items;
       }
       // Fallback for direct array response
-      if (Array.isArray(response.data)) {
-        return response.data;
+      if (Array.isArray(data)) {
+        return data as City[];
       }
       return [];
     },

@@ -35,7 +35,7 @@ export default function PromotionalBannerCard({
     <div
       className={cn(
         "relative overflow-hidden cursor-pointer transition-shadow hover:shadow-xl w-full rounded-2xl",
-        className
+        className,
       )}
       onClick={handleClick}
       role="button"

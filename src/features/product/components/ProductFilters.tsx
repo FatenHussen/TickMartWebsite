@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { HiChevronDown } from "react-icons/hi";
 import { cn } from "@/shared/lib/utils";
 
@@ -43,6 +44,7 @@ export default function ProductFilters({
     { value: "newest", label: "Newest" },
   ],
 }: ProductFiltersProps) {
+  const { t } = useTranslation();
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const [isStoreOpen, setIsStoreOpen] = useState(false);
   const [isSortOpen, setIsSortOpen] = useState(false);
@@ -52,7 +54,7 @@ export default function ProductFilters({
       {/* Location Row */}
       <div className="flex items-center justify-between">
         <p className="text-sm text-custom-secondary">
-          Showing products for this brand near{" "}
+          {t("product.filters.showingNearby")}{" "}
           <span className="font-medium text-custom-primary">{location}</span>
         </p>
         {onLocationChange && (
@@ -61,7 +63,7 @@ export default function ProductFilters({
             onClick={onLocationChange}
             className="text-sm font-medium text-custom-accent hover:underline"
           >
-            Change location
+            {t("product.filters.changeLocation")}
           </button>
         )}
       </div>
@@ -175,7 +177,7 @@ export default function ProductFilters({
             className="w-4 h-4 text-custom-accent border-custom-secondary rounded focus:ring-custom-accent"
           />
           <span className="text-sm text-custom-secondary">
-            Free delivery only
+            {t("product.filters.freeDeliveryOnly")}
           </span>
         </label>
 
@@ -187,7 +189,7 @@ export default function ProductFilters({
             onChange={(e) => onInStockToggle?.(e.target.checked)}
             className="w-4 h-4 text-custom-accent border-custom-secondary rounded focus:ring-custom-accent"
           />
-          <span className="text-sm text-custom-secondary">In stock only</span>
+          <span className="text-sm text-custom-secondary">{t("product.filters.inStockOnly")}</span>
         </label>
 
         {/* Sort Dropdown */}
@@ -202,7 +204,7 @@ export default function ProductFilters({
             className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-custom-primary border rounded-lg transition-colors"
             style={{ borderColor: "var(--color-primary-light)" }}
           >
-            <span>Sort by: {sortBy}</span>
+            <span>{t("product.filters.sortBy")} {sortBy}</span>
             <HiChevronDown
               className={cn(
                 "w-4 h-4 transition-transform",

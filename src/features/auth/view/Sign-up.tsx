@@ -645,7 +645,7 @@ function CustomerSignUpForm({
                   })}
                 >
                   <option value="">{t("auth.selectCity")}</option>
-                  {cities.map((city) => (
+                  {(cities ?? []).map((city: { id: number; name: string }) => (
                     <option key={city.id} value={String(city.id)}>
                       {city.name}
                     </option>

@@ -107,7 +107,7 @@ export default function AllBrands() {
               {/* Show skeleton loaders while loading more */}
               {isBrandsLoading &&
                 Array.from({
-                  length: brandsData?.pagination.per_page || 10,
+                  length: 10,
                 }).map((_, index) => (
                   <BrandCardSkeleton key={`skeleton-${index}`} />
                 ))}

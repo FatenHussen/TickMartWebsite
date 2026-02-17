@@ -48,7 +48,7 @@ function SignIn() {
   };
 
   return (
-    <div className="relative min-h-screen grid lg:grid-cols-2 bg-white dark:bg-gray-900">
+    <div className="relative min-h-screen grid lg:grid-cols-2 bg-custom-primary">
       {/* Theme and Language toggles */}
       <div className="absolute top-4 end-4 z-20 flex gap-2">
         <LanguageToggle />
@@ -63,7 +63,7 @@ function SignIn() {
             <div className="w-10 h-10 bg-cyan-500 rounded-xl flex items-center justify-center">
               <span className="text-white text-xl font-bold">T</span>
             </div>
-            <span className="text-lg font-semibold text-gray-800 dark:text-white">
+            <span className="text-lg font-semibold text-custom-primary">
               {t("auth.appEverything")}
             </span>
           </div>
@@ -82,19 +82,19 @@ function SignIn() {
 
         {/* Promo Card */}
         <div className="p-8">
-          <div className="bg-white dark:bg-gray-700 rounded-2xl shadow-lg p-5">
+          <div className="bg-custom-primary rounded-2xl shadow-lg p-5">
             <div className="flex gap-4">
               <div className="w-16 h-16 rounded-xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center overflow-hidden">
                 <span className="text-3xl">🍝</span>
               </div>
               <div className="flex-1">
-                <p className="text-[10px] text-orange-500 dark:text-orange-400 font-medium uppercase tracking-wider">
+                <p className="text-[10px] text-orange-500 font-medium uppercase tracking-wider">
                   {t("auth.sponsored")}
                 </p>
-                <h3 className="text-sm font-bold text-gray-900 dark:text-white mt-1">
+                <h3 className="text-sm font-bold text-custom-primary mt-1">
                   {t("auth.get30Off")}
                 </h3>
-                <p className="text-xs text-gray-500 dark:text-gray-300 mt-1">
+                <p className="text-xs text-custom-secondary mt-1">
                   {t("auth.enjoyExclusiveDeals")}
                 </p>
                 <button className="text-xs text-cyan-500 dark:text-cyan-400 font-semibold mt-2 hover:underline">
@@ -159,7 +159,7 @@ function SignIn() {
                 {...register("password", {
                   required: t("validation.required"),
                   minLength: {
-                    value: 8,
+                    value: 2,
                     message: t("validation.passwordTooShort"),
                   },
                 })}
@@ -213,7 +213,9 @@ function SignIn() {
 
           {/* Continue as Guest */}
           <p className="text-center text-sm">
-            <span className="text-gray-400 dark:text-gray-500">{t("common.or")} </span>
+            <span className="text-gray-400 dark:text-gray-500">
+              {t("common.or")}{" "}
+            </span>
             <Link
               to={paths.client.home}
               className="text-cyan-500 dark:text-cyan-400 font-medium hover:underline"

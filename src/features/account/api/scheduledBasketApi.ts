@@ -1,46 +1,59 @@
 import _axios from "@/app/middleware/interceptor";
-import { apiRoutes } from "@/utils/apiRoutes";
 import type {
   ScheduledBasketsResponse,
   ScheduledBasketDetailResponse,
   UpdateScheduledBasketPayload,
 } from "../types/scheduledBasket";
+import type { CreateScheduledBasketPayload } from "@/features/cart/types";
+
+// API routes defined locally to avoid stale module cache issues
+const SCHEDULED_BASKETS_BASE = "/user/scheduled-baskets";
 
 export const _ScheduledBasketApi = {
-  getScheduledBaskets: async (
-    page?: number
-  ): Promise<ScheduledBasketsResponse> => {
-    const response = await _axios.get<ScheduledBasketsResponse>(
-      apiRoutes.scheduledBaskets.list(page)
+  createScheduledBasket: async (
+    payload: CreateScheduledBasketPayload
+  ): Promise<ScheduledBasketDetailResponse> => {
+    const response = await _axios.post<ScheduledBasketDetailResponse>(
+      SCHEDULED_BASKETS_BASE,
+      payload
     );
+    return response.data;
+  },
+  getScheduledBaskets: async (
+    page?: number,
+  ): Promise<ScheduledBasketsResponse> => {
+    const url = page
+      ? `${SCHEDULED_BASKETS_BASE}?page=${page}`
+      : SCHEDULED_BASKETS_BASE;
+    const response = await _axios.get<ScheduledBasketsResponse>(url);
     return response.data;
   },
 
   getScheduledBasketDetails: async (
-    id: number | string
+    id: number | string,
   ): Promise<ScheduledBasketDetailResponse> => {
     const response = await _axios.get<ScheduledBasketDetailResponse>(
-      apiRoutes.scheduledBaskets.details(id)
+      `${SCHEDULED_BASKETS_BASE}/${id}`,
     );
     return response.data;
   },
 
   updateScheduledBasket: async (
     id: number | string,
-    payload: UpdateScheduledBasketPayload
+    payload: UpdateScheduledBasketPayload,
   ): Promise<ScheduledBasketDetailResponse> => {
     const response = await _axios.put<ScheduledBasketDetailResponse>(
-      apiRoutes.scheduledBaskets.update(id),
-      payload
+      `${SCHEDULED_BASKETS_BASE}/${id}`,
+      payload,
     );
     return response.data;
   },
 
   deleteScheduledBasket: async (
-    id: number | string
+    id: number | string,
   ): Promise<{ status: boolean; message: string }> => {
     const response = await _axios.delete(
-      apiRoutes.scheduledBaskets.delete(id)
+      `${SCHEDULED_BASKETS_BASE}/${id}`,
     );
     return response.data;
   },

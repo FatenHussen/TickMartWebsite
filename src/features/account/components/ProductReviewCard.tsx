@@ -1,6 +1,4 @@
 import { useTranslation } from "react-i18next";
-import { HiPencil, HiTrash } from "react-icons/hi";
-import { cn } from "@/shared/lib/utils";
 import StarRating from "./StarRating";
 import type { ProductReview } from "../types";
 

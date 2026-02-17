@@ -14,8 +14,10 @@ import {
 } from "react-icons/hi";
 import LanguageToggle from "./LanguageToggle";
 import { paths } from "@/app/routes/path/paths";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAuthStore } from "@/store/auth";
+import { useAddresses } from "@/features/account/hooks/useAddress";
+import { useCheckoutStore } from "@/store/checkout";
 
 export default function Navbar() {
   const { isRTL } = useLanguage();
@@ -26,9 +28,31 @@ export default function Navbar() {
   const [showLocationDropdown, setShowLocationDropdown] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showAccountDropdown, setShowAccountDropdown] = useState(false);
-  const [deliveryAddress, setDeliveryAddress] = useState(
-    "123 Main Street, Downtown"
-  );
+
+  const { data: addresses = [], isLoading: addressesLoading } =
+    useAddresses(authenticated);
+  const { addressId, setAddressId } = useCheckoutStore();
+
+  const selectedAddress = useMemo(() => {
+    if (addressId != null) {
+      return addresses.find(
+        (a) => a.id === addressId || a.id === Number(addressId),
+      );
+    }
+    return addresses.find((a) => a.is_default) ?? addresses[0];
+  }, [addresses, addressId]);
+
+  const deliveryAddressDisplay = useMemo(() => {
+    if (!selectedAddress) return null;
+    const parts = [
+      selectedAddress.street_name,
+      selectedAddress.building_number,
+      selectedAddress.floor_apartment,
+      selectedAddress.nearest_landmark,
+      selectedAddress.area?.name,
+    ].filter(Boolean);
+    return parts.join(", ") || selectedAddress.label;
+  }, [selectedAddress]);
 
   // Close mobile menu when route changes
   useEffect(() => {
@@ -42,7 +66,7 @@ export default function Navbar() {
     return location.pathname.startsWith(path);
   };
 
-  // Main navigation items (without ID routes)
+  // Main navigation items - all routes
   const navItems = [
     { path: paths.client.home, label: t("home.home") || "Home" },
     {
@@ -50,21 +74,36 @@ export default function Navbar() {
       label: t("categories.mainCategories") || "Categories",
       hasDropdown: true,
     },
+    {
+      path: paths.client.store,
+      label: t("wishlist.allStores") || "All stores",
+    },
     { path: paths.client.brands, label: t("home.brands") || "Brands" },
     { path: paths.client.recipes, label: t("recipes.title") || "Recipes" },
-    { path: paths.client.products, label: t("home.products") || "Products" },
+    // { path: paths.client.products, label: t("home.products") || "Products" },
     { path: paths.client.baskets, label: t("home.baskets") || "Baskets" },
-    { path: paths.client.cart, label: t("cart.cart") || "Cart" },
-    {
-      path: paths.client.checkout,
-      label: t("checkout.checkoutTitle") || "Checkout",
-    },
+    // { path: paths.client.cart, label: t("cart.cart") || "Cart" },
+    // {
+    //   path: paths.client.checkout,
+    //   label: t("checkout.checkoutTitle") || "Checkout",
+    // },
     {
       path: paths.client.review,
       label: t("checkout.reviewConfirm") || "Review",
     },
-    { path: paths.client.orders, label: t("orders.myOrders") || "My Orders" },
-    { path: paths.client.store, label: t("store.store") || "Store" },
+    // { path: paths.client.orders, label: t("orders.myOrders") || "My Orders" },
+    {
+      path: paths.account.baskets,
+      label: t("account.menu.myBaskets") || "My baskets",
+    },
+    // {
+    //   path: paths.account.pointsRewards,
+    //   label: t("account.menu.pointsRewards") || "Points & rewards",
+    // },
+    // {
+    //   path: paths.account.helpSupport,
+    //   label: t("account.menu.helpSupport") || "Help & support",
+    // },
   ];
 
   // Account navigation items
@@ -149,47 +188,86 @@ export default function Navbar() {
 
             {/* Delivery Address - Hidden on mobile, shown on tablet+ */}
             <div className="hidden md:flex flex-1 max-w-md relative">
-              <button
-                onClick={() => setShowLocationDropdown(!showLocationDropdown)}
-                className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg hover:bg-gray-50 transition-colors w-full"
-              >
-                <HiLocationMarker className="text-primary-light w-5 h-5" />
-                <div className="flex flex-col items-start flex-1">
-                  <span className="text-xs text-gray-light">Delivering to</span>
-                  <span className="text-sm font-medium text-custom-primary truncate">
-                    {deliveryAddress}
-                  </span>
-                </div>
-                <HiChevronDown className="text-gray-light w-4 h-4" />
-              </button>
-              {showLocationDropdown && (
+              {authenticated ? (
+                <button
+                  type="button"
+                  onClick={() => setShowLocationDropdown(!showLocationDropdown)}
+                  className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg hover:bg-gray-50 transition-colors w-full text-left"
+                >
+                  <HiLocationMarker className="text-primary-light w-5 h-5 shrink-0" />
+                  <div className="flex flex-col items-start flex-1 min-w-0">
+                    <span className="text-xs text-gray-light">
+                      {t("navbar.deliveringTo")}
+                    </span>
+                    <span className="text-sm font-medium text-custom-primary truncate w-full">
+                      {addressesLoading
+                        ? t("common.loading")
+                        : deliveryAddressDisplay ||
+                          t("navbar.addAddress") ||
+                          "Add address"}
+                    </span>
+                  </div>
+                  <HiChevronDown className="text-gray-light w-4 h-4 shrink-0" />
+                </button>
+              ) : (
+                <Link
+                  to={paths.auth.jwt.signIn}
+                  className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg hover:bg-gray-50 transition-colors w-full text-left"
+                >
+                  <HiLocationMarker className="text-primary-light w-5 h-5 shrink-0" />
+                  <div className="flex flex-col items-start flex-1 min-w-0">
+                    <span className="text-xs text-gray-light">
+                      {t("navbar.deliveringTo")}
+                    </span>
+                    <span className="text-sm font-medium text-custom-primary truncate w-full">
+                      {t("auth.login") || "Login"}
+                    </span>
+                  </div>
+                </Link>
+              )}
+              {showLocationDropdown && authenticated && (
                 <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-bold z-50">
                   <div className="p-4">
-                    <input
-                      type="text"
-                      placeholder="Search for address..."
-                      className="w-full px-4 py-2 border border-gray-bold rounded-lg mb-2"
-                    />
-                    <div className="space-y-2">
-                      <button
-                        onClick={() => {
-                          setDeliveryAddress("123 Main Street, Downtown");
-                          setShowLocationDropdown(false);
-                        }}
-                        className="w-full text-left px-4 py-2 hover:bg-blue-off rounded-lg"
-                      >
-                        123 Main Street, Downtown
-                      </button>
-                      <button
-                        onClick={() => {
-                          setDeliveryAddress("456 Park Avenue, Uptown");
-                          setShowLocationDropdown(false);
-                        }}
-                        className="w-full text-left px-4 py-2 hover:bg-blue-off rounded-lg"
-                      >
-                        456 Park Avenue, Uptown
-                      </button>
-                    </div>
+                    <Link
+                      to={paths.account.addAddress}
+                      className="block w-full mb-3 px-4 py-2 text-center bg-primary-light/10 text-primary-light rounded-lg font-medium hover:bg-primary-light/20"
+                      onClick={() => setShowLocationDropdown(false)}
+                    >
+                      {t("navbar.addNewAddress") || "Add new address"}
+                    </Link>
+                    {addresses.length === 0 ? (
+                      <p className="text-sm text-gray-light py-2">
+                        {t("navbar.noAddresses") || "No addresses yet"}
+                      </p>
+                    ) : (
+                      <div className="space-y-2 max-h-48 overflow-y-auto">
+                        {addresses.map((addr) => {
+                          const parts = [
+                            addr.street_name,
+                            addr.building_number,
+                            addr.area?.name,
+                          ].filter(Boolean);
+                          const label = parts.join(", ") || addr.label;
+                          return (
+                            <button
+                              key={addr.id}
+                              type="button"
+                              onClick={() => {
+                                setAddressId(addr.id);
+                                setShowLocationDropdown(false);
+                              }}
+                              className={`w-full text-left px-4 py-2 rounded-lg hover:bg-blue-off ${
+                                selectedAddress?.id === addr.id
+                                  ? "bg-primary-light/10 font-medium"
+                                  : ""
+                              }`}
+                            >
+                              {label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -258,7 +336,7 @@ export default function Navbar() {
                     className="flex items-center gap-2 px-3 py-2 bg-white rounded-lg hover:bg-gray-50 transition-colors"
                   >
                     <span className="text-sm font-medium text-custom-primary">
-                      Account
+                      {t("navbar.account")}
                     </span>
                     <HiChevronDown className="text-gray-light w-4 h-4" />
                   </button>
@@ -301,8 +379,8 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Navigation Bar - Desktop */}
-      <div className="hidden lg:block bg-primary-light/10">
+      {/* Navigation Bar - Desktop (white background like design) */}
+      <div className="hidden lg:block bg-white border-b border-gray-bold">
         <div className="page-container">
           <div className="flex items-center justify-between py-3">
             <div className="flex items-center gap-4 xl:gap-6 flex-wrap">
@@ -370,12 +448,20 @@ export default function Navbar() {
                 </div>
               ))}
             </div>
-            <Link
-              to="/become-vendor"
-              className="px-4 xl:px-6 py-2 bg-primary-light text-white rounded-lg font-medium hover:bg-primary transition-colors text-sm xl:text-base whitespace-nowrap"
-            >
-              Become a vendor
-            </Link>
+            <div className="flex items-center gap-3">
+              <Link
+                to={paths.becomeVendor}
+                className="px-4 xl:px-6 py-2 bg-primary-light text-white rounded-lg font-medium hover:bg-primary transition-colors text-sm xl:text-base whitespace-nowrap"
+              >
+                {t("navbar.becomeVendor")}
+              </Link>
+              <Link
+                to={paths.becomeMarketer}
+                className="px-4 xl:px-6 py-2 bg-primary-light text-white rounded-lg font-medium hover:bg-primary transition-colors text-sm xl:text-base whitespace-nowrap"
+              >
+                {t("navbar.becomeMarketer")}
+              </Link>
+            </div>
           </div>
         </div>
       </div>
@@ -396,8 +482,8 @@ export default function Navbar() {
               isMobileMenuOpen
                 ? "translate-x-0"
                 : isRTL
-                ? "-translate-x-full"
-                : "translate-x-full"
+                  ? "-translate-x-full"
+                  : "translate-x-full"
             }`}
             dir={isRTL ? "rtl" : "ltr"}
           >
@@ -405,7 +491,7 @@ export default function Navbar() {
               {/* Header */}
               <div className="flex items-center justify-between p-4 border-b border-gray-200">
                 <span className="text-lg font-bold text-custom-primary">
-                  Menu
+                  {t("navbar.menu")}
                 </span>
                 <button
                   onClick={() => setIsMobileMenuOpen(false)}
@@ -417,51 +503,92 @@ export default function Navbar() {
 
               {/* Delivery Address - Mobile */}
               <div className="p-4 border-b border-gray-200">
-                <button
-                  onClick={() => setShowLocationDropdown(!showLocationDropdown)}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-off rounded-lg w-full text-left"
-                >
-                  <HiLocationMarker className="text-primary-light w-5 h-5 shrink-0" />
-                  <div className="flex flex-col items-start flex-1 min-w-0">
-                    <span className="text-xs text-gray-light">
-                      Delivering to
-                    </span>
-                    <span className="text-sm font-medium text-custom-primary truncate w-full">
-                      {deliveryAddress}
-                    </span>
-                  </div>
-                  <HiChevronDown className="text-gray-light w-4 h-4 shrink-0" />
-                </button>
-                {showLocationDropdown && (
-                  <div className="mt-2 bg-white rounded-lg border border-gray-bold">
-                    <div className="p-4">
-                      <input
-                        type="text"
-                        placeholder="Search for address..."
-                        className="w-full px-4 py-2 border border-gray-bold rounded-lg mb-2"
-                      />
-                      <div className="space-y-2">
-                        <button
-                          onClick={() => {
-                            setDeliveryAddress("123 Main Street, Downtown");
-                            setShowLocationDropdown(false);
-                          }}
-                          className="w-full text-left px-4 py-2 hover:bg-blue-off rounded-lg"
-                        >
-                          123 Main Street, Downtown
-                        </button>
-                        <button
-                          onClick={() => {
-                            setDeliveryAddress("456 Park Avenue, Uptown");
-                            setShowLocationDropdown(false);
-                          }}
-                          className="w-full text-left px-4 py-2 hover:bg-blue-off rounded-lg"
-                        >
-                          456 Park Avenue, Uptown
-                        </button>
+                {authenticated ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setShowLocationDropdown(!showLocationDropdown)
+                      }
+                      className="flex items-center gap-2 px-4 py-2 bg-blue-off rounded-lg w-full text-left"
+                    >
+                      <HiLocationMarker className="text-primary-light w-5 h-5 shrink-0" />
+                      <div className="flex flex-col items-start flex-1 min-w-0">
+                        <span className="text-xs text-gray-light">
+                          {t("navbar.deliveringTo")}
+                        </span>
+                        <span className="text-sm font-medium text-custom-primary truncate w-full">
+                          {addressesLoading
+                            ? t("common.loading")
+                            : deliveryAddressDisplay ||
+                              t("navbar.addAddress") ||
+                              "Add address"}
+                        </span>
                       </div>
+                      <HiChevronDown className="text-gray-light w-4 h-4 shrink-0" />
+                    </button>
+                    {showLocationDropdown && (
+                      <div className="mt-2 bg-white rounded-lg border border-gray-bold">
+                        <div className="p-4">
+                          <Link
+                            to={paths.account.addAddress}
+                            className="block w-full mb-3 px-4 py-2 text-center bg-primary-light/10 text-primary-light rounded-lg font-medium hover:bg-primary-light/20"
+                            onClick={() => setShowLocationDropdown(false)}
+                          >
+                            {t("navbar.addNewAddress") || "Add new address"}
+                          </Link>
+                          {addresses.length === 0 ? (
+                            <p className="text-sm text-gray-light py-2">
+                              {t("navbar.noAddresses") || "No addresses yet"}
+                            </p>
+                          ) : (
+                            <div className="space-y-2 max-h-48 overflow-y-auto">
+                              {addresses.map((addr) => {
+                                const parts = [
+                                  addr.street_name,
+                                  addr.building_number,
+                                  addr.area?.name,
+                                ].filter(Boolean);
+                                const label = parts.join(", ") || addr.label;
+                                return (
+                                  <button
+                                    key={addr.id}
+                                    type="button"
+                                    onClick={() => {
+                                      setAddressId(addr.id);
+                                      setShowLocationDropdown(false);
+                                    }}
+                                    className={`w-full text-left px-4 py-2 rounded-lg hover:bg-blue-off ${
+                                      selectedAddress?.id === addr.id
+                                        ? "bg-primary-light/10 font-medium"
+                                        : ""
+                                    }`}
+                                  >
+                                    {label}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <Link
+                    to={paths.auth.jwt.signIn}
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-off rounded-lg w-full text-left"
+                  >
+                    <HiLocationMarker className="text-primary-light w-5 h-5 shrink-0" />
+                    <div className="flex flex-col items-start flex-1 min-w-0">
+                      <span className="text-xs text-gray-light">
+                        {t("navbar.deliveringTo")}
+                      </span>
+                      <span className="text-sm font-medium text-custom-primary truncate w-full">
+                        {t("auth.login") || "Login"}
+                      </span>
                     </div>
-                  </div>
+                  </Link>
                 )}
               </div>
 
@@ -560,7 +687,7 @@ export default function Navbar() {
                   <>
                     <div className="px-4 py-2 mt-4 border-t border-gray-200">
                       <div className="text-xs font-semibold text-gray-light uppercase mb-2">
-                        Account
+                        {t("navbar.account")}
                       </div>
                       {accountItems.map((item) => (
                         <Link
@@ -580,14 +707,21 @@ export default function Navbar() {
                   </>
                 )}
 
-                {/* Become a Vendor - Mobile */}
-                <div className="px-4 py-2 mt-4 border-t border-gray-200">
+                {/* Become a Vendor & Marketer - Mobile */}
+                <div className="px-4 py-2 mt-4 border-t border-gray-200 space-y-2">
                   <Link
-                    to="/become-vendor"
+                    to={paths.becomeVendor}
                     onClick={() => setIsMobileMenuOpen(false)}
                     className="block w-full px-4 py-3 bg-primary-light text-white rounded-lg font-medium hover:bg-primary transition-colors text-center"
                   >
-                    Become a vendor
+                    {t("navbar.becomeVendor")}
+                  </Link>
+                  <Link
+                    to={paths.becomeMarketer}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="block w-full px-4 py-3 bg-primary-light text-white rounded-lg font-medium hover:bg-primary transition-colors text-center"
+                  >
+                    {t("navbar.becomeMarketer")}
                   </Link>
                 </div>
 

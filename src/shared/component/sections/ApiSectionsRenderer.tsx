@@ -1,10 +1,12 @@
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import SliderSection from "../slider/core/SliderSection";
 import ProductCard from "../card/ProductCard";
 import BrandCard from "../card/BrandCard";
 import BasketCard from "../card/BasketCard";
 import ShopCard from "../card/ShopCard";
 import PromotionalBannerCard from "../banner/PromotionalBannerCard";
+import PromotionalHeroSlider from "../banner/PromotionalHeroSlider";
 import type {
   Section,
   SectionItem,
@@ -103,6 +105,7 @@ export default function ApiSectionsRenderer({
   sections,
 }: ApiSectionsRendererProps) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleViewAll = (section: Section) => {
     if (section.see_more?.page_slug) {
@@ -135,6 +138,7 @@ export default function ApiSectionsRenderer({
           section={section}
           onViewAll={() => handleViewAll(section)}
           onItemClick={(item) => handleItemClick(section, item)}
+          t={t}
         />
       ))}
     </>
@@ -145,12 +149,14 @@ type SectionByDisplayTypeProps = {
   section: Section;
   onViewAll: () => void;
   onItemClick: (item: SectionItem) => void;
+  t: (key: string) => string;
 };
 
 function SectionByDisplayType({
   section,
   onViewAll,
   onItemClick,
+  t,
 }: SectionByDisplayTypeProps) {
   const showViewAll = section.type === "api" && section.see_more;
 
@@ -162,6 +168,7 @@ function SectionByDisplayType({
           showViewAll={showViewAll}
           onViewAll={onViewAll}
           onItemClick={onItemClick}
+          t={t}
         />
       );
 
@@ -172,6 +179,7 @@ function SectionByDisplayType({
           showViewAll={showViewAll}
           onViewAll={onViewAll}
           onItemClick={onItemClick}
+          t={t}
         />
       );
 
@@ -182,6 +190,7 @@ function SectionByDisplayType({
           showViewAll={showViewAll}
           onViewAll={onViewAll}
           onItemClick={onItemClick}
+          t={t}
         />
       );
 
@@ -192,6 +201,7 @@ function SectionByDisplayType({
           showViewAll={showViewAll}
           onViewAll={onViewAll}
           onItemClick={onItemClick}
+          t={t}
         />
       );
 
@@ -202,6 +212,7 @@ function SectionByDisplayType({
           showViewAll={showViewAll}
           onViewAll={onViewAll}
           onItemClick={onItemClick}
+          t={t}
         />
       );
 
@@ -212,6 +223,7 @@ function SectionByDisplayType({
           showViewAll={showViewAll}
           onViewAll={onViewAll}
           onItemClick={onItemClick}
+          t={t}
         />
       );
 
@@ -228,6 +240,7 @@ type SectionProps = {
   showViewAll: boolean | any;
   onViewAll: () => void;
   onItemClick: (item: SectionItem) => void;
+  t: (key: string) => string;
 };
 
 function BannerSection({
@@ -235,6 +248,7 @@ function BannerSection({
   showViewAll,
   onViewAll,
   onItemClick,
+  t,
 }: SectionProps) {
   // If only one item, show promotional banner with container
   if (section.items.length === 1) {
@@ -269,35 +283,26 @@ function BannerSection({
     );
   }
 
-  // Multiple items - use slider (one slide at a time, with container)
+  // Multiple items - use hero-style slider (like HeroSlider)
   return (
     <div className="page-container">
-      <SliderSection
-        title={section.name}
-        viewAllLabel={showViewAll ? "عرض الكل" : undefined}
-        onViewAllClick={showViewAll ? onViewAll : undefined}
+      {showViewAll && section.name && (
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-2xl font-bold text-custom-primary">
+            {section.name}
+          </h2>
+          <button
+            onClick={onViewAll}
+            className="text-primary-light hover:underline text-sm font-medium"
+          >
+            {t("common.viewAll")}
+          </button>
+        </div>
+      )}
+      <PromotionalHeroSlider
         items={section.items}
-        slidesPerView={1}
-        spaceBetween={0}
-        breakpoints={{
-          0: { slidesPerView: 1, spaceBetween: 0 },
-          640: { slidesPerView: 1, spaceBetween: 0 },
-          768: { slidesPerView: 1, spaceBetween: 0 },
-          1024: { slidesPerView: 1, spaceBetween: 0 },
-        }}
-        renderItem={(item) => {
-          const data = getItemData(item);
-          const link = isManualItem(item) ? item.link : undefined;
-          return (
-            <PromotionalBannerCard
-              key={data.id}
-              item={data as any}
-              link={link}
-              onClick={() => onItemClick(item)}
-              className="w-full"
-            />
-          );
-        }}
+        getLink={(item) => (isManualItem(item) ? item.link : undefined)}
+        onItemClick={onItemClick}
       />
     </div>
   );
@@ -308,11 +313,12 @@ function ProductSection({
   showViewAll,
   onViewAll,
   onItemClick,
+  t,
 }: SectionProps) {
   return (
     <SliderSection
       title={section.name}
-      viewAllLabel={showViewAll ? "عرض الكل" : undefined}
+      viewAllLabel={showViewAll ? t("common.viewAll") : undefined}
       onViewAllClick={showViewAll ? onViewAll : undefined}
       items={section.items}
       breakpoints={{
@@ -396,11 +402,12 @@ function RecipeSection({
   showViewAll,
   onViewAll,
   onItemClick,
+  t,
 }: SectionProps) {
   return (
     <SliderSection
       title={section.name}
-      viewAllLabel={showViewAll ? "عرض الكل" : undefined}
+      viewAllLabel={showViewAll ? t("common.viewAll") : undefined}
       onViewAllClick={showViewAll ? onViewAll : undefined}
       items={section.items}
       breakpoints={{
@@ -483,11 +490,12 @@ function BasketSection({
   showViewAll,
   onViewAll,
   onItemClick,
+  t,
 }: SectionProps) {
   return (
     <SliderSection
       title={section.name}
-      viewAllLabel={showViewAll ? "عرض الكل" : undefined}
+      viewAllLabel={showViewAll ? t("common.viewAll") : undefined}
       onViewAllClick={showViewAll ? onViewAll : undefined}
       items={section.items}
       breakpoints={{
@@ -498,13 +506,13 @@ function BasketSection({
       renderItem={(item) => {
         if (isBasketItem(item)) {
           const saveAmount =
-            item.saving > 0 ? `Save ${item.saving}` : undefined;
+            item.saving > 0 ? `${t("baskets.save")} ${item.saving}` : undefined;
           const savings =
             item.original_price > 0 && item.saving > 0
-              ? `You saved ${item.saving}`
+              ? `${t("baskets.youSave")} ${item.saving}`
               : undefined;
           const offerEndingDate = item.is_on_offer
-            ? `Offer ending date: ${new Date(
+            ? `${t("baskets.offerEnding")}: ${new Date(
                 item.offer_ends_at
               ).toLocaleDateString()}`
             : undefined;
@@ -562,11 +570,12 @@ function ShopSection({
   showViewAll,
   onViewAll,
   onItemClick,
+  t,
 }: SectionProps) {
   return (
     <SliderSection
       title={section.name}
-      viewAllLabel={showViewAll ? "عرض الكل" : undefined}
+      viewAllLabel={showViewAll ? t("common.viewAll") : undefined}
       onViewAllClick={showViewAll ? onViewAll : undefined}
       items={section.items}
       breakpoints={{
@@ -616,11 +625,12 @@ function BrandSection({
   showViewAll,
   onViewAll,
   onItemClick,
+  t,
 }: SectionProps) {
   return (
     <SliderSection
       title={section.name}
-      viewAllLabel={showViewAll ? "عرض الكل" : undefined}
+      viewAllLabel={showViewAll ? t("common.viewAll") : undefined}
       onViewAllClick={showViewAll ? onViewAll : undefined}
       items={section.items}
       breakpoints={{

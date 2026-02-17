@@ -120,6 +120,14 @@ export const apiRoutes = {
   },
 
   /**
+   * Schedule endpoints (delivery frequency options)
+   */
+  schedules: {
+    list: (page?: number) =>
+      `/user/schedules${page ? `?page=${page}` : ""}` as const,
+  },
+
+  /**
    * Scheduled Basket endpoints (user account)
    */
   scheduledBaskets: {
@@ -147,6 +155,18 @@ export const apiRoutes = {
       }` as const;
     },
     details: (id: number | string) => `/user/baskets/${id}` as const,
+  },
+
+  /**
+   * Order endpoints
+   */
+  orders: {
+    list: (page?: number) =>
+      `/user/orders${page ? `?page=${page}` : ""}` as const,
+    details: (id: number | string) => `/user/orders/${id}` as const,
+    preview: "/user/orders/preview" as const,
+    create: "/user/orders" as const,
+    couponPreview: "/user/orders/coupon-preview" as const,
   },
 
   /**
