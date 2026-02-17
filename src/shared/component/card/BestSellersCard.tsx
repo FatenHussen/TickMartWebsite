@@ -1,6 +1,6 @@
 import { cn } from "../../lib/utils";
-import { HiHeart } from "react-icons/hi2";
 import Button from "@/shared/ui/Button";
+import FavoriteButton from "@/shared/component/FavoriteButton";
 import Rating from "@/shared/component/Rating";
 import AnimatedButton from "../../ui/AnimatedButton";
 import Badge from "@/shared/component/Badge";
@@ -108,27 +108,18 @@ export default function BestSellersCard({
           />
         </div>
 
-        {/* Favorite Button (bottom-right) - Light blue outlined heart */}
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          aria-label="Toggle favorite"
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggleFavorite?.(id);
-          }}
-          className="absolute right-3 bottom-3 z-10 h-9 w-9 p-0 rounded-full bg-transparent border-2 border-blue-400/80 hover:bg-blue-400/10"
-        >
-          <HiHeart
-            className={cn(
-              "h-5 w-5",
-              isFavorite
-                ? "fill-blue-400 text-blue-400"
-                : "fill-none text-blue-400"
-            )}
+        {/* Favorite Button (bottom-right) */}
+        <div className="absolute right-3 bottom-3 z-10">
+          <FavoriteButton
+            isFavorite={isFavorite}
+            onToggle={(e) => {
+              e.stopPropagation();
+              onToggleFavorite?.(id);
+            }}
+            size="md"
+            ariaLabel="Toggle favorite"
           />
-        </Button>
+        </div>
       </div>
 
       {/* Info Section - Light blue-gray background */}

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContext";
 import { useTheme } from "@/context/ThemeContext";
@@ -6,6 +7,7 @@ import { useCurrency } from "@/context/CurrencyContext";
 import { Button } from "@/shared/ui";
 import { HiChevronDown } from "react-icons/hi";
 import { cn } from "@/shared/lib/utils";
+import { paths } from "@/app/routes/path/paths";
 import type { Currency } from "@/context/CurrencyContext";
 
 type ThemeOption = "light" | "dark" | "system";
@@ -183,20 +185,20 @@ export default function Settings() {
           </h2>
           <div className="space-y-1">
             <div>
-              <a
-                href="#"
+              <Link
+                to={paths.client.privacyPolicy}
                 className="text-sm text-cyan-500 hover:text-cyan-600 dark:hover:text-cyan-400"
               >
                 {t("account.settings.privacy.viewPrivacyPolicy")}
-              </a>
+              </Link>
             </div>
             <div>
-              <a
-                href="#"
+              <Link
+                to={paths.client.termsConditions}
                 className="text-sm text-cyan-500 hover:text-cyan-600 dark:hover:text-cyan-400"
               >
                 {t("account.settings.privacy.viewTermsConditions")}
-              </a>
+              </Link>
             </div>
           </div>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">

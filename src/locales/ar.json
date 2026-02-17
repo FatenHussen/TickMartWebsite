@@ -256,6 +256,8 @@
     "soldWithThisProduct": "يُباع مع هذا المنتج أيضاً",
     "similarProducts": "منتجات مشابهة",
     "productsFromSameSeller": "منتجات من نفس البائع",
+    "availableShops": "الفروع المتوفرة",
+    "selectShop": "اختر فرع",
     "productReviews": "تقييمات المنتج",
     "reviewsFilter": "فلتر التقييمات",
     "rating": "التقييم",
@@ -328,6 +330,7 @@
     "myShoppingCart": "سلة التسوق الخاصة بي",
     "addedToCart": "تمت الإضافة إلى السلة",
     "yourCartIsEmpty": "سلة التسوق فارغة",
+    "emptyCartHint": "أضف منتجات من المتجر للبدء.",
     "continueShopping": "متابعة التسوق",
     "product": "المنتج",
     "quantity": "الكمية",
@@ -362,7 +365,15 @@
     "subtotalBeforeDiscount": "المجموع قبل الخصم",
     "itemsSubtotal": "مجموع العناصر",
     "productDiscount": "خصم المنتجات",
-    "basketDiscount": "خصم السلة"
+    "basketDiscount": "خصم السلة",
+    "scheduleName": "اسم الجدولة",
+    "scheduleNamePlaceholder": "مثال: سلة اللحوم الأسبوعية",
+    "scheduleSaved": "تم حفظ الجدولة بنجاح",
+    "scheduleSaveFailed": "فشل حفظ الجدولة",
+    "categoryRequired": "يجب أن يكون للمنتجات تصنيف",
+    "noValidItems": "لا توجد عناصر صالحة للجدولة",
+    "saveSchedule": "حفظ الجدولة",
+    "saving": "جاري الحفظ..."
   },
   "trackOrder": {
     "title": "تتبع طلبك",
@@ -426,7 +437,8 @@
     "youEarned": "لقد ربحت",
     "points": "نقطة!",
     "pointsDescription": "يمكنك استخدام نقاطك لاحقاً للحصول على خصومات وعروض خاصة.",
-    "backToHome": "العودة للصفحة الرئيسية"
+    "backToHome": "العودة للصفحة الرئيسية",
+    "trackOrder": "تتبع الطلب"
   },
   "logoutPopup": {
     "title": "تسجيل الخروج من حسابك؟",
@@ -450,6 +462,15 @@
       "settings": "الإعدادات",
       "deleteAccount": "حذف / تعطيل الحساب",
       "logout": "تسجيل الخروج"
+    },
+    "notificationsPage": {
+      "title": "الإشعارات",
+      "description": "إدارة إشعارات الدفع. فعّل لتلقي تحديثات الطلبات والعروض.",
+      "enableNotifications": "تفعيل الإشعارات",
+      "enabled": "تم تفعيل الإشعارات",
+      "denied": "تم حظر الإشعارات",
+      "notSupported": "الإشعارات غير مدعومة في هذا المتصفح.",
+      "tokenReady": "جاهز لاستقبال الإشعارات."
     },
     "profile": {
       "title": "حسابي",
@@ -553,6 +574,7 @@
     "pointsRewards": {
       "title": "النقاط والمكافآت",
       "description": "عرض نقاطك وقيمتها وتاريخ انتهائها وكيفية استبدالها.",
+      "errorLoading": "فشل تحميل النقاط. يرجى المحاولة مرة أخرى.",
       "points": "نقطة",
       "pointValue": "قيمة النقطة",
       "estimatedValue": "القيمة المقدرة",
@@ -574,6 +596,7 @@
       "redeem": {
         "title": "استبدل نقاطك",
         "description": "اختر من المكافآت والعروض المتاحة.",
+        "noOptions": "لا توجد خيارات استبدال متاحة.",
         "options": {
           "orderDiscount": {
             "title": "خصم الطلب"
@@ -717,6 +740,9 @@
       "saveChanges": "حفظ التغييرات"
     }
   },
+  "legal": {
+    "heroSubtitle": "نحن نحترم خصوصيتك."
+  },
   "packages": {
     "myPackages": "باقات اشتراكاتي",
     "myPackagesDescription": "إدارة اشتراكاتك النشطة ومزاياها",
@@ -727,6 +753,14 @@
     "month": "شهر",
     "currentPlan": "الخطة الحالية",
     "subscribe": "اشترك",
+    "mySubscription": "اشتراكي",
+    "activeSubscription": "نشط",
+    "remainingOrders": "الطلبات المتبقية",
+    "remainingFreeDeliveries": "التوصيلات المجانية المتبقية",
+    "startDate": "تاريخ البدء",
+    "endDate": "تاريخ الانتهاء",
+    "noSubscription": "ليس لديك اشتراك نشط.",
+    "days": "يوم",
     "features": {
       "higherDiscounts20": "خصومات أعلى بنسبة 20%",
       "higherDiscounts15": "خصومات أعلى بنسبة 15%",
@@ -750,6 +784,10 @@
   "wishlist": {
     "title": "قائمة الأمنيات",
     "description": "المنتجات التي حفظتها للشراء لاحقاً",
+    "products": "المنتجات",
+    "recipes": "الوصفات",
+    "baskets": "السلات",
+    "brands": "العلامات التجارية",
     "allStores": "جميع المتاجر",
     "allCategories": "جميع الفئات",
     "clearFilters": "مسح الفلاتر",
@@ -793,6 +831,7 @@
     "howToMake": "طريقة تحضير",
     "watchOurChef": "شاهد الشيف يوضح التقنية المثالية لهذه الوصفة اللذيذة.",
     "playOnYouTube": "تشغيل على يوتيوب",
+    "noVideoAvailable": "لا يوجد فيديو متاح لهذه الوصفة.",
     "orders": "طلب",
     "youSaved": "وفرت"
   },

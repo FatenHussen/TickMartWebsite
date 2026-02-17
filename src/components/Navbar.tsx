@@ -8,19 +8,22 @@ import {
   HiLocationMarker,
   HiChevronDown,
   HiSearch,
+  HiFilter,
   HiMenu,
   HiLogin,
   HiX,
+  HiGlobe,
 } from "react-icons/hi";
-import LanguageToggle from "./LanguageToggle";
 import { paths } from "@/app/routes/path/paths";
 import { useState, useEffect, useMemo } from "react";
 import { useAuthStore } from "@/store/auth";
 import { useAddresses } from "@/features/account/hooks/useAddress";
 import { useCheckoutStore } from "@/store/checkout";
+import { useCartStore } from "@/store/cart";
+import { useProfile } from "@/features/account/hooks/useProfile";
 
 export default function Navbar() {
-  const { isRTL } = useLanguage();
+  const { isRTL, language, toggleLanguage } = useLanguage();
   const { t } = useTranslation();
   const location = useLocation();
   const { authenticated } = useAuthStore();
@@ -28,10 +31,14 @@ export default function Navbar() {
   const [showLocationDropdown, setShowLocationDropdown] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showAccountDropdown, setShowAccountDropdown] = useState(false);
+  const [logoError, setLogoError] = useState(false);
 
   const { data: addresses = [], isLoading: addressesLoading } =
     useAddresses(authenticated);
   const { addressId, setAddressId } = useCheckoutStore();
+  const items = useCartStore((s) => s.items);
+  const cartCount = items.reduce((sum, i) => sum + i.quantity, 0);
+  const { data: profile } = useProfile();
 
   const selectedAddress = useMemo(() => {
     if (addressId != null) {
@@ -66,7 +73,7 @@ export default function Navbar() {
     return location.pathname.startsWith(path);
   };
 
-  // Main navigation items - all routes
+  // Main navigation items - matches design: Home, Categories, All stores, My baskets, Points & rewards, Help & support
   const navItems = [
     { path: paths.client.home, label: t("home.home") || "Home" },
     {
@@ -78,32 +85,18 @@ export default function Navbar() {
       path: paths.client.store,
       label: t("wishlist.allStores") || "All stores",
     },
-    { path: paths.client.brands, label: t("home.brands") || "Brands" },
-    { path: paths.client.recipes, label: t("recipes.title") || "Recipes" },
-    // { path: paths.client.products, label: t("home.products") || "Products" },
-    { path: paths.client.baskets, label: t("home.baskets") || "Baskets" },
-    // { path: paths.client.cart, label: t("cart.cart") || "Cart" },
-    // {
-    //   path: paths.client.checkout,
-    //   label: t("checkout.checkoutTitle") || "Checkout",
-    // },
-    {
-      path: paths.client.review,
-      label: t("checkout.reviewConfirm") || "Review",
-    },
-    // { path: paths.client.orders, label: t("orders.myOrders") || "My Orders" },
     {
       path: paths.account.baskets,
       label: t("account.menu.myBaskets") || "My baskets",
     },
-    // {
-    //   path: paths.account.pointsRewards,
-    //   label: t("account.menu.pointsRewards") || "Points & rewards",
-    // },
-    // {
-    //   path: paths.account.helpSupport,
-    //   label: t("account.menu.helpSupport") || "Help & support",
-    // },
+    {
+      path: paths.account.pointsRewards,
+      label: t("account.menu.pointsRewards") || "Points & rewards",
+    },
+    {
+      path: paths.account.helpSupport,
+      label: t("account.menu.helpSupport") || "Help & support",
+    },
   ];
 
   // Account navigation items
@@ -165,25 +158,31 @@ export default function Navbar() {
     : [];
 
   return (
-    <div className="bg-blue-off" dir={isRTL ? "rtl" : "ltr"}>
+    <div className="bg-white" dir={isRTL ? "rtl" : "ltr"}>
       {/* Top Header Section */}
-      <div className="bg-blue-off border-b border-primary-light/20">
+      <div className="bg-white border-b border-gray-200">
         <div className="page-container">
           <div className="flex items-center justify-between py-3 gap-2 md:gap-4">
             {/* Logo */}
             <Link
               to={paths.client.home}
               className="flex items-center gap-2 shrink-0"
+              aria-label="Tikmool Home"
             >
-              <div className="w-8 h-8 md:w-10 md:h-10 bg-primary-light rounded-lg flex items-center justify-center">
-                <span className="text-white text-lg md:text-xl font-bold">
-                  ∞
-                </span>
-              </div>
-              <span className="text-xl md:text-2xl font-bold hidden sm:block">
-                <span className="text-primary-light">Tik</span>
-                <span className="text-secondary">mool</span>
-              </span>
+              {!logoError ? (
+                <img
+                  src="/images/shared/logo.png"
+                  alt="Tikmool"
+                  className="h-9 md:h-10 w-auto object-contain"
+                  onError={() => setLogoError(true)}
+                />
+              ) : (
+                <div className="w-9 h-9 md:w-10 md:h-10 bg-primary-light rounded-lg flex items-center justify-center">
+                  <span className="text-white text-lg md:text-xl font-bold">
+                    ∞
+                  </span>
+                </div>
+              )}
             </Link>
 
             {/* Delivery Address - Hidden on mobile, shown on tablet+ */}
@@ -284,8 +283,12 @@ export default function Navbar() {
                   }
                   className="w-full pl-12 pr-12 py-2 bg-white rounded-lg border border-gray-bold focus:outline-none focus:ring-2 focus:ring-primary-light"
                 />
-                <button className="absolute right-4 top-1/2 transform -translate-y-1/2">
-                  <HiMenu className="text-gray-light w-5 h-5" />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-gray-100 transition-colors"
+                  aria-label={t("common.filter") || "Filter"}
+                >
+                  <HiFilter className="text-custom-secondary w-5 h-5" />
                 </button>
               </div>
             </div>
@@ -298,22 +301,30 @@ export default function Navbar() {
             {/* Right Icons */}
             <div className="flex items-center gap-2 md:gap-3">
               {/* Wishlist - Hidden on mobile */}
-              <button className="hidden lg:block p-2 hover:bg-white rounded-lg transition-colors">
-                <HiHeart className="w-6 h-6 text-custom-primary" />
-              </button>
+              <Link
+                to={paths.account.wishlist}
+                className="hidden lg:block p-2 hover:bg-gray-50 rounded-full transition-colors"
+              >
+                <HiHeart className="w-6 h-6 text-primary-light" />
+              </Link>
               {/* Orders - Hidden on mobile */}
-              <button className="hidden lg:block p-2 hover:bg-white rounded-lg transition-colors">
-                <HiShoppingBag className="w-6 h-6 text-custom-primary" />
-              </button>
+              <Link
+                to={paths.account.orders}
+                className="hidden lg:block p-2 hover:bg-gray-50 rounded-full transition-colors"
+              >
+                <HiShoppingBag className="w-6 h-6 text-primary-light" />
+              </Link>
               {/* Cart - Always visible */}
               <Link
                 to={paths.client.cart}
-                className="relative p-2 hover:bg-white rounded-lg transition-colors"
+                className="relative p-2 hover:bg-gray-50 rounded-full transition-colors"
               >
-                <HiShoppingCart className="w-6 h-6 text-custom-primary" />
-                <span className="absolute top-0 right-0 bg-secondary text-custom-primary text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                  0
-                </span>
+                <HiShoppingCart className="w-6 h-6 text-primary-light" />
+                {cartCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 bg-amber-400 text-gray-900 text-xs font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
+                    {cartCount > 99 ? "99+" : cartCount}
+                  </span>
+                )}
               </Link>
               {/* Login - Hidden on mobile if authenticated, shown if not */}
               {!authenticated && (
@@ -327,19 +338,26 @@ export default function Navbar() {
                   </span>
                 </Link>
               )}
-              {/* Account Dropdown - Desktop only */}
+              {/* Profile - Desktop: circular avatar with dropdown */}
               {authenticated && (
-                <div className="hidden lg:block relative">
-                  <button
-                    onMouseEnter={() => setShowAccountDropdown(true)}
-                    onMouseLeave={() => setShowAccountDropdown(false)}
-                    className="flex items-center gap-2 px-3 py-2 bg-white rounded-lg hover:bg-gray-50 transition-colors"
-                  >
-                    <span className="text-sm font-medium text-custom-primary">
-                      {t("navbar.account")}
-                    </span>
-                    <HiChevronDown className="text-gray-light w-4 h-4" />
-                  </button>
+                <div
+                  className="hidden lg:block relative"
+                  onMouseEnter={() => setShowAccountDropdown(true)}
+                  onMouseLeave={() => setShowAccountDropdown(false)}
+                >
+                  <Link to={paths.account.root} className="flex items-center">
+                    {profile?.image ? (
+                      <img
+                        src={profile.image}
+                        alt=""
+                        className="w-9 h-9 rounded-full object-cover border-2 border-gray-200 hover:border-primary-light transition-colors"
+                      />
+                    ) : (
+                      <div className="w-9 h-9 rounded-full bg-primary-light/20 flex items-center justify-center text-primary-light font-semibold text-sm border-2 border-primary-light/30">
+                        {profile?.name?.charAt(0)?.toUpperCase() || "?"}
+                      </div>
+                    )}
+                  </Link>
                   {showAccountDropdown && (
                     <div
                       onMouseEnter={() => setShowAccountDropdown(true)}
@@ -362,11 +380,21 @@ export default function Navbar() {
                   )}
                 </div>
               )}
-              <LanguageToggle />
+              <button
+                type="button"
+                onClick={toggleLanguage}
+                className="hidden sm:flex items-center gap-1.5 px-2 py-1.5 rounded-lg hover:bg-gray-50 transition-colors text-custom-primary"
+                aria-label={t("navbar.language") || "Language"}
+              >
+                <HiGlobe className="w-5 h-5 text-primary-light" />
+                <span className="text-sm font-medium">
+                  {language === "en" ? "AR" : "EN"}
+                </span>
+              </button>
               {/* Mobile Menu Button */}
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="lg:hidden p-2 hover:bg-white rounded-lg transition-colors"
+                className="lg:hidden p-2 hover:bg-gray-50 rounded-lg transition-colors"
               >
                 {isMobileMenuOpen ? (
                   <HiX className="w-6 h-6 text-custom-primary" />
@@ -379,8 +407,8 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Navigation Bar - Desktop (white background like design) */}
-      <div className="hidden lg:block bg-white border-b border-gray-bold">
+      {/* Navigation Bar - Desktop (teal separator like design) */}
+      <div className="hidden lg:block bg-white border-b-2 border-primary-light/30">
         <div className="page-container">
           <div className="flex items-center justify-between py-3">
             <div className="flex items-center gap-4 xl:gap-6 flex-wrap">
@@ -451,13 +479,13 @@ export default function Navbar() {
             <div className="flex items-center gap-3">
               <Link
                 to={paths.becomeVendor}
-                className="px-4 xl:px-6 py-2 bg-primary-light text-white rounded-lg font-medium hover:bg-primary transition-colors text-sm xl:text-base whitespace-nowrap"
+                className="px-5 xl:px-6 py-2.5 bg-primary-light text-white rounded-full font-medium hover:bg-primary-light/90 hover:opacity-95 transition-all text-sm xl:text-base whitespace-nowrap shadow-sm"
               >
                 {t("navbar.becomeVendor")}
               </Link>
               <Link
                 to={paths.becomeMarketer}
-                className="px-4 xl:px-6 py-2 bg-primary-light text-white rounded-lg font-medium hover:bg-primary transition-colors text-sm xl:text-base whitespace-nowrap"
+                className="px-5 xl:px-6 py-2.5 bg-primary-light text-white rounded-full font-medium hover:bg-primary-light/90 hover:opacity-95 transition-all text-sm xl:text-base whitespace-nowrap shadow-sm"
               >
                 {t("navbar.becomeMarketer")}
               </Link>
@@ -493,12 +521,24 @@ export default function Navbar() {
                 <span className="text-lg font-bold text-custom-primary">
                   {t("navbar.menu")}
                 </span>
-                <button
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  <HiX className="w-6 h-6 text-custom-primary" />
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={toggleLanguage}
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors text-custom-primary"
+                  >
+                    <HiGlobe className="w-5 h-5 text-primary-light" />
+                    <span className="text-sm font-medium">
+                      {language === "en" ? "AR" : "EN"}
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    <HiX className="w-6 h-6 text-custom-primary" />
+                  </button>
+                </div>
               </div>
 
               {/* Delivery Address - Mobile */}

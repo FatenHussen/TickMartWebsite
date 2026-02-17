@@ -1,9 +1,8 @@
 import { useTranslation } from "react-i18next";
 import { cn } from "@/shared/lib/utils";
-import { HiHeart } from "react-icons/hi2";
-import Button from "@/shared/ui/Button";
 import Rating from "@/shared/component/Rating";
 import Badge from "@/shared/component/Badge";
+import FavoriteButton from "@/shared/component/FavoriteButton";
 import type { Recipe } from "../types";
 import { mapActionPageSlugToRoute } from "@/utils/routeMapper";
 import { useNavigate } from "react-router-dom";
@@ -11,6 +10,8 @@ import { useNavigate } from "react-router-dom";
 export type RecipeCardProps = {
   recipe: Recipe;
   className?: string;
+  isFavorite?: boolean;
+  onToggleFavorite?: (id: number) => void;
 };
 
 const badgeColorMap: Record<string, string> = {
@@ -20,7 +21,12 @@ const badgeColorMap: Record<string, string> = {
   primary: "bg-blue-500 text-white",
 };
 
-export default function RecipeCard({ recipe, className }: RecipeCardProps) {
+export default function RecipeCard({
+  recipe,
+  className,
+  isFavorite = false,
+  onToggleFavorite,
+}: RecipeCardProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const hasDiscount = recipe.discount && parseFloat(recipe.discount) > 0;
@@ -83,19 +89,17 @@ export default function RecipeCard({ recipe, className }: RecipeCardProps) {
         )}
 
         {/* Favorite Button (top-right) */}
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          aria-label="Toggle favorite"
-          onClick={(e) => {
-            e.stopPropagation();
-            // TODO: Implement favorite functionality
-          }}
-          className="absolute right-3 top-3 z-10 h-9 w-9 p-0 rounded-full bg-custom-primary/90 backdrop-blur-sm border-2 border-primary-light hover:bg-custom-primary"
-        >
-          <HiHeart className="h-5 w-5 fill-none text-primary-light" />
-        </Button>
+        <div className="absolute right-3 top-3 z-10">
+          <FavoriteButton
+            isFavorite={isFavorite}
+            onToggle={(e) => {
+              e.stopPropagation();
+              onToggleFavorite?.(recipe.id);
+            }}
+            size="md"
+            ariaLabel="Toggle favorite"
+          />
+        </div>
 
         {/* Rating (bottom-left) */}
         {recipe.rating > 0 && (

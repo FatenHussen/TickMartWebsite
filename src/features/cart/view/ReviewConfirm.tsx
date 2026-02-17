@@ -1,7 +1,8 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContext";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import SideContentLayout from "@/layout/SideContentLayout";
 import { CheckoutProgressIndicator, SuccessPopup } from "@/shared/component";
 import { useAddresses } from "@/features/account/hooks/useAddress";
@@ -33,7 +34,7 @@ function mapAddressToDeliveryAddress(addr: Address): DeliveryAddress {
     phoneNumber: addr.contact_phone,
     address: [...parts, addr.area?.name].filter(Boolean).join(", "),
     tags: [addr.label, addr.is_default ? "Default" : null].filter(
-      (x): x is string => x != null
+      (x): x is string => x != null,
     ),
     isDefault: addr.is_default,
   };
@@ -44,9 +45,12 @@ export default function ReviewConfirm() {
   const { isRTL } = useLanguage();
   const navigate = useNavigate();
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+  const [createdOrderId, setCreatedOrderId] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigatingToTrackOrder = useRef(false);
 
-  const { addressId, coupon, paymentMethodId, additionalNotes } = useCheckoutStore();
+  const { addressId, coupon, paymentMethodId, additionalNotes } =
+    useCheckoutStore();
   const {
     items: cartItems,
     cart_type,
@@ -59,7 +63,7 @@ export default function ReviewConfirm() {
   const { data: addressesData = [] } = useAddresses();
   const checkoutAddresses = useMemo<DeliveryAddress[]>(
     () => addressesData.map(mapAddressToDeliveryAddress),
-    [addressesData]
+    [addressesData],
   );
 
   const selectedAddress =
@@ -71,14 +75,13 @@ export default function ReviewConfirm() {
     mockCheckoutPaymentMethods[0];
 
   const addressIdNum = addressId ? Number(addressId) : null;
-  const { data: preview } = useOrderPreview(
-    addressIdNum,
-    coupon || undefined
-  );
+  const { data: preview } = useOrderPreview(addressIdNum, coupon || undefined);
 
   const reviewSummary = useMemo<ReviewOrderSummary | null>(() => {
     if (!preview) return null;
-    const couponDiscount = preview.coupon?.applied ? preview.coupon.discount : 0;
+    const couponDiscount = preview.coupon?.applied
+      ? preview.coupon.discount
+      : 0;
     return {
       items: cartItems,
       numOfItems: preview.total_quantity,
@@ -107,7 +110,7 @@ export default function ReviewConfirm() {
     setIsSubmitting(true);
     try {
       const isInstantDelivery = cartItems.some(
-        (i) => i.is_instant_delivery ?? !!i.hasFreeDelivery
+        (i) => i.is_instant_delivery ?? !!i.hasFreeDelivery,
       );
       const payload = {
         address_id: Number(addressId),
@@ -121,12 +124,16 @@ export default function ReviewConfirm() {
         ...(additionalNotes && { notes: additionalNotes }),
       };
 
-      await _OrderApi.postOrder(payload);
+      const { id } = await _OrderApi.postOrder(payload);
+      setShowSuccessPopup(true);
+      setCreatedOrderId(id);
       useCheckoutStore.getState().reset();
       clearCart();
-      setShowSuccessPopup(true);
     } catch (err) {
       console.error("Order failed:", err);
+      toast.error(
+        t("cart.orderFailed", "Failed to create order. Please try again."),
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -134,10 +141,23 @@ export default function ReviewConfirm() {
 
   const handleClosePopup = () => {
     setShowSuccessPopup(false);
+    setCreatedOrderId(null);
+  };
+
+  const handleTrackOrder = () => {
+    if (createdOrderId != null) {
+      navigatingToTrackOrder.current = true;
+      setShowSuccessPopup(false);
+      setCreatedOrderId(null);
+      navigate(
+        paths.client.trackOrder.replace(":orderId", String(createdOrderId)),
+      );
+    }
   };
 
   const handleBackToHome = () => {
     setShowSuccessPopup(false);
+    setCreatedOrderId(null);
     navigate(paths.client.home);
   };
 
@@ -153,22 +173,43 @@ export default function ReviewConfirm() {
     console.log("Move to wishlist:", itemId);
   };
 
-  if (cartItems.length === 0 && !showSuccessPopup) {
+  const isSuccessState = showSuccessPopup || createdOrderId != null;
+
+  if (
+    !isSuccessState &&
+    cartItems.length === 0 &&
+    !navigatingToTrackOrder.current
+  ) {
     navigate(paths.client.cart);
     return null;
   }
 
-  if (checkoutAddresses.length === 0) {
+  if (
+    !isSuccessState &&
+    checkoutAddresses.length === 0 &&
+    !navigatingToTrackOrder.current
+  ) {
     navigate(paths.client.checkout);
     return null;
   }
 
-  if (!addressId && checkoutAddresses.length > 0) {
+  if (
+    !isSuccessState &&
+    !addressId &&
+    checkoutAddresses.length > 0 &&
+    !navigatingToTrackOrder.current
+  ) {
     navigate(paths.client.checkout);
     return null;
   }
 
-  if (addressId && !selectedAddress && checkoutAddresses.length > 0) {
+  if (
+    !isSuccessState &&
+    addressId &&
+    !selectedAddress &&
+    checkoutAddresses.length > 0 &&
+    !navigatingToTrackOrder.current
+  ) {
     navigate(paths.client.checkout);
     return null;
   }
@@ -199,7 +240,10 @@ export default function ReviewConfirm() {
 
       <div className="text-center mb-8">
         <p className="text-custom-secondary text-base">
-          {t("checkout.reviewMessage", "Please check all details before confirming your order.")}
+          {t(
+            "checkout.reviewMessage",
+            "Please check all details before confirming your order.",
+          )}
         </p>
       </div>
 
@@ -240,7 +284,10 @@ export default function ReviewConfirm() {
         isOpen={showSuccessPopup}
         onClose={handleClosePopup}
         pointsEarned={reviewSummary?.pointsEarned ?? 0}
-        onPrimaryClick={handleBackToHome}
+        primaryButtonText={t("successPopup.trackOrder", "Track Order")}
+        onPrimaryClick={handleTrackOrder}
+        secondaryButtonText={t("successPopup.backToHome", "Back to home page")}
+        onSecondaryClick={handleBackToHome}
       />
     </div>
   );

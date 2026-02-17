@@ -1,5 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useAuthStore } from "@/store/auth";
+import { useFavorites, useToggleFavorite } from "@/features/account/hooks/useFavorites";
 import SliderSection from "../slider/core/SliderSection";
 import ProductCard from "../card/ProductCard";
 import BrandCard from "../card/BrandCard";
@@ -106,6 +108,14 @@ export default function ApiSectionsRenderer({
 }: ApiSectionsRendererProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { authenticated } = useAuthStore();
+  const { data: favoriteProducts = [] } = useFavorites("product", !!authenticated);
+  const { data: favoriteRecipes = [] } = useFavorites("recipe", !!authenticated);
+  const { data: favoriteBaskets = [] } = useFavorites("basket", !!authenticated);
+  const toggleFavorite = useToggleFavorite();
+  const productFavoriteIds = favoriteProducts.map((f) => f.id);
+  const recipeFavoriteIds = favoriteRecipes.map((f) => f.id);
+  const basketFavoriteIds = favoriteBaskets.map((f) => f.id);
 
   const handleViewAll = (section: Section) => {
     if (section.see_more?.page_slug) {
@@ -139,6 +149,18 @@ export default function ApiSectionsRenderer({
           onViewAll={() => handleViewAll(section)}
           onItemClick={(item) => handleItemClick(section, item)}
           t={t}
+          productFavoriteIds={productFavoriteIds}
+          recipeFavoriteIds={recipeFavoriteIds}
+          basketFavoriteIds={basketFavoriteIds}
+          onToggleProductFavorite={(id) =>
+            toggleFavorite.mutate({ type: "product", id })
+          }
+          onToggleRecipeFavorite={(id) =>
+            toggleFavorite.mutate({ type: "recipe", id })
+          }
+          onToggleBasketFavorite={(id) =>
+            toggleFavorite.mutate({ type: "basket", id })
+          }
         />
       ))}
     </>
@@ -150,6 +172,12 @@ type SectionByDisplayTypeProps = {
   onViewAll: () => void;
   onItemClick: (item: SectionItem) => void;
   t: (key: string) => string;
+  productFavoriteIds: number[];
+  recipeFavoriteIds: number[];
+  basketFavoriteIds: number[];
+  onToggleProductFavorite: (id: number) => void;
+  onToggleRecipeFavorite: (id: number) => void;
+  onToggleBasketFavorite: (id: number) => void;
 };
 
 function SectionByDisplayType({
@@ -157,6 +185,12 @@ function SectionByDisplayType({
   onViewAll,
   onItemClick,
   t,
+  productFavoriteIds,
+  recipeFavoriteIds,
+  basketFavoriteIds,
+  onToggleProductFavorite,
+  onToggleRecipeFavorite,
+  onToggleBasketFavorite,
 }: SectionByDisplayTypeProps) {
   const showViewAll = section.type === "api" && section.see_more;
 
@@ -180,6 +214,8 @@ function SectionByDisplayType({
           onViewAll={onViewAll}
           onItemClick={onItemClick}
           t={t}
+          favoriteIds={productFavoriteIds}
+          onToggleFavorite={onToggleProductFavorite}
         />
       );
 
@@ -202,6 +238,8 @@ function SectionByDisplayType({
           onViewAll={onViewAll}
           onItemClick={onItemClick}
           t={t}
+          favoriteIds={basketFavoriteIds}
+          onToggleFavorite={onToggleBasketFavorite}
         />
       );
 
@@ -224,6 +262,8 @@ function SectionByDisplayType({
           onViewAll={onViewAll}
           onItemClick={onItemClick}
           t={t}
+          favoriteIds={recipeFavoriteIds}
+          onToggleFavorite={onToggleRecipeFavorite}
         />
       );
 
@@ -241,6 +281,11 @@ type SectionProps = {
   onViewAll: () => void;
   onItemClick: (item: SectionItem) => void;
   t: (key: string) => string;
+};
+
+type SectionPropsWithFavorites = SectionProps & {
+  favoriteIds: number[];
+  onToggleFavorite: (id: number) => void;
 };
 
 function BannerSection({
@@ -314,7 +359,9 @@ function ProductSection({
   onViewAll,
   onItemClick,
   t,
-}: SectionProps) {
+  favoriteIds,
+  onToggleFavorite,
+}: SectionPropsWithFavorites) {
   return (
     <SliderSection
       title={section.name}
@@ -360,7 +407,9 @@ function ProductSection({
                     }
                   : undefined
               }
+              isFavorite={favoriteIds.includes(item.id)}
               onClick={() => onItemClick(item)}
+              onToggleFavorite={onToggleFavorite}
             />
           );
         }
@@ -389,7 +438,9 @@ function ProductSection({
                 ? { label: `-${data.discount}%`, className: "bg-red-500" }
                 : undefined
             }
+            isFavorite={favoriteIds.includes(data.id)}
             onClick={() => onItemClick(item)}
+            onToggleFavorite={onToggleFavorite}
           />
         );
       }}
@@ -403,7 +454,9 @@ function RecipeSection({
   onViewAll,
   onItemClick,
   t,
-}: SectionProps) {
+  favoriteIds,
+  onToggleFavorite,
+}: SectionPropsWithFavorites) {
   return (
     <SliderSection
       title={section.name}
@@ -448,7 +501,9 @@ function RecipeSection({
                     }
                   : undefined
               }
+              isFavorite={favoriteIds.includes(item.id)}
               onClick={() => onItemClick(item)}
+              onToggleFavorite={onToggleFavorite}
             />
           );
         }
@@ -477,7 +532,9 @@ function RecipeSection({
                 ? { label: `-${data.discount}%`, className: "bg-red-500" }
                 : undefined
             }
+            isFavorite={favoriteIds.includes(data.id)}
             onClick={() => onItemClick(item)}
+            onToggleFavorite={onToggleFavorite}
           />
         );
       }}
@@ -491,7 +548,9 @@ function BasketSection({
   onViewAll,
   onItemClick,
   t,
-}: SectionProps) {
+  favoriteIds,
+  onToggleFavorite,
+}: SectionPropsWithFavorites) {
   return (
     <SliderSection
       title={section.name}
@@ -532,7 +591,9 @@ function BasketSection({
               saveAmount={saveAmount}
               savings={savings}
               offerEndingDate={offerEndingDate}
+              isFavorite={favoriteIds.includes(item.id)}
               onClick={() => onItemClick(item)}
+              onToggleFavorite={onToggleFavorite}
             />
           );
         }
@@ -557,7 +618,9 @@ function BasketSection({
                 : undefined
             }
             image={data.image || ""}
+            isFavorite={favoriteIds.includes(data.id)}
             onClick={() => onItemClick(item)}
+            onToggleFavorite={onToggleFavorite}
           />
         );
       }}

@@ -19,7 +19,7 @@ export default function CategoryDetails() {
 
   const category = useMemo(
     () => categories.find((c) => c.id === categoryIdNum) || categories[0],
-    [categoryIdNum]
+    [categoryIdNum],
   );
 
   const [selectedSubcategoryId, setSelectedSubcategoryId] = useState<
@@ -28,12 +28,12 @@ export default function CategoryDetails() {
 
   const currentSubcategories = useMemo(
     () => nestedSubcategories[category.id] || [],
-    [category.id]
+    [category.id],
   );
 
   const currentProducts = useMemo(
     () => categoryProducts[category.id] || [],
-    [category.id]
+    [category.id],
   );
 
   const breadcrumbs = [

@@ -36,7 +36,7 @@ export const _OrderApi = {
     return (data?.data ?? data) as OrderPreviewResponse;
   },
 
-  postOrder: async (payload: OrderCreatePayload): Promise<unknown> => {
+  postOrder: async (payload: OrderCreatePayload): Promise<{ id: number }> => {
     const body: Record<string, unknown> = {
       address_id: payload.address_id,
       cart_type: toApiCartType(payload.cart_type),
@@ -53,8 +53,17 @@ export const _OrderApi = {
     if (payload.notes) body.notes = payload.notes;
 
     const res = await _axios.post(apiRoutes.orders.create, body);
-    const data = res.data as { data?: unknown } & unknown;
-    return data?.data ?? data;
+    const raw = res.data as Record<string, unknown>;
+    const data = (raw?.data ?? raw) as Record<string, unknown>;
+    const order = data?.order as Record<string, unknown> | undefined;
+    const id =
+      (data?.id as number | undefined) ??
+      (data?.order_id as number | undefined) ??
+      (order?.id as number | undefined) ??
+      (order?.order_id as number | undefined);
+    if (id == null)
+      throw new Error("Order created but no order ID in response");
+    return { id: Number(id) };
   },
 
   postCouponPreview: async (

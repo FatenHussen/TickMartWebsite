@@ -1,7 +1,6 @@
-import Button from "@/shared/ui/Button";
 import Rating from "./Rating";
 import { cn } from "../lib/utils";
-import { HiHeart } from "react-icons/hi2";
+import FavoriteButton from "./FavoriteButton";
 
 export type StoreCardProps = {
   name: string;
@@ -82,27 +81,18 @@ export default function StoreCard({
           </span>
         )}
 
-        {/* Favorite Button (top-right) - White heart with light blue outline */}
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          aria-label="Toggle favorite"
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggleFavorite?.();
-          }}
-          className="absolute right-3 top-3 z-10 h-9 w-9 p-0 rounded-full bg-white border-2 border-blue-400/80 hover:bg-blue-400/10"
-        >
-          <HiHeart
-            className={cn(
-              "h-5 w-5",
-              isFavorite
-                ? "fill-blue-400 text-blue-400"
-                : "fill-none text-blue-400"
-            )}
+        {/* Favorite Button (top-right) */}
+        <div className="absolute right-3 top-3 z-10">
+          <FavoriteButton
+            isFavorite={isFavorite}
+            onToggle={(e) => {
+              e.stopPropagation();
+              onToggleFavorite?.();
+            }}
+            size="md"
+            ariaLabel="Toggle favorite"
           />
-        </Button>
+        </div>
 
         {/* Rating badge (bottom-left) - Gray rectangular with yellow star */}
         <div className="absolute left-3 bottom-3 z-10 bg-blue-off rounded-sm">

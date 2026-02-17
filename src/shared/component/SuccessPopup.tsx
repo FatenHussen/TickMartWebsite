@@ -34,8 +34,10 @@ export default function SuccessPopup({
   const displayTitle = title ?? t("successPopup.title");
   const displaySubtitle = subtitle ?? t("successPopup.subtitle");
   const displayDescription = description ?? t("successPopup.description");
-  const displayPrimaryButton = primaryButtonText ?? t("successPopup.backToHome");
-  const displayPointsDescription = pointsDescription ?? t("successPopup.pointsDescription");
+  const displayPrimaryButton =
+    primaryButtonText ?? t("successPopup.backToHome");
+  const displayPointsDescription =
+    pointsDescription ?? t("successPopup.pointsDescription");
 
   return (
     <BasePopup
@@ -102,16 +104,17 @@ export default function SuccessPopup({
           style={{ backgroundColor: "rgba(255, 255, 255, 0.95)" }}
         >
           <div className="shrink-0">
-            <img
+            {/* <img
               src="/images/shared/box.png"
               alt="Gift"
               className="w-16 h-16 object-contain"
-            />
+            /> */}
           </div>
           <div className="text-left flex-1">
             <div className="flex items-center gap-2 mb-1">
               <span className="text-lg font-bold" style={{ color: "#22C55E" }}>
-                {t("successPopup.youEarned")} {pointsEarned} {t("successPopup.points")}
+                {t("successPopup.youEarned")} {pointsEarned}{" "}
+                {t("successPopup.points")}
               </span>
             </div>
             <p className="text-xs text-gray-500">{displayPointsDescription}</p>

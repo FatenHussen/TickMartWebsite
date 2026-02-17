@@ -44,6 +44,12 @@ export default function SoldWithThisProductVariant({
 }: SliderVariantProps) {
   const items: Product[] =
     (payload as { items?: Product[] })?.items || defaultProducts;
+  const onProductClick =
+    (payload as { onProductClick?: (id: number) => void })?.onProductClick;
+  const onToggleFavorite =
+    (payload as { onToggleFavorite?: (id: number) => void })?.onToggleFavorite;
+  const favoriteIds =
+    (payload as { favoriteIds?: number[] })?.favoriteIds ?? [];
   const limitedItems =
     ui?.limit && ui.limit > 0 ? items.slice(0, ui.limit) : items;
   const totalPrice =
@@ -80,9 +86,13 @@ export default function SoldWithThisProductVariant({
             sold={product.sold}
             savings={product.savings}
             deliveryInfo={product.deliveryInfo}
-            isFavorite={product.isFavorite}
-            onToggleFavorite={(id) => console.log("toggle fav", id)}
-            onClick={(id) => console.log("open product", id)}
+            isFavorite={
+              favoriteIds.length > 0
+                ? favoriteIds.includes(product.id as number)
+                : (product.isFavorite ?? false)
+            }
+            onToggleFavorite={(id) => onToggleFavorite?.(id)}
+            onClick={(id) => onProductClick?.(id)}
           />
         )}
       />

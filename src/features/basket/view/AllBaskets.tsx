@@ -3,6 +3,8 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/context/LanguageContext";
 import { useBaskets } from "../hooks/useBaskets";
+import { useAuthStore } from "@/store/auth";
+import { useFavorites, useToggleFavorite } from "@/features/account/hooks/useFavorites";
 import { useSectionsByPosition } from "@/features/home/hooks/useSections";
 import ApiSectionsRenderer from "@/shared/component/sections/ApiSectionsRenderer";
 import FullBleedSection from "@/shared/component/FullBleedSection";
@@ -84,9 +86,13 @@ export default function AllBaskets() {
     console.log("Add to cart:", basketId);
   };
 
+  const { authenticated } = useAuthStore();
+  const { data: favoriteBaskets = [] } = useFavorites("basket", !!authenticated);
+  const toggleFavorite = useToggleFavorite();
+  const favoriteBasketIds = favoriteBaskets.map((f) => f.id);
+
   const handleToggleFavorite = (basketId: number) => {
-    // TODO: Toggle favorite logic
-    console.log("Toggle favorite:", basketId);
+    toggleFavorite.mutate({ type: "basket", id: basketId });
   };
 
   // Sidebar with filters
@@ -165,6 +171,7 @@ export default function AllBaskets() {
                         ? `${t("baskets.offerEnding")}: ${basket.offer_ends_at}`
                         : undefined
                     }
+                    isFavorite={favoriteBasketIds.includes(basket.id)}
                     onClick={() => handleBasketClick(basket.id, basket.next_delivery_date)}
                     onAddToCart={() => handleAddToCart(basket.id)}
                     onToggleFavorite={() => handleToggleFavorite(basket.id)}

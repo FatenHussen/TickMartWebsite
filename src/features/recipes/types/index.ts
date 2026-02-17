@@ -76,8 +76,11 @@ export interface RecipeDetails {
   rating: number;
   orders_count: number;
   discount: string;
-  badges: RecipeBadge[];
-  totals: RecipeTotals;
+  serves?: string;
+  prepare_time?: string;
+  badges?: RecipeBadge[];
+  budges?: RecipeBadge[];
+  totals?: RecipeTotals;
   steps: RecipeStep[];
   items: RecipeItem[];
   created_at: string;

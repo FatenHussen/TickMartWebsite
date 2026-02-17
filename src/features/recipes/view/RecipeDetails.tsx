@@ -115,17 +115,21 @@ export default function RecipeDetails() {
   const handleAddAllToCart = () => {
     if (!recipe?.items?.length || !recipeItems.length) return;
 
-    const items = recipeItems.map((ri) => {
-      const variantId =
-        ri.selectedVariantId ?? ri.variants?.[0]?.id;
-      const shop_product_variant_id =
-        typeof variantId === "number" ? variantId : Number(variantId);
+    const items = recipe.items.map((item, index) => {
+      const qty = getQuantity(index, item.terms.default_quantity);
+      const selectedId = selectedVariants[index];
+      const hasAlternatives = item.alternatives?.length > 0;
+      const shop_product_variant_id = hasAlternatives && selectedId != null
+        ? Number(selectedId)
+        : hasAlternatives && item.alternatives[0]
+          ? item.alternatives[0].shop_product_variant_id
+          : item.main_item.shop_product_variant_id;
       return {
         shop_product_variant_id,
-        quantity: ri.quantity,
-        name: ri.name,
-        image: ri.image ?? "",
-        priceNumeric: ri.unit_price,
+        quantity: qty,
+        name: item.main_item.name,
+        image: item.main_item.image_url ?? "",
+        priceNumeric: item.main_item.price,
         storeId: 0,
       };
     });
@@ -199,11 +203,31 @@ export default function RecipeDetails() {
             {/* Left: Recipe Image and Info */}
             <div>
               <div className="relative mb-4">
-                <img
-                  src={imageUrl}
-                  alt={recipe.name}
-                  className="w-full h-80 object-cover rounded-xl"
-                />
+                {recipe.video_url ? (
+                  <a
+                    href={recipe.video_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block relative group cursor-pointer"
+                  >
+                    <img
+                      src={imageUrl}
+                      alt={recipe.name}
+                      className="w-full h-80 object-cover rounded-xl transition group-hover:opacity-95"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition bg-black/20 rounded-xl">
+                      <div className="w-16 h-16 rounded-full bg-red-600 flex items-center justify-center shadow-lg">
+                        <HiPlay className="h-8 w-8 text-white ms-1" />
+                      </div>
+                    </div>
+                  </a>
+                ) : (
+                  <img
+                    src={imageUrl}
+                    alt={recipe.name}
+                    className="w-full h-80 object-cover rounded-xl"
+                  />
+                )}
                 {/* Rating Badge */}
                 {recipe.rating > 0 && (
                   <div className="absolute bottom-4 left-4 bg-custom-primary/90 backdrop-blur-sm rounded-lg px-2 py-1">
@@ -228,20 +252,36 @@ export default function RecipeDetails() {
 
               {/* Meta info: Time, Servings */}
               <div className="flex items-center gap-4 text-sm text-custom-secondary mb-4">
-                <span className="flex items-center gap-1">
-                  <span className="text-green-500">⏱</span>{" "}
-                  {t("recipes.readyIn")} 25 min
-                </span>
-                <span className="flex items-center gap-1">
-                  <span className="text-custom-tertiary">👥</span>{" "}
-                  {t("recipes.serves")} 2-4
-                </span>
+                {recipe.prepare_time && (
+                  <span className="flex items-center gap-1">
+                    <span className="text-green-500">⏱</span>{" "}
+                    {t("recipes.readyIn")} {recipe.prepare_time} min
+                  </span>
+                )}
+                {recipe.serves && (
+                  <span className="flex items-center gap-1">
+                    <span className="text-custom-tertiary">👥</span>{" "}
+                    {t("recipes.serves")} {recipe.serves}
+                  </span>
+                )}
+                {!recipe.prepare_time && !recipe.serves && (
+                  <>
+                    <span className="flex items-center gap-1">
+                      <span className="text-green-500">⏱</span>{" "}
+                      {t("recipes.readyIn")} 25 min
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <span className="text-custom-tertiary">👥</span>{" "}
+                      {t("recipes.serves")} 2-4
+                    </span>
+                  </>
+                )}
               </div>
 
               {/* Tags/Badges */}
-              {recipe.badges && recipe.badges.length > 0 && (
+              {(recipe.badges ?? recipe.budges) && (recipe.badges ?? recipe.budges)!.length > 0 && (
                 <div className="flex flex-wrap gap-2">
-                  {recipe.badges.map((badge) => (
+                    {(recipe.badges ?? recipe.budges)!.map((badge) => (
                     <span
                       key={badge.id}
                       className="px-3 py-1 rounded-full text-xs font-medium bg-cyan-100 text-cyan-700 dark:bg-cyan-900 dark:text-cyan-300"
@@ -370,33 +410,58 @@ export default function RecipeDetails() {
                 {t("recipes.cookingVideo")}
               </h2>
 
-              <div className="relative rounded-xl overflow-hidden mb-4">
-                <img
-                  src={imageUrl}
-                  alt="Video thumbnail"
-                  className="w-full h-40 object-cover"
-                />
-                <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                  <div className="w-14 h-14 rounded-full bg-red-600 flex items-center justify-center">
-                    <HiPlay className="h-6 w-6 text-white ms-1" />
-                  </div>
+              {recipe.video_url ? (
+                <>
+                  <a
+                    href={recipe.video_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block relative rounded-xl overflow-hidden mb-4 group cursor-pointer"
+                  >
+                    <img
+                      src={imageUrl}
+                      alt="Video thumbnail"
+                      className="w-full h-40 object-cover transition group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center group-hover:bg-black/30 transition">
+                      <div className="w-14 h-14 rounded-full bg-red-600 flex items-center justify-center group-hover:scale-110 transition shadow-lg">
+                        <HiPlay className="h-6 w-6 text-white ms-1" />
+                      </div>
+                    </div>
+                  </a>
+                  <h3 className="font-semibold text-custom-primary mb-2">
+                    {t("recipes.howToMake")} {recipe.name}
+                  </h3>
+                  <p className="text-sm text-custom-secondary mb-4">
+                    {t("recipes.watchOurChef")}
+                  </p>
+                  <a
+                    href={recipe.video_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block"
+                  >
+                    <Button
+                      variant="primary"
+                      className="w-full bg-red-600 hover:bg-red-700 text-white"
+                    >
+                      <HiPlay className="h-4 w-4 me-2" />
+                      {t("recipes.playOnYouTube")}
+                    </Button>
+                  </a>
+                </>
+              ) : (
+                <div className="rounded-xl overflow-hidden mb-4">
+                  <img
+                    src={imageUrl}
+                    alt="Recipe"
+                    className="w-full h-40 object-cover"
+                  />
+                  <p className="text-sm text-custom-secondary mt-2">
+                    {t("recipes.noVideoAvailable", "No video available for this recipe.")}
+                  </p>
                 </div>
-              </div>
-
-              <h3 className="font-semibold text-custom-primary mb-2">
-                {t("recipes.howToMake")} {recipe.name}
-              </h3>
-              <p className="text-sm text-custom-secondary mb-4">
-                {t("recipes.watchOurChef")}
-              </p>
-
-              <Button
-                variant="primary"
-                className="w-full bg-red-600 hover:bg-red-700 text-white"
-              >
-                <HiPlay className="h-4 w-4 me-2" />
-                {t("recipes.playOnYouTube")}
-              </Button>
+              )}
             </div>
           </div>
 

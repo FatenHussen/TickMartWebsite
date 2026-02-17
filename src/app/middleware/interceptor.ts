@@ -1,6 +1,7 @@
 import axios from "axios";
 import { toast } from "sonner";
 import { useAuthStore } from "@/store/auth";
+import i18n from "@/i18n/config";
 
 const MUTATION_METHODS = ["post", "put", "patch", "delete"] as const;
 
@@ -10,6 +11,11 @@ function isMutationMethod(
   return MUTATION_METHODS.includes(
     method.toLowerCase() as (typeof MUTATION_METHODS)[number]
   );
+}
+
+function getAcceptLanguage(): string {
+  const lang = i18n.language || localStorage.getItem("language") || "en";
+  return lang.startsWith("ar") ? "ar" : "en";
 }
 
 const BASE_URL = import.meta.env.DEV
@@ -26,13 +32,14 @@ const _axios = axios.create({
   },
 });
 
-// Request interceptor - Add token to requests
+// Request interceptor - Add token and Accept-Language
 _axios.interceptors.request.use(
   (config) => {
     const token = useAuthStore.getState().token;
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    config.headers["Accept-Language"] = getAcceptLanguage();
     return config;
   },
   (error) => {

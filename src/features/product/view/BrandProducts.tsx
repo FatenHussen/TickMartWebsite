@@ -4,6 +4,8 @@ import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContext";
 import { useBrandDetails, useBrandProducts } from "../hooks/useBrands";
 import { useSectionsByPosition } from "@/features/home/hooks/useSections";
+import { useAuthStore } from "@/store/auth";
+import { useFavorites, useToggleFavorite } from "@/features/account/hooks/useFavorites";
 import ApiSectionsRenderer from "@/shared/component/sections/ApiSectionsRenderer";
 import FullBleedSection from "@/shared/component/FullBleedSection";
 import BrandHeader from "../components/BrandHeader";
@@ -77,13 +79,17 @@ export default function BrandProducts() {
     (s) => s.display_type_id !== 1
   );
 
+  const { authenticated } = useAuthStore();
+  const { data: favoriteProducts = [] } = useFavorites("product", !!authenticated);
+  const toggleFavorite = useToggleFavorite();
+  const favoriteIds = favoriteProducts.map((f) => f.id);
+
   const handleProductClick = (id: number) => {
     navigate(`/product/${id}`);
   };
 
   const handleToggleFavorite = (id: number) => {
-    // TODO: Toggle favorite
-    console.log("Toggle favorite:", id);
+    toggleFavorite.mutate({ type: "product", id });
   };
 
   // Convert BrandProduct to Product type for ProductGrid
@@ -103,6 +109,7 @@ export default function BrandProducts() {
       category: item.category,
       sold: item.sold_number,
       savings: item.amount_saved > 0 ? `$${item.amount_saved}` : undefined,
+      isFavorite: favoriteIds.includes(item.id),
     }));
   };
 

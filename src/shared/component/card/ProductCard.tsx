@@ -1,9 +1,8 @@
 import { cn } from "../../lib/utils";
-import { HiHeart } from "react-icons/hi2";
-import Button from "@/shared/ui/Button";
 import Rating from "@/shared/component/Rating";
 import AnimatedButton from "../../ui/AnimatedButton";
 import Badge from "@/shared/component/Badge";
+import FavoriteButton from "@/shared/component/FavoriteButton";
 
 export type ProductCardProps = {
   id: number;
@@ -40,7 +39,7 @@ export default function ProductCard({
   image,
   badge,
   category,
-  isFavorite = true,
+  isFavorite = false,
   sold,
   savings = "10",
   deliveryInfo,
@@ -49,8 +48,6 @@ export default function ProductCard({
   t,
   className,
 }: ProductCardProps) {
-  console.log(id);
-
   return (
     <div
       className={cn(
@@ -95,27 +92,18 @@ export default function ProductCard({
           </div>
         )}
 
-        {/* Favorite Button (top-right) - Light blue circular with white heart */}
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          aria-label="Toggle favorite"
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggleFavorite?.(id);
-          }}
-          className="absolute right-3 top-3 z-10 h-9 w-9 p-0 rounded-full bg-white border-2 border-primary-light backdrop-blur-sm hover:bg-blue-400"
-        >
-          <HiHeart
-            className={cn(
-              "h-5 w-5",
-              isFavorite
-                ? "fill-primary-light text-primary-light"
-                : "fill-none text-primary-light",
-            )}
+        {/* Favorite Button (top-right) */}
+        <div className="absolute right-3 top-3 z-10">
+          <FavoriteButton
+            isFavorite={isFavorite}
+            onToggle={(e) => {
+              e.stopPropagation();
+              onToggleFavorite?.(id);
+            }}
+            size="md"
+            ariaLabel="Toggle favorite"
           />
-        </Button>
+        </div>
 
         {/* Rating (bottom-left) - White text on image */}
         <div className="absolute left-3 bottom-3 z-10 bg-blue-off rounded-sm">

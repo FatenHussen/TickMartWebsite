@@ -23,12 +23,18 @@ export interface VariantAttribute {
 }
 
 export interface ShopVariant {
+  id: number;
   variant_id: number;
   attributes: VariantAttribute[];
   price: number;
   quantity: number;
   shop_id: number;
   images: ProductImage[];
+}
+
+export interface AvailableShop {
+  id: number;
+  name: string;
 }
 
 export interface CategoryDetail {
@@ -66,12 +72,15 @@ export interface ProductDetailsData {
   time_prepare: string;
   bought_with: BoughtWithProduct[];
   is_instant_delivery: number;
+  rating: number;
+  rating_breakdown: number[];
   category: ProductCategory;
   attributes_map: AttributeMapItem[];
   shop_variants: ShopVariant[];
   category_details: CategoryDetail[];
   extra_details: ExtraDetail[];
   images: ProductImage[];
+  available_shops: AvailableShop[];
 }
 
 export interface ProductDetailsResponse {

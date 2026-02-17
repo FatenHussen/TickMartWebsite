@@ -256,6 +256,8 @@
     "soldWithThisProduct": "Sold with this product also",
     "similarProducts": "Similar Products",
     "productsFromSameSeller": "Products from the same seller",
+    "availableShops": "Available Shops",
+    "selectShop": "Select a shop",
     "productReviews": "Product Reviews",
     "reviewsFilter": "Reviews Filter",
     "rating": "Rating",
@@ -328,6 +330,7 @@
     "myShoppingCart": "My Shopping Cart",
     "addedToCart": "Added to cart",
     "yourCartIsEmpty": "Your cart is empty",
+    "emptyCartHint": "Add items from the store to get started.",
     "continueShopping": "Continue shopping",
     "product": "Product",
     "quantity": "Quantity",
@@ -362,7 +365,15 @@
     "subtotalBeforeDiscount": "Subtotal before discount",
     "itemsSubtotal": "Items subtotal",
     "productDiscount": "Product discount",
-    "basketDiscount": "Basket discount"
+    "basketDiscount": "Basket discount",
+    "scheduleName": "Schedule name",
+    "scheduleNamePlaceholder": "e.g. Weekly Meat Basket",
+    "scheduleSaved": "Schedule saved successfully",
+    "scheduleSaveFailed": "Failed to save schedule",
+    "categoryRequired": "Products must have a category",
+    "noValidItems": "No valid items to schedule",
+    "saveSchedule": "Save schedule",
+    "saving": "Saving..."
   },
   "trackOrder": {
     "title": "Track your order",
@@ -426,7 +437,8 @@
     "youEarned": "You earned",
     "points": "Points!",
     "pointsDescription": "You can use your points later for discounts and special offers.",
-    "backToHome": "Back to home page"
+    "backToHome": "Back to home page",
+    "trackOrder": "Track Order"
   },
   "logoutPopup": {
     "title": "Logout of your account?",
@@ -450,6 +462,15 @@
       "settings": "Settings",
       "deleteAccount": "Delete / deactivate account",
       "logout": "Logout"
+    },
+    "notificationsPage": {
+      "title": "Notifications",
+      "description": "Manage your push notifications. Enable to receive updates on orders and offers.",
+      "enableNotifications": "Enable notifications",
+      "enabled": "Notifications enabled",
+      "denied": "Notifications blocked",
+      "notSupported": "Push notifications are not supported in this browser.",
+      "tokenReady": "Ready to receive notifications."
     },
     "profile": {
       "title": "My Account",
@@ -553,6 +574,7 @@
     "pointsRewards": {
       "title": "Points & rewards",
       "description": "View your points, value, expiry and how to redeem them.",
+      "errorLoading": "Failed to load points. Please try again.",
       "points": "pts",
       "pointValue": "Point value",
       "estimatedValue": "Estimated value",
@@ -574,6 +596,7 @@
       "redeem": {
         "title": "Redeem your points",
         "description": "Choose from available rewards and offers.",
+        "noOptions": "No redemption options available.",
         "options": {
           "orderDiscount": {
             "title": "Order discount"
@@ -717,6 +740,9 @@
       "saveChanges": "Save changes"
     }
   },
+  "legal": {
+    "heroSubtitle": "We value your privacy."
+  },
   "packages": {
     "myPackages": "My subscription packages",
     "myPackagesDescription": "Manage your active subscriptions and benefits",
@@ -727,6 +753,14 @@
     "month": "month",
     "currentPlan": "Current Plan",
     "subscribe": "Subscribe",
+    "mySubscription": "My subscription",
+    "activeSubscription": "Active",
+    "remainingOrders": "Remaining orders",
+    "remainingFreeDeliveries": "Remaining free deliveries",
+    "startDate": "Start date",
+    "endDate": "End date",
+    "noSubscription": "You don't have an active subscription.",
+    "days": "days",
     "features": {
       "higherDiscounts20": "20% higher discounts",
       "higherDiscounts15": "15% higher discounts",
@@ -750,6 +784,10 @@
   "wishlist": {
     "title": "Wishlist",
     "description": "Products you saved to buy later",
+    "products": "Products",
+    "recipes": "Recipes",
+    "baskets": "Baskets",
+    "brands": "Brands",
     "allStores": "All stores",
     "allCategories": "All categories",
     "clearFilters": "Clear filters",
@@ -793,6 +831,7 @@
     "howToMake": "How to Make",
     "watchOurChef": "Watch our chef demonstrate the perfect technique for this delicious recipe.",
     "playOnYouTube": "Play on YouTube",
+    "noVideoAvailable": "No video available for this recipe.",
     "orders": "Orders",
     "youSaved": "You saved"
   },

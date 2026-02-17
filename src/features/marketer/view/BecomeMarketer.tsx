@@ -4,12 +4,14 @@ import { useLanguage } from "@/context/LanguageContext";
 import { HiX, HiHome, HiGift } from "react-icons/hi";
 import { paths } from "@/app/routes/path/paths";
 import { useTranslation } from "react-i18next";
+import { useMarketerTermsConditions } from "@/features/legal/hooks/useLegalDocument";
 
 export default function BecomeMarketer() {
   const { isRTL } = useLanguage();
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const { data: termsData, isLoading, error } = useMarketerTermsConditions();
 
   const handleAgree = () => {
     setShowSuccessModal(true);
@@ -43,45 +45,40 @@ export default function BecomeMarketer() {
 
         {/* Terms & Conditions Section */}
         <div className="bg-blue-off rounded-xl border border-primary-light/30 p-6 mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-            <h2 className="text-xl font-bold text-custom-primary">
-              {t("marketer.termsTitle") || "Marketer Terms & Conditions"}
-            </h2>
-            <span className="text-sm text-custom-secondary">
-              {t("marketer.lastUpdated") || "Last updated: 2026-01-01"}
-            </span>
-          </div>
-
-          <div className="space-y-4 text-custom-secondary text-sm leading-relaxed">
-            <div>
-              <h3 className="font-semibold text-custom-primary mb-2">
-                {t("marketer.scopeOfProgram") || "Scope of the Program"}
-              </h3>
-              <p>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-                eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
-                enim ad minim veniam, quis nostrud exercitation ullamco laboris
-                nisi ut aliquip ex ea commodo consequat.
-              </p>
+          {isLoading ? (
+            <div className="flex justify-center py-12">
+              <div className="animate-spin rounded-full h-10 w-10 border-2 border-primary-light border-t-transparent" />
             </div>
-            <p>
-              Duis aute irure dolor in reprehenderit in voluptate velit esse
-              cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat
-              cupidatat non proident, sunt in culpa qui officia deserunt mollit
-              anim id est laborum.
+          ) : error ? (
+            <p className="text-red-500 py-6 text-center">
+              {error.message || "Failed to load terms and conditions."}
             </p>
-            <p>
-              Sed ut perspiciatis unde omnis iste natus error sit voluptatem
-              accusantium doloremque laudantium, totam rem aperiam, eaque ipsa
-              quae ab illo inventore veritatis et quasi architecto beatae vitae
-              dicta sunt explicabo.
-            </p>
-          </div>
+          ) : termsData ? (
+            <>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                <h2 className="text-xl font-bold text-custom-primary">
+                  {termsData.title}
+                </h2>
+                <span className="text-sm text-custom-secondary">
+                  {t("marketer.lastUpdated") || "Last updated: 2026-01-01"}
+                </span>
+              </div>
 
-          <p className="text-sm text-custom-secondary mt-6 opacity-75">
-            {t("marketer.agreeDisclaimer") ||
-              "By clicking 'I agree' you confirm you accept all marketer terms and conditions."}
-          </p>
+              <div
+                className="prose prose-gray max-w-none text-custom-secondary text-sm leading-relaxed space-y-4"
+                dangerouslySetInnerHTML={{ __html: termsData.content }}
+              />
+
+              <p className="text-sm text-custom-secondary mt-6 opacity-75">
+                {t("marketer.agreeDisclaimer") ||
+                  "By clicking 'I agree' you confirm you accept all marketer terms and conditions."}
+              </p>
+            </>
+          ) : (
+            <p className="text-custom-secondary py-6 text-center">
+              {t("marketer.noTermsAvailable") || "Terms and conditions not available."}
+            </p>
+          )}
         </div>
 
         {/* Action Buttons */}
@@ -94,7 +91,8 @@ export default function BecomeMarketer() {
           </Link>
           <button
             onClick={handleAgree}
-            className="px-6 py-3 bg-primary-light text-white rounded-lg font-medium hover:bg-primary transition-colors"
+            disabled={isLoading || !!error || !termsData}
+            className="px-6 py-3 bg-primary-light text-white rounded-lg font-medium hover:bg-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {t("marketer.iAgree") || "I agree"}
           </button>

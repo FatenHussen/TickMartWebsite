@@ -68,8 +68,8 @@ export const apiRoutes = {
         params.toString() ? `?${params.toString()}` : ""
       }` as const;
     },
-    details: (productId: number, lat: number, lng: number, shopId: number) =>
-      `/user/products/${productId}?lat=${lat}&lng=${lng}&shop_id=${shopId}` as const,
+    details: (productId: number, lat: number, lng: number, shopId?: number) =>
+      `/user/products/${productId}?lat=${lat}&lng=${lng}${shopId ? `&shop_id=${shopId}` : ""}` as const,
     listByCategory: (categoryId: number, page?: number) =>
       `/user/products?category_id=${categoryId}${
         page ? `&page=${page}` : ""
@@ -167,6 +167,42 @@ export const apiRoutes = {
     preview: "/user/orders/preview" as const,
     create: "/user/orders" as const,
     couponPreview: "/user/orders/coupon-preview" as const,
+  },
+
+  /**
+   * Favorites endpoints
+   */
+  favorites: {
+    list: (type: string) => `/user/favorites?type=${type}` as const,
+    toggle: "/user/favorites/toggle" as const,
+  },
+
+  /**
+   * Packages & subscription endpoints
+   */
+  packages: {
+    list: "/user/packages" as const,
+    mySubscription: "/user/my-subscription" as const,
+    subscribe: "/user/subscribe" as const,
+  },
+
+  /**
+   * Legal documents (privacy policy, terms & conditions)
+   */
+  legalDocuments: {
+    privacyPolicy: "/user/legal-documents/privacy_policy" as const,
+    termsConditions: "/user/legal-documents/terms_conditions" as const,
+    marketerTermsConditions: "/user/legal-documents/marketer_terms_conditions" as const,
+  },
+
+  /**
+   * Points & rewards endpoints
+   */
+  points: {
+    summary: "/user/points/summary" as const,
+    transactions: (page?: number) =>
+      `/user/points/transactions${page ? `?page=${page}` : ""}` as const,
+    exchangeOptions: "/user/points/exchange/options" as const,
   },
 
   /**

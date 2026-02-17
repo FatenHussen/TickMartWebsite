@@ -7,6 +7,6 @@ export function useProductDetails(params: GetProductDetailsParams) {
     queryKey: queryKeys.product.details(params.productId, params.shopId),
     queryFn: () => _ProductApi.getProductDetails(params),
     select: (response) => response.data,
-    enabled: !!params.productId && !!params.shopId,
+    enabled: !!params.productId,
   });
 }

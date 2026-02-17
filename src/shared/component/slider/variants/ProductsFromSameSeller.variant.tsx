@@ -47,6 +47,12 @@ export default function ProductsFromSameSellerVariant({
 }: SliderVariantProps) {
   const items: SellerProduct[] =
     (payload as { items?: SellerProduct[] })?.items || defaultProducts;
+  const onProductClick =
+    (payload as { onProductClick?: (id: number) => void })?.onProductClick;
+  const onToggleFavorite =
+    (payload as { onToggleFavorite?: (id: number) => void })?.onToggleFavorite;
+  const favoriteIds =
+    (payload as { favoriteIds?: number[] })?.favoriteIds ?? [];
   const limitedItems =
     ui?.limit && ui.limit > 0 ? items.slice(0, ui.limit) : items;
 
@@ -79,8 +85,9 @@ export default function ProductsFromSameSellerVariant({
           savings={product.savings}
           buttonText={product.buttonText}
           buttonTextSecond={product.buttonTextSecond}
-          onToggleFavorite={(id) => console.log("toggle fav", id)}
-          onClick={(id) => console.log("open product", id)}
+          isFavorite={favoriteIds.includes(product.id as number)}
+          onToggleFavorite={(id) => onToggleFavorite?.(id)}
+          onClick={(id) => onProductClick?.(id)}
         />
       )}
     />

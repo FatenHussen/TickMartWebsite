@@ -5,7 +5,7 @@ import type { SubscriptionPackage } from "../types";
 
 type PackageCardProps = {
   package: SubscriptionPackage;
-  onSubscribe?: (packageId: string) => void;
+  onSubscribe?: (packageId: number | string) => void;
 };
 
 export default function PackageCard({
@@ -43,9 +43,13 @@ export default function PackageCard({
                 isFeatured ? "text-primary" : "text-gray-900"
               }`}
             >
-              {t(pkg.name)}
+              {pkg.name.startsWith("packages.") ? t(pkg.name) : pkg.name}
             </h3>
-            <p className="text-xs text-gray-500 mt-0.5">{t(pkg.duration)}</p>
+            <p className="text-xs text-gray-500 mt-0.5">
+              {pkg.duration.startsWith("packages.")
+                ? t(pkg.duration)
+                : pkg.duration}
+            </p>
           </div>
 
           {/* Current Plan Badge */}
@@ -67,7 +71,11 @@ export default function PackageCard({
               >
                 <HiCheck className="w-2.5 h-2.5" />
               </span>
-              <span className="text-sm text-gray-700">{t(feature.text)}</span>
+              <span className="text-sm text-gray-700">
+                {feature.text.startsWith("packages.")
+                  ? t(feature.text)
+                  : feature.text}
+              </span>
             </li>
           ))}
         </ul>
@@ -83,7 +91,8 @@ export default function PackageCard({
               {pkg.price}
             </span>
             <span className="text-sm text-gray-500 ms-1">
-              {pkg.currency}/{t("packages.month")}
+              {pkg.currency ? `${pkg.currency}/` : ""}
+              {t("packages.month")}
             </span>
           </div>
 

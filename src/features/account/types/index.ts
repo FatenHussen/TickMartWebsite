@@ -59,7 +59,7 @@ export type BasketFilter =
   | "scheduled"
   | "occasion";
 
-// Subscription Package types
+// Subscription Package types (UI)
 export type PackageFeature = {
   id: string;
   text: string;
@@ -77,6 +77,74 @@ export type SubscriptionPackage = {
   gradient?: string;
 };
 
+// Packages API types
+export interface PackageApi {
+  id: number;
+  name: string;
+  price: string;
+  duration_days: number;
+  monthly_orders_limit: number;
+  free_delivery_count: number;
+  discount_percentage: string;
+  points_bonus: number;
+  is_active: number;
+}
+
+export interface MySubscriptionData {
+  id: number;
+  package: PackageApi;
+  status: string;
+  start_date: string;
+  end_date: string;
+  remaining_orders: number;
+  remaining_free_deliveries: number;
+}
+
+export interface MySubscriptionResponse {
+  status: boolean;
+  message: string;
+  data: MySubscriptionData;
+}
+
+export interface PackagesListResponse {
+  data: PackageApi[];
+}
+
+// Favorites API types
+export type FavoriteType = "product" | "recipe" | "basket" | "brand";
+
+export interface FavoriteBadge {
+  id: number;
+  name: string;
+  color: string;
+  postion: string | null;
+}
+
+export interface FavoriteItem {
+  id: number;
+  name: string;
+  description?: string;
+  image: string;
+  rating?: number;
+  price?: number;
+  price_after_discount?: number;
+  discount?: string;
+  orders_count?: number;
+  created_at?: string;
+  budges?: FavoriteBadge[];
+}
+
+export interface FavoritesResponse {
+  status: boolean;
+  message: string;
+  data: FavoriteItem[];
+}
+
+export interface ToggleFavoritePayload {
+  type: FavoriteType;
+  id: number;
+}
+
 // Wishlist types
 export type WishlistItem = {
   id: string | number;
@@ -93,7 +161,7 @@ export type WishlistItem = {
   hasFreeDelivery?: boolean;
 };
 
-// Points & Rewards types
+// Points & Rewards types (UI / mock)
 export type PointsHistoryType = "earned" | "redeemed" | "expired";
 
 export type PointsHistoryItem = {
@@ -104,6 +172,91 @@ export type PointsHistoryItem = {
   points: number;
   balance: number;
 };
+
+// Points API types
+export interface PointsSummaryData {
+  balance: number;
+  pending_points: number;
+  expired_points: number;
+  redeemed_points: number;
+  expire_at: string;
+  last_earned_at: string;
+}
+
+export interface PointsSummaryResponse {
+  status: boolean;
+  message: string;
+  data: PointsSummaryData;
+}
+
+export interface PointsTransactionRule {
+  title: string;
+  code: string;
+}
+
+export interface PointsTransactionItem {
+  id: number;
+  points: number;
+  source: string;
+  status: "earned" | "redeemed" | "expired";
+  type: string;
+  reason: string | null;
+  rule?: PointsTransactionRule | null;
+  expires_at: string;
+  created_at: string;
+}
+
+export interface PointsTransactionsResponse {
+  status: boolean;
+  message: string;
+  data: {
+    items: PointsTransactionItem[];
+    pagination: {
+      current_page: number;
+      last_page: number;
+      per_page: number;
+      total: number;
+    };
+  };
+}
+
+export interface PointsExchangeGift {
+  id: number;
+  name: string;
+  description: string;
+  image: string;
+  points_required: number;
+  stock_quantity: number;
+  category: string | null;
+}
+
+export interface PointsExchangeOptionsData {
+  available: boolean;
+  current_balance: number;
+  options: {
+    coupon: {
+      enabled: boolean;
+      min_points: number;
+      max_points: number;
+      discount_rate: number;
+      description: string;
+    };
+    free_delivery: {
+      enabled: boolean;
+      points_cost: number;
+      description: string;
+    };
+    gifts: {
+      enabled: boolean;
+      available_gifts: PointsExchangeGift[];
+    };
+  };
+}
+
+export interface PointsExchangeOptionsResponse {
+  success: boolean;
+  data: PointsExchangeOptionsData;
+}
 
 // Reviews types
 export type ReviewType =

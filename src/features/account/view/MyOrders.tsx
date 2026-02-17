@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContext";
@@ -6,7 +6,8 @@ import { HiSearch } from "react-icons/hi";
 import { cn } from "@/shared/lib/utils";
 import OrderCard from "@/features/cart/components/OrderCard";
 import OrderDetailsModal from "../components/OrderDetailsModal";
-import { useOrders } from "../hooks/useOrders";
+import { useOrdersInfinite } from "../hooks/useOrders";
+import { useInfiniteScroll } from "@/shared/hooks/useInfiniteScroll";
 import { paths } from "@/app/routes/path/paths";
 import type { OrderStatus } from "@/features/cart/types";
 import type { Order } from "@/features/cart/types";
@@ -34,9 +35,13 @@ function formatPrice(value: number): string {
 function toOrderStatus(apiStatus: string): OrderStatus {
   if (apiStatus === "out_delivery") return "out_for_delivery";
   if (
-    ["pending", "preparing", "out_for_delivery", "delivered", "cancelled"].includes(
-      apiStatus
-    )
+    [
+      "pending",
+      "preparing",
+      "out_for_delivery",
+      "delivered",
+      "cancelled",
+    ].includes(apiStatus)
   ) {
     return apiStatus as OrderStatus;
   }
@@ -86,12 +91,37 @@ export default function MyOrders() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState<OrderStatus | "all">("all");
   const [sortBy, setSortBy] = useState("newest");
-  const [page, setPage] = useState(1);
-  const [selectedOrderId, setSelectedOrderId] = useState<number | string | null>(
-    null
-  );
+  const [selectedOrderId, setSelectedOrderId] = useState<
+    number | string | null
+  >(null);
 
-  const { data: ordersData, pagination, isLoading } = useOrders(page);
+  const {
+    data: ordersData,
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+  } = useOrdersInfinite();
+
+  const observerTarget = useInfiniteScroll({
+    onLoadMore: fetchNextPage,
+    hasMore: hasNextPage,
+    isLoading: isFetchingNextPage,
+    threshold: 300,
+  });
+
+  // Fallback: trigger load more on window scroll near bottom (e.g. when scroll is in main document)
+  useEffect(() => {
+    if (!hasNextPage || isFetchingNextPage) return;
+    const threshold = 400;
+    const handleScroll = () => {
+      const { scrollHeight, scrollTop, clientHeight } = document.documentElement;
+      const distanceFromBottom = scrollHeight - (scrollTop + clientHeight);
+      if (distanceFromBottom < threshold) fetchNextPage();
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const filteredOrders = useMemo(() => {
     let orders = ordersData.map(mapOrderToCard);
@@ -108,8 +138,8 @@ export default function MyOrders() {
           o.items.some(
             (i) =>
               i.name.toLowerCase().includes(q) ||
-              i.store.toLowerCase().includes(q)
-          )
+              i.store.toLowerCase().includes(q),
+          ),
       );
     }
 
@@ -227,7 +257,7 @@ export default function MyOrders() {
               "px-4 py-2 rounded-lg text-sm font-medium transition-all",
               activeFilter === filter.value
                 ? "bg-primary text-white"
-                : "bg-white text-text-secondary border border-gray-200 hover:border-primary"
+                : "bg-white text-text-secondary border border-gray-200 hover:border-primary",
             )}
           >
             {filter.label}
@@ -253,70 +283,52 @@ export default function MyOrders() {
                 tabIndex={0}
                 onClick={(e) => handleCardClick(order.id, e)}
                 onKeyDown={(e) =>
-                  e.key === "Enter" && handleCardClick(order.id, e as unknown as React.MouseEvent)
+                  e.key === "Enter" &&
+                  handleCardClick(order.id, e as unknown as React.MouseEvent)
                 }
                 className="cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-2xl"
               >
                 <OrderCard
-                key={order.id}
-                orderNumber={order.orderNumber}
-                status={order.status}
-                dateTime={order.dateTime}
-                items={order.items}
-                additionalInfo={order.additionalInfo}
-                deliveryAddress={order.deliveryAddress}
-                total={order.total}
-                paymentMethod={order.paymentMethod}
-                refundStatus={order.refundStatus}
-                onViewDetails={() => handleViewDetails(order.id)}
-                onTrackOrder={
-                  order.actions.trackOrder
-                    ? () => handleTrackOrder(order.id)
-                    : undefined
-                }
-                onReorder={
-                  order.actions.reorder
-                    ? () => handleReorder(order.id)
-                    : undefined
-                }
-                onAddComplaint={
-                  order.actions.addComplaint
-                    ? () => handleAddComplaint(order.id)
-                    : undefined
-                }
-                onCancelOrder={
-                  order.status === "pending" || order.status === "preparing"
-                    ? () => handleCancelOrder(order.id)
-                    : undefined
-                }
-              />
+                  key={order.id}
+                  orderNumber={order.orderNumber}
+                  status={order.status}
+                  dateTime={order.dateTime}
+                  items={order.items}
+                  additionalInfo={order.additionalInfo}
+                  deliveryAddress={order.deliveryAddress}
+                  total={order.total}
+                  paymentMethod={order.paymentMethod}
+                  refundStatus={order.refundStatus}
+                  onViewDetails={() => handleViewDetails(order.id)}
+                  onTrackOrder={
+                    order.actions.trackOrder
+                      ? () => handleTrackOrder(order.id)
+                      : undefined
+                  }
+                  onReorder={
+                    order.actions.reorder
+                      ? () => handleReorder(order.id)
+                      : undefined
+                  }
+                  onAddComplaint={
+                    order.actions.addComplaint
+                      ? () => handleAddComplaint(order.id)
+                      : undefined
+                  }
+                  onCancelOrder={
+                    order.status === "pending" || order.status === "preparing"
+                      ? () => handleCancelOrder(order.id)
+                      : undefined
+                  }
+                />
               </div>
             ))}
           </div>
 
-          {pagination && pagination.last_page > 1 && (
-            <div className="flex justify-center gap-2 mt-6">
-              <button
-                type="button"
-                disabled={page <= 1}
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                className="px-4 py-2 rounded-lg border disabled:opacity-50"
-              >
-                Previous
-              </button>
-              <span className="flex items-center px-4">
-                {pagination.current_page} / {pagination.last_page}
-              </span>
-              <button
-                type="button"
-                disabled={page >= pagination.last_page}
-                onClick={() =>
-                  setPage((p) => Math.min(pagination.last_page, p + 1))
-                }
-                className="px-4 py-2 rounded-lg border disabled:opacity-50"
-              >
-                Next
-              </button>
+          <div ref={observerTarget} className="h-4" aria-hidden />
+          {isFetchingNextPage && (
+            <div className="py-4 text-center text-text-secondary text-sm">
+              {t("common.loading")}
             </div>
           )}
         </>

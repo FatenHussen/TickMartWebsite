@@ -5,6 +5,8 @@ import { useProducts } from "../hooks/useProducts";
 import { useCategories } from "../hooks/useCategories";
 import { useBrands } from "@/features/product/hooks/useBrands";
 import { useShops } from "@/features/store/hooks/useShops";
+import { useAuthStore } from "@/store/auth";
+import { useFavorites, useToggleFavorite } from "@/features/account/hooks/useFavorites";
 import { useInfiniteScroll } from "@/shared/hooks/useInfiniteScroll";
 import ProductCard from "@/shared/component/card/ProductCard";
 import ProductCardSkeleton from "@/shared/component/skeleton/ProductCardSkeleton";
@@ -57,13 +59,17 @@ export default function AllProductsSection() {
     threshold: 500,
   });
 
+  const { authenticated } = useAuthStore();
+  const { data: favoriteProducts = [] } = useFavorites("product", !!authenticated);
+  const toggleFavorite = useToggleFavorite();
+  const favoriteIds = favoriteProducts.map((f) => f.id);
+
   const handleProductClick = (id: number) => {
     navigate(paths.client.productDetails(id));
   };
 
   const handleToggleFavorite = (id: number) => {
-    // TODO: Implement favorite toggle
-    console.log("Toggle favorite:", id);
+    toggleFavorite.mutate({ type: "product", id });
   };
 
   // Convert product to ProductCard props
@@ -91,6 +97,7 @@ export default function AllProductsSection() {
           ? `${t("product.youSaved", "You saved")} £${product.amount_saved.toFixed(2)}`
           : undefined,
       deliveryInfo: t("home.freeDelivery", "Free Delivery"),
+      isFavorite: favoriteIds.includes(product.id),
       onClick: handleProductClick,
       onToggleFavorite: handleToggleFavorite,
       t,

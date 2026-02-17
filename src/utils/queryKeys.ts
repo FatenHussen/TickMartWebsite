@@ -198,6 +198,7 @@ export const queryKeys = {
   orders: {
     all: () => ["orders"] as const,
     list: (page?: number) => ["orders", "list", page] as const,
+    listInfinite: () => ["orders", "list", "infinite"] as const,
     details: (id: number | string) => ["orders", "details", id] as const,
     preview: (
       addressId?: number | null,
@@ -225,5 +226,48 @@ export const queryKeys = {
   profile: {
     all: () => ["profile"] as const,
     details: () => ["profile", "details"] as const,
+  },
+
+  /**
+   * Packages & subscription query keys
+   */
+  packages: {
+    all: () => ["packages"] as const,
+    list: () => ["packages", "list"] as const,
+    mySubscription: () => ["packages", "mySubscription"] as const,
+  },
+
+  /**
+   * Legal documents query keys
+   */
+  legalDocuments: {
+    privacyPolicy: () => ["legalDocuments", "privacyPolicy"] as const,
+    termsConditions: () => ["legalDocuments", "termsConditions"] as const,
+    marketerTermsConditions: () =>
+      ["legalDocuments", "marketerTermsConditions"] as const,
+  },
+
+  /**
+   * Points & rewards query keys
+   */
+  points: {
+    all: () => ["points"] as const,
+    summary: () => ["points", "summary"] as const,
+    transactions: (page?: number) =>
+      page !== undefined
+        ? (["points", "transactions", page] as const)
+        : (["points", "transactions"] as const),
+    exchangeOptions: () => ["points", "exchangeOptions"] as const,
+  },
+
+  /**
+   * Favorites query keys
+   */
+  favorites: {
+    all: () => ["favorites"] as const,
+    list: (type?: string) =>
+      type !== undefined
+        ? (["favorites", "list", type] as const)
+        : (["favorites", "list"] as const),
   },
 } as const;

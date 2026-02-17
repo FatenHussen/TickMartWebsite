@@ -32,8 +32,8 @@ export default function MyOrders() {
           order.items.some(
             (item) =>
               item.name.toLowerCase().includes(query) ||
-              item.store.toLowerCase().includes(query)
-          )
+              item.store.toLowerCase().includes(query),
+          ),
       );
     }
 

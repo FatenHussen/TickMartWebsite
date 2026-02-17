@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContext";
 import { useRecipes } from "../hooks/useRecipes";
+import { useAuthStore } from "@/store/auth";
+import { useFavorites, useToggleFavorite } from "@/features/account/hooks/useFavorites";
 import { useSectionsByPosition } from "@/features/home/hooks/useSections";
 import ApiSectionsRenderer from "@/shared/component/sections/ApiSectionsRenderer";
 import FullBleedSection from "@/shared/component/FullBleedSection";
@@ -48,6 +50,11 @@ export default function Recipes() {
     threshold: 300,
   });
 
+  const { authenticated } = useAuthStore();
+  const { data: favoriteRecipes = [] } = useFavorites("recipe", !!authenticated);
+  const toggleFavorite = useToggleFavorite();
+  const favoriteRecipeIds = favoriteRecipes.map((f) => f.id);
+
   const { beforeSections, afterSections } = useSectionsByPosition("recipes");
 
   // Separate banner sections (display_type_id: 1) from other sections
@@ -87,7 +94,14 @@ export default function Recipes() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
               {/* Render actual recipes */}
               {allRecipes.map((recipe) => (
-                <RecipeCard key={recipe.id} recipe={recipe} />
+                <RecipeCard
+                  key={recipe.id}
+                  recipe={recipe}
+                  isFavorite={favoriteRecipeIds.includes(recipe.id)}
+                  onToggleFavorite={(id) =>
+                    toggleFavorite.mutate({ type: "recipe", id })
+                  }
+                />
               ))}
 
               {/* Show skeleton loaders while loading more */}

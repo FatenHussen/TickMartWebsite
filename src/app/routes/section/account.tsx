@@ -24,6 +24,9 @@ const PointsRewards = lazy(
 );
 const MyReviews = lazy(() => import("@/features/account/view/MyReviews"));
 const Settings = lazy(() => import("@/features/account/view/Settings"));
+const Notifications = lazy(
+  () => import("@/features/account/view/Notifications"),
+);
 const AddressForm = lazy(() => import("@/features/account/view/AddressForm"));
 
 // Loading component
@@ -152,9 +155,9 @@ export const AccountRoutes: RouteObject[] = [
       {
         path: "notifications",
         element: (
-          <div className="p-6 text-center text-text-secondary">
-            Notifications - Coming soon
-          </div>
+          <Suspense fallback={<PageLoader />}>
+            <Notifications />
+          </Suspense>
         ),
       },
       {

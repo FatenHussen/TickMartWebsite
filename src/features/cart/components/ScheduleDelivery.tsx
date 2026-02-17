@@ -1,75 +1,112 @@
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContext";
 import { HiExclamationCircle } from "react-icons/hi";
 import Button from "@/shared/ui/Button";
 import { cn } from "@/shared/lib/utils";
-import type { DeliveryFrequency } from "../types";
+import { useSchedules } from "../hooks/useSchedules";
+import type { ScheduleItem } from "../types";
+
+export type ScheduleDeliveryData = {
+  name: string;
+  schedule_id: number;
+  start_date: string; // YYYY-MM-DD
+};
 
 type ScheduleDeliveryProps = {
-  onSaveSchedule?: () => void;
+  onSaveSchedule?: (data: ScheduleDeliveryData) => void;
   onCancelSchedule?: () => void;
+  isSaving?: boolean;
 };
+
+function formatDateToYYYYMMDD(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
 
 export default function ScheduleDelivery({
   onSaveSchedule,
   onCancelSchedule,
+  isSaving = false,
 }: ScheduleDeliveryProps) {
   const { t } = useTranslation();
   const { isRTL } = useLanguage();
+  const { items: schedules = [], isLoading: isSchedulesLoading } = useSchedules();
   const [orderType, setOrderType] = useState<"one_time" | "schedule">(
     "schedule",
   );
-  const [frequency, setFrequency] = useState<DeliveryFrequency>("every_3_days");
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date(2021, 8, 19)); // Sept 19, 2021 (for calendar display)
-  // const [scheduleStartDate] = useState<Date>(new Date(2024, 0, 14)); // Jan 14, 2024 (for summary)
+  const [scheduleName, setScheduleName] = useState("");
+  const [selectedScheduleId, setSelectedScheduleId] = useState<number | null>(
+    schedules[0]?.id ?? null,
+  );
+  const [calendarMonth, setCalendarMonth] = useState<Date>(() => new Date());
+  const [selectedDate, setSelectedDate] = useState<Date>(() => new Date());
 
-  const frequencyOptions: { value: DeliveryFrequency; label: string }[] = [
-    { value: "every_3_days", label: "Every 3 days" },
-    { value: "weekly", label: "Weekly" },
-    { value: "every_2_weeks", label: "Every 2 weeks" },
-    { value: "monthly", label: "Monthly" },
-  ];
+  const activeSchedules = useMemo(
+    () => schedules.filter((s: ScheduleItem) => s.is_active),
+    [schedules],
+  );
 
-  // const getNextDeliveryDate = (
-  //   startDate: Date,
-  //   freq: DeliveryFrequency,
-  // ): Date => {
-  //   const next = new Date(startDate);
-  //   switch (freq) {
-  //     case "every_3_days":
-  //       next.setDate(next.getDate() + 3);
-  //       break;
-  //     case "weekly":
-  //       next.setDate(next.getDate() + 7);
-  //       break;
-  //     case "every_2_weeks":
-  //       next.setDate(next.getDate() + 14);
-  //       break;
-  //     case "monthly":
-  //       next.setMonth(next.getMonth() + 1);
-  //       break;
-  //   }
-  //   return next;
-  // };
+  useEffect(() => {
+    if (activeSchedules.length > 0 && selectedScheduleId === null) {
+      setSelectedScheduleId(activeSchedules[0].id);
+    }
+  }, [activeSchedules, selectedScheduleId]);
 
-  // const formatDate = (date: Date): string => {
-  //   return date.toLocaleDateString("en-US", {
-  //     month: "short",
-  //     day: "numeric",
-  //     year: "numeric",
-  //   });
-  // };
+  const selectedSchedule = activeSchedules.find(
+    (s: ScheduleItem) => s.id === selectedScheduleId
+  );
+  const nextDeliveryDate = selectedSchedule
+    ? (() => {
+        const next = new Date(selectedDate);
+        next.setDate(next.getDate() + selectedSchedule.interval_days);
+        return next;
+      })()
+    : null;
 
-  // const nextDelivery = getNextDeliveryDate(scheduleStartDate, frequency);
+  const handleSaveSchedule = () => {
+    if (
+      selectedScheduleId != null &&
+      scheduleName.trim() &&
+      onSaveSchedule
+    ) {
+      onSaveSchedule({
+        name: scheduleName.trim(),
+        schedule_id: selectedScheduleId,
+        start_date: formatDateToYYYYMMDD(selectedDate),
+      });
+    }
+  };
 
-  // Simple calendar - showing September 2021 as in the image
-  const calendarDate = new Date(2021, 8, 1); // September 2021 (month is 0-indexed)
-  const daysInMonth = new Date(2021, 9, 0).getDate(); // Last day of September
-  const firstDayOfWeek = calendarDate.getDay(); // Day of week for Sept 1, 2021 (Wednesday = 3)
+  const canSave =
+    selectedScheduleId != null &&
+    scheduleName.trim().length > 0;
+
+  // Calendar - dynamic month from calendarMonth
+  const year = calendarMonth.getFullYear();
+  const month = calendarMonth.getMonth();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const firstDayOfWeek = new Date(year, month, 1).getDay();
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+  const monthLabel = calendarMonth.toLocaleDateString(undefined, {
+    month: "long",
+    year: "numeric",
+  });
 
-  // Calendar day labels as shown in image: "SAN", "MON", "TUE", etc.
+  const goPrevMonth = () => {
+    setCalendarMonth((d) => new Date(d.getFullYear(), d.getMonth() - 1, 1));
+  };
+  const goNextMonth = () => {
+    setCalendarMonth((d) => new Date(d.getFullYear(), d.getMonth() + 1, 1));
+  };
+
+  const handleDayClick = (day: number) => {
+    setSelectedDate(new Date(year, month, day));
+  };
+
+  // Calendar day labels
   const weekDays = isRTL
     ? ["SAT", "FRI", "THU", "WED", "TUE", "MON", "SAN"]
     : ["SAN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
@@ -123,27 +160,45 @@ export default function ScheduleDelivery({
 
       {orderType === "schedule" && (
         <>
+          {/* Schedule Name */}
+          <div>
+            <h4 className="text-base font-semibold text-custom-primary mb-3">
+              {t("cart.scheduleName", "Schedule name")}
+            </h4>
+            <input
+              type="text"
+              value={scheduleName}
+              onChange={(e) => setScheduleName(e.target.value)}
+              placeholder={t("cart.scheduleNamePlaceholder", "e.g. Weekly Meat Basket")}
+              className="w-full px-4 py-2 rounded-lg border border-custom-secondary bg-blue-off text-custom-primary placeholder:text-custom-secondary focus:outline-none focus:ring-2 focus:ring-primary-light"
+            />
+          </div>
+
           {/* Delivery Frequency */}
           <div>
             <h4 className="text-base font-semibold text-custom-primary mb-3">
               Delivery Frequency
             </h4>
-            <div className="flex items-center gap-2 flex-wrap">
-              {frequencyOptions.map((option) => (
-                <button
-                  key={option.value}
-                  onClick={() => setFrequency(option.value)}
-                  className={cn(
-                    "px-4 py-2 rounded-lg font-medium text-sm transition-colors",
-                    frequency === option.value
-                      ? "bg-primary-light text-white"
-                      : "bg-gray-bold text-custom-secondary hover:bg-custom-hover",
-                  )}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
+            {isSchedulesLoading ? (
+              <div className="text-custom-secondary text-sm">Loading...</div>
+            ) : (
+              <div className="flex items-center gap-2 flex-wrap">
+                {activeSchedules.map((schedule: ScheduleItem) => (
+                  <button
+                    key={schedule.id}
+                    onClick={() => setSelectedScheduleId(schedule.id)}
+                    className={cn(
+                      "px-4 py-2 rounded-lg font-medium text-sm transition-colors",
+                      selectedScheduleId === schedule.id
+                        ? "bg-primary-light text-white"
+                        : "bg-gray-bold text-custom-secondary hover:bg-custom-hover",
+                    )}
+                  >
+                    {schedule.name}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -155,16 +210,20 @@ export default function ScheduleDelivery({
               <div className="bg-blue-off rounded-lg p-4">
                 <div className="flex items-center justify-between mb-4">
                   <h5 className="font-semibold text-custom-primary">
-                    September 2021
+                    {monthLabel}
                   </h5>
                   <div className="flex items-center gap-2">
                     <button
+                      type="button"
+                      onClick={goPrevMonth}
                       className="p-1 hover:bg-white rounded transition-colors"
                       aria-label="Previous month"
                     >
                       <span className="text-custom-primary text-lg">{"<"}</span>
                     </button>
                     <button
+                      type="button"
+                      onClick={goNextMonth}
                       className="p-1 hover:bg-white rounded transition-colors"
                       aria-label="Next month"
                     >
@@ -191,12 +250,13 @@ export default function ScheduleDelivery({
                   {days.map((day) => {
                     const isSelected =
                       selectedDate.getDate() === day &&
-                      selectedDate.getMonth() === 8 &&
-                      selectedDate.getFullYear() === 2021;
+                      selectedDate.getMonth() === month &&
+                      selectedDate.getFullYear() === year;
                     return (
                       <button
                         key={day}
-                        onClick={() => setSelectedDate(new Date(2021, 8, day))}
+                        type="button"
+                        onClick={() => handleDayClick(day)}
                         className={cn(
                           "aspect-square rounded-lg text-sm font-medium transition-colors",
                           isSelected
@@ -222,16 +282,17 @@ export default function ScheduleDelivery({
                   <div className="flex justify-between">
                     <span className="text-custom-secondary">Frequency:</span>
                     <span className="text-custom-primary font-medium">
-                      {
-                        frequencyOptions.find((opt) => opt.value === frequency)
-                          ?.label
-                      }
+                      {selectedSchedule?.name ?? "-"}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-custom-secondary">Start date:</span>
                     <span className="text-custom-primary font-medium">
-                      Jan 14, 2024
+                      {selectedDate.toLocaleDateString(undefined, {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -239,7 +300,11 @@ export default function ScheduleDelivery({
                       Next delivery:
                     </span>
                     <span className="text-custom-primary font-medium">
-                      Jan 17, 2024
+                      {nextDeliveryDate?.toLocaleDateString(undefined, {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      }) ?? "-"}
                     </span>
                   </div>
                 </div>
@@ -258,10 +323,13 @@ export default function ScheduleDelivery({
               {/* Schedule Action Buttons */}
               <div className="flex items-center gap-4">
                 <Button
-                  onClick={onSaveSchedule}
-                  className="flex-1 bg-primary-light hover:opacity-90 text-white"
+                  onClick={handleSaveSchedule}
+                  disabled={!canSave || isSaving}
+                  className="flex-1 bg-primary-light hover:opacity-90 text-white disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Save schedule
+                  {isSaving
+                    ? t("cart.saving", "Saving...")
+                    : t("cart.saveSchedule", "Save schedule")}
                 </Button>
                 <Button
                   onClick={onCancelSchedule}

@@ -1,5 +1,6 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import i18n from "@/i18n/config";
 
 type Language = "en" | "ar";
@@ -16,6 +17,8 @@ const LanguageContext = createContext<LanguageContextType | undefined>(
 );
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
+  const queryClient = useQueryClient();
+  const isInitialMount = useRef(true);
   const [language, setLanguageState] = useState<Language>(() => {
     const stored = localStorage.getItem("language") as Language | null;
     if (stored && (stored === "en" || stored === "ar")) {
@@ -31,7 +34,14 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     // Update HTML lang attribute and dir
     document.documentElement.lang = language;
     document.documentElement.dir = language === "ar" ? "rtl" : "ltr";
-  }, [language]);
+
+    // Invalidate all queries on language change (not on initial mount) so data refetches with new Accept-Language
+    if (!isInitialMount.current) {
+      queryClient.invalidateQueries();
+    } else {
+      isInitialMount.current = false;
+    }
+  }, [language, queryClient]);
 
   const toggleLanguage = () => {
     setLanguageState((prev) => (prev === "en" ? "ar" : "en"));
