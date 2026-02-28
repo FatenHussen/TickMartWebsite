@@ -72,7 +72,7 @@ export default function MobileAccountMenu({ user }: MobileAccountMenuProps) {
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
           "w-full flex items-center justify-between p-4 rounded-2xl",
-          "bg-white dark:bg-bg-primary shadow-md",
+          "bg-white dark:bg-gray-800 shadow-md",
           "transition-all duration-200"
         )}
         style={{
@@ -156,7 +156,7 @@ export default function MobileAccountMenu({ user }: MobileAccountMenuProps) {
           />
 
           {/* Menu Panel */}
-          <div className="fixed inset-x-0 bottom-0 z-50 bg-white dark:bg-bg-primary rounded-t-3xl max-h-[70vh] overflow-hidden animate-slide-up">
+          <div className="fixed inset-x-0 bottom-0 z-50 bg-white dark:bg-gray-800 rounded-t-3xl max-h-[70vh] overflow-hidden animate-slide-up">
             {/* Header */}
             <div
               className="p-4 text-white flex items-center justify-between"

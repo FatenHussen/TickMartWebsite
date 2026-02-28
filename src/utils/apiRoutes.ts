@@ -82,8 +82,21 @@ export const apiRoutes = {
    * Shop endpoints
    */
   shop: {
-    list: (page?: number) =>
-      `/user/shops${page ? `?page=${page}` : ""}` as const,
+    list: (filters?: {
+      page?: number;
+      type?: "top_rated" | "offers" | "nearby";
+      lat?: number;
+      lng?: number;
+    }) => {
+      const params = new URLSearchParams();
+      if (filters?.page) params.append("page", String(filters.page));
+      if (filters?.type) params.append("type", filters.type);
+      if (filters?.lat != null) params.append("lat", String(filters.lat));
+      if (filters?.lng != null) params.append("lng", String(filters.lng));
+      return `/user/shops${
+        params.toString() ? `?${params.toString()}` : ""
+      }` as const;
+    },
     details: (shopId: number) => `/user/shops/${shopId}` as const,
   },
 

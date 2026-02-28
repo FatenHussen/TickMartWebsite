@@ -13,6 +13,7 @@ import { CartRoutes } from "./cart";
 import { TrackOrderRoutes } from "./trackOrder";
 import { AccountRoutes } from "./account";
 import { MarketerRoutes } from "./marketer";
+import { VendorRoutes } from "./vendor";
 import { LegalRoutes } from "./legal";
 
 // ----------------------------------------------------------------------
@@ -47,6 +48,9 @@ export const routesSection: RouteObject[] = [
 
   // Marketer
   ...MarketerRoutes,
+
+  // Vendor
+  ...VendorRoutes,
 
   // Legal (Privacy, Terms)
   ...LegalRoutes,

@@ -3,7 +3,7 @@ export const ROOTS = {
   AUTH: "/auth",
   PRODUCT: "/product",
   CATEGORIES: "/categories",
-  STORE: "/store",
+  STORE: "/shops",
   CART: "/cart",
   TRACK_ORDER: "/track-order",
   ACCOUNT: "/account",

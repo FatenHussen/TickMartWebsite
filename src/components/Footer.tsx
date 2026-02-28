@@ -39,7 +39,7 @@ export default function Footer() {
 
   return (
     <footer
-      className="bg-gradient-to-r from-secondary/20 via-secondary/10 to-primary-light/20 mt-auto"
+      className="bg-gradient-to-r from-secondary/20 via-secondary/10 to-primary-light/20 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 mt-auto"
       dir={isRTL ? "rtl" : "ltr"}
     >
       <div className="page-container py-12">
@@ -169,7 +169,7 @@ export default function Footer() {
         </div>
 
         {/* Divider */}
-        <div className="border-t border-primary-light/30 my-8"></div>
+        <div className="border-t border-primary-light/30 dark:border-gray-700 my-8"></div>
 
         {/* Copyright */}
         <div className="text-center">

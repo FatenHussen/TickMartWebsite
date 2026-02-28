@@ -42,7 +42,9 @@
     "menu": "Menu",
     "account": "Account",
     "becomeVendor": "Become a vendor",
-    "becomeMarketer": "Become a marketer"
+    "becomeMarketer": "Become a marketer",
+    "lightMode": "Light mode",
+    "darkMode": "Dark mode"
   },
   "auth": {
     "createAccount": "Create your account",
@@ -294,8 +296,15 @@
   },
   "store": {
     "store": "Store",
+    "allStores": "All stores",
+    "allShops": "All shops",
+    "all": "All",
     "newArrivals": "New arrivals",
     "topRated": "Top rated",
+    "offers": "Offers",
+    "nearby": "Nearby",
+    "failedToLoad": "Failed to load stores",
+    "noStoresFound": "No stores found",
     "promotionalBanner": {
       "title": "Spring Collection 2024",
       "description": "Discover the latest trends in fashion. Up to 40% off on selected items.",
@@ -788,6 +797,7 @@
     "recipes": "Recipes",
     "baskets": "Baskets",
     "brands": "Brands",
+    "shops": "Shops",
     "allStores": "All stores",
     "allCategories": "All categories",
     "clearFilters": "Clear filters",
@@ -845,6 +855,20 @@
     "iAgree": "I agree",
     "thankYouTitle": "Thank you for your application!",
     "thankYouMessage1": "Your request to join as a marketer has been submitted.",
+    "thankYouMessage2": "Please wait while our team reviews your application.",
+    "thankYouMessage3": "You'll be notified once it's approved.",
+    "thankYouMessage4": "Approval may take up to 24-48 hours depending on review.",
+    "backToHome": "Back to home"
+  },
+  "vendor": {
+    "title": "Become a vendor",
+    "subtitle": "Please review and accept the terms before joining as a vendor.",
+    "lastUpdated": "Last updated: 2026-01-01",
+    "agreeDisclaimer": "By clicking 'I agree' you confirm you accept all vendor terms and conditions.",
+    "iAgree": "I agree",
+    "noTermsAvailable": "Terms and conditions not available.",
+    "thankYouTitle": "Thank you for your application!",
+    "thankYouMessage1": "Your request to join as a vendor has been submitted.",
     "thankYouMessage2": "Please wait while our team reviews your application.",
     "thankYouMessage3": "You'll be notified once it's approved.",
     "thankYouMessage4": "Approval may take up to 24-48 hours depending on review.",

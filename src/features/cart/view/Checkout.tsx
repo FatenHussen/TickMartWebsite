@@ -11,7 +11,7 @@ import { useAddresses } from "@/features/account/hooks/useAddress";
 import { useOrderPreview } from "../hooks/useOrderPreview";
 import { useCartStore } from "@/store/cart";
 import { useCheckoutStore } from "@/store/checkout";
-import { paths } from "@/app/routes/path/paths";
+import AddressForm from "@/features/account/view/AddressForm";
 import { mockCheckoutPaymentMethods } from "../data/mockData";
 import type { DeliveryAddress, CheckoutOrderSummary as CheckoutOrderSummaryType } from "../types";
 import type { Address } from "@/features/account/types";
@@ -71,6 +71,7 @@ export default function Checkout() {
     storedPaymentId || mockCheckoutPaymentMethods[0]?.id || ""
   );
   const [additionalNotes, setLocalAdditionalNotes] = useState(storedNotes);
+  const [showAddAddressForm, setShowAddAddressForm] = useState(false);
 
   const { data: preview } = useOrderPreview(
     selectedAddressId ? Number(selectedAddressId) : null,
@@ -108,12 +109,15 @@ export default function Checkout() {
     setPaymentMethodId(methodId);
   };
 
-  const handleChangeAddress = () => {
-    navigate(paths.account.addresses);
+  const handleAddNewAddress = () => {
+    setShowAddAddressForm(true);
   };
 
-  const handleAddNewAddress = () => {
-    navigate(paths.account.addAddress);
+  const handleAddressFormSuccess = (addressId?: number) => {
+    setShowAddAddressForm(false);
+    if (addressId != null) {
+      setAddressId(addressId);
+    }
   };
 
   const handlePlaceOrder = () => {
@@ -162,13 +166,22 @@ export default function Checkout() {
         >
           <div>
             {/* Delivery Address Section */}
-            <CheckoutAddressSection
-              addresses={checkoutAddresses}
-              selectedAddressId={selectedAddressId}
-              onAddressSelect={handleAddressSelect}
-              onChangeAddress={handleChangeAddress}
-              onAddNewAddress={handleAddNewAddress}
-            />
+            {!showAddAddressForm ? (
+              <CheckoutAddressSection
+                addresses={checkoutAddresses}
+                selectedAddressId={selectedAddressId}
+                onAddressSelect={handleAddressSelect}
+                onAddNewAddress={handleAddNewAddress}
+              />
+            ) : (
+              <div className="mb-6 p-6 bg-white rounded-2xl border border-primary-light/30">
+                <AddressForm
+                  inline
+                  onSuccess={handleAddressFormSuccess}
+                  onCancel={() => setShowAddAddressForm(false)}
+                />
+              </div>
+            )}
 
             {/* Additional Info Section */}
             <div className="mb-6">

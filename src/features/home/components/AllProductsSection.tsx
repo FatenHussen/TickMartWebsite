@@ -32,7 +32,8 @@ export default function AllProductsSection() {
   // Fetch filters data
   const { data: categories = [] } = useCategories();
   const { data: brandsData } = useBrands(1);
-  const { data: shops = [] } = useShops();
+  const { data: shopsData } = useShops();
+  const shops = shopsData?.items ?? [];
   
   const brands = brandsData?.items || [];
 

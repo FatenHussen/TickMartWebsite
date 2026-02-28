@@ -22,16 +22,19 @@ export function useAddresses(enabled = true) {
   });
 }
 
-export function useCreateAddress() {
+export function useCreateAddress(options?: { redirectOnSuccess?: boolean }) {
   const qc = useQueryClient();
   const navigate = useNavigate();
+  const redirect = options?.redirectOnSuccess !== false;
 
   return useMutation({
     mutationFn: (payload: CreateAddressPayload) =>
       _AddressApi.createAddress(payload),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.addresses.list() });
-      navigate(paths.account.addresses);
+      if (redirect) {
+        navigate(paths.account.addresses);
+      }
     },
     onError: (err) => {
       console.error("[createAddress] error:", err);

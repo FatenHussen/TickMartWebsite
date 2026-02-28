@@ -41,7 +41,7 @@ const AccountPageWrapper = () => (
   <AuthGuard>
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <main className="flex-1 ">
+      <main className="flex-1 bg-custom-primary">
         <Suspense fallback={<PageLoader />}>
           <AccountLayout />
         </Suspense>

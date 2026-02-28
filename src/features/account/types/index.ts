@@ -111,7 +111,7 @@ export interface PackagesListResponse {
 }
 
 // Favorites API types
-export type FavoriteType = "product" | "recipe" | "basket" | "brand";
+export type FavoriteType = "product" | "recipe" | "basket" | "brand" | "shop";
 
 export interface FavoriteBadge {
   id: number;

@@ -5,13 +5,20 @@ import { useFavorites, useToggleFavorite } from "../hooks/useFavorites";
 import FavoriteItemCard from "../components/FavoriteItemCard";
 import type { FavoriteType } from "../types";
 
-const FAVORITE_TYPES: FavoriteType[] = ["product", "recipe", "basket", "brand"];
+const FAVORITE_TYPES: FavoriteType[] = [
+  "product",
+  "recipe",
+  "basket",
+  "brand",
+  "shop",
+];
 
 const sectionTitleKeys: Record<FavoriteType, string> = {
   product: "wishlist.products",
   recipe: "wishlist.recipes",
   basket: "wishlist.baskets",
   brand: "wishlist.brands",
+  shop: "wishlist.shops",
 };
 
 export default function Wishlist() {
@@ -38,10 +45,10 @@ export default function Wishlist() {
   return (
     <div dir={isRTL ? "rtl" : "ltr"}>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-1">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-1">
           {t("wishlist.title")}
         </h1>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-gray-600 dark:text-gray-400">
           {t("wishlist.description")}
         </p>
       </div>
@@ -76,7 +83,7 @@ function FavoritesSection({
   if (isLoading) {
     return (
       <div className="mb-8">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
           {t(sectionTitleKeys[type])}
         </h2>
         <div className="flex justify-center py-8">
@@ -110,7 +117,7 @@ function FavoritesSection({
 function EmptyState() {
   const { t } = useTranslation();
   return (
-    <div className="py-14 text-center text-gray-500">
+    <div className="py-14 text-center text-gray-500 dark:text-gray-400">
       {t("wishlist.noItemsFound")}
     </div>
   );

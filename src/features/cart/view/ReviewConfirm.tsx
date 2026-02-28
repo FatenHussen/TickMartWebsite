@@ -48,6 +48,7 @@ export default function ReviewConfirm() {
   const [createdOrderId, setCreatedOrderId] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigatingToTrackOrder = useRef(false);
+  const navigatingToHome = useRef(false);
 
   const { addressId, coupon, paymentMethodId, additionalNotes } =
     useCheckoutStore();
@@ -156,6 +157,7 @@ export default function ReviewConfirm() {
   };
 
   const handleBackToHome = () => {
+    navigatingToHome.current = true;
     setShowSuccessPopup(false);
     setCreatedOrderId(null);
     navigate(paths.client.home);
@@ -178,7 +180,8 @@ export default function ReviewConfirm() {
   if (
     !isSuccessState &&
     cartItems.length === 0 &&
-    !navigatingToTrackOrder.current
+    !navigatingToTrackOrder.current &&
+    !navigatingToHome.current
   ) {
     navigate(paths.client.cart);
     return null;
@@ -187,7 +190,8 @@ export default function ReviewConfirm() {
   if (
     !isSuccessState &&
     checkoutAddresses.length === 0 &&
-    !navigatingToTrackOrder.current
+    !navigatingToTrackOrder.current &&
+    !navigatingToHome.current
   ) {
     navigate(paths.client.checkout);
     return null;
@@ -197,7 +201,8 @@ export default function ReviewConfirm() {
     !isSuccessState &&
     !addressId &&
     checkoutAddresses.length > 0 &&
-    !navigatingToTrackOrder.current
+    !navigatingToTrackOrder.current &&
+    !navigatingToHome.current
   ) {
     navigate(paths.client.checkout);
     return null;
@@ -208,7 +213,8 @@ export default function ReviewConfirm() {
     addressId &&
     !selectedAddress &&
     checkoutAddresses.length > 0 &&
-    !navigatingToTrackOrder.current
+    !navigatingToTrackOrder.current &&
+    !navigatingToHome.current
   ) {
     navigate(paths.client.checkout);
     return null;

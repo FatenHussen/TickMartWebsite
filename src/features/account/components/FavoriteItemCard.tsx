@@ -30,6 +30,8 @@ function getDetailPath(type: FavoriteType, id: number): string {
       return paths.client.basketDetails(id);
     case "brand":
       return paths.client.brandDetails(id);
+    case "shop":
+      return paths.client.shopDetails(id);
     default:
       return "#";
   }
@@ -56,7 +58,7 @@ export default function FavoriteItemCard({
   const topBadge = item.budges?.[0];
 
   return (
-    <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 hover:shadow-lg transition-shadow group">
+    <div className="bg-white dark:bg-gray-800 rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-700 hover:shadow-lg transition-shadow group">
       <Link to={detailPath} className="block">
         <div className="relative aspect-square overflow-hidden">
           <img
@@ -104,22 +106,22 @@ export default function FavoriteItemCard({
         </div>
       </Link>
       <div className="p-4">
-        <h3 className="font-semibold text-gray-900 text-sm mb-0.5 line-clamp-1">
+        <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-sm mb-0.5 line-clamp-1">
           {item.name}
         </h3>
         {item.description && (
-          <p className="text-xs text-gray-500 mb-2 line-clamp-2">
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 line-clamp-2">
             {item.description}
           </p>
         )}
         <div className="flex items-center gap-2">
           {priceDisplay && (
-            <span className="text-base font-bold text-gray-900">
+            <span className="text-base font-bold text-gray-900 dark:text-gray-100">
               {priceDisplay}
             </span>
           )}
           {originalPrice && (
-            <span className="text-xs text-gray-400 line-through">
+            <span className="text-xs text-gray-400 dark:text-gray-500 line-through">
               {originalPrice}
             </span>
           )}

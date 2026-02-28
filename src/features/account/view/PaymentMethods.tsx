@@ -82,11 +82,11 @@ export default function PaymentMethods() {
               <div
                 key={method.id}
                 className={cn(
-                  "bg-white rounded-2xl p-6 cursor-pointer transition-all",
+                  "bg-white dark:bg-gray-800 rounded-2xl p-6 cursor-pointer transition-all",
                   "border-2",
                   isSelected
                     ? "border-primary bg-cart-items shadow-md"
-                    : "border-gray-200 hover:border-primary/50",
+                    : "border-gray-200 dark:border-gray-600 hover:border-primary/50 dark:hover:border-gray-500",
                   isRTL && "text-right"
                 )}
                 onClick={() => handlePaymentMethodSelect(method.id)}
@@ -130,7 +130,7 @@ export default function PaymentMethods() {
                         "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all",
                         isSelected
                           ? "border-primary"
-                          : "border-gray-300"
+                          : "border-gray-300 dark:border-gray-600"
                       )}
                     >
                       {isSelected && (
@@ -148,14 +148,14 @@ export default function PaymentMethods() {
         </div>
 
         {/* Informational Note */}
-        <div className=" dark:bg-blue-900/10 rounded-xl p-4 mb-8">
+        <div className="bg-blue-50 dark:bg-blue-900/10 rounded-xl p-4 mb-8">
           <p className="text-sm text-gray-light dark:text-blue-300">
             {t("account.paymentMethods.note")}
           </p>
         </div>
 
         {/* How Payments Work Section */}
-        <div className="bg-white rounded-2xl p-6 relative overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 relative overflow-hidden">
           {/* Background Image */}
           <div
             className="absolute inset-0 opacity-10 pointer-events-none"

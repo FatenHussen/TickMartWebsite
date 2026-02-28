@@ -1,6 +1,6 @@
-import { HiHeart } from "react-icons/hi";
 import { cn } from "@/shared/lib/utils";
 import Rating from "../Rating";
+import FavoriteButton from "../FavoriteButton";
 
 const DEFAULT_STORE_IMAGE =
   "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400";
@@ -14,6 +14,7 @@ type ShopCardProps = {
   rating?: number;
   deliveryPrice?: string | number | null;
   discountLabel?: string | null;
+  isFavorite?: boolean;
   onFavorite?: (id: number | string) => void;
   onClick?: () => void;
   className?: string;
@@ -28,6 +29,7 @@ export default function ShopCard({
   rating = 0,
   deliveryPrice,
   discountLabel,
+  isFavorite = false,
   onFavorite,
   onClick,
   className,
@@ -70,17 +72,17 @@ export default function ShopCard({
           </span>
         )}
         {/* Favorite - top right */}
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onFavorite?.(id);
-          }}
-          className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-gray-600 transition hover:bg-white hover:text-red-500"
-          aria-label="Add to favorites"
-        >
-          <HiHeart className="h-5 w-5" />
-        </button>
+        <div className="absolute right-3 top-3 z-10">
+          <FavoriteButton
+            isFavorite={isFavorite}
+            onToggle={(e) => {
+              e.stopPropagation();
+              onFavorite?.(id);
+            }}
+            size="sm"
+            ariaLabel="Toggle favorite"
+          />
+        </div>
         {/* Rating badge - bottom left */}
         <div className="absolute bottom-3 left-3 rounded-lg bg-gray-800/80 px-2 py-1">
           <Rating

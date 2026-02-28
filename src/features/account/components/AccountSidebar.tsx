@@ -18,7 +18,7 @@ import {
   HiStar,
   HiQuestionMarkCircle,
   HiCog,
-  HiTrash,
+  HiLogout,
 } from "react-icons/hi";
 import type { IconType } from "react-icons";
 
@@ -128,33 +128,18 @@ export default function AccountSidebar({ user }: AccountSidebarProps) {
                     cn(
                       "flex items-center gap-3 px-6 py-3 transition-all duration-200",
                       active
-                        ? "text-[#212529] font-medium"
+                        ? "bg-custom-primary text-custom-primary font-medium shadow-md"
                         : "text-white",
+                      active && !isRTL && "ml-3 rounded-l-3xl",
+                      active && isRTL && "mr-3 rounded-r-3xl",
                       isRTL && "flex-row-reverse"
                     )
-                  }
-                  style={({ isActive: active }) =>
-                    active
-                      ? {
-                          background: "#FFFFFF",
-                          marginLeft: isRTL ? "0" : "12px",
-                          marginRight: isRTL ? "12px" : "0",
-                          borderTopLeftRadius: isRTL ? "0" : "24px",
-                          borderBottomLeftRadius: isRTL ? "0" : "24px",
-                          borderTopRightRadius: isRTL ? "24px" : "0",
-                          borderBottomRightRadius: isRTL ? "24px" : "0",
-                          boxShadow:
-                            isRTL
-                              ? "-2px 4px 8px rgba(0, 0, 0, 0.08), -1px 2px 4px rgba(0, 0, 0, 0.06)"
-                              : "2px 4px 8px rgba(0, 0, 0, 0.08), 1px 2px 4px rgba(0, 0, 0, 0.06)",
-                        }
-                      : {}
                   }
                 >
                   <Icon
                     className={cn(
                       "w-5 h-5 shrink-0",
-                      isActive ? "text-[#212529]" : "text-white"
+                      isActive ? "text-custom-primary" : "text-white"
                     )}
                   />
                   <span className="text-sm">{t(`account.menu.${item.id}`)}</span>
@@ -163,7 +148,7 @@ export default function AccountSidebar({ user }: AccountSidebarProps) {
             );
           })}
 
-          {/* Delete Account - Danger Item */}
+          {/* Logout */}
           <li className="pt-2 mt-2" style={{ borderTop: "1px solid rgba(255,255,255,0.2)" }}>
             <button
               onClick={handleLogoutClick}
@@ -173,8 +158,8 @@ export default function AccountSidebar({ user }: AccountSidebarProps) {
               )}
               style={{ color: "#DC3545" }}
             >
-              <HiTrash className="w-5 h-5 shrink-0" style={{ color: "#DC3545" }} />
-              <span className="text-sm font-medium">{t("account.menu.deleteAccount")}</span>
+              <HiLogout className="w-5 h-5 shrink-0" style={{ color: "#DC3545" }} />
+              <span className="text-sm font-medium">{t("account.menu.logout")}</span>
             </button>
           </li>
         </ul>

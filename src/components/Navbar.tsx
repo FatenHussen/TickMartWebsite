@@ -13,6 +13,8 @@ import {
   HiLogin,
   HiX,
   HiGlobe,
+  HiSun,
+  HiMoon,
 } from "react-icons/hi";
 import { paths } from "@/app/routes/path/paths";
 import { useState, useEffect, useMemo } from "react";
@@ -21,9 +23,11 @@ import { useAddresses } from "@/features/account/hooks/useAddress";
 import { useCheckoutStore } from "@/store/checkout";
 import { useCartStore } from "@/store/cart";
 import { useProfile } from "@/features/account/hooks/useProfile";
+import { useTheme } from "@/context/ThemeContext";
 
 export default function Navbar() {
   const { isRTL, language, toggleLanguage } = useLanguage();
+  const { theme, toggleTheme } = useTheme();
   const { t } = useTranslation();
   const location = useLocation();
   const { authenticated } = useAuthStore();
@@ -66,6 +70,22 @@ export default function Navbar() {
     setIsMobileMenuOpen(false);
   }, [location.pathname]);
 
+  // Close account dropdown when clicking outside
+  useEffect(() => {
+    if (!showAccountDropdown) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (
+        target.closest("[data-account-dropdown]") ||
+        target.closest("[data-account-dropdown-trigger]")
+      )
+        return;
+      setShowAccountDropdown(false);
+    };
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, [showAccountDropdown]);
+
   const isActive = (path: string) => {
     if (path === "/" || path === "/home") {
       return location.pathname === "/" || location.pathname === "/home";
@@ -83,10 +103,10 @@ export default function Navbar() {
     },
     {
       path: paths.client.store,
-      label: t("wishlist.allStores") || "All stores",
+      label: t("store.allShops") || "All shops",
     },
     {
-      path: paths.account.baskets,
+      path: paths.client.baskets,
       label: t("account.menu.myBaskets") || "My baskets",
     },
     {
@@ -99,13 +119,9 @@ export default function Navbar() {
     },
   ];
 
-  // Account navigation items
+  // Account navigation items (no duplicate Profile)
   const accountItems = authenticated
     ? [
-        {
-          path: paths.account.root,
-          label: t("account.menu.profile") || "Account",
-        },
         {
           path: paths.account.profile,
           label: t("account.menu.profile") || "Profile",
@@ -158,9 +174,9 @@ export default function Navbar() {
     : [];
 
   return (
-    <div className="bg-white" dir={isRTL ? "rtl" : "ltr"}>
+    <div className="bg-white dark:bg-gray-900" dir={isRTL ? "rtl" : "ltr"}>
       {/* Top Header Section */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
         <div className="page-container">
           <div className="flex items-center justify-between py-3 gap-2 md:gap-4">
             {/* Logo */}
@@ -191,7 +207,7 @@ export default function Navbar() {
                 <button
                   type="button"
                   onClick={() => setShowLocationDropdown(!showLocationDropdown)}
-                  className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg hover:bg-gray-50 transition-colors w-full text-left"
+                  className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors w-full text-left"
                 >
                   <HiLocationMarker className="text-primary-light w-5 h-5 shrink-0" />
                   <div className="flex flex-col items-start flex-1 min-w-0">
@@ -211,7 +227,7 @@ export default function Navbar() {
               ) : (
                 <Link
                   to={paths.auth.jwt.signIn}
-                  className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg hover:bg-gray-50 transition-colors w-full text-left"
+                  className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors w-full text-left"
                 >
                   <HiLocationMarker className="text-primary-light w-5 h-5 shrink-0" />
                   <div className="flex flex-col items-start flex-1 min-w-0">
@@ -225,7 +241,7 @@ export default function Navbar() {
                 </Link>
               )}
               {showLocationDropdown && authenticated && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-bold z-50">
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-bold dark:border-gray-600 z-50">
                   <div className="p-4">
                     <Link
                       to={paths.account.addAddress}
@@ -281,11 +297,11 @@ export default function Navbar() {
                   placeholder={
                     t("home.searchProducts") || "Search products and stores..."
                   }
-                  className="w-full pl-12 pr-12 py-2 bg-white rounded-lg border border-gray-bold focus:outline-none focus:ring-2 focus:ring-primary-light"
+                  className="w-full pl-12 pr-12 py-2 bg-white dark:bg-gray-800 rounded-lg border border-gray-bold dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-light"
                 />
                 <button
                   type="button"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-gray-100 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                   aria-label={t("common.filter") || "Filter"}
                 >
                   <HiFilter className="text-custom-secondary w-5 h-5" />
@@ -294,7 +310,7 @@ export default function Navbar() {
             </div>
 
             {/* Mobile Search Icon */}
-            <button className="md:hidden p-2 hover:bg-white rounded-lg transition-colors">
+            <button className="md:hidden p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
               <HiSearch className="w-6 h-6 text-custom-primary" />
             </button>
 
@@ -303,21 +319,21 @@ export default function Navbar() {
               {/* Wishlist - Hidden on mobile */}
               <Link
                 to={paths.account.wishlist}
-                className="hidden lg:block p-2 hover:bg-gray-50 rounded-full transition-colors"
+                className="hidden lg:block p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-full transition-colors"
               >
                 <HiHeart className="w-6 h-6 text-primary-light" />
               </Link>
               {/* Orders - Hidden on mobile */}
               <Link
                 to={paths.account.orders}
-                className="hidden lg:block p-2 hover:bg-gray-50 rounded-full transition-colors"
+                className="hidden lg:block p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-full transition-colors"
               >
                 <HiShoppingBag className="w-6 h-6 text-primary-light" />
               </Link>
               {/* Cart - Always visible */}
               <Link
                 to={paths.client.cart}
-                className="relative p-2 hover:bg-gray-50 rounded-full transition-colors"
+                className="relative p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-full transition-colors"
               >
                 <HiShoppingCart className="w-6 h-6 text-primary-light" />
                 {cartCount > 0 && (
@@ -338,34 +354,43 @@ export default function Navbar() {
                   </span>
                 </Link>
               )}
-              {/* Profile - Desktop: circular avatar with dropdown */}
+              {/* Profile - Desktop: circular avatar with dropdown (click + hover) */}
               {authenticated && (
                 <div
+                  data-account-dropdown
                   className="hidden lg:block relative"
                   onMouseEnter={() => setShowAccountDropdown(true)}
                   onMouseLeave={() => setShowAccountDropdown(false)}
                 >
-                  <Link to={paths.account.root} className="flex items-center">
+                  <button
+                    data-account-dropdown-trigger
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowAccountDropdown((prev) => !prev);
+                    }}
+                    className="flex items-center rounded-full focus:outline-none focus:ring-2 focus:ring-primary-light focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+                  >
                     {profile?.image ? (
                       <img
                         src={profile.image}
                         alt=""
-                        className="w-9 h-9 rounded-full object-cover border-2 border-gray-200 hover:border-primary-light transition-colors"
+                        className="w-9 h-9 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600 hover:border-primary-light transition-colors"
                       />
                     ) : (
                       <div className="w-9 h-9 rounded-full bg-primary-light/20 flex items-center justify-center text-primary-light font-semibold text-sm border-2 border-primary-light/30">
                         {profile?.name?.charAt(0)?.toUpperCase() || "?"}
                       </div>
                     )}
-                  </Link>
+                  </button>
                   {showAccountDropdown && (
                     <div
                       onMouseEnter={() => setShowAccountDropdown(true)}
                       onMouseLeave={() => setShowAccountDropdown(false)}
-                      className="absolute top-full right-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-bold z-50 min-w-[200px]"
+                      className="absolute top-full right-0 mt-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-bold dark:border-gray-600 z-50 min-w-[200px]"
                     >
                       <div className="py-2">
-                        {accountItems.slice(0, 6).map((item) => (
+                        {accountItems.slice(0, 8).map((item) => (
                           <Link
                             key={item.path}
                             to={item.path}
@@ -380,10 +405,27 @@ export default function Navbar() {
                   )}
                 </div>
               )}
+              {/* Theme toggle - Dark/Light */}
+              <button
+                type="button"
+                onClick={toggleTheme}
+                className="hidden sm:flex p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-custom-primary"
+                aria-label={
+                  theme === "dark"
+                    ? t("navbar.lightMode") || "Light mode"
+                    : t("navbar.darkMode") || "Dark mode"
+                }
+              >
+                {theme === "dark" ? (
+                  <HiSun className="w-5 h-5 text-primary-light" />
+                ) : (
+                  <HiMoon className="w-5 h-5 text-primary-light" />
+                )}
+              </button>
               <button
                 type="button"
                 onClick={toggleLanguage}
-                className="hidden sm:flex items-center gap-1.5 px-2 py-1.5 rounded-lg hover:bg-gray-50 transition-colors text-custom-primary"
+                className="hidden sm:flex items-center gap-1.5 px-2 py-1.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-custom-primary"
                 aria-label={t("navbar.language") || "Language"}
               >
                 <HiGlobe className="w-5 h-5 text-primary-light" />
@@ -394,7 +436,7 @@ export default function Navbar() {
               {/* Mobile Menu Button */}
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="lg:hidden p-2 hover:bg-gray-50 rounded-lg transition-colors"
+                className="lg:hidden p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
               >
                 {isMobileMenuOpen ? (
                   <HiX className="w-6 h-6 text-custom-primary" />
@@ -408,7 +450,7 @@ export default function Navbar() {
       </div>
 
       {/* Navigation Bar - Desktop (teal separator like design) */}
-      <div className="hidden lg:block bg-white border-b-2 border-primary-light/30">
+      <div className="hidden lg:block bg-white dark:bg-gray-900 border-b-2 border-primary-light/30 dark:border-gray-700">
         <div className="page-container">
           <div className="flex items-center justify-between py-3">
             <div className="flex items-center gap-4 xl:gap-6 flex-wrap">
@@ -443,7 +485,7 @@ export default function Navbar() {
                     <div
                       onMouseEnter={() => setShowCategoriesDropdown(true)}
                       onMouseLeave={() => setShowCategoriesDropdown(false)}
-                      className="absolute top-full left-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-bold z-50 min-w-[200px]"
+                      className="absolute top-full left-0 mt-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-bold dark:border-gray-600 z-50 min-w-[200px]"
                     >
                       <div className="py-2">
                         <Link
@@ -452,24 +494,24 @@ export default function Navbar() {
                         >
                           {t("categories.allCategories") || "All Categories"}
                         </Link>
-                        <Link
-                          to={`${paths.client.categories}/1`}
-                          className="block px-4 py-2 hover:bg-blue-off text-custom-primary"
-                        >
-                          {t("home.food") || "Food"}
-                        </Link>
-                        <Link
-                          to={`${paths.client.categories}/2`}
-                          className="block px-4 py-2 hover:bg-blue-off text-custom-primary"
-                        >
-                          {t("home.grocery") || "Grocery"}
-                        </Link>
-                        <Link
-                          to={`${paths.client.categories}/3`}
-                          className="block px-4 py-2 hover:bg-blue-off text-custom-primary"
-                        >
-                          {t("home.pharmacy") || "Pharmacy"}
-                        </Link>
+                        {/* <Link
+                            to={`${paths.client.categories}/1`}
+                            className="block px-4 py-2 hover:bg-blue-off text-custom-primary"
+                          >
+                            {t("home.food") || "Food"}
+                          </Link>
+                          <Link
+                            to={`${paths.client.categories}/2`}
+                            className="block px-4 py-2 hover:bg-blue-off text-custom-primary"
+                          >
+                            {t("home.grocery") || "Grocery"}
+                          </Link>
+                          <Link
+                            to={`${paths.client.categories}/3`}
+                            className="block px-4 py-2 hover:bg-blue-off text-custom-primary"
+                          >
+                            {t("home.pharmacy") || "Pharmacy"}
+                          </Link> */}
                       </div>
                     </div>
                   )}
@@ -506,7 +548,7 @@ export default function Navbar() {
           <div
             className={`fixed top-0 ${
               isRTL ? "left-0" : "right-0"
-            } h-full w-80 max-w-[85vw] bg-white z-50 lg:hidden shadow-2xl transform transition-transform duration-300 ease-in-out ${
+            } h-full w-80 max-w-[85vw] bg-white dark:bg-gray-900 z-50 lg:hidden shadow-2xl transform transition-transform duration-300 ease-in-out ${
               isMobileMenuOpen
                 ? "translate-x-0"
                 : isRTL
@@ -517,15 +559,31 @@ export default function Navbar() {
           >
             <div className="flex flex-col h-full overflow-y-auto">
               {/* Header */}
-              <div className="flex items-center justify-between p-4 border-b border-gray-200">
+              <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
                 <span className="text-lg font-bold text-custom-primary">
                   {t("navbar.menu")}
                 </span>
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
+                    onClick={toggleTheme}
+                    className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-custom-primary"
+                    aria-label={
+                      theme === "dark"
+                        ? t("navbar.lightMode") || "Light mode"
+                        : t("navbar.darkMode") || "Dark mode"
+                    }
+                  >
+                    {theme === "dark" ? (
+                      <HiSun className="w-5 h-5 text-primary-light" />
+                    ) : (
+                      <HiMoon className="w-5 h-5 text-primary-light" />
+                    )}
+                  </button>
+                  <button
+                    type="button"
                     onClick={toggleLanguage}
-                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors text-custom-primary"
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-custom-primary"
                   >
                     <HiGlobe className="w-5 h-5 text-primary-light" />
                     <span className="text-sm font-medium">
@@ -534,7 +592,7 @@ export default function Navbar() {
                   </button>
                   <button
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                    className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
                   >
                     <HiX className="w-6 h-6 text-custom-primary" />
                   </button>
@@ -542,7 +600,7 @@ export default function Navbar() {
               </div>
 
               {/* Delivery Address - Mobile */}
-              <div className="p-4 border-b border-gray-200">
+              <div className="p-4 border-b border-gray-200 dark:border-gray-700">
                 {authenticated ? (
                   <>
                     <button
@@ -550,7 +608,7 @@ export default function Navbar() {
                       onClick={() =>
                         setShowLocationDropdown(!showLocationDropdown)
                       }
-                      className="flex items-center gap-2 px-4 py-2 bg-blue-off rounded-lg w-full text-left"
+                      className="flex items-center gap-2 px-4 py-2 bg-blue-off dark:bg-gray-800 rounded-lg w-full text-left"
                     >
                       <HiLocationMarker className="text-primary-light w-5 h-5 shrink-0" />
                       <div className="flex flex-col items-start flex-1 min-w-0">
@@ -568,7 +626,7 @@ export default function Navbar() {
                       <HiChevronDown className="text-gray-light w-4 h-4 shrink-0" />
                     </button>
                     {showLocationDropdown && (
-                      <div className="mt-2 bg-white rounded-lg border border-gray-bold">
+                      <div className="mt-2 bg-white dark:bg-gray-800 rounded-lg border border-gray-bold dark:border-gray-600">
                         <div className="p-4">
                           <Link
                             to={paths.account.addAddress}
@@ -633,7 +691,7 @@ export default function Navbar() {
               </div>
 
               {/* Search Bar - Mobile */}
-              <div className="p-4 border-b border-gray-200">
+              <div className="p-4 border-b border-gray-200 dark:border-gray-700">
                 <div className="relative">
                   <HiSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-light w-5 h-5" />
                   <input
@@ -642,7 +700,7 @@ export default function Navbar() {
                       t("home.searchProducts") ||
                       "Search products and stores..."
                     }
-                    className="w-full pl-12 pr-4 py-2 bg-blue-off rounded-lg border border-gray-bold focus:outline-none focus:ring-2 focus:ring-primary-light"
+                    className="w-full pl-12 pr-4 py-2 bg-blue-off dark:bg-gray-800 rounded-lg border border-gray-bold dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-light"
                   />
                 </div>
               </div>
@@ -725,7 +783,7 @@ export default function Navbar() {
                 {/* Account Section - Mobile */}
                 {authenticated && accountItems.length > 0 && (
                   <>
-                    <div className="px-4 py-2 mt-4 border-t border-gray-200">
+                    <div className="px-4 py-2 mt-4 border-t border-gray-200 dark:border-gray-700">
                       <div className="text-xs font-semibold text-gray-light uppercase mb-2">
                         {t("navbar.account")}
                       </div>
@@ -748,7 +806,7 @@ export default function Navbar() {
                 )}
 
                 {/* Become a Vendor & Marketer - Mobile */}
-                <div className="px-4 py-2 mt-4 border-t border-gray-200 space-y-2">
+                <div className="px-4 py-2 mt-4 border-t border-gray-200 dark:border-gray-700 space-y-2">
                   <Link
                     to={paths.becomeVendor}
                     onClick={() => setIsMobileMenuOpen(false)}
@@ -767,7 +825,7 @@ export default function Navbar() {
 
                 {/* Login - Mobile (if not authenticated) */}
                 {!authenticated && (
-                  <div className="px-4 py-2 mt-4 border-t border-gray-200">
+                  <div className="px-4 py-2 mt-4 border-t border-gray-200 dark:border-gray-700">
                     <Link
                       to={paths.auth.jwt.signIn}
                       onClick={() => setIsMobileMenuOpen(false)}

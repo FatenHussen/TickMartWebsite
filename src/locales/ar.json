@@ -42,7 +42,9 @@
     "menu": "القائمة",
     "account": "الحساب",
     "becomeVendor": "كن بائعاً",
-    "becomeMarketer": "كن مسوقاً"
+    "becomeMarketer": "كن مسوقاً",
+    "lightMode": "الوضع الفاتح",
+    "darkMode": "الوضع الداكن"
   },
   "auth": {
     "createAccount": "إنشاء حسابك",
@@ -294,8 +296,15 @@
   },
   "store": {
     "store": "المتجر",
+    "allStores": "جميع المتاجر",
+    "allShops": "جميع المحلات",
+    "all": "الكل",
     "newArrivals": "وصلات جديدة",
     "topRated": "الأعلى تقييماً",
+    "offers": "العروض",
+    "nearby": "القريبة",
+    "failedToLoad": "فشل تحميل المتاجر",
+    "noStoresFound": "لم يتم العثور على متاجر",
     "promotionalBanner": {
       "title": "مجموعة الربيع 2024",
       "description": "اكتشف أحدث صيحات الموضة. خصم يصل إلى 40% على العناصر المختارة.",
@@ -788,6 +797,7 @@
     "recipes": "الوصفات",
     "baskets": "السلات",
     "brands": "العلامات التجارية",
+    "shops": "المحلات",
     "allStores": "جميع المتاجر",
     "allCategories": "جميع الفئات",
     "clearFilters": "مسح الفلاتر",
@@ -845,6 +855,20 @@
     "iAgree": "أوافق",
     "thankYouTitle": "شكراً لتقديم طلبك!",
     "thankYouMessage1": "تم تقديم طلبك للانضمام كمسوق.",
+    "thankYouMessage2": "يرجى الانتظار بينما يراجع فريقنا طلبك.",
+    "thankYouMessage3": "سيتم إخطارك بمجرد الموافقة عليه.",
+    "thankYouMessage4": "قد تستغرق الموافقة من 24 إلى 48 ساعة حسب المراجعة.",
+    "backToHome": "العودة للرئيسية"
+  },
+  "vendor": {
+    "title": "كن بائعاً",
+    "subtitle": "يرجى مراجعة وقبول الشروط قبل الانضمام كبائع.",
+    "lastUpdated": "آخر تحديث: 2026-01-01",
+    "agreeDisclaimer": "بالنقر على 'أوافق' فإنك تؤكد قبولك لجميع شروط وأحكام البائعين.",
+    "iAgree": "أوافق",
+    "noTermsAvailable": "الشروط والأحكام غير متوفرة.",
+    "thankYouTitle": "شكراً لتقديم طلبك!",
+    "thankYouMessage1": "تم تقديم طلبك للانضمام كبائع.",
     "thankYouMessage2": "يرجى الانتظار بينما يراجع فريقنا طلبك.",
     "thankYouMessage3": "سيتم إخطارك بمجرد الموافقة عليه.",
     "thankYouMessage4": "قد تستغرق الموافقة من 24 إلى 48 ساعة حسب المراجعة.",

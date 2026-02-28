@@ -25,14 +25,23 @@ import type {
   UpdateAddressPayload,
 } from "../types";
 
-export default function AddressForm() {
+type AddressFormProps = {
+  inline?: boolean;
+  onSuccess?: (addressId?: number) => void;
+  onCancel?: () => void;
+};
+
+export default function AddressForm(props?: AddressFormProps) {
+  const { inline, onSuccess, onCancel } = props ?? {};
   const { t } = useTranslation();
   const { isRTL } = useLanguage();
   const navigate = useNavigate();
   const { id } = useParams<{ id?: string }>();
-  const isEditMode = !!id;
+  const isEditMode = !inline && !!id;
 
-  const { mutate: createAddress, isPending: isCreating } = useCreateAddress();
+  const { mutate: createAddress, isPending: isCreating } = useCreateAddress({
+    redirectOnSuccess: !inline,
+  });
   const { mutate: updateAddress, isPending: isUpdating } = useUpdateAddress();
   const { data: addresses = [] } = useAddresses();
 
@@ -168,7 +177,14 @@ export default function AddressForm() {
         is_default: data.isDefault,
       };
 
-      createAddress(payload);
+      createAddress(payload, {
+        onSuccess: (res) => {
+          if (inline) {
+            const newId = res?.data?.id;
+            onSuccess?.(newId);
+          }
+        },
+      });
     }
   };
 
@@ -185,15 +201,17 @@ export default function AddressForm() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <button
-          onClick={() => navigate(-1)}
-          className={cn(
-            "p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors",
-            isRTL && "rotate-180",
-          )}
-        >
-          <HiArrowLeft className="w-5 h-5 text-text-primary" />
-        </button>
+        {!inline && (
+          <button
+            onClick={() => navigate(-1)}
+            className={cn(
+              "p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors",
+              isRTL && "rotate-180",
+            )}
+          >
+            <HiArrowLeft className="w-5 h-5 text-text-primary" />
+          </button>
+        )}
         <div>
           <h1 className="text-2xl font-bold text-text-primary">
             {isEditMode
@@ -372,7 +390,7 @@ export default function AddressForm() {
           <Button
             type="button"
             variant="outline"
-            onClick={() => navigate(-1)}
+            onClick={inline ? onCancel : () => navigate(-1)}
             className="flex-1"
             disabled={isPending}
           >

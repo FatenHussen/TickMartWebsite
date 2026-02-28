@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { HiCheck, HiPlus } from "react-icons/hi";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContext";
@@ -10,18 +11,18 @@ type CheckoutAddressSectionProps = {
   addresses: DeliveryAddress[];
   selectedAddressId: number | string;
   onAddressSelect: (addressId: number | string) => void;
-  onChangeAddress?: () => void;
   onAddNewAddress?: () => void;
 };
 
 export default function CheckoutAddressSection({
   addresses,
   selectedAddressId,
-  onChangeAddress,
+  onAddressSelect,
   onAddNewAddress,
 }: CheckoutAddressSectionProps) {
   const { t } = useTranslation();
   const { isRTL } = useLanguage();
+  const [showAddressPicker, setShowAddressPicker] = useState(false);
   const selectedAddress = addresses.find(
     (addr) => addr.id === selectedAddressId,
   );
@@ -34,10 +35,10 @@ export default function CheckoutAddressSection({
           {t("checkout.deliveryAddress")}
         </h2>
         <div className="flex items-center gap-3">
-          {onChangeAddress && (
+          {addresses.length > 1 && (
             <button
               type="button"
-              onClick={onChangeAddress}
+              onClick={() => setShowAddressPicker((p) => !p)}
               className="text-sm text-custom-secondary hover:text-custom-primary transition-colors"
             >
               {t("checkout.changeAddress")}
@@ -57,6 +58,37 @@ export default function CheckoutAddressSection({
           )}
         </div>
       </div>
+
+      {/* Address picker dropdown - when Change address clicked */}
+      {showAddressPicker && addresses.length > 1 && (
+        <div className="mb-4 p-4 bg-white rounded-xl border border-gray-200 space-y-2 max-h-48 overflow-y-auto">
+          {addresses.map((addr) => (
+            <button
+              key={addr.id}
+              type="button"
+              onClick={() => {
+                onAddressSelect(addr.id);
+                setShowAddressPicker(false);
+              }}
+              className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
+                selectedAddressId === addr.id
+                  ? "bg-primary-light/10 font-medium text-primary-light border border-primary-light"
+                  : "hover:bg-blue-off text-custom-primary"
+              }`}
+            >
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-medium">{addr.fullName}</span>
+                {addr.id === selectedAddressId && (
+                  <HiCheck className="w-5 h-5 text-primary-light shrink-0" />
+                )}
+              </div>
+              <p className="text-sm text-custom-secondary mt-0.5 truncate">
+                {addr.address}
+              </p>
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Selected Address Card */}
       {selectedAddress && (

@@ -6,9 +6,14 @@ import type {
 } from "../types/shop";
 
 export const _ShopApi = {
-  getShops: async (page?: number): Promise<ShopsListResponse> => {
+  getShops: async (filters?: {
+    page?: number;
+    type?: "top_rated" | "offers" | "nearby";
+    lat?: number;
+    lng?: number;
+  }): Promise<ShopsListResponse> => {
     const response = await _axios.get<ShopsListResponse>(
-      apiRoutes.shop.list(page)
+      apiRoutes.shop.list(filters)
     );
     return response.data;
   },

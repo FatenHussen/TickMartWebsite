@@ -182,9 +182,14 @@ export const queryKeys = {
    */
   shop: {
     all: () => ["shop"] as const,
-    list: (page?: number) =>
-      page !== undefined
-        ? (["shop", "list", page] as const)
+    list: (filters?: {
+      page?: number;
+      type?: string;
+      lat?: number;
+      lng?: number;
+    }) =>
+      filters
+        ? (["shop", "list", filters] as const)
         : (["shop", "list"] as const),
     details: (id?: number) =>
       id !== undefined

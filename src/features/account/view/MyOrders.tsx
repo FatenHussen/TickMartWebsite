@@ -229,7 +229,7 @@ export default function MyOrders() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t("orders.searchPlaceholder")}
-              className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-custom-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
             />
           </div>
         </div>
@@ -237,7 +237,7 @@ export default function MyOrders() {
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
-            className="px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+            className="px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-custom-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
           >
             {sortOptions.map((option) => (
               <option key={option.value} value={option.value}>
@@ -257,7 +257,7 @@ export default function MyOrders() {
               "px-4 py-2 rounded-lg text-sm font-medium transition-all",
               activeFilter === filter.value
                 ? "bg-primary text-white"
-                : "bg-white text-text-secondary border border-gray-200 hover:border-primary",
+                : "bg-white dark:bg-gray-800 text-text-secondary border border-gray-200 dark:border-gray-600 hover:border-primary",
             )}
           >
             {filter.label}
