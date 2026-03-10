@@ -147,6 +147,22 @@ export type ChangePasswordFormValues = {
   confirmNewPassword: string;
 };
 
+// ==================== Country (phone prefix) Types ====================
+export interface Country {
+  id: number;
+  name: string;
+  code: string; // e.g. "+963"
+}
+
+export interface CountriesResponse {
+  status: boolean;
+  message: string;
+  data: {
+    items: Country[];
+    pagination: unknown;
+  };
+}
+
 // ==================== Location API Types ====================
 export interface Governorate {
   id: number;

@@ -7,13 +7,132 @@ import ProductReviewCard from "../components/ProductReviewCard";
 import StoreReviewCard from "../components/StoreReviewCard";
 import DeliveryReviewCard from "../components/DeliveryReviewCard";
 import RecipeReviewCard from "../components/RecipeReviewCard";
+import ScheduledBasketReviewCard from "../components/ScheduledBasketReviewCard";
+import BrandReviewCard from "../components/BrandReviewCard";
+import BasketReviewCard from "../components/BasketReviewCard";
 import UnreviewedItemCard from "../components/UnreviewedItemCard";
-import { mockReviews, mockUnreviewedItems } from "../data/mockData";
+import RatingFormModal from "../components/RatingFormModal";
+import { mockUnreviewedItems } from "../data/mockData";
+import { useMyRatings, useDeleteRating } from "../hooks/useRatings";
+import type { MyRatingItem } from "@/features/product/types/ratings";
 import type { ReviewType, ReviewUnion } from "../types";
+
+const STORAGE_BASE = "https://tikmool.octopus-software.online/storage";
+
+function toStorageUrl(path: string | null | undefined): string {
+  if (!path) return "";
+  if (path.startsWith("http")) return path;
+  return `${STORAGE_BASE}/${path}`;
+}
 
 type ReviewFilter = ReviewType | "all";
 type SortOption = "newest" | "oldest" | "rating_high" | "rating_low";
 type RatingFilter = "all" | "5" | "4" | "3" | "2" | "1";
+
+function formatReviewDate(createdAt: string): string {
+  try {
+    return new Date(createdAt).toLocaleDateString(undefined, {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+  } catch {
+    return createdAt;
+  }
+}
+
+function mapMyRatingToReviewUnion(item: MyRatingItem): ReviewUnion {
+  const date = formatReviewDate(item.created_at);
+  const type = item.type ?? "delivery";
+  const name = item.target.name ?? "";
+  const imageUrl = toStorageUrl(item.target.image);
+
+  const base = {
+    id: item.id,
+    type,
+    rating: item.rating,
+    date,
+    createdAt: item.created_at,
+  };
+
+  if (type === "product") {
+    return {
+      ...base,
+      type: "product",
+      productName: name,
+      productImage: imageUrl,
+      seller: "",
+      reviewText: item.comment ?? "",
+      images: item.image ? [toStorageUrl(item.image)] : [],
+      orderId: "",
+    } as ReviewUnion;
+  }
+  if (type === "shop") {
+    return {
+      ...base,
+      type: "store",
+      storeName: name,
+      storeIcon: imageUrl || undefined,
+      reviewText: item.comment ?? undefined,
+    } as ReviewUnion;
+  }
+  if (type === "delivery") {
+    return {
+      ...base,
+      type: "delivery",
+      orderId: "",
+      deliveryDate: date,
+      reviewText: item.comment ?? undefined,
+    } as ReviewUnion;
+  }
+  if (type === "recipe") {
+    return {
+      ...base,
+      type: "recipe",
+      recipeName: name,
+      recipeImage: imageUrl || undefined,
+      triedDate: date,
+      reviewText: item.comment ?? undefined,
+    } as ReviewUnion;
+  }
+  if (type === "schedule_basket" || type === "scheduled_basket") {
+    return {
+      ...base,
+      type: "scheduled_basket",
+      basketName: name,
+      basketImage: imageUrl || undefined,
+      orderId: "",
+      reviewText: item.comment ?? undefined,
+    } as ReviewUnion;
+  }
+  if (type === "brand") {
+    return {
+      ...base,
+      type: "brand",
+      brandName: name,
+      brandIcon: imageUrl || undefined,
+      reviewText: item.comment ?? undefined,
+    } as ReviewUnion;
+  }
+  if (type === "basket") {
+    return {
+      ...base,
+      type: "basket",
+      basketName: name,
+      basketImage: imageUrl || undefined,
+      reviewText: item.comment ?? undefined,
+    } as ReviewUnion;
+  }
+  // type === null or unknown: treat as delivery (e.g. driver/person rating)
+  return {
+    ...base,
+    type: "delivery",
+    orderId: "",
+    deliveryDate: date,
+    targetName: name,
+    reviewText: item.comment ?? undefined,
+  } as ReviewUnion;
+}
 
 export default function MyReviews() {
   const { t } = useTranslation();
@@ -21,6 +140,37 @@ export default function MyReviews() {
   const [activeFilter, setActiveFilter] = useState<ReviewFilter>("all");
   const [sortBy, setSortBy] = useState<SortOption>("newest");
   const [ratingFilter, setRatingFilter] = useState<RatingFilter>("all");
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editRatingState, setEditRatingState] = useState<{
+    ratingId: number;
+    initialRating: number;
+    initialComment: string;
+    initialImageUrl: string | null;
+  } | null>(null);
+  const [rateNowModalOpen, setRateNowModalOpen] = useState(false);
+  const [rateNowState, setRateNowState] = useState<{
+    rateableType: string;
+    rateableId: number;
+    orderId?: number;
+  } | null>(null);
+
+  const apiType =
+    activeFilter === "all"
+      ? undefined
+      : activeFilter === "scheduled_basket"
+        ? "schedule_basket"
+        : activeFilter === "store"
+          ? "shop"
+          : activeFilter === "basket"
+            ? "basket"
+            : activeFilter;
+
+  const { data: myRatingsData = [], isLoading: isLoadingMyRatings } = useMyRatings({
+    type: apiType,
+  });
+  const deleteRating = useDeleteRating();
+
+  const apiItems: MyRatingItem[] = Array.isArray(myRatingsData) ? myRatingsData : [];
 
   const filterTabs: { value: ReviewFilter; label: string }[] = [
     { value: "all", label: t("account.myReviews.filters.all") },
@@ -32,6 +182,8 @@ export default function MyReviews() {
       label: t("account.myReviews.filters.scheduledBaskets"),
     },
     { value: "recipe", label: t("account.myReviews.filters.recipes") },
+    { value: "brand", label: t("account.myReviews.filters.brands") },
+    { value: "basket", label: t("account.myReviews.filters.baskets") },
   ];
 
   const sortOptions: { value: SortOption; label: string }[] = [
@@ -54,23 +206,13 @@ export default function MyReviews() {
   ];
 
   const filteredAndSortedReviews = useMemo(() => {
-    let reviews = [...mockReviews];
+    let reviews = apiItems.map(mapMyRatingToReviewUnion);
 
-    // Filter by type
-    if (activeFilter !== "all") {
-      reviews = reviews.filter((review) => review.type === activeFilter);
-    }
-
-    // Filter by rating
     if (ratingFilter !== "all") {
       const ratingValue = parseInt(ratingFilter);
-      reviews = reviews.filter((review) => {
-        const roundedRating = Math.round(review.rating);
-        return roundedRating === ratingValue;
-      });
+      reviews = reviews.filter((review) => Math.round(review.rating) === ratingValue);
     }
 
-    // Sort reviews
     reviews.sort((a, b) => {
       switch (sortBy) {
         case "newest":
@@ -87,7 +229,7 @@ export default function MyReviews() {
     });
 
     return reviews;
-  }, [activeFilter, sortBy, ratingFilter]);
+  }, [apiItems, sortBy, ratingFilter]);
 
   const handleClearFilters = () => {
     setActiveFilter("all");
@@ -96,21 +238,44 @@ export default function MyReviews() {
   };
 
   const handleEditReview = (id: string | number) => {
-    // TODO: Navigate to edit review page
-    console.log("Edit review:", id);
+    const raw = apiItems.find((i) => i.id === Number(id));
+    if (!raw) return;
+    setEditRatingState({
+      ratingId: raw.id,
+      initialRating: raw.rating,
+      initialComment: raw.comment ?? "",
+      initialImageUrl: raw.image ?? null,
+    });
+    setEditModalOpen(true);
   };
 
   const handleDeleteReview = (id: string | number) => {
-    // TODO: Delete review logic
-    console.log("Delete review:", id);
+    if (!window.confirm(t("account.myReviews.confirmDelete", "هل أنت متأكد من حذف هذا التقييم؟")))
+      return;
+    deleteRating.mutate(Number(id));
   };
 
-  const handleRateNow = (id: string | number) => {
-    // TODO: Navigate to rate item page
-    console.log("Rate now:", id);
+  const handleRateNow = (id: string | number, orderId?: string) => {
+    setRateNowState({
+      rateableType: "product",
+      rateableId: Number(id),
+      orderId: orderId ? parseInt(orderId, 10) : undefined,
+    });
+    setRateNowModalOpen(true);
+  };
+
+  const handleEditModalClose = () => {
+    setEditModalOpen(false);
+    setEditRatingState(null);
+  };
+
+  const handleRateNowModalClose = () => {
+    setRateNowModalOpen(false);
+    setRateNowState(null);
   };
 
   const renderReviewCard = (review: ReviewUnion) => {
+    const compact = true;
     switch (review.type) {
       case "product":
         return (
@@ -119,6 +284,7 @@ export default function MyReviews() {
             review={review}
             onEdit={handleEditReview}
             onDelete={handleDeleteReview}
+            compact={compact}
           />
         );
       case "store":
@@ -127,6 +293,7 @@ export default function MyReviews() {
             key={review.id}
             review={review}
             onEdit={handleEditReview}
+            compact={compact}
           />
         );
       case "delivery":
@@ -135,6 +302,7 @@ export default function MyReviews() {
             key={review.id}
             review={review}
             onEdit={handleEditReview}
+            compact={compact}
           />
         );
       case "recipe":
@@ -143,20 +311,34 @@ export default function MyReviews() {
             key={review.id}
             review={review}
             onEdit={handleEditReview}
+            compact={compact}
           />
         );
       case "scheduled_basket":
-        // For now, use delivery card style
         return (
-          <DeliveryReviewCard
+          <ScheduledBasketReviewCard
             key={review.id}
-            review={{
-              ...review,
-              type: "delivery",
-              orderId: review.orderId || "",
-              deliveryDate: review.date,
-            }}
+            review={review}
             onEdit={handleEditReview}
+            compact={compact}
+          />
+        );
+      case "brand":
+        return (
+          <BrandReviewCard
+            key={review.id}
+            review={review}
+            onEdit={handleEditReview}
+            compact={compact}
+          />
+        );
+      case "basket":
+        return (
+          <BasketReviewCard
+            key={review.id}
+            review={review}
+            onEdit={handleEditReview}
+            compact={compact}
           />
         );
       default:
@@ -169,53 +351,55 @@ export default function MyReviews() {
 
   return (
     <div className="space-y-6" dir={isRTL ? "rtl" : "ltr"}>
-      {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-xl font-semibold text-gray-900 dark:text-white mb-1">
-          {t("account.myReviews.title")}
-        </h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          {t("account.myReviews.description")}
+      {/* Header: title left, edit note top right */}
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
+            {t("account.myReviews.title")}
+          </h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            {t("account.myReviews.description")}
+          </p>
+        </div>
+        <p className="text-xs text-gray-400 dark:text-gray-500 sm:text-right whitespace-nowrap">
+          {t("account.myReviews.editDeleteNote")}
         </p>
       </div>
 
       {/* Filter Tabs */}
-      <div className="mb-6">
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">
-            {t("account.myReviews.reviewType")}:
-          </span>
-          <div className="flex flex-wrap gap-2">
-            {filterTabs.map((tab) => (
-              <button
-                key={tab.value}
-                onClick={() => setActiveFilter(tab.value)}
-                className={cn(
-                  "px-4 py-1.5 rounded-full text-xs font-medium transition-all",
-                  activeFilter === tab.value
-                    ? "bg-cyan-500 text-white"
-                    : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
-                )}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-        </div>
+      <div className="flex flex-wrap items-center gap-2 mb-4">
+        <span className="text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">
+          {t("account.myReviews.reviewType")}:
+        </span>
+        {filterTabs.map((tab) => (
+          <button
+            key={tab.value}
+            onClick={() => setActiveFilter(tab.value)}
+            className={cn(
+              "px-4 py-2 rounded-full text-sm font-medium transition-all",
+              activeFilter === tab.value
+                ? "bg-cyan-500 text-white"
+                : "border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+            )}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
       {/* Sort & Filter Controls */}
       <div
         className={cn(
-          "flex flex-col md:flex-row items-start md:items-center gap-3 mb-6",
-          isRTL && "md:flex-row-reverse"
+          "flex flex-wrap items-center gap-3 mb-6",
+          isRTL && "flex-row-reverse"
         )}
       >
         {/* Sort Dropdown */}
         <div className="relative">
-          <button className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
+          <button className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
             <span className="text-sm">
-              {t("account.myReviews.sortBy")}: {sortOptions.find((o) => o.value === sortBy)?.label}
+              {t("account.myReviews.sortBy")}:{" "}
+              {sortOptions.find((o) => o.value === sortBy)?.label}
             </span>
             <HiChevronDown className="w-4 h-4 text-gray-400" />
           </button>
@@ -234,7 +418,7 @@ export default function MyReviews() {
 
         {/* Rating Filter Dropdown */}
         <div className="relative">
-          <button className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
+          <button className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
             <span className="text-sm">
               {ratingOptions.find((o) => o.value === ratingFilter)?.label}
             </span>
@@ -257,7 +441,7 @@ export default function MyReviews() {
         {hasActiveFilters && (
           <button
             onClick={handleClearFilters}
-            className="text-sm text-cyan-500 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors"
+            className="text-sm text-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
           >
             {t("account.myReviews.clearFilters")}
           </button>
@@ -265,39 +449,75 @@ export default function MyReviews() {
       </div>
 
       {/* Reviews List */}
-      {filteredAndSortedReviews.length === 0 ? (
+      {isLoadingMyRatings ? (
+        <div className="py-14 flex justify-center">
+          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500" />
+        </div>
+      ) : filteredAndSortedReviews.length === 0 ? (
         <div className="py-14 text-center">
           <p className="text-gray-500 dark:text-gray-400">
             {t("account.myReviews.noReviewsFound")}
           </p>
         </div>
       ) : (
-        <div className="space-y-4">
-          {filteredAndSortedReviews.map((review) => renderReviewCard(review))}
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 divide-y divide-gray-200 dark:divide-gray-700 overflow-hidden">
+          {filteredAndSortedReviews.map((review) => (
+            <div key={review.id} className="p-5">
+              {renderReviewCard(review)}
+            </div>
+          ))}
         </div>
       )}
 
       {/* Unreviewed Items Section */}
-      {mockUnreviewedItems.length > 0 && (
-        <div className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700">
-          <div className="mb-6">
-            <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-2">
+      {!isLoadingMyRatings && mockUnreviewedItems.length > 0 && (
+        <div className="mt-8 p-6 rounded-xl bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/50">
+          <div className="mb-4">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
               {t("account.myReviews.unreviewed.title")}
             </h2>
             <p className="text-sm text-gray-500 dark:text-gray-400">
               {t("account.myReviews.unreviewed.description")}
             </p>
           </div>
-          <div className="space-y-3">
+          <div className="divide-y divide-blue-200 dark:divide-blue-800/50">
             {mockUnreviewedItems.map((item) => (
               <UnreviewedItemCard
                 key={item.id}
                 item={item}
-                onRateNow={handleRateNow}
+                onRateNow={(id, orderId) => handleRateNow(id, orderId)}
+                compact
               />
             ))}
           </div>
         </div>
+      )}
+
+      {/* Edit rating modal */}
+      {editRatingState && (
+        <RatingFormModal
+          isOpen={editModalOpen}
+          onClose={handleEditModalClose}
+          onSuccess={handleEditModalClose}
+          mode="edit"
+          ratingId={editRatingState.ratingId}
+          initialRating={editRatingState.initialRating}
+          initialComment={editRatingState.initialComment}
+          initialImageUrl={editRatingState.initialImageUrl}
+        />
+      )}
+
+      {/* Rate now (create) modal */}
+      {rateNowState && (
+        <RatingFormModal
+          isOpen={rateNowModalOpen}
+          onClose={handleRateNowModalClose}
+          onSuccess={handleRateNowModalClose}
+          mode="create"
+          rateableType={rateNowState.rateableType}
+          rateableId={rateNowState.rateableId}
+          orderId={rateNowState.orderId}
+        />
       )}
     </div>
   );

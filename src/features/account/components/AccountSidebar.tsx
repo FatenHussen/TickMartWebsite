@@ -2,9 +2,11 @@ import { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContext";
+import { useTheme } from "@/context/ThemeContext";
 import { cn } from "@/shared/lib/utils";
 import { LogoutPopup } from "@/shared/component";
 import { useLogout } from "@/features/auth/hooks/useAuth";
+import { useAuthStore } from "@/store/auth";
 import {
   HiUser,
   HiLocationMarker,
@@ -19,6 +21,7 @@ import {
   HiQuestionMarkCircle,
   HiCog,
   HiLogout,
+  HiTrendingUp,
 } from "react-icons/hi";
 import type { IconType } from "react-icons";
 
@@ -31,7 +34,7 @@ interface AccountSidebarProps {
   };
 }
 
-const menuItems: { id: string; icon: IconType; path: string }[] = [
+const baseMenuItems: { id: string; icon: IconType; path: string }[] = [
   { id: "profile", icon: HiUser, path: "/account/profile" },
   { id: "addresses", icon: HiLocationMarker, path: "/account/addresses" },
   { id: "paymentMethods", icon: HiCreditCard, path: "/account/payment-methods" },
@@ -49,9 +52,24 @@ const menuItems: { id: string; icon: IconType; path: string }[] = [
 export default function AccountSidebar({ user }: AccountSidebarProps) {
   const { t } = useTranslation();
   const { isRTL } = useLanguage();
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
   const location = useLocation();
   const [showLogoutPopup, setShowLogoutPopup] = useState(false);
   const logoutMutation = useLogout();
+  const { user: authUser } = useAuthStore();
+
+  const isApprovedMarketer =
+    authUser?.affiliate?.is_affiliate === true &&
+    authUser?.affiliate?.approved === true;
+
+  const menuItems = isApprovedMarketer
+    ? [
+        ...baseMenuItems.slice(0, 1),
+        { id: "marketerDashboard", icon: HiTrendingUp, path: "/account/marketer-dashboard" },
+        ...baseMenuItems.slice(1),
+      ]
+    : baseMenuItems;
 
   const defaultUser = {
     fullName: "Sarah Johnson",
@@ -74,22 +92,26 @@ export default function AccountSidebar({ user }: AccountSidebarProps) {
     setShowLogoutPopup(false);
   };
 
+  const sidebarGradient = isDark
+    ? "linear-gradient(180deg, #1e3a5f 0%, #1e293b 50%, #0f172a 100%)"
+    : "linear-gradient(180deg, #2C8090 0%, #3AB8C4 50%, #4CDAF6 100%)";
+  const headerGradient = isDark
+    ? "linear-gradient(180deg, #1e3a5f 0%, #0f172a 100%)"
+    : "linear-gradient(180deg, #4CDAF6 0%, #2C8090 100%)";
+
   return (
     <div
       className={cn(
         "rounded-3xl overflow-hidden",
-        "shadow-[0_10px_15px_rgba(0,0,0,0.1),0_4px_6px_rgba(0,0,0,0.1)]"
+        "shadow-[0_10px_15px_rgba(0,0,0,0.1),0_4px_6px_rgba(0,0,0,0.1)]",
+        isDark && "shadow-[0_10px_15px_rgba(0,0,0,0.3),0_4px_6px_rgba(0,0,0,0.2)]"
       )}
-      style={{
-        background: "linear-gradient(180deg, #2C8090 0%, #3AB8C4 50%, #4CDAF6 100%)",
-      }}
+      style={{ background: sidebarGradient }}
     >
       {/* User Profile Header */}
       <div
         className="p-6 text-white text-center rounded-t-3xl"
-        style={{
-          background: "linear-gradient(180deg, #4CDAF6 0%, #2C8090 100%)",
-        }}
+        style={{ background: headerGradient }}
       >
         <div className="relative inline-block mb-3">
           <div className="w-20 h-20 rounded-full overflow-hidden border-3 border-white/30 mx-auto">

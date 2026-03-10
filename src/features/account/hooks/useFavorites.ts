@@ -13,6 +13,32 @@ export function useFavorites(type: FavoriteType, enabled = true) {
   });
 }
 
+export type WishlistFiltersParams = {
+  shopId?: number;
+  categoryId?: number;
+  type?: FavoriteType;
+};
+
+export function useAllFavorites(params?: WishlistFiltersParams, enabled = true) {
+  const queryParams = {
+    shop_id: params?.shopId,
+    category_id: params?.categoryId,
+  };
+  return useQuery({
+    queryKey: [
+      "favorites",
+      "list",
+      params?.type ?? null,
+      params?.shopId ?? null,
+      params?.categoryId ?? null,
+    ],
+    enabled,
+    queryFn: () => favoritesApi.getFavorites(params?.type, queryParams),
+    staleTime: 1000 * 60 * 2,
+    gcTime: 1000 * 60 * 10,
+  });
+}
+
 export function useToggleFavorite() {
   const queryClient = useQueryClient();
 

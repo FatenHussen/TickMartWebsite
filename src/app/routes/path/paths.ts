@@ -19,6 +19,7 @@ export const paths = {
       changePassword: `${ROOTS.AUTH}/change-password`,
     },
   },
+  affiliateWelcome: "/affiliate-welcome",
   client: {
     home: "/home",
     categories: ROOTS.CATEGORIES,
@@ -44,6 +45,7 @@ export const paths = {
   },
   becomeVendor: "/become-vendor",
   becomeMarketer: "/become-marketer",
+  marketerDashboard: "/account/marketer-dashboard",
   account: {
     root: ROOTS.ACCOUNT,
     profile: `${ROOTS.ACCOUNT}/profile`,

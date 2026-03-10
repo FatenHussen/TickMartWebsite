@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { cn } from "@/shared/lib/utils";
 import Rating from "@/shared/component/Rating";
 import Badge from "@/shared/component/Badge";
@@ -14,6 +15,7 @@ export type ProductInfoProps = {
   sold?: number;
   rating?: number;
   badges?: Array<{ label: string; className?: string }>;
+  topRightSlot?: ReactNode;
   className?: string;
 };
 
@@ -29,11 +31,12 @@ export default function ProductInfo({
   sold,
   rating,
   badges = [],
+  topRightSlot,
   className,
 }: ProductInfoProps) {
   return (
     <div className={cn("flex flex-col gap-3", className)}>
-      {/* Badges - Top */}
+      {/* Top badges row */}
       {badges.length > 0 && (
         <div className="flex flex-wrap items-center gap-2">
           {badges.map((badge, idx) => (
@@ -49,20 +52,23 @@ export default function ProductInfo({
         </div>
       )}
 
-      {/* Category & Brand - Small gray text */}
-      {(category || brand) && (
-        <div className="flex flex-col gap-0.5 text-sm text-gray">
-          {category && <span>{category}</span>}
-          {brand && <span>{brand}</span>}
+      {/* Category / Brand row with optional top-right slot (e.g. ShopSelector) */}
+      {(category || brand || topRightSlot) && (
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex flex-col gap-0.5 text-sm text-gray">
+            {category && <span>{category}</span>}
+            {brand && <span>{brand}</span>}
+          </div>
+          {topRightSlot && <div className="shrink-0">{topRightSlot}</div>}
         </div>
       )}
 
-      {/* Product Name - Large bold */}
+      {/* Product Name */}
       <h1 className="text-2xl font-bold tracking-tight text-text-primary lg:text-3xl">
         {name}
       </h1>
 
-      {/* SKU & Origin - Blue links */}
+      {/* SKU & Origin */}
       {(sku || origin) && (
         <div className="flex flex-col gap-1 text-sm">
           {sku && (
@@ -82,7 +88,6 @@ export default function ProductInfo({
 
       {/* Pricing Row */}
       <div className="flex items-center justify-between">
-        {/* Left: Price */}
         <div className="flex flex-col gap-1">
           <span className="text-2xl font-bold text-text-primary">{price}</span>
           {(originalPrice || savings) && (
@@ -99,7 +104,7 @@ export default function ProductInfo({
           )}
         </div>
 
-        {/* Right: Sold + Rating */}
+        {/* Sold + Rating */}
         {(sold !== undefined || rating !== undefined) && (
           <div className="flex items-center gap-2 text-sm">
             {sold !== undefined && (
@@ -113,19 +118,24 @@ export default function ProductInfo({
         )}
       </div>
 
-      {/* Secondary Badges (15% OFF, Most Ordered) - Below price */}
+      {/* Secondary badges below price */}
       {badges.length > 0 && (
         <div className="flex flex-wrap items-center gap-2">
-          <Badge
-            label="15% OFF"
-            className="rounded-full bg-primary-light px-3 py-1 text-xs font-semibold text-white"
-          />
-          <Badge
-            label="Most Ordered"
-            className="rounded-full bg-yellow-400 px-3 py-1 text-xs font-semibold text-black"
-          />
+          {badges.map((badge, idx) => (
+            <Badge
+              key={idx}
+              label={badge.label}
+              className={cn(
+                "rounded-full px-3 py-1 text-xs font-semibold",
+                badge.className,
+              )}
+            />
+          ))}
         </div>
       )}
+
+      {/* Dashed separator */}
+      <hr className="border-dashed border-gray-200 dark:border-gray-700" />
     </div>
   );
 }

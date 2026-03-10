@@ -3,7 +3,6 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/context/LanguageContext";
 import { useBaskets } from "../hooks/useBaskets";
-import { useAuthStore } from "@/store/auth";
 import { useFavorites, useToggleFavorite } from "@/features/account/hooks/useFavorites";
 import { useSectionsByPosition } from "@/features/home/hooks/useSections";
 import ApiSectionsRenderer from "@/shared/component/sections/ApiSectionsRenderer";
@@ -13,61 +12,68 @@ import BasketCardSkeleton from "@/shared/component/skeleton/BasketCardSkeleton";
 import { useInfiniteScroll } from "@/shared/hooks/useInfiniteScroll";
 import SideContentLayout from "@/layout/SideContentLayout";
 import BasketFiltersSidebar from "../components/BasketFiltersSidebar";
-import type { BasketItem, BasketType } from "../types/basket";
+import type { BasketItem, BasketFilters } from "../types/basket";
+
+const DEFAULT_FILTERS: BasketFilters = { basketType: "all" };
 
 export default function AllBaskets() {
   const { t } = useTranslation();
   const { isRTL } = useLanguage();
   const navigate = useNavigate();
 
-  const [basketType, setBasketType] = useState<BasketType>("all");
+  const [filters, setFilters] = useState<BasketFilters>(DEFAULT_FILTERS);
   const [currentPage, setCurrentPage] = useState(1);
   const [allBaskets, setAllBaskets] = useState<BasketItem[]>([]);
   const [hasMore, setHasMore] = useState(true);
 
-  // Determine is_schedule parameter based on basket type
+  // Build API filter object from UI filter state
   const isSchedule =
-    basketType === "all" ? undefined : basketType === "subscription" ? 1 : 0;
+    filters.basketType === "all"
+      ? undefined
+      : filters.basketType === "subscription"
+      ? (1 as const)
+      : (0 as const);
 
   const {
     data: basketsData,
     isLoading: isBasketsLoading,
     error: basketsError,
-  } = useBaskets(isSchedule, currentPage);
+  } = useBaskets({
+    is_schedule: isSchedule,
+    price_min: filters.priceMin,
+    price_max: filters.priceMax,
+    rating_min: filters.ratingMin,
+    items_count_min: filters.itemsCountMin,
+    items_count_max: filters.itemsCountMax,
+    type: filters.sortType,
+    page: currentPage,
+  });
 
   const { beforeSections, afterSections } = useSectionsByPosition("baskets");
-
-  // Separate banner sections (display_type_id: 1) from other sections
   const bannerSections = beforeSections.filter((s) => s.display_type_id === 1);
-  const otherBeforeSections = beforeSections.filter(
-    (s) => s.display_type_id !== 1
-  );
+  const otherBeforeSections = beforeSections.filter((s) => s.display_type_id !== 1);
 
-  // Reset when filter changes
+  // Reset when filters change
   useEffect(() => {
     setAllBaskets([]);
     setCurrentPage(1);
     setHasMore(true);
-  }, [basketType]);
+  }, [filters]);
 
-  // Accumulate baskets from all pages
+  // Accumulate baskets across pages
   useEffect(() => {
     if (basketsData?.items) {
       setAllBaskets((prev) => {
         const existingIds = new Set(prev.map((b) => b.id));
-        const newBaskets = basketsData.items.filter(
-          (b) => !existingIds.has(b.id)
-        );
+        const newBaskets = basketsData.items.filter((b) => !existingIds.has(b.id));
         return [...prev, ...newBaskets];
       });
-
       setHasMore(
         basketsData.pagination.current_page < basketsData.pagination.last_page
       );
     }
   }, [basketsData]);
 
-  // Infinite scroll
   const observerTarget = useInfiniteScroll({
     onLoadMore: () => setCurrentPage((prev) => prev + 1),
     hasMore,
@@ -77,17 +83,15 @@ export default function AllBaskets() {
 
   const handleBasketClick = (basketId: number, nextDeliveryDate?: string) => {
     navigate(`/basket/${basketId}`, {
-      state: { next_delivery_date: nextDeliveryDate }
+      state: { next_delivery_date: nextDeliveryDate },
     });
   };
 
   const handleAddToCart = (basketId: number) => {
-    // TODO: Add to cart logic
     console.log("Add to cart:", basketId);
   };
 
-  const { authenticated } = useAuthStore();
-  const { data: favoriteBaskets = [] } = useFavorites("basket", !!authenticated);
+  const { data: favoriteBaskets = [] } = useFavorites("basket", false);
   const toggleFavorite = useToggleFavorite();
   const favoriteBasketIds = favoriteBaskets.map((f) => f.id);
 
@@ -95,17 +99,12 @@ export default function AllBaskets() {
     toggleFavorite.mutate({ type: "basket", id: basketId });
   };
 
-  // Sidebar with filters
   const sidebar = (
-    <BasketFiltersSidebar
-      selectedType={basketType}
-      onTypeChange={setBasketType}
-    />
+    <BasketFiltersSidebar filters={filters} onFiltersChange={setFilters} />
   );
 
   return (
     <div className="min-h-screen bg-custom-primary" dir={isRTL ? "rtl" : "ltr"}>
-      {/* Banner Sections - Full Width (display_type_id: 1) - BEFORE main content */}
       {bannerSections.length > 0 && (
         <div className="w-full">
           <ApiSectionsRenderer sections={bannerSections} />
@@ -113,21 +112,18 @@ export default function AllBaskets() {
       )}
 
       <div className="page-container py-8">
-        {/* Other Sections before baskets */}
         {otherBeforeSections.length > 0 && (
           <FullBleedSection>
             <ApiSectionsRenderer sections={otherBeforeSections} />
           </FullBleedSection>
         )}
 
-        {/* Main Layout with Sidebar */}
         <SideContentLayout
           sidebar={sidebar}
           sidebarPosition="left"
           sidebarClassName="lg:w-[280px]"
           gapClassName="gap-6"
         >
-          {/* Title */}
           <div className="mb-6">
             <h2 className="text-2xl font-bold text-custom-primary">
               {t("baskets.allBaskets")}
@@ -137,17 +133,13 @@ export default function AllBaskets() {
             </p>
           </div>
 
-          {/* Baskets Grid */}
           {basketsError ? (
             <div className="mt-8 flex items-center justify-center h-64 bg-custom-secondary rounded-2xl">
-              <p className="text-custom-secondary">
-                {t("baskets.failedToLoad")}
-              </p>
+              <p className="text-custom-secondary">{t("baskets.failedToLoad")}</p>
             </div>
           ) : (
             <div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                {/* Render actual baskets */}
                 {allBaskets.map((basket) => (
                   <BasketCard
                     key={basket.id}
@@ -171,7 +163,7 @@ export default function AllBaskets() {
                         ? `${t("baskets.offerEnding")}: ${basket.offer_ends_at}`
                         : undefined
                     }
-                    isFavorite={favoriteBasketIds.includes(basket.id)}
+                    isFavorite={basket.is_favorite ?? favoriteBasketIds.includes(basket.id)}
                     onClick={() => handleBasketClick(basket.id, basket.next_delivery_date)}
                     onAddToCart={() => handleAddToCart(basket.id)}
                     onToggleFavorite={() => handleToggleFavorite(basket.id)}
@@ -179,29 +171,23 @@ export default function AllBaskets() {
                   />
                 ))}
 
-                {/* Show skeleton loaders while loading more */}
                 {isBasketsLoading &&
                   Array.from({ length: 10 }).map((_, index) => (
                     <BasketCardSkeleton key={`skeleton-${index}`} />
                   ))}
               </div>
 
-              {/* Empty state */}
               {!isBasketsLoading && allBaskets.length === 0 && (
                 <div className="mt-8 flex items-center justify-center h-64 bg-custom-secondary rounded-2xl">
-                  <p className="text-custom-secondary">
-                    {t("baskets.noBasketsFound")}
-                  </p>
+                  <p className="text-custom-secondary">{t("baskets.noBasketsFound")}</p>
                 </div>
               )}
 
-              {/* Infinite scroll trigger */}
               <div ref={observerTarget} className="h-10" />
             </div>
           )}
         </SideContentLayout>
 
-        {/* Sections after baskets */}
         {afterSections.length > 0 && (
           <FullBleedSection>
             <ApiSectionsRenderer sections={afterSections} />

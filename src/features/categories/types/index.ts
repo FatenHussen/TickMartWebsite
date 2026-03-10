@@ -38,15 +38,24 @@ export interface ApiProduct {
   category: string;
   name: string;
   description: string;
-  country: string;
+  country: string | null;
   price: number;
+  currency: string;
+  currency_symbol: string;
+  price_formatted: string;
   price_after_discount: number;
+  price_after_discount_formatted: string;
   amount_saved: number;
-  quantity: number;
+  amount_saved_formatted: string;
+  quantity: number | null;
   image: string;
   discount: string;
-  budges: ProductBadge[];
   created_at: string;
+  sold_number: number;
+  rating: number;
+  is_favorite: boolean;
+  top_badges: ProductBadge[];
+  bottom_badges: ProductBadge[];
 }
 
 // Products API Response

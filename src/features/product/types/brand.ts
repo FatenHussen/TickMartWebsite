@@ -53,6 +53,7 @@ export interface BrandProduct {
   created_at: string;
   sold_number?: number;
   rating?: number;
+  is_favorite?: boolean;
 }
 
 export interface BrandProductsResponse {

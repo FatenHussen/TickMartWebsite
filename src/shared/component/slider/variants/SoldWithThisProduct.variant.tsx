@@ -86,11 +86,7 @@ export default function SoldWithThisProductVariant({
             sold={product.sold}
             savings={product.savings}
             deliveryInfo={product.deliveryInfo}
-            isFavorite={
-              favoriteIds.length > 0
-                ? favoriteIds.includes(product.id as number)
-                : (product.isFavorite ?? false)
-            }
+            isFavorite={(product as { isFavorite?: boolean }).isFavorite ?? favoriteIds.includes(product.id as number)}
             onToggleFavorite={(id) => onToggleFavorite?.(id)}
             onClick={(id) => onProductClick?.(id)}
           />

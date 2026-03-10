@@ -56,6 +56,7 @@ export interface ShopListItem {
     ratings_count: number;
     created_at: string;
   };
+  is_favorite?: boolean;
 }
 
 export interface ShopsListResponse {

@@ -21,6 +21,8 @@ export interface SelectProps extends Omit<
   required?: boolean;
   options: SelectOption[];
   placeholder?: string;
+  isLoadingMore?: boolean;
+  loadingMoreText?: string;
 }
 
 const Select = forwardRef<HTMLSelectElement, SelectProps>(
@@ -36,6 +38,8 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
       placeholder,
       className,
       disabled,
+      isLoadingMore,
+      loadingMoreText = "Loading…",
       ...selectProps
     },
     ref,
@@ -82,6 +86,11 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
               {option.label}
             </option>
           ))}
+          {isLoadingMore && (
+            <option value="" disabled>
+              {loadingMoreText}
+            </option>
+          )}
         </select>
         {errorMessage && (
           <p className="text-sm text-red-600 dark:text-red-400">

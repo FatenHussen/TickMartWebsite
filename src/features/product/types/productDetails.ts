@@ -55,6 +55,13 @@ export interface BoughtWithProduct {
   price: number;
   price_after_discount?: number;
   image: string;
+  is_favorite?: boolean;
+}
+
+export interface ProductExtra {
+  id: number;
+  name: string;
+  price: number | string;
 }
 
 export interface ProductDetailsData {
@@ -74,6 +81,10 @@ export interface ProductDetailsData {
   is_instant_delivery: number;
   rating: number;
   rating_breakdown: number[];
+  sold_number?: number;
+  is_most_ordered?: number;
+  product_type?: string;
+  extras?: ProductExtra[];
   category: ProductCategory;
   attributes_map: AttributeMapItem[];
   shop_variants: ShopVariant[];
@@ -81,6 +92,7 @@ export interface ProductDetailsData {
   extra_details: ExtraDetail[];
   images: ProductImage[];
   available_shops: AvailableShop[];
+  is_favorite?: boolean;
 }
 
 export interface ProductDetailsResponse {

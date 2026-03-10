@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuthStore } from "@/store/auth";
@@ -49,8 +50,7 @@ function isRecipeItem(item: SectionItem): item is RecipeItem {
     !isManualItem(item) &&
     "name" in item &&
     "description" in item &&
-    "orders_count" in item &&
-    "budges" in item
+    "orders_count" in item
   );
 }
 
@@ -108,14 +108,30 @@ export default function ApiSectionsRenderer({
 }: ApiSectionsRendererProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { authenticated } = useAuthStore();
-  const { data: favoriteProducts = [] } = useFavorites("product", !!authenticated);
-  const { data: favoriteRecipes = [] } = useFavorites("recipe", !!authenticated);
-  const { data: favoriteBaskets = [] } = useFavorites("basket", !!authenticated);
+  const authenticated = useAuthStore((s) => s.authenticated);
+  const { data: favoriteProducts = [] } = useFavorites("product", false);
+  const { data: favoriteRecipes = [] } = useFavorites("recipe", false);
+  const { data: favoriteBaskets = [] } = useFavorites("basket", false);
+  const { data: favoriteShops = [] } = useFavorites("shop", false);
   const toggleFavorite = useToggleFavorite();
   const productFavoriteIds = favoriteProducts.map((f) => f.id);
   const recipeFavoriteIds = favoriteRecipes.map((f) => f.id);
   const basketFavoriteIds = favoriteBaskets.map((f) => f.id);
+  const shopFavoriteIds = favoriteShops.map((f) => f.id);
+
+  // Optimistic favorite state: key = "type:id", value = optimistic isFavorite
+  const [optimisticFavorites, setOptimisticFavorites] = useState<
+    Map<string, boolean>
+  >(new Map());
+
+  // Returns a computed isFavorite checker for a given type that respects optimistic overrides
+  const makeIsFavoriteFor =
+    (type: string, baseIds: number[]) =>
+    (id: number, itemIsFavorite?: boolean): boolean => {
+      const key = `${type}:${id}`;
+      if (optimisticFavorites.has(key)) return optimisticFavorites.get(key)!;
+      return itemIsFavorite ?? baseIds.includes(id);
+    };
 
   const handleViewAll = (section: Section) => {
     if (section.see_more?.page_slug) {
@@ -140,6 +156,32 @@ export default function ApiSectionsRenderer({
     }
   };
 
+  const handleToggleFavorite = (
+    type: "product" | "recipe" | "basket" | "shop",
+    id: number,
+    currentIsFavorite: boolean
+  ) => {
+    if (!authenticated) {
+      navigate("/auth/sign-in");
+      return;
+    }
+    const key = `${type}:${id}`;
+    // Flip immediately (optimistic)
+    setOptimisticFavorites((prev) => new Map(prev).set(key, !currentIsFavorite));
+    toggleFavorite.mutate({ type, id }, {
+      onError: () => {
+        // Rollback: API failed, restore the previous value
+        setOptimisticFavorites((prev) =>
+          new Map(prev).set(key, currentIsFavorite)
+        );
+      },
+      // onSuccess: intentionally omitted — the flipped optimistic value is
+      // already correct (it matches what the server saved). Removing it would
+      // reveal the stale sections cache (which still holds the old is_favorite),
+      // causing the heart icon to revert until the page is reloaded.
+    });
+  };
+
   return (
     <>
       {sections.map((section) => (
@@ -149,17 +191,21 @@ export default function ApiSectionsRenderer({
           onViewAll={() => handleViewAll(section)}
           onItemClick={(item) => handleItemClick(section, item)}
           t={t}
-          productFavoriteIds={productFavoriteIds}
-          recipeFavoriteIds={recipeFavoriteIds}
-          basketFavoriteIds={basketFavoriteIds}
-          onToggleProductFavorite={(id) =>
-            toggleFavorite.mutate({ type: "product", id })
+          productIsFavoriteFor={makeIsFavoriteFor("product", productFavoriteIds)}
+          recipeIsFavoriteFor={makeIsFavoriteFor("recipe", recipeFavoriteIds)}
+          basketIsFavoriteFor={makeIsFavoriteFor("basket", basketFavoriteIds)}
+          shopIsFavoriteFor={makeIsFavoriteFor("shop", shopFavoriteIds)}
+          onToggleProductFavorite={(id, cur) =>
+            handleToggleFavorite("product", id, cur)
           }
-          onToggleRecipeFavorite={(id) =>
-            toggleFavorite.mutate({ type: "recipe", id })
+          onToggleRecipeFavorite={(id, cur) =>
+            handleToggleFavorite("recipe", id, cur)
           }
-          onToggleBasketFavorite={(id) =>
-            toggleFavorite.mutate({ type: "basket", id })
+          onToggleBasketFavorite={(id, cur) =>
+            handleToggleFavorite("basket", id, cur)
+          }
+          onToggleShopFavorite={(id, cur) =>
+            handleToggleFavorite("shop", id, cur)
           }
         />
       ))}
@@ -172,12 +218,14 @@ type SectionByDisplayTypeProps = {
   onViewAll: () => void;
   onItemClick: (item: SectionItem) => void;
   t: (key: string) => string;
-  productFavoriteIds: number[];
-  recipeFavoriteIds: number[];
-  basketFavoriteIds: number[];
-  onToggleProductFavorite: (id: number) => void;
-  onToggleRecipeFavorite: (id: number) => void;
-  onToggleBasketFavorite: (id: number) => void;
+  productIsFavoriteFor: (id: number, itemIsFavorite?: boolean) => boolean;
+  recipeIsFavoriteFor: (id: number, itemIsFavorite?: boolean) => boolean;
+  basketIsFavoriteFor: (id: number, itemIsFavorite?: boolean) => boolean;
+  shopIsFavoriteFor: (id: number, itemIsFavorite?: boolean) => boolean;
+  onToggleProductFavorite: (id: number, currentIsFavorite: boolean) => void;
+  onToggleRecipeFavorite: (id: number, currentIsFavorite: boolean) => void;
+  onToggleBasketFavorite: (id: number, currentIsFavorite: boolean) => void;
+  onToggleShopFavorite: (id: number, currentIsFavorite: boolean) => void;
 };
 
 function SectionByDisplayType({
@@ -185,12 +233,14 @@ function SectionByDisplayType({
   onViewAll,
   onItemClick,
   t,
-  productFavoriteIds,
-  recipeFavoriteIds,
-  basketFavoriteIds,
+  productIsFavoriteFor,
+  recipeIsFavoriteFor,
+  basketIsFavoriteFor,
+  shopIsFavoriteFor,
   onToggleProductFavorite,
   onToggleRecipeFavorite,
   onToggleBasketFavorite,
+  onToggleShopFavorite,
 }: SectionByDisplayTypeProps) {
   const showViewAll = section.type === "api" && section.see_more;
 
@@ -214,7 +264,7 @@ function SectionByDisplayType({
           onViewAll={onViewAll}
           onItemClick={onItemClick}
           t={t}
-          favoriteIds={productFavoriteIds}
+          isFavoriteFor={productIsFavoriteFor}
           onToggleFavorite={onToggleProductFavorite}
         />
       );
@@ -227,6 +277,8 @@ function SectionByDisplayType({
           onViewAll={onViewAll}
           onItemClick={onItemClick}
           t={t}
+          isFavoriteFor={shopIsFavoriteFor}
+          onToggleFavorite={onToggleShopFavorite}
         />
       );
 
@@ -238,7 +290,7 @@ function SectionByDisplayType({
           onViewAll={onViewAll}
           onItemClick={onItemClick}
           t={t}
-          favoriteIds={basketFavoriteIds}
+          isFavoriteFor={basketIsFavoriteFor}
           onToggleFavorite={onToggleBasketFavorite}
         />
       );
@@ -262,7 +314,7 @@ function SectionByDisplayType({
           onViewAll={onViewAll}
           onItemClick={onItemClick}
           t={t}
-          favoriteIds={recipeFavoriteIds}
+          isFavoriteFor={recipeIsFavoriteFor}
           onToggleFavorite={onToggleRecipeFavorite}
         />
       );
@@ -284,8 +336,10 @@ type SectionProps = {
 };
 
 type SectionPropsWithFavorites = SectionProps & {
-  favoriteIds: number[];
-  onToggleFavorite: (id: number) => void;
+  /** Computed isFavorite checker — already aware of optimistic overrides */
+  isFavoriteFor: (id: number, itemIsFavorite?: boolean) => boolean;
+  /** Must receive current isFavorite so the handler can flip optimistically */
+  onToggleFavorite: (id: number, currentIsFavorite: boolean) => void;
 };
 
 function BannerSection({
@@ -359,7 +413,7 @@ function ProductSection({
   onViewAll,
   onItemClick,
   t,
-  favoriteIds,
+  isFavoriteFor,
   onToggleFavorite,
 }: SectionPropsWithFavorites) {
   return (
@@ -376,11 +430,12 @@ function ProductSection({
       renderItem={(item) => {
         if (isProductItem(item)) {
           const hasDiscount = item.discount && parseFloat(item.discount) > 0;
-          // Get badges - support both "budges" (typo) and "badges"
-          const badges = (item as any).budges || (item as any).badges || [];
-          const topBadge = badges.find(
-            (b: any) => (b.postion === "top" || b.position === "top") && b.color
-          );
+          const topBadge =
+            item.top_badges?.[0] ??
+            item.budges?.find(
+              (b) => b.postion === "top" || b.position === "top"
+            );
+          const isFav = isFavoriteFor(item.id, item.is_favorite);
 
           return (
             <ProductCard
@@ -388,9 +443,14 @@ function ProductSection({
               id={item.id}
               name={item.name}
               store=""
-              price={`${item.price_after_discount}`}
+              price={
+                item.price_after_discount_formatted ??
+                `${item.price_after_discount}`
+              }
               originalPrice={
-                hasDiscount && item.price ? `${item.price}` : undefined
+                hasDiscount && item.price
+                  ? item.price_formatted ?? `${item.price}`
+                  : undefined
               }
               rating={item.rating || 0}
               image={item.image}
@@ -407,15 +467,17 @@ function ProductSection({
                     }
                   : undefined
               }
-              isFavorite={favoriteIds.includes(item.id)}
+              isFavorite={isFav}
               onClick={() => onItemClick(item)}
-              onToggleFavorite={onToggleFavorite}
+              onToggleFavorite={(id) => onToggleFavorite(id, isFav)}
             />
           );
         }
         // Fallback for backward compatibility
         const data = getItemData(item) as any;
         const hasDiscount = data.discount && parseFloat(data.discount) > 0;
+        const topBadge = (data.top_badges as any[])?.[0] ?? data.budges?.[0];
+        const isFav = isFavoriteFor(data.id, data.is_favorite);
 
         return (
           <ProductCard
@@ -424,23 +486,31 @@ function ProductSection({
             name={data.name || data.desc || data.title || ""}
             store=""
             price={
-              data.price_after_discount
+              data.price_after_discount_formatted ??
+              (data.price_after_discount
                 ? `${data.price_after_discount}`
-                : `${data.price || 0}`
+                : `${data.price || 0}`)
             }
             originalPrice={
-              hasDiscount && data.price ? `${data.price}` : undefined
+              hasDiscount && data.price
+                ? data.price_formatted ?? `${data.price}`
+                : undefined
             }
             rating={data.rating || 0}
             image={data.image || ""}
             badge={
               hasDiscount
                 ? { label: `-${data.discount}%`, className: "bg-red-500" }
+                : topBadge
+                ? {
+                    label: topBadge.name,
+                    className: `bg-${topBadge.color}-500`,
+                  }
                 : undefined
             }
-            isFavorite={favoriteIds.includes(data.id)}
+            isFavorite={isFav}
             onClick={() => onItemClick(item)}
-            onToggleFavorite={onToggleFavorite}
+            onToggleFavorite={(id) => onToggleFavorite(id, isFav)}
           />
         );
       }}
@@ -454,7 +524,7 @@ function RecipeSection({
   onViewAll,
   onItemClick,
   t,
-  favoriteIds,
+  isFavoriteFor,
   onToggleFavorite,
 }: SectionPropsWithFavorites) {
   return (
@@ -471,10 +541,12 @@ function RecipeSection({
       renderItem={(item) => {
         if (isRecipeItem(item)) {
           const hasDiscount = item.discount && parseFloat(item.discount) > 0;
-          const badges = item.budges || [];
-          const topBadge = badges.find(
-            (b) => (b.postion === "top" || b.position === "top") && b.color
-          );
+          const topBadge =
+            item.top_badges?.[0] ??
+            item.budges?.find(
+              (b) => b.postion === "top" || b.position === "top"
+            );
+          const isFav = isFavoriteFor(item.id, item.is_favorite);
 
           return (
             <ProductCard
@@ -482,9 +554,14 @@ function RecipeSection({
               id={item.id}
               name={item.name}
               store=""
-              price={`${item.price_after_discount}`}
+              price={
+                item.price_after_discount_formatted ??
+                `${item.price_after_discount}`
+              }
               originalPrice={
-                hasDiscount && item.price ? `${item.price}` : undefined
+                hasDiscount && item.price
+                  ? item.price_formatted ?? `${item.price}`
+                  : undefined
               }
               rating={item.rating || 0}
               image={item.image}
@@ -501,15 +578,17 @@ function RecipeSection({
                     }
                   : undefined
               }
-              isFavorite={favoriteIds.includes(item.id)}
+              isFavorite={isFav}
               onClick={() => onItemClick(item)}
-              onToggleFavorite={onToggleFavorite}
+              onToggleFavorite={(id) => onToggleFavorite(id, isFav)}
             />
           );
         }
         // Fallback
         const data = getItemData(item) as any;
         const hasDiscount = data.discount && parseFloat(data.discount) > 0;
+        const topBadge = (data.top_badges as any[])?.[0] ?? data.budges?.[0];
+        const isFav = isFavoriteFor(data.id, data.is_favorite);
 
         return (
           <ProductCard
@@ -518,23 +597,31 @@ function RecipeSection({
             name={data.name || data.desc || data.title || ""}
             store=""
             price={
-              data.price_after_discount
+              data.price_after_discount_formatted ??
+              (data.price_after_discount
                 ? `${data.price_after_discount}`
-                : `${data.price || 0}`
+                : `${data.price || 0}`)
             }
             originalPrice={
-              hasDiscount && data.price ? `${data.price}` : undefined
+              hasDiscount && data.price
+                ? data.price_formatted ?? `${data.price}`
+                : undefined
             }
             rating={data.rating || 0}
             image={data.image || ""}
             badge={
               hasDiscount
                 ? { label: `-${data.discount}%`, className: "bg-red-500" }
+                : topBadge
+                ? {
+                    label: topBadge.name,
+                    className: `bg-${topBadge.color}-500`,
+                  }
                 : undefined
             }
-            isFavorite={favoriteIds.includes(data.id)}
+            isFavorite={isFav}
             onClick={() => onItemClick(item)}
-            onToggleFavorite={onToggleFavorite}
+            onToggleFavorite={(id) => onToggleFavorite(id, isFav)}
           />
         );
       }}
@@ -548,7 +635,7 @@ function BasketSection({
   onViewAll,
   onItemClick,
   t,
-  favoriteIds,
+  isFavoriteFor,
   onToggleFavorite,
 }: SectionPropsWithFavorites) {
   return (
@@ -570,17 +657,19 @@ function BasketSection({
             item.original_price > 0 && item.saving > 0
               ? `${t("baskets.youSave")} ${item.saving}`
               : undefined;
-          const offerEndingDate = item.is_on_offer
-            ? `${t("baskets.offerEnding")}: ${new Date(
-                item.offer_ends_at
-              ).toLocaleDateString()}`
-            : undefined;
+          const offerEndingDate =
+            item.is_on_offer && item.offer_ends_at
+              ? `${t("baskets.offerEnding")}: ${new Date(
+                  item.offer_ends_at
+                ).toLocaleDateString()}`
+              : undefined;
+          const isFav = isFavoriteFor(item.id, item.is_favorite);
 
           return (
             <BasketCard
               key={item.id}
               id={item.id}
-              name={item.name || item.title || ""}
+              name={item.title || item.name || ""}
               description={item.desc || ""}
               price={`${item.final_price ?? item.price_after_discount ?? 0}`}
               originalPrice={
@@ -591,14 +680,15 @@ function BasketSection({
               saveAmount={saveAmount}
               savings={savings}
               offerEndingDate={offerEndingDate}
-              isFavorite={favoriteIds.includes(item.id)}
+              isFavorite={isFav}
               onClick={() => onItemClick(item)}
-              onToggleFavorite={onToggleFavorite}
+              onToggleFavorite={(id) => onToggleFavorite(id, isFav)}
             />
           );
         }
         // Fallback for backward compatibility
         const data = getItemData(item) as any;
+        const isFav = isFavoriteFor(data.id, data.is_favorite);
         return (
           <BasketCard
             key={data.id}
@@ -618,9 +708,9 @@ function BasketSection({
                 : undefined
             }
             image={data.image || ""}
-            isFavorite={favoriteIds.includes(data.id)}
+            isFavorite={isFav}
             onClick={() => onItemClick(item)}
-            onToggleFavorite={onToggleFavorite}
+            onToggleFavorite={(id) => onToggleFavorite(id, isFav)}
           />
         );
       }}
@@ -634,7 +724,9 @@ function ShopSection({
   onViewAll,
   onItemClick,
   t,
-}: SectionProps) {
+  isFavoriteFor,
+  onToggleFavorite,
+}: SectionPropsWithFavorites) {
   return (
     <SliderSection
       title={section.name}
@@ -648,6 +740,7 @@ function ShopSection({
       }}
       renderItem={(item) => {
         if (isShopItem(item)) {
+          const isFav = isFavoriteFor(item.id, item.is_favorite);
           return (
             <ShopCard
               key={item.id}
@@ -659,11 +752,17 @@ function ShopSection({
               rating={item.average_rating}
               deliveryPrice={item.delivery_price}
               discountLabel={item.discount_label}
+              isFavorite={isFav}
+              onFavorite={(id) => onToggleFavorite(Number(id), isFav)}
               onClick={() => onItemClick(item)}
             />
           );
         }
         const data = getItemData(item) as unknown as Record<string, unknown>;
+        const isFav = isFavoriteFor(
+          data.id as number,
+          data.is_favorite as boolean | undefined
+        );
         return (
           <ShopCard
             key={data.id as number}
@@ -675,6 +774,8 @@ function ShopSection({
             rating={(data.average_rating as number) ?? 0}
             deliveryPrice={(data.delivery_price as string | number) ?? null}
             discountLabel={(data.discount_label as string) ?? null}
+            isFavorite={isFav}
+            onFavorite={(id) => onToggleFavorite(Number(id), isFav)}
             onClick={() => onItemClick(item)}
           />
         );

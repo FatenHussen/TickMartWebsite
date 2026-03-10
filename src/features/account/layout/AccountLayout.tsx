@@ -21,8 +21,9 @@ export default function AccountLayout({ user }: AccountLayoutProps) {
       {/* Mobile Menu */}
       <MobileAccountMenu user={user} />
 
-      {/* Desktop Layout */}
+      {/* Desktop Layout - dir="ltr" keeps grid columns fixed so sidebar is on RIGHT when Arabic */}
       <div
+        dir="ltr"
         className={cn(
           "grid gap-6 lg:gap-8",
           "grid-cols-1 lg:grid-cols-[300px_1fr]",

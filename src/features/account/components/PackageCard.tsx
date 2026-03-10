@@ -1,110 +1,146 @@
 import { useTranslation } from "react-i18next";
 import { HiCheck } from "react-icons/hi";
-import Button from "@/shared/ui/Button";
-import type { SubscriptionPackage } from "../types";
+import type { PackageApi } from "../types";
+import { formatPackageDuration } from "../utils/formatPackageDuration";
 
 type PackageCardProps = {
-  package: SubscriptionPackage;
-  onSubscribe?: (packageId: number | string) => void;
+  package: PackageApi;
+  isCurrentPlan?: boolean;
+  onSubscribe?: (packageId: number) => void;
 };
 
 export default function PackageCard({
   package: pkg,
+  isCurrentPlan = false,
   onSubscribe,
 }: PackageCardProps) {
   const { t } = useTranslation();
 
-  const isFeatured = pkg.isFeatured || pkg.isCurrentPlan;
+  const priceDisplay =
+    pkg.price_formatted ?? `${pkg.currency_symbol ?? ""}${pkg.price}`;
+
+  const duration = formatPackageDuration(pkg.duration_days, t);
+
+  const features = [
+    t("packages.features.discountPercent", { percent: pkg.discount_percentage }),
+    t("packages.features.freeDeliveriesCount", { count: pkg.free_delivery_count }),
+    !pkg.monthly_orders_limit || pkg.monthly_orders_limit >= 999
+      ? t("packages.features.unlimitedOrders")
+      : t("packages.features.ordersUpTo", { count: pkg.monthly_orders_limit }),
+    t("packages.features.bonusPointsCount", { count: pkg.points_bonus }),
+  ];
 
   return (
     <div
-      className={`relative rounded-2xl overflow-hidden transition-all ${
-        isFeatured
-          ? "ring-2 ring-primary shadow-lg"
-          : "border border-gray-200 hover:border-gray-300"
-      }`}
+      className="relative overflow-hidden rounded-lg"
+      style={
+        isCurrentPlan
+          ? {
+              background:
+                "linear-gradient(135deg, #4A9FD4 0%, #2B7CB4 40%, #1A5A99 80%, #14487F 100%)",
+              border: "2px solid transparent",
+              boxShadow: "0 8px 10px 0 rgba(1, 105, 194, 0.2)",
+            }
+          : {
+              background:
+                "linear-gradient(white, white) padding-box, linear-gradient(to bottom, #E4F0FB, #E5F3FF) border-box",
+              border: "2px solid transparent",
+              boxShadow: "0 8px 10px 0 rgba(1, 105, 194, 0.2)",
+            }
+      }
     >
-      {/* Featured Background */}
-      {isFeatured && (
-        <div
-          className="absolute inset-0 opacity-10"
-          style={{
-            background: pkg.gradient || "linear-gradient(135deg, #0891B2 0%, #164E63 100%)",
-          }}
-        />
+      {/* Current Plan: circular arc rings overlay */}
+      {isCurrentPlan && (
+        <svg
+          className="absolute inset-0 h-full w-full"
+          viewBox="0 0 350 240"
+          fill="none"
+          preserveAspectRatio="xMidYMid slice"
+        >
+          <circle cx="310" cy="200" r="100" stroke="rgba(255,255,255,0.18)" strokeWidth="36" fill="none" />
+          <circle cx="310" cy="200" r="150" stroke="rgba(255,255,255,0.12)" strokeWidth="36" fill="none" />
+          <circle cx="310" cy="200" r="200" stroke="rgba(255,255,255,0.08)" strokeWidth="36" fill="none" />
+          <circle cx="310" cy="200" r="250" stroke="rgba(255,255,255,0.05)" strokeWidth="36" fill="none" />
+        </svg>
       )}
 
-      <div className="relative p-5">
-        {/* Header */}
-        <div className="flex items-start justify-between mb-4">
+      <div className="relative flex flex-col gap-3 p-4">
+        {/* Header: plan name + duration | Current Plan badge */}
+        <div className="flex items-start justify-between">
           <div>
             <h3
               className={`text-lg font-bold ${
-                isFeatured ? "text-primary" : "text-gray-900"
+                isCurrentPlan ? "text-white" : "text-gray-900 dark:text-white"
               }`}
             >
-              {pkg.name.startsWith("packages.") ? t(pkg.name) : pkg.name}
+              {pkg.name}
             </h3>
-            <p className="text-xs text-gray-500 mt-0.5">
-              {pkg.duration.startsWith("packages.")
-                ? t(pkg.duration)
-                : pkg.duration}
+            <p
+              className={`mt-1 text-sm ${
+                isCurrentPlan
+                  ? "text-blue-100/70"
+                  : "text-gray-500 dark:text-gray-400"
+              }`}
+            >
+              {duration} {t("packages.durationSuffix")}
             </p>
           </div>
-
-          {/* Current Plan Badge */}
-          {pkg.isCurrentPlan && (
-            <span className="px-3 py-1 rounded-full text-xs font-medium bg-primary text-white">
+          {isCurrentPlan && (
+            <span className="rounded-xl bg-white/90 px-4 py-1.5 text-sm font-semibold text-blue-900 shadow-sm">
               {t("packages.currentPlan")}
             </span>
           )}
         </div>
 
-        {/* Features */}
-        <ul className="space-y-2.5 mb-5">
-          {pkg.features.map((feature) => (
-            <li key={feature.id} className="flex items-center gap-2">
+        {/* Features list */}
+        <ul className="flex flex-col gap-3">
+          {features.map((text, i) => (
+            <li key={i} className="flex items-center gap-2">
+              <span className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full bg-emerald-500">
+                <HiCheck className="h-3 w-3 text-white" />
+              </span>
               <span
-                className={`flex-shrink-0 w-4 h-4 rounded-full flex items-center justify-center ${
-                  isFeatured ? "bg-primary/20 text-primary" : "bg-gray-100 text-gray-600"
+                className={`text-sm ${
+                  isCurrentPlan
+                    ? "text-white"
+                    : "text-gray-700 dark:text-gray-300"
                 }`}
               >
-                <HiCheck className="w-2.5 h-2.5" />
-              </span>
-              <span className="text-sm text-gray-700">
-                {feature.text.startsWith("packages.")
-                  ? t(feature.text)
-                  : feature.text}
+                {text}
               </span>
             </li>
           ))}
         </ul>
 
-        {/* Price & Action */}
-        <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+        {/* Price & Subscribe button */}
+        <div className="mt-auto flex items-end justify-between pt-2">
           <div>
             <span
-              className={`text-xl font-bold ${
-                isFeatured ? "text-primary" : "text-gray-900"
+              className={`text-2xl font-bold ${
+                isCurrentPlan ? "text-white" : "text-gray-900 dark:text-white"
               }`}
             >
-              {pkg.price}
+              {priceDisplay}
             </span>
-            <span className="text-sm text-gray-500 ms-1">
-              {pkg.currency ? `${pkg.currency}/` : ""}
-              {t("packages.month")}
+            <span
+              className={`text-sm ${
+                isCurrentPlan
+                  ? "text-white/80"
+                  : "text-gray-500 dark:text-gray-400"
+              }`}
+            >
+              /{t("packages.month")}
             </span>
           </div>
-
-          {!pkg.isCurrentPlan && (
-            <Button
-              variant="outline"
-              size="sm"
+          {!isCurrentPlan && (
+            <button
+              type="button"
               onClick={() => onSubscribe?.(pkg.id)}
-              className="px-5"
+              className="rounded-lg px-5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+              style={{ backgroundColor: "#38BDF8" }}
             >
               {t("packages.subscribe")}
-            </Button>
+            </button>
           )}
         </div>
       </div>

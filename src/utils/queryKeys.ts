@@ -38,6 +38,7 @@ export const queryKeys = {
       cityId
         ? (["location", "areas", cityId] as const)
         : (["location", "areas"] as const),
+    countries: () => ["location", "countries"] as const,
   },
 
   /**
@@ -60,6 +61,23 @@ export const queryKeys = {
       pageSlug
         ? (["sections", "list", pageSlug] as const)
         : (["sections", "list"] as const),
+  },
+
+  /**
+   * FAQs query keys (Help Center)
+   */
+  faqs: {
+    all: () => ["faqs"] as const,
+    list: (type?: string) =>
+      type ? (["faqs", "list", type] as const) : (["faqs", "list"] as const),
+  },
+
+  /**
+   * App settings query keys
+   */
+  appSettings: {
+    all: () => ["appSettings"] as const,
+    get: () => ["appSettings", "get"] as const,
   },
 
   /**
@@ -101,9 +119,9 @@ export const queryKeys = {
    */
   recipes: {
     all: () => ["recipes"] as const,
-    list: (page?: number) =>
-      page !== undefined
-        ? (["recipes", "list", page] as const)
+    list: (filters?: object) =>
+      filters && Object.keys(filters).length > 0
+        ? (["recipes", "list", filters] as const)
         : (["recipes", "list"] as const),
     details: (id?: number) =>
       id !== undefined
@@ -116,18 +134,22 @@ export const queryKeys = {
    */
   brands: {
     all: () => ["brands"] as const,
-    list: (page?: number) =>
-      page !== undefined
-        ? (["brands", "list", page] as const)
+    list: (filters?: { search?: string; type?: string; page?: number }) =>
+      filters && Object.keys(filters).length > 0
+        ? (["brands", "list", filters] as const)
         : (["brands", "list"] as const),
+    listInfinite: (filters?: { search?: string; type?: string }) =>
+      filters && Object.keys(filters).length > 0
+        ? (["brands", "list", "infinite", filters] as const)
+        : (["brands", "list", "infinite"] as const),
     details: (id?: number | string) =>
       id !== undefined
         ? (["brands", "details", id] as const)
         : (["brands", "details"] as const),
-    products: (brandId?: number, page?: number) =>
+    products: (brandId?: number, filters?: object) =>
       brandId !== undefined
-        ? page !== undefined
-          ? (["brands", "products", brandId, page] as const)
+        ? filters && Object.keys(filters).length > 0
+          ? (["brands", "products", brandId, filters] as const)
           : (["brands", "products", brandId] as const)
         : (["brands", "products"] as const),
   },
@@ -163,13 +185,9 @@ export const queryKeys = {
    */
   baskets: {
     all: () => ["baskets"] as const,
-    list: (isSchedule?: 0 | 1, page?: number) =>
-      isSchedule !== undefined
-        ? page !== undefined
-          ? (["baskets", "list", isSchedule, page] as const)
-          : (["baskets", "list", isSchedule] as const)
-        : page !== undefined
-        ? (["baskets", "list", page] as const)
+    list: (filters?: object) =>
+      filters && Object.keys(filters).length > 0
+        ? (["baskets", "list", filters] as const)
         : (["baskets", "list"] as const),
     details: (id?: number | string) =>
       id !== undefined
@@ -191,6 +209,17 @@ export const queryKeys = {
       filters
         ? (["shop", "list", filters] as const)
         : (["shop", "list"] as const),
+    listInfinite: (filters?: {
+      type?: string;
+      lat?: number;
+      lng?: number;
+      governorate_id?: number;
+      category_id?: number;
+      search?: string;
+    }) =>
+      filters && Object.keys(filters).length > 0
+        ? (["shop", "list", "infinite", filters] as const)
+        : (["shop", "list", "infinite"] as const),
     details: (id?: number) =>
       id !== undefined
         ? (["shop", "details", id] as const)
@@ -203,7 +232,10 @@ export const queryKeys = {
   orders: {
     all: () => ["orders"] as const,
     list: (page?: number) => ["orders", "list", page] as const,
-    listInfinite: () => ["orders", "list", "infinite"] as const,
+    listInfinite: (status?: string) =>
+      status
+        ? (["orders", "list", "infinite", status] as const)
+        : (["orders", "list", "infinite"] as const),
     details: (id: number | string) => ["orders", "details", id] as const,
     preview: (
       addressId?: number | null,
@@ -240,6 +272,27 @@ export const queryKeys = {
     all: () => ["packages"] as const,
     list: () => ["packages", "list"] as const,
     mySubscription: () => ["packages", "mySubscription"] as const,
+    benefits: () => ["packages", "benefits"] as const,
+  },
+
+  /**
+   * Currencies query keys
+   */
+  currencies: {
+    all: () => ["currencies"] as const,
+    list: () => ["currencies", "list"] as const,
+    myCurrency: () => ["currencies", "myCurrency"] as const,
+  },
+
+  /**
+   * My Baskets query keys (user's baskets)
+   */
+  myBaskets: {
+    all: () => ["myBaskets"] as const,
+    list: (type?: "subscription" | "custom" | "user-schedule") =>
+      type
+        ? (["myBaskets", "list", type] as const)
+        : (["myBaskets", "list"] as const),
   },
 
   /**
@@ -266,13 +319,67 @@ export const queryKeys = {
   },
 
   /**
+   * Marketer / Affiliate query keys
+   */
+  marketer: {
+    all: () => ["marketer"] as const,
+    statistics: () => ["marketer", "statistics"] as const,
+    profile: () => ["marketer", "profile"] as const,
+    orders: (params?: unknown) =>
+      params ? (["marketer", "orders", params] as const) : (["marketer", "orders"] as const),
+    transactions: (params?: unknown) =>
+      params ? (["marketer", "transactions", params] as const) : (["marketer", "transactions"] as const),
+    withdrawRequests: (params?: unknown) =>
+      params ? (["marketer", "withdrawRequests", params] as const) : (["marketer", "withdrawRequests"] as const),
+    monthlyOrders: (year?: number) =>
+      year !== undefined ? (["marketer", "monthlyOrders", year] as const) : (["marketer", "monthlyOrders"] as const),
+  },
+
+  /**
    * Favorites query keys
    */
   favorites: {
     all: () => ["favorites"] as const,
-    list: (type?: string) =>
+    list: (type?: string, params?: object) =>
       type !== undefined
-        ? (["favorites", "list", type] as const)
+        ? params
+          ? (["favorites", "list", type, params] as const)
+          : (["favorites", "list", type] as const)
         : (["favorites", "list"] as const),
+  },
+
+  /**
+   * Complaints query keys
+   */
+  complaints: {
+    all: () => ["complaints"] as const,
+    list: (params?: object) =>
+      params ? (["complaints", "list", params] as const) : (["complaints", "list"] as const),
+    orders: () => ["complaints", "orders"] as const,
+  },
+
+  /**
+   * Ratings query keys (my ratings, can-rate, list)
+   */
+  ratings: {
+    all: () => ["ratings"] as const,
+    list: (rateableId?: number, rateableType?: string, page?: number) =>
+      rateableId !== undefined && rateableType
+        ? page !== undefined
+          ? (["ratings", "list", rateableId, rateableType, page] as const)
+          : (["ratings", "list", rateableId, rateableType] as const)
+        : (["ratings", "list"] as const),
+    myRatings: (type?: string, rateableId?: number) =>
+      type !== undefined || rateableId !== undefined
+        ? (["ratings", "myRatings", type, rateableId] as const)
+        : (["ratings", "myRatings"] as const),
+    canRate: (productId?: number) =>
+      productId !== undefined
+        ? (["ratings", "canRate", productId] as const)
+        : (["ratings", "canRate"] as const),
+  },
+  notifications: {
+    all: () => ["notifications"] as const,
+    list: () => ["notifications", "list"] as const,
   },
 } as const;

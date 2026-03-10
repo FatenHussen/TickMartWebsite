@@ -1,11 +1,20 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
+export interface AffiliateInfo {
+  is_affiliate: boolean;
+  approved: boolean;
+  affiliate_id: string | null;
+  coupon_id: number | null;
+  rate: string | null;
+}
+
 export interface User {
   id: number;
   name: string;
   email?: string;
   phone?: string;
+  affiliate?: AffiliateInfo;
 }
 
 interface AuthStore {

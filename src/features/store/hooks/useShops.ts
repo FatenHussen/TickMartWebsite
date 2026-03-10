@@ -8,6 +8,9 @@ export type ShopsFilters = {
   type?: "top_rated" | "offers" | "nearby";
   lat?: number;
   lng?: number;
+  governorate_id?: number;
+  category_id?: number;
+  search?: string;
 };
 
 export function useShops(filters?: ShopsFilters) {
@@ -17,7 +20,7 @@ export function useShops(filters?: ShopsFilters) {
       const response = await _ShopApi.getShops(filters);
       return response.data;
     },
-    staleTime: 1000 * 60 * 60, // 1 hour
-    gcTime: 1000 * 60 * 60 * 24, // 24 hours
+    staleTime: 1000 * 60 * 60,
+    gcTime: 1000 * 60 * 60 * 24,
   });
 }

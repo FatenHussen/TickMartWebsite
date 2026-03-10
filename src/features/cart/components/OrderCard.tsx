@@ -157,17 +157,12 @@ export default function OrderCard({
 
   return (
     <div
-      className="rounded-2xl overflow-hidden shadow-md hover:shadow-lg transition-shadow px-2"
+      className="rounded-2xl overflow-hidden shadow-md hover:shadow-lg transition-shadow"
       dir={isRTL ? "rtl" : "ltr"}
       style={{ background: statusUI.cardGradient }}
     >
       {/* Top Section with Gradient */}
-      <div
-        className="p-4 rounded-4xl "
-        style={{
-          background: "linear-gradient(to bottom, #FFFFFF 80%, #FFFFFF 30%)",
-        }}
-      >
+      <div className="p-4" style={{ background: statusUI.cardGradient }}>
         {/* Header: Order Icon + Info | Status Badge */}
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3">
@@ -233,7 +228,10 @@ export default function OrderCard({
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={onViewDetails}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onViewDetails?.();
+                  }}
                   className="bg-white hover:bg-gray-50 px-3 py-1.5 rounded-lg text-xs font-medium border"
                   style={{
                     borderColor: statusUI.buttonColor,
@@ -248,10 +246,14 @@ export default function OrderCard({
                   type="button"
                   variant="primary"
                   size="sm"
-                  onClick={onTrackOrder}
-                  className="text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:opacity-90"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onTrackOrder?.();
+                  }}
+                  className="text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:opacity-90 flex items-center gap-1.5"
                   style={{ backgroundColor: statusUI.buttonColor }}
                 >
+                  <HiTruck className="w-4 h-4" />
                   {t("orders.trackOrder")}
                 </Button>
               )}
@@ -260,7 +262,10 @@ export default function OrderCard({
                   type="button"
                   variant="primary"
                   size="sm"
-                  onClick={onReorder}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onReorder?.();
+                  }}
                   className="text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:opacity-90"
                   style={{ backgroundColor: statusUI.buttonColor }}
                 >
@@ -273,7 +278,10 @@ export default function OrderCard({
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={onCancelOrder}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onCancelOrder?.();
+                    }}
                     className="bg-white border border-red-500 hover:bg-red-50 text-red-600 px-3 py-1.5 rounded-lg text-xs font-medium"
                   >
                     {t("orders.cancelOrder")}
@@ -285,7 +293,10 @@ export default function OrderCard({
             {onAddComplaint && (
               <button
                 type="button"
-                onClick={onAddComplaint}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onAddComplaint?.();
+                }}
                 className="text-xs text-gray-500 hover:underline"
               >
                 {t("orders.addComplaint")}
@@ -296,7 +307,7 @@ export default function OrderCard({
       </div>
 
       {/* Bottom Section: Items List with White Background */}
-      <div className=" p-4 ">
+      <div className="p-4 bg-white dark:bg-gray-50">
         {/* Items List */}
         <div className="space-y-3">
           {items.map((item, index) => (
@@ -337,9 +348,9 @@ export default function OrderCard({
           ))}
         </div>
 
-        {/* Additional Info */}
+        {/* Additional Info - e.g. "+1 more item from 1 store" */}
         {additionalInfo && (
-          <div className="text-xs text-blue-600 mt-3 cursor-pointer hover:underline">
+          <div className="text-xs text-gray-500 dark:text-gray-400 mt-3">
             {additionalInfo}
           </div>
         )}

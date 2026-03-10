@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { _LocationApi } from "../api/location.service";
 import { queryKeys } from "@/utils/queryKeys";
-import type { Governorate, City, Area } from "../types";
+import type { Governorate, City, Area, Country } from "../types";
 
 export function useGovernorates() {
   return useQuery<Governorate[]>({
@@ -62,6 +62,18 @@ export function useAreas(cityId: number | null) {
       return [];
     },
     enabled: !!cityId,
+    staleTime: 1000 * 60 * 60, // 1 hour
+    gcTime: 1000 * 60 * 60 * 24, // 24 hours
+  });
+}
+
+export function useCountries() {
+  return useQuery<Country[]>({
+    queryKey: queryKeys.location.countries(),
+    queryFn: async () => {
+      const response = await _LocationApi.getCountries();
+      return response.data?.items ?? [];
+    },
     staleTime: 1000 * 60 * 60, // 1 hour
     gcTime: 1000 * 60 * 60 * 24, // 24 hours
   });

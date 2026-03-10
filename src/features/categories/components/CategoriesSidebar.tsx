@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import type { ApiCategory, CategoryChild } from "../types";
 import CategoryFilters from "./CategoryFilters";
+import type { CategoryTypeFilter } from "./CategoryFilters";
 
 type CategoriesSidebarProps = {
   categories: ApiCategory[];
@@ -10,6 +11,8 @@ type CategoriesSidebarProps = {
   onSubcategorySelect: (subcategory: CategoryChild) => void;
   isLoading?: boolean;
   title?: string;
+  categoryTypeFilter?: CategoryTypeFilter;
+  onCategoryTypeFilterChange?: (type: CategoryTypeFilter) => void;
 };
 
 export default function CategoriesSidebar({
@@ -20,6 +23,8 @@ export default function CategoriesSidebar({
   onSubcategorySelect,
   isLoading,
   title,
+  categoryTypeFilter,
+  onCategoryTypeFilterChange,
 }: CategoriesSidebarProps) {
   const { t } = useTranslation();
 
@@ -30,9 +35,9 @@ export default function CategoriesSidebar({
   return (
     <div className="space-y-6">
       {/* Categories Section */}
-      <div className="bg-white rounded-xl p-5">
+      <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
         <h2 className="text-base font-bold text-gray-900 mb-4">
-          {title || t("categories.mainCategories", "Main Categories")}
+          {title || t("categories.categoriesTitle", "Categories")}
         </h2>
 
         {isLoading ? (
@@ -46,8 +51,9 @@ export default function CategoriesSidebar({
           </div>
         ) : (
           <div className="space-y-1">
-            {categories.filter((c) => c.children.length > 0).map((category) => {
+            {categories.map((category) => {
               const isSelected = selectedCategoryId === category.id;
+              const hasChildren = category.children.length > 0;
 
               return (
                 <div key={category.id}>
@@ -77,24 +83,26 @@ export default function CategoriesSidebar({
                     >
                       {category.name}
                     </span>
-                    {/* Arrow */}
-                    <svg
-                      className={`w-4 h-4 transition-transform ${isSelected ? "rotate-90" : ""}`}
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 5l7 7-7 7"
-                      />
-                    </svg>
+                    {/* Arrow - only for categories with children */}
+                    {hasChildren && (
+                      <svg
+                        className={`w-4 h-4 transition-transform ${isSelected ? "rotate-90" : ""}`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 5l7 7-7 7"
+                        />
+                      </svg>
+                    )}
                   </button>
 
-                  {/* Subcategories - show when category is selected */}
-                  {isSelected && subcategories.length > 0 && (
+                  {/* Subcategories - show when category is selected and has children */}
+                  {isSelected && hasChildren && subcategories.length > 0 && (
                     <div className="ml-9 mt-1 space-y-0.5">
                       {subcategories.map((subcategory) => {
                         const isSubSelected =
@@ -103,17 +111,12 @@ export default function CategoriesSidebar({
                           <button
                             key={subcategory.id}
                             onClick={() => onSubcategorySelect(subcategory)}
-                            className={`w-full text-left flex items-center gap-2 px-2 py-1.5 rounded transition-all text-sm ${
+                            className={`w-full text-left flex items-center gap-2 px-3 py-2 rounded-lg transition-all text-sm ${
                               isSubSelected
-                                ? "text-primary-light font-medium"
-                                : "text-gray-500 hover:text-gray-700"
+                                ? "bg-primary-light/10 text-primary-light font-medium"
+                                : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                             }`}
                           >
-                            <span
-                              className={`w-1.5 h-1.5 rounded-full ${
-                                isSubSelected ? "bg-primary-light" : "bg-gray-400"
-                              }`}
-                            />
                             {subcategory.name}
                           </button>
                         );
@@ -128,8 +131,11 @@ export default function CategoriesSidebar({
       </div>
 
       {/* Filters Section - Separate card */}
-      <div className="bg-white rounded-xl p-5">
-        <CategoryFilters />
+      <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+        <CategoryFilters
+          typeFilter={categoryTypeFilter}
+          onTypeFilterChange={onCategoryTypeFilterChange}
+        />
       </div>
     </div>
   );

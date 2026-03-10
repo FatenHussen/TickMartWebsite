@@ -15,6 +15,7 @@ export interface OrderListUser {
 
 export interface OrderListItem {
   id: number;
+  order_code?: string;
   status: string;
   cart_type: string;
   is_instant_delivery: boolean;
@@ -58,6 +59,7 @@ export interface OrderDetailVariantAttribute {
 
 export interface OrderDetailItem {
   id: number;
+  product_id?: number; // optional; when present used for rating
   product_name: string;
   variant_attributes: OrderDetailVariantAttribute[];
   quantity: number;

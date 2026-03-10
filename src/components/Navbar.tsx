@@ -30,7 +30,16 @@ export default function Navbar() {
   const { theme, toggleTheme } = useTheme();
   const { t } = useTranslation();
   const location = useLocation();
-  const { authenticated } = useAuthStore();
+  const { authenticated, user: authUser } = useAuthStore();
+
+  // Show "Become a Marketer" only when logged in AND (not affiliate OR not approved)
+  const showBecomeMarketer =
+    authenticated &&
+    (!authUser?.affiliate?.is_affiliate || !authUser?.affiliate?.approved);
+
+  const isApprovedMarketer =
+    authUser?.affiliate?.is_affiliate === true &&
+    authUser?.affiliate?.approved === true;
   const [showCategoriesDropdown, setShowCategoriesDropdown] = useState(false);
   const [showLocationDropdown, setShowLocationDropdown] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -518,20 +527,26 @@ export default function Navbar() {
                 </div>
               ))}
             </div>
-            <div className="flex items-center gap-3">
-              <Link
-                to={paths.becomeVendor}
-                className="px-5 xl:px-6 py-2.5 bg-primary-light text-white rounded-full font-medium hover:bg-primary-light/90 hover:opacity-95 transition-all text-sm xl:text-base whitespace-nowrap shadow-sm"
-              >
-                {t("navbar.becomeVendor")}
-              </Link>
-              <Link
-                to={paths.becomeMarketer}
-                className="px-5 xl:px-6 py-2.5 bg-primary-light text-white rounded-full font-medium hover:bg-primary-light/90 hover:opacity-95 transition-all text-sm xl:text-base whitespace-nowrap shadow-sm"
-              >
-                {t("navbar.becomeMarketer")}
-              </Link>
-            </div>
+            {(showBecomeMarketer || isApprovedMarketer) && (
+              <div className="flex items-center gap-3">
+                {showBecomeMarketer && (
+                  <Link
+                    to={paths.becomeMarketer}
+                    className="px-5 xl:px-6 py-2.5 bg-primary-light text-white rounded-full font-medium hover:bg-primary-light/90 hover:opacity-95 transition-all text-sm xl:text-base whitespace-nowrap shadow-sm"
+                  >
+                    {t("navbar.becomeMarketer")}
+                  </Link>
+                )}
+                {isApprovedMarketer && (
+                  <Link
+                    to={paths.marketerDashboard}
+                    className="px-5 xl:px-6 py-2.5 bg-primary-light text-white rounded-full font-medium hover:bg-primary-light/90 hover:opacity-95 transition-all text-sm xl:text-base whitespace-nowrap shadow-sm"
+                  >
+                    {t("account.menu.marketerDashboard")}
+                  </Link>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -805,23 +820,29 @@ export default function Navbar() {
                   </>
                 )}
 
-                {/* Become a Vendor & Marketer - Mobile */}
-                <div className="px-4 py-2 mt-4 border-t border-gray-200 dark:border-gray-700 space-y-2">
-                  <Link
-                    to={paths.becomeVendor}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="block w-full px-4 py-3 bg-primary-light text-white rounded-lg font-medium hover:bg-primary transition-colors text-center"
-                  >
-                    {t("navbar.becomeVendor")}
-                  </Link>
-                  <Link
-                    to={paths.becomeMarketer}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="block w-full px-4 py-3 bg-primary-light text-white rounded-lg font-medium hover:bg-primary transition-colors text-center"
-                  >
-                    {t("navbar.becomeMarketer")}
-                  </Link>
-                </div>
+                {/* Become a Marketer - Mobile (only when logged in and not yet approved marketer) */}
+                {(showBecomeMarketer || isApprovedMarketer) && (
+                  <div className="px-4 py-2 mt-4 border-t border-gray-200 dark:border-gray-700 space-y-2">
+                    {showBecomeMarketer && (
+                      <Link
+                        to={paths.becomeMarketer}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="block w-full px-4 py-3 bg-primary-light text-white rounded-lg font-medium hover:bg-primary transition-colors text-center"
+                      >
+                        {t("navbar.becomeMarketer")}
+                      </Link>
+                    )}
+                    {isApprovedMarketer && (
+                      <Link
+                        to={paths.marketerDashboard}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="block w-full px-4 py-3 bg-primary-light text-white rounded-lg font-medium hover:bg-primary transition-colors text-center"
+                      >
+                        {t("account.menu.marketerDashboard")}
+                      </Link>
+                    )}
+                  </div>
+                )}
 
                 {/* Login - Mobile (if not authenticated) */}
                 {!authenticated && (

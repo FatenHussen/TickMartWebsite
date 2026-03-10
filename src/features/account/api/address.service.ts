@@ -48,4 +48,10 @@ export const _AddressApi = {
     );
     return res.data;
   },
+  deleteAddress: async (id: number | string): Promise<void> => {
+    await _axios.delete(apiRoutes.addresses.delete(id));
+  },
+  setDefault: async (id: number | string): Promise<void> => {
+    await _axios.post(apiRoutes.addresses.setDefault(id));
+  },
 };

@@ -40,16 +40,15 @@ export default function Cart() {
   const cart_type = useCartStore((s) => s.cart_type);
   const updateQuantity = useCartStore((s) => s.updateQuantity);
   const removeItem = useCartStore((s) => s.removeItem);
-  const clearCart = useCartStore((s) => s.clearCart);
   const queryClient = useQueryClient();
 
   const createScheduledBasketMutation = useMutation({
     mutationFn: _ScheduledBasketApi.createScheduledBasket,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.scheduledBaskets.all() });
-      clearCart();
+      queryClient.invalidateQueries({ queryKey: queryKeys.myBaskets.all() });
       toast.success(t("cart.scheduleSaved", "Schedule saved successfully"));
-      navigate(paths.account.baskets);
+      navigate(paths.client.checkout);
     },
     onError: () => {
       toast.error(t("cart.scheduleSaveFailed", "Failed to save schedule"));

@@ -4,12 +4,14 @@ import { useLanguage } from "@/context/LanguageContext";
 import { HiX, HiClipboardList } from "react-icons/hi";
 import { cn } from "@/shared/lib/utils";
 import { useOrderDetail } from "../hooks/useOrderDetail";
+import RatingFormModal from "./RatingFormModal";
 
 type OrderDetailsModalProps = {
   orderId: number | string | null;
   isOpen: boolean;
   onClose: () => void;
   onTrackOrder?: (orderId: number | string) => void;
+  onAddComplaint?: (orderId: number | string) => void;
 };
 
 function formatPrice(value: number): string {
@@ -54,11 +56,18 @@ export default function OrderDetailsModal({
   isOpen,
   onClose,
   onTrackOrder,
+  onAddComplaint,
 }: OrderDetailsModalProps) {
   const { t } = useTranslation();
   const { isRTL } = useLanguage();
   const { data: order, isLoading } = useOrderDetail(orderId);
   const [isSlideReady, setIsSlideReady] = useState(false);
+  const [rateModalOpen, setRateModalOpen] = useState(false);
+  const [rateModalState, setRateModalState] = useState<{
+    type: "product" | "delivery" | "order";
+    productId?: number;
+    orderId: number;
+  } | null>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -91,10 +100,11 @@ export default function OrderDetailsModal({
 
   if (!isOpen) return null;
 
+  const isDelivered =
+    order != null && String(order.status ?? "").toLowerCase() === "delivered";
+
   const canTrack =
-    order &&
-    order.status !== "delivered" &&
-    order.status !== "cancelled";
+    order && !isDelivered && String(order.status ?? "").toLowerCase() !== "cancelled";
 
   return (
     <div
@@ -190,41 +200,60 @@ export default function OrderDetailsModal({
                   {t("orders.orderItems", "Order items")} ({order.total_quantity})
                 </h3>
                 <div className="rounded-xl border border-gray-200 overflow-hidden">
-                  {order.items.map((item) => (
-                    <div
-                      key={item.id}
-                      className="flex items-start gap-3 p-4 border-b border-gray-100 last:border-b-0"
-                    >
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-gray-900">
-                          {item.product_name}
-                        </p>
-                        {item.variant_attributes?.length > 0 && (
-                          <div className="flex flex-wrap gap-2 mt-1">
-                            {item.variant_attributes.map((attr, i) => (
-                              <span
-                                key={i}
-                                className="text-xs px-2 py-0.5 rounded bg-gray-100 text-gray-600"
-                              >
-                                {attr.attribute}: {attr.value}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                        <p className="text-sm text-gray-500 mt-1">
-                          {t("orders.qty")}: {item.quantity}
-                        </p>
+                  {order.items.map((item) => {
+                    const productId = item.product_id ?? item.id;
+                    return (
+                      <div
+                        key={item.id}
+                        className="flex items-start gap-3 p-4 border-b border-gray-100 last:border-b-0"
+                      >
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-gray-900">
+                            {item.product_name}
+                          </p>
+                          {item.variant_attributes?.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mt-1">
+                              {item.variant_attributes.map((attr, i) => (
+                                <span
+                                  key={i}
+                                  className="text-xs px-2 py-0.5 rounded bg-gray-100 text-gray-600"
+                                >
+                                  {attr.attribute}: {attr.value}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                          <p className="text-sm text-gray-500 mt-1">
+                            {t("orders.qty")}: {item.quantity}
+                          </p>
+                          {isDelivered && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setRateModalState({
+                                  type: "product",
+                                  productId,
+                                  orderId: order.id,
+                                });
+                                setRateModalOpen(true);
+                              }}
+                              className="mt-2 text-sm text-cyan-600 hover:text-cyan-700 font-medium"
+                            >
+                              {t("account.myReviews.rateProduct", "قيم هذا المنتج")}
+                            </button>
+                          )}
+                        </div>
+                        <div className={cn("shrink-0 text-right", isRTL && "text-left")}>
+                          <p className="font-semibold text-gray-900">
+                            {formatPrice(item.price * item.quantity)}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {formatPrice(item.price)} each
+                          </p>
+                        </div>
                       </div>
-                      <div className={cn("shrink-0 text-right", isRTL && "text-left")}>
-                        <p className="font-semibold text-gray-900">
-                          {formatPrice(item.price * item.quantity)}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          {formatPrice(item.price)} each
-                        </p>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 
@@ -280,6 +309,47 @@ export default function OrderDetailsModal({
                 </div>
               </div>
 
+              {/* Rate delivery & order + Add complaint (delivered only) */}
+              {isDelivered && (
+                <div className="flex flex-col gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setRateModalState({
+                        type: "delivery",
+                        orderId: order.id,
+                      });
+                      setRateModalOpen(true);
+                    }}
+                    className="w-full py-2.5 rounded-xl font-medium border-2 border-cyan-500 text-cyan-600 hover:bg-cyan-50 text-sm"
+                  >
+                    {t("orders.rateDelivery", "قيم التوصيل")}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setRateModalState({
+                        type: "order",
+                        orderId: order.id,
+                      });
+                      setRateModalOpen(true);
+                    }}
+                    className="w-full py-2.5 rounded-xl font-medium border-2 border-cyan-500 text-cyan-600 hover:bg-cyan-50 text-sm"
+                  >
+                    {t("orders.rateOrder", "قيم تجربة الطلب")}
+                  </button>
+                  {onAddComplaint && (
+                    <button
+                      type="button"
+                      onClick={() => onAddComplaint(order.id)}
+                      className="w-full py-2.5 rounded-xl font-medium border-2 border-amber-500 text-amber-600 hover:bg-amber-50 text-sm"
+                    >
+                      {t("orders.addComplaint", "تقديم شكوى")}
+                    </button>
+                  )}
+                </div>
+              )}
+
               {/* Actions */}
               <div className="flex flex-col gap-2">
                 {canTrack && onTrackOrder && (
@@ -310,6 +380,28 @@ export default function OrderDetailsModal({
           )}
         </div>
       </div>
+
+      {rateModalState && (
+        <RatingFormModal
+          isOpen={rateModalOpen}
+          onClose={() => {
+            setRateModalOpen(false);
+            setRateModalState(null);
+          }}
+          onSuccess={() => {
+            setRateModalOpen(false);
+            setRateModalState(null);
+          }}
+          mode="create"
+          rateableType={rateModalState.type}
+          rateableId={
+            rateModalState.type === "product" && rateModalState.productId != null
+              ? rateModalState.productId
+              : rateModalState.orderId
+          }
+          orderId={rateModalState.orderId}
+        />
+      )}
     </div>
   );
 }

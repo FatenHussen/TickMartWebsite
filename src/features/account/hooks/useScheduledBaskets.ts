@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { _ScheduledBasketApi } from "../api/scheduledBasketApi";
 import type { UpdateScheduledBasketPayload } from "../types/scheduledBasket";
+import { queryKeys } from "@/utils/queryKeys";
 
 // Query keys defined locally to avoid stale module cache issues
 const scheduledBasketsKeys = {
@@ -63,6 +64,9 @@ export function useDeleteScheduledBasket() {
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: scheduledBasketsKeys.all(),
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.myBaskets.all(),
       });
     },
   });

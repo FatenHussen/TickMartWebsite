@@ -3,6 +3,7 @@ import { NavLink, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContext";
 import { cn } from "@/shared/lib/utils";
+import { useAuthStore } from "@/store/auth";
 import {
   HiUser,
   HiLocationMarker,
@@ -19,6 +20,7 @@ import {
   HiTrash,
   HiChevronDown,
   HiX,
+  HiTrendingUp,
 } from "react-icons/hi";
 import type { IconType } from "react-icons";
 
@@ -31,7 +33,7 @@ interface MobileAccountMenuProps {
   };
 }
 
-const menuItems: { id: string; icon: IconType; path: string }[] = [
+const baseMenuItems: { id: string; icon: IconType; path: string }[] = [
   { id: "profile", icon: HiUser, path: "/account/profile" },
   { id: "addresses", icon: HiLocationMarker, path: "/account/addresses" },
   { id: "paymentMethods", icon: HiCreditCard, path: "/account/payment-methods" },
@@ -48,6 +50,19 @@ const menuItems: { id: string; icon: IconType; path: string }[] = [
 
 export default function MobileAccountMenu({ user }: MobileAccountMenuProps) {
   const { t } = useTranslation();
+  const { user: authUser } = useAuthStore();
+
+  const isApprovedMarketer =
+    authUser?.affiliate?.is_affiliate === true &&
+    authUser?.affiliate?.approved === true;
+
+  const menuItems = isApprovedMarketer
+    ? [
+        ...baseMenuItems.slice(0, 1),
+        { id: "marketerDashboard", icon: HiTrendingUp, path: "/account/marketer-dashboard" },
+        ...baseMenuItems.slice(1),
+      ]
+    : baseMenuItems;
   const { isRTL } = useLanguage();
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);

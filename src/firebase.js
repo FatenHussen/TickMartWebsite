@@ -1,8 +1,7 @@
-// Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
+import { getMessaging, getToken, isSupported } from "firebase/messaging";
 
-// Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyCaWSRgKaqd0P__owf8MtZLhdInskytXKo",
   authDomain: "tikmool-app-3241.firebaseapp.com",
@@ -13,8 +12,36 @@ const firebaseConfig = {
   measurementId: "G-BFM25BQN9N",
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 
-export { app, analytics };
+/**
+ * Request the FCM token from the browser.
+ * Returns null when messaging is not supported or permission denied.
+ */
+async function requestFcmToken() {
+  try {
+    const supported = await isSupported();
+    if (!supported) return null;
+
+    const permission = await Notification.requestPermission();
+    if (permission !== "granted") return null;
+
+    const messaging = getMessaging(app);
+    const vapidKey = import.meta.env.VITE_FIREBASE_VAPID_KEY;
+
+    const token = await getToken(messaging, {
+      vapidKey: vapidKey || undefined,
+      serviceWorkerRegistration: await navigator.serviceWorker.register(
+        "/firebase-messaging-sw.js"
+      ),
+    });
+
+    return token || null;
+  } catch (err) {
+    console.error("[FCM] Failed to get token:", err);
+    return null;
+  }
+}
+
+export { app, analytics, requestFcmToken };

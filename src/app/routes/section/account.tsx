@@ -28,6 +28,15 @@ const Notifications = lazy(
   () => import("@/features/account/view/Notifications"),
 );
 const AddressForm = lazy(() => import("@/features/account/view/AddressForm"));
+const MarketerDashboard = lazy(
+  () => import("@/features/marketer/view/MarketerDashboard"),
+);
+const HelpSupport = lazy(
+  () => import("@/features/account/view/HelpSupport"),
+);
+const DeleteAccount = lazy(
+  () => import("@/features/account/view/DeleteAccount"),
+);
 
 // Loading component
 const PageLoader = () => (
@@ -171,9 +180,9 @@ export const AccountRoutes: RouteObject[] = [
       {
         path: "help-support",
         element: (
-          <div className="p-6 text-center text-text-secondary">
-            Help & Support - Coming soon
-          </div>
+          <Suspense fallback={<PageLoader />}>
+            <HelpSupport />
+          </Suspense>
         ),
       },
       {
@@ -187,9 +196,17 @@ export const AccountRoutes: RouteObject[] = [
       {
         path: "delete",
         element: (
-          <div className="p-6 text-center text-text-secondary">
-            Delete Account - Coming soon
-          </div>
+          <Suspense fallback={<PageLoader />}>
+            <DeleteAccount />
+          </Suspense>
+        ),
+      },
+      {
+        path: "marketer-dashboard",
+        element: (
+          <Suspense fallback={<PageLoader />}>
+            <MarketerDashboard />
+          </Suspense>
         ),
       },
     ],

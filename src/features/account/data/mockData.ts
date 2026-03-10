@@ -1,6 +1,5 @@
 import type {
   Basket,
-  SubscriptionPackage,
   WishlistItem,
   PointsHistoryItem,
   ReviewUnion,
@@ -52,50 +51,6 @@ export const mockBaskets: Basket[] = [
   },
 ];
 
-export const mockPackages: SubscriptionPackage[] = [
-  {
-    id: "premium-plus",
-    name: "packages.premiumPlus",
-    duration: "packages.monthDuration",
-    price: "45,000",
-    currency: "SYP",
-    isFeatured: true,
-    isCurrentPlan: true,
-    gradient: "linear-gradient(135deg, #0891B2 0%, #164E63 100%)",
-    features: [
-      { id: "1", text: "packages.features.higherDiscounts20" },
-      { id: "2", text: "packages.features.freeDeliveries5" },
-      { id: "3", text: "packages.features.unlimitedOrders" },
-      { id: "4", text: "packages.features.bonusPoints50" },
-    ],
-  },
-  {
-    id: "gold-member",
-    name: "packages.goldMember",
-    duration: "packages.monthDuration",
-    price: "25,000",
-    currency: "SYP",
-    features: [
-      { id: "1", text: "packages.features.higherDiscounts15" },
-      { id: "2", text: "packages.features.freeDeliveries3" },
-      { id: "3", text: "packages.features.orders20" },
-      { id: "4", text: "packages.features.bonusPoints25" },
-    ],
-  },
-  {
-    id: "basic-plus",
-    name: "packages.basicPlus",
-    duration: "packages.monthDuration",
-    price: "15,000",
-    currency: "SYP",
-    features: [
-      { id: "1", text: "packages.features.higherDiscounts10" },
-      { id: "2", text: "packages.features.freeDeliveries2" },
-      { id: "3", text: "packages.features.orders10" },
-      { id: "4", text: "packages.features.bonusPoints10" },
-    ],
-  },
-];
 
 export const mockWishlistItems: WishlistItem[] = [
   {

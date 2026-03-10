@@ -62,8 +62,8 @@ export default function FavoriteItemCard({
       <Link to={detailPath} className="block">
         <div className="relative aspect-square overflow-hidden">
           <img
-            src={item.image}
-            alt={item.name}
+            src={item.image ?? "https://via.placeholder.com/400?text=No+Image"}
+            alt={item.name ?? item.title ?? ""}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
           {topBadge && (
@@ -107,7 +107,7 @@ export default function FavoriteItemCard({
       </Link>
       <div className="p-4">
         <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-sm mb-0.5 line-clamp-1">
-          {item.name}
+          {item.name ?? item.title ?? ""}
         </h3>
         {item.description && (
           <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 line-clamp-2">

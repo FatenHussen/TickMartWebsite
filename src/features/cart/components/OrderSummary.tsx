@@ -23,7 +23,7 @@ export default function OrderSummary({
   return (
     <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 sticky top-4">
       <h2 className="text-xl font-bold text-text-primary mb-6">
-        Order summary
+        {/* Order summaryddd */}
       </h2>
 
       {/* Cost Breakdown */}

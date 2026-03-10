@@ -11,11 +11,18 @@ export interface UseOrdersResult {
   refetch: () => void;
 }
 
-export function useOrders(page = 1): UseOrdersResult {
+export function useOrders(page = 1, status?: string): UseOrdersResult {
+  const apiStatus =
+    status === "all" || !status
+      ? undefined
+      : status === "out_for_delivery"
+      ? "out_delivery"
+      : status;
+
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: queryKeys.orders.list(page),
     queryFn: async () => {
-      const res = await _OrdersApi.getOrders(page);
+      const res = await _OrdersApi.getOrders(page, apiStatus);
       return res.data;
     },
     staleTime: 1000 * 60, // 1 minute
@@ -40,7 +47,15 @@ export interface UseOrdersInfiniteResult {
   refetch: () => void;
 }
 
-export function useOrdersInfinite(): UseOrdersInfiniteResult {
+export function useOrdersInfinite(status?: string): UseOrdersInfiniteResult {
+  // Normalise frontend status value to API value
+  const apiStatus =
+    status === "all" || !status
+      ? undefined
+      : status === "out_for_delivery"
+      ? "out_delivery"
+      : status;
+
   const {
     data,
     isLoading,
@@ -50,9 +65,9 @@ export function useOrdersInfinite(): UseOrdersInfiniteResult {
     error,
     refetch,
   } = useInfiniteQuery({
-    queryKey: queryKeys.orders.listInfinite(),
+    queryKey: queryKeys.orders.listInfinite(apiStatus),
     queryFn: async ({ pageParam }) => {
-      const res = await _OrdersApi.getOrders(pageParam as number);
+      const res = await _OrdersApi.getOrders(pageParam as number, apiStatus);
       return res;
     },
     initialPageParam: 1,

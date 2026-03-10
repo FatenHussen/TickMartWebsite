@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContext";
 import { useBrandDetails, useBrandProducts } from "../hooks/useBrands";
+import { useBrandRatings } from "../hooks/useBrands";
 import { useSectionsByPosition } from "@/features/home/hooks/useSections";
 import { useAuthStore } from "@/store/auth";
 import { useFavorites, useToggleFavorite } from "@/features/account/hooks/useFavorites";
@@ -12,9 +13,30 @@ import BrandHeader from "../components/BrandHeader";
 import ProductFilters from "../components/ProductFilters";
 import ProductGrid from "../components/ProductGrid";
 import ProductCardSkeleton from "@/shared/component/skeleton/ProductCardSkeleton";
+import ProductReviews from "@/shared/component/ProductReviews";
+import { RatingFormModal } from "@/features/account/components";
 import { useInfiniteScroll } from "@/shared/hooks/useInfiniteScroll";
 import type { Product } from "../types";
 import type { BrandProduct } from "../types/brand";
+
+// Map UI sortBy label → API sortField / sortOrder
+function mapSortToApi(sortBy: string): {
+  sortField?: string;
+  sortOrder?: "asc" | "desc";
+} {
+  switch (sortBy) {
+    case "Price: Low to High":
+      return { sortField: "price", sortOrder: "asc" };
+    case "Price: High to Low":
+      return { sortField: "price", sortOrder: "desc" };
+    case "Rating":
+      return { sortField: "rating", sortOrder: "desc" };
+    case "Newest":
+      return { sortField: "created_at", sortOrder: "desc" };
+    default:
+      return {};
+  }
+}
 
 export default function BrandProducts() {
   const { t } = useTranslation();
@@ -30,6 +52,21 @@ export default function BrandProducts() {
   const [currentPage, setCurrentPage] = useState(1);
   const [allProducts, setAllProducts] = useState<BrandProduct[]>([]);
   const [hasMore, setHasMore] = useState(true);
+  const [ratingModalOpen, setRatingModalOpen] = useState(false);
+
+  // Build API filter object from UI state
+  const { sortField, sortOrder } = useMemo(() => mapSortToApi(sortBy), [sortBy]);
+
+  const apiFilters = useMemo(
+    () => ({
+      is_free_delivery: freeDeliveryOnly ? (1 as const) : undefined,
+      in_stock_only: inStockOnly ? (1 as const) : undefined,
+      sortField,
+      sortOrder,
+      page: currentPage,
+    }),
+    [freeDeliveryOnly, inStockOnly, sortField, sortOrder, currentPage],
+  );
 
   // Fetch brand details and products
   const {
@@ -42,7 +79,24 @@ export default function BrandProducts() {
     data: productsData,
     isLoading: isProductsLoading,
     error: productsError,
-  } = useBrandProducts(Number(brandId), currentPage);
+  } = useBrandProducts(Number(brandId), apiFilters);
+
+  const brandIdNum = Number(brandId);
+  const token = useAuthStore((s) => s.token);
+  const {
+    reviews: brandReviews,
+    averageRating: reviewsAverage,
+    totalReviews: reviewsTotal,
+    ratingDistribution: reviewsDistribution,
+    isLoading: isRatingsLoading,
+  } = useBrandRatings(brandIdNum);
+
+  // Reset pagination when filters (not page) change
+  useEffect(() => {
+    setAllProducts([]);
+    setCurrentPage(1);
+    setHasMore(true);
+  }, [freeDeliveryOnly, inStockOnly, sortBy]);
 
   // Accumulate products from all pages
   useEffect(() => {
@@ -54,7 +108,6 @@ export default function BrandProducts() {
         );
         return [...prev, ...newProducts];
       });
-
       setHasMore(
         productsData.pagination.current_page < productsData.pagination.last_page
       );
@@ -72,15 +125,12 @@ export default function BrandProducts() {
   // Fetch sections for brand_details page
   const { beforeSections, afterSections } =
     useSectionsByPosition("brand_details");
-
-  // Separate banner sections (display_type_id: 1) from other sections
   const bannerSections = beforeSections.filter((s) => s.display_type_id === 1);
   const otherBeforeSections = beforeSections.filter(
     (s) => s.display_type_id !== 1
   );
 
-  const { authenticated } = useAuthStore();
-  const { data: favoriteProducts = [] } = useFavorites("product", !!authenticated);
+  const { data: favoriteProducts = [] } = useFavorites("product", false);
   const toggleFavorite = useToggleFavorite();
   const favoriteIds = favoriteProducts.map((f) => f.id);
 
@@ -93,7 +143,7 @@ export default function BrandProducts() {
   };
 
   // Convert BrandProduct to Product type for ProductGrid
-  const convertToProducts = (items: any[] = []): Product[] => {
+  const convertToProducts = (items: BrandProduct[] = []): Product[] => {
     return items.map((item) => ({
       id: item.id,
       name: item.name,
@@ -102,20 +152,19 @@ export default function BrandProducts() {
         item.price > item.price_after_discount ? `$${item.price}` : undefined,
       rating: item.rating || 0,
       image: item.image,
-      badge: item.budges?.map((badge: any) => ({
+      badge: (item as { budges?: { name: string; color: string }[] }).budges?.map((badge) => ({
         label: badge.name,
         className: badge.color,
       })),
       category: item.category,
       sold: item.sold_number,
       savings: item.amount_saved > 0 ? `$${item.amount_saved}` : undefined,
-      isFavorite: favoriteIds.includes(item.id),
+      isFavorite: item.is_favorite ?? favoriteIds.includes(item.id),
     }));
   };
 
   const products = convertToProducts(allProducts);
 
-  // Show initial loading state (only for first load)
   if (isBrandLoading && !brandData) {
     return (
       <div className="min-h-screen bg-custom-primary flex items-center justify-center">
@@ -124,7 +173,6 @@ export default function BrandProducts() {
     );
   }
 
-  // Show error state
   if (brandError || productsError) {
     return (
       <div className="min-h-screen bg-custom-primary flex items-center justify-center">
@@ -137,7 +185,6 @@ export default function BrandProducts() {
     );
   }
 
-  // Show not found state
   if (!brandData) {
     return (
       <div className="min-h-screen bg-custom-primary flex items-center justify-center">
@@ -152,7 +199,6 @@ export default function BrandProducts() {
 
   return (
     <div className="min-h-screen bg-custom-primary" dir={isRTL ? "rtl" : "ltr"}>
-      {/* Banner Sections - Full Width (display_type_id: 1) - BEFORE main content */}
       {bannerSections.length > 0 && (
         <div className="w-full">
           <ApiSectionsRenderer sections={bannerSections} />
@@ -160,7 +206,6 @@ export default function BrandProducts() {
       )}
 
       <div className="page-container py-6">
-        {/* Other Sections before brand content */}
         {otherBeforeSections.length > 0 && (
           <FullBleedSection>
             <ApiSectionsRenderer sections={otherBeforeSections} />
@@ -172,7 +217,7 @@ export default function BrandProducts() {
           <BrandHeader brand={brandData} />
         </div>
 
-        {/* Product Filters */}
+        {/* Product Filters – UI state wired to API */}
         <div className="mb-6">
           <ProductFilters
             location="Downtown, Cairo"
@@ -184,10 +229,10 @@ export default function BrandProducts() {
             onStoreChange={setSelectedStore}
             freeDeliveryOnly={freeDeliveryOnly}
             inStockOnly={inStockOnly}
-            onFreeDeliveryToggle={setFreeDeliveryOnly}
-            onInStockToggle={setInStockOnly}
+            onFreeDeliveryToggle={(v) => setFreeDeliveryOnly(v)}
+            onInStockToggle={(v) => setInStockOnly(v)}
             sortBy={sortBy}
-            onSortChange={setSortBy}
+            onSortChange={(label) => setSortBy(label)}
           />
         </div>
 
@@ -202,7 +247,6 @@ export default function BrandProducts() {
             />
           )}
 
-          {/* Show skeleton loaders while loading more */}
           {isProductsLoading && (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 mt-5">
               {Array.from({ length: 10 }).map((_, index) => (
@@ -211,7 +255,6 @@ export default function BrandProducts() {
             </div>
           )}
 
-          {/* Empty state */}
           {!isProductsLoading && products.length === 0 && (
             <div className="flex items-center justify-center h-64 bg-custom-secondary rounded-2xl">
               <p className="text-custom-secondary">
@@ -220,17 +263,55 @@ export default function BrandProducts() {
             </div>
           )}
 
-          {/* Infinite scroll trigger */}
           <div ref={observerTarget} className="h-10" />
         </div>
 
-        {/* Sections after brand content */}
         {afterSections.length > 0 && (
           <FullBleedSection>
             <ApiSectionsRenderer sections={afterSections} />
           </FullBleedSection>
         )}
+
+        {/* Rate this brand */}
+        {token && brandIdNum > 0 && (
+          <div className="mt-10">
+            <button
+              type="button"
+              onClick={() => setRatingModalOpen(true)}
+              className="px-4 py-2 rounded-lg bg-cyan-500 hover:bg-cyan-600 text-white font-medium text-sm"
+            >
+              {t("brands.rateBrand", "قيم هذه العلامة التجارية")}
+            </button>
+          </div>
+        )}
+
+        <div className="mt-6">
+          {isRatingsLoading ? (
+            <div className="flex justify-center py-6">
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-cyan-500" />
+            </div>
+          ) : (
+            <ProductReviews
+              averageRating={
+                reviewsTotal > 0 ? reviewsAverage : (brandData?.rating ?? 0)
+              }
+              totalReviews={reviewsTotal}
+              ratingDistribution={reviewsDistribution}
+              reviews={brandReviews}
+              sectionTitle={t("brands.brandReviews", "تقييمات العلامة التجارية")}
+            />
+          )}
+        </div>
       </div>
+
+      <RatingFormModal
+        isOpen={ratingModalOpen}
+        onClose={() => setRatingModalOpen(false)}
+        onSuccess={() => setRatingModalOpen(false)}
+        mode="create"
+        rateableType="brand"
+        rateableId={brandIdNum}
+      />
     </div>
   );
 }

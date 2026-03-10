@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { _AddressApi } from "../api/address.service";
 import { queryKeys } from "@/utils/queryKeys";
 import { paths } from "@/app/routes/path/paths";
+import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import type {
   CreateAddressPayload,
   UpdateAddressPayload,
@@ -60,6 +62,37 @@ export function useUpdateAddress() {
     },
     onError: (err) => {
       console.error("[updateAddress] error:", err);
+    },
+  });
+}
+
+export function useDeleteAddress() {
+  const qc = useQueryClient();
+  const { t } = useTranslation();
+
+  return useMutation({
+    mutationFn: (id: number | string) => _AddressApi.deleteAddress(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.addresses.list() });
+      toast.success(t("common.deletedSuccessfully", "Deleted successfully"));
+    },
+    onError: (err: unknown) => {
+      console.error("[deleteAddress] error:", err);
+      toast.error(t("common.deleteFailed", "Delete failed"));
+    },
+  });
+}
+
+export function useSetDefaultAddress() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: number | string) => _AddressApi.setDefault(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.addresses.list() });
+    },
+    onError: (err: unknown) => {
+      console.error("[setDefaultAddress] error:", err);
     },
   });
 }

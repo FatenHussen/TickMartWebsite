@@ -11,6 +11,9 @@ export const _ShopApi = {
     type?: "top_rated" | "offers" | "nearby";
     lat?: number;
     lng?: number;
+    governorate_id?: number;
+    category_id?: number;
+    search?: string;
   }): Promise<ShopsListResponse> => {
     const response = await _axios.get<ShopsListResponse>(
       apiRoutes.shop.list(filters)

@@ -85,7 +85,7 @@ export default function SimilarProductsVariant({
           savings={product.savings}
           buttonText={product.buttonText}
           buttonTextSecond={product.buttonTextSecond}
-          isFavorite={favoriteIds.includes(product.id as number)}
+          isFavorite={(product as { isFavorite?: boolean }).isFavorite ?? favoriteIds.includes(product.id as number)}
           onToggleFavorite={(id) => onToggleFavorite?.(id)}
           onClick={(id) => onProductClick?.(id)}
         />

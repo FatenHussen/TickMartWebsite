@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { HiChevronUp, HiChevronDown } from "react-icons/hi";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContext";
@@ -8,6 +8,7 @@ import type { TrackOrderData } from "../types";
 
 type TrackOrderMapProps = {
   order: TrackOrderData;
+  liveLocation?: { lat: number; lng: number } | null;
 };
 
 // Fix for default marker icon in Leaflet with Vite
@@ -44,103 +45,154 @@ const createCustomIcon = (
   });
 };
 
-export default function TrackOrderMap({ order }: TrackOrderMapProps) {
+export default function TrackOrderMap({ order, liveLocation }: TrackOrderMapProps) {
   const { t } = useTranslation();
   const { isRTL } = useLanguage();
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersRef = useRef<L.Marker[]>([]);
+  const polylineRef = useRef<L.Polyline | null>(null);
+  const [currentLocation, setCurrentLocation] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
 
+  // Get user's current location via browser geolocation
   useEffect(() => {
+    if (!navigator.geolocation) return;
+    const id = navigator.geolocation.watchPosition(
+      (position) => {
+        setCurrentLocation({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        });
+      },
+      (error) => {
+        console.warn("Geolocation error:", error.message);
+      },
+      { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 }
+    );
+    return () => navigator.geolocation.clearWatch(id);
+  }, []);
+  
+
+  // Initialize map ONCE when liveLocation first arrives (no reload when driver/user moves)
+  const hasLiveLocation = Boolean(liveLocation);
+  useEffect(() => {
+    if (!hasLiveLocation) {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+        markersRef.current = [];
+        polylineRef.current = null;
+      }
+      return;
+    }
     if (!mapRef.current || mapInstanceRef.current) return;
 
-    // Calculate center point between driver and destination
-    const centerLat = (order.driver.location.lat + order.destination.lat) / 2;
-    const centerLng = (order.driver.location.lng + order.destination.lng) / 2;
-
-    // Initialize map
+    const loc = liveLocation!;
     const map = L.map(mapRef.current, {
-      center: [centerLat, centerLng],
-      zoom: 14,
-      zoomControl: false, // We'll add custom zoom controls
+      center: [loc.lat, loc.lng],
+      zoom: 18,
+      zoomControl: false,
     });
 
-    // Add tile layer (OpenStreetMap)
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution:
         '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       maxZoom: 19,
     }).addTo(map);
 
-    // Create custom icons
-    const driverIcon = createCustomIcon("#eab308", "car"); // Yellow for driver
-    const destinationIcon = createCustomIcon("#2563eb", "location"); // Blue for destination
+    const driverIcon = createCustomIcon("#eab308", "car");
 
-    // Add driver marker
-    const driverMarker = L.marker(
-      [order.driver.location.lat, order.driver.location.lng],
-      { icon: driverIcon }
-    )
+    const driverMarker = L.marker([loc.lat, loc.lng], {
+      icon: driverIcon,
+    })
       .addTo(map)
       .bindPopup(
         `<div class="p-2">
-          <div class="font-semibold text-custom-primary">${
-            order.driver.name
-          }</div>
-          <div class="text-sm text-custom-secondary">${t("trackOrder.eta")}: ${
-          order.driver.eta
-        }</div>
+          <div class="font-semibold text-custom-primary">${order.driver.name}</div>
+          <div class="text-sm text-custom-secondary">${t("trackOrder.eta")}: ${order.driver.eta}</div>
         </div>`,
         { className: "custom-popup" }
       );
 
-    // Add destination marker
-    const destinationMarker = L.marker(
-      [order.destination.lat, order.destination.lng],
-      { icon: destinationIcon }
-    )
-      .addTo(map)
-      .bindPopup(
-        `<div class="p-2">
-          <div class="font-semibold text-custom-primary">${t(
-            "trackOrder.destination"
-          )}</div>
-          <div class="text-sm text-custom-secondary">${
-            order.destination.address
-          }</div>
-        </div>`,
-        { className: "custom-popup" }
-      );
-
-    // Add route polyline (simplified - in production, use routing service)
-    L.polyline(
-      [
-        [order.driver.location.lat, order.driver.location.lng],
-        [order.destination.lat, order.destination.lng],
-      ],
-      {
-        color: "var(--color-accent-primary)",
-        weight: 4,
-        opacity: 0.7,
-        dashArray: "10, 10",
-      }
-    ).addTo(map);
-
-    // Fit map to show both markers
-    const group = new L.FeatureGroup([driverMarker, destinationMarker]);
-    map.fitBounds(group.getBounds().pad(0.1));
-
-    // Store references
     mapInstanceRef.current = map;
-    markersRef.current = [driverMarker, destinationMarker];
+    markersRef.current = [driverMarker];
+    polylineRef.current = null;
 
-    // Cleanup
+    map.setView([loc.lat, loc.lng], 18);
+
     return () => {
       map.remove();
       mapInstanceRef.current = null;
       markersRef.current = [];
+      polylineRef.current = null;
     };
-  }, [order, t]);
+  }, [hasLiveLocation, order, t]);
+
+  // Add/update destination marker and polyline when currentLocation changes (no map reload)
+  useEffect(() => {
+    if (!liveLocation || !currentLocation) return;
+
+    const map = mapInstanceRef.current;
+    const driverMarker = markersRef.current[0];
+    let destinationMarker = markersRef.current[1];
+    let polyline = polylineRef.current;
+
+    // Add destination marker + polyline when currentLocation first arrives
+    if (!destinationMarker && map) {
+      const destinationIcon = createCustomIcon("#2563eb", "location");
+      destinationMarker = L.marker(
+        [currentLocation.lat, currentLocation.lng],
+        { icon: destinationIcon }
+      )
+        .addTo(map)
+        .bindPopup(
+          `<div class="p-2">
+            <div class="font-semibold text-custom-primary">${t("trackOrder.currentLocation")}</div>
+            <div class="text-sm text-custom-secondary">${currentLocation.lat.toFixed(5)}, ${currentLocation.lng.toFixed(5)}</div>
+          </div>`,
+          { className: "custom-popup" }
+        );
+
+      polyline = L.polyline(
+        [
+          [liveLocation.lat, liveLocation.lng],
+          [currentLocation.lat, currentLocation.lng],
+        ],
+        {
+          color: "var(--color-accent-primary)",
+          weight: 4,
+          opacity: 0.7,
+          dashArray: "10, 10",
+        }
+      ).addTo(map);
+
+      const group = new L.FeatureGroup([driverMarker, destinationMarker]);
+      map.fitBounds(group.getBounds().pad(0.1));
+
+      markersRef.current = [driverMarker, destinationMarker];
+      polylineRef.current = polyline;
+    }
+
+    // Update positions when locations change (no map reload)
+    if (driverMarker) {
+      driverMarker.setLatLng([liveLocation.lat, liveLocation.lng]);
+    }
+    if (destinationMarker) {
+      destinationMarker.setLatLng([currentLocation.lat, currentLocation.lng]);
+    }
+    if (polyline) {
+      polyline.setLatLngs([
+        [liveLocation.lat, liveLocation.lng],
+        [currentLocation.lat, currentLocation.lng],
+      ]);
+    }
+    if (map) {
+      map.panTo([liveLocation.lat, liveLocation.lng], { animate: true });
+    }
+  }, [liveLocation, currentLocation, order, t]);
 
   const handleZoomIn = () => {
     if (mapInstanceRef.current) {
@@ -161,6 +213,11 @@ export default function TrackOrderMap({ order }: TrackOrderMapProps) {
     >
       {/* Map Container */}
       <div className="relative" style={{ height: "650px", minHeight: "500px" }}>
+        {!liveLocation && (
+          <div className="absolute inset-0 flex items-center justify-center bg-custom-tertiary z-10">
+            <p className="text-custom-secondary">{t("trackOrder.waitingLocation")}</p>
+          </div>
+        )}
         {/* Leaflet Map */}
         <div ref={mapRef} className="w-full h-full" />
 

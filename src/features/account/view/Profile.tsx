@@ -1,15 +1,45 @@
 import { useState, useRef, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { Button, InputField } from "@/shared/ui";
-import { HiPencil, HiUser, HiExclamation, HiCamera } from "react-icons/hi";
+import { Button } from "@/shared/ui";
+import {
+  HiPencil,
+  HiUser,
+  HiExclamation,
+  HiCamera,
+  HiPhone,
+  HiMail,
+  HiLockClosed,
+  HiLogout,
+} from "react-icons/hi";
 import { useProfile, useUpdateProfile } from "../hooks/useProfile";
-import { useGovernorates, useCities } from "@/features/auth/hooks/useLocation";
+import { _LocationApi } from "@/features/auth/api/location.service";
+import { useInfiniteSelect } from "@/shared/hooks/useInfiniteSelect";
+import type { Governorate, City } from "@/features/auth/types";
 import ChangePasswordModal from "../components/ChangePasswordModal";
 import UpdateEmailModal from "../components/UpdateEmailModal";
 import UpdatePhoneModal from "../components/UpdatePhoneModal";
 import VerifyProfileModal from "../components/VerifyProfileModal";
+import { LogoutPopup } from "@/shared/component";
+import { useLogout } from "@/features/auth/hooks/useAuth";
 import type { UpdateProfilePayload } from "../types";
+
+import accountBg from "/images/accounts/Account.png";
+
+/** Resolve API value that may be a string or localized object { ar, en } */
+function resolveLocalized(
+  value: unknown,
+  lang: string
+): string {
+  if (value == null) return "";
+  if (typeof value === "string") return value;
+  if (typeof value === "object" && "ar" in value && "en" in value) {
+    const o = value as { ar?: string; en?: string };
+    const s = lang.startsWith("ar") ? o.ar ?? o.en : o.en ?? o.ar;
+    return typeof s === "string" ? s : "";
+  }
+  return String(value);
+}
 
 interface ProfileFormData {
   name: string;
@@ -18,34 +48,72 @@ interface ProfileFormData {
 }
 
 export default function Profile() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const lang = i18n.language || "en";
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isEditing, setIsEditing] = useState(false);
 
-  // Fetch profile data
   const { data: profileData, isLoading, error } = useProfile();
   const { mutate: updateProfile, isPending: isUpdating } = useUpdateProfile();
 
-  // Location data
-  const { data: governorates = [] } = useGovernorates();
   const [selectedGovernorateId, setSelectedGovernorateId] = useState<
     number | null
   >(null);
-  const { data: citiesData } = useCities(selectedGovernorateId);
-  const cities = (Array.isArray(citiesData) ? citiesData : []) as Array<{ id: number; name: string }>;
 
-  // Modals state
+  const {
+    options: governorateOptions,
+    handleScroll: handleGovScroll,
+    isFetchingNextPage: isFetchingMoreGov,
+  } = useInfiniteSelect<Governorate>({
+    queryKey: ["location", "governorates", "select"],
+    fetchFn: async (page) => {
+      const res = await _LocationApi.getGovernorates(page);
+      return res.data;
+    },
+    mapToOption: (gov) => ({
+      value: gov.id,
+      label: resolveLocalized(gov.name, lang),
+    }),
+  });
+
+  const {
+    options: cityOptions,
+    handleScroll: handleCityScroll,
+    isFetchingNextPage: isFetchingMoreCities,
+  } = useInfiniteSelect<City>({
+    queryKey: ["location", "cities", "select", selectedGovernorateId],
+    fetchFn: async (page) => {
+      const res = await _LocationApi.getCities(selectedGovernorateId!, page);
+      const data = res.data as unknown;
+      if (data && typeof data === "object" && "items" in (data as Record<string, unknown>)) {
+        const d = data as { items: City[]; pagination: { current_page: number; last_page: number; per_page: number; total: number } | null };
+        return { items: d.items, pagination: d.pagination ?? null };
+      }
+      if (Array.isArray(data)) {
+        return { items: data as City[], pagination: null };
+      }
+      return { items: [], pagination: null };
+    },
+    mapToOption: (city) => ({
+      value: city.id,
+      label: resolveLocalized(city.name, lang),
+    }),
+    enabled: !!selectedGovernorateId,
+  });
+
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false);
   const [isVerifyModalOpen, setIsVerifyModalOpen] = useState(false);
   const [verifyEmail, setVerifyEmail] = useState<string | undefined>();
   const [verifyPhone, setVerifyPhone] = useState<string | undefined>();
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
-  // Profile image state
+  const logoutMutation = useLogout();
+
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-  // Form
   const {
     register,
     handleSubmit,
@@ -56,24 +124,18 @@ export default function Profile() {
 
   const selectedGovernorate = watch("governorate_id");
 
-  // Initialize form when profile data loads
   useEffect(() => {
     if (profileData) {
-      setValue("name", profileData.name);
-      // We need to find the governorate_id based on city name
-      // For now, we'll just set the city_id if we can match it
-      // In a real scenario, you'd need to get governorate_id from the API
+      setValue("name", resolveLocalized(profileData.name, lang));
     }
-  }, [profileData, setValue]);
+  }, [profileData, setValue, lang]);
 
-  // Update selected governorate when form changes
   useEffect(() => {
     if (selectedGovernorate) {
       setSelectedGovernorateId(Number(selectedGovernorate));
     }
   }, [selectedGovernorate]);
 
-  // Handle image selection
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -100,6 +162,7 @@ export default function Profile() {
       onSuccess: () => {
         setSelectedImage(null);
         setImagePreview(null);
+        setIsEditing(false);
       },
     });
   };
@@ -119,7 +182,7 @@ export default function Profile() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-cyan-500" />
       </div>
     );
   }
@@ -129,7 +192,7 @@ export default function Profile() {
       <div className="flex items-center justify-center h-96">
         <div className="text-center">
           <HiExclamation className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <p className="text-lg text-text-primary">
+          <p className="text-lg text-gray-700 dark:text-gray-300">
             {t("account.profile.loadError", "فشل تحميل البيانات")}
           </p>
         </div>
@@ -138,47 +201,73 @@ export default function Profile() {
   }
 
   const currentAvatar = imagePreview || profileData.image;
+  const displayName = resolveLocalized(profileData.name, lang);
+  const displayEmail = resolveLocalized(profileData.email, lang);
+  const displayPhone = resolveLocalized(profileData.phone, lang);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
+
+          {/* Background illustration - public/images/accounts/Account.png */}
+          <img
+            src={accountBg}
+            alt="account background"
+            aria-hidden="true"
+            className="pointer-events-none absolute top-1/2 right-0 -translate-y-1/2 h-screen w-auto object-contain  select-none  z-0"
+          />
       {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-4">
+      <div className="flex items-start justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-custom-primary">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             {t("account.profile.title")}
           </h1>
-          <p className="text-custom-secondary text-sm mt-1">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
             {t("account.profile.subtitle")}
           </p>
         </div>
+        <button
+          type="button"
+          onClick={() => setIsEditing((v) => !v)}
+          className="flex items-center gap-2 px-5 py-2.5 bg-cyan-500 hover:bg-cyan-600 text-white text-sm font-semibold rounded-full transition-colors shadow-sm"
+        >
+          <HiPencil className="w-4 h-4" />
+          {t("account.profile.editProfile")}
+        </button>
       </div>
 
       {/* Profile Card */}
       <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="bg-custom-primary rounded-2xl p-6 shadow-sm">
-          {/* Profile Info Header */}
-          <div className="flex items-center gap-4 mb-8">
-            <div className="relative">
-              <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-custom-primary">
+        <div className="relative  dark:bg-gray-800 rounded-2xl p-6 sm:p-8 shadow-sm overflow-hidden">
+      
+
+          {/* Avatar + Name */}
+          <div className="relative flex items-center gap-4 mb-6">
+            <div className="relative shrink-0">
+              <div className="w-[72px] h-[72px] rounded-full overflow-hidden border-2 border-gray-100 dark:border-gray-700 shadow-sm">
                 {currentAvatar ? (
                   <img
                     src={currentAvatar}
-                    alt={profileData.name}
+                    alt={displayName}
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
-                    <HiUser className="w-10 h-10 text-primary" />
+                  <div className="w-full h-full bg-cyan-50 dark:bg-cyan-900/30 flex items-center justify-center">
+                    <HiUser className="w-8 h-8 text-cyan-500" />
                   </div>
                 )}
               </div>
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="absolute bottom-0 right-0 w-7 h-7 bg-primary hover:bg-primary/90 text-white rounded-full flex items-center justify-center transition-colors"
-              >
-                <HiCamera className="w-4 h-4" />
-              </button>
+              {/* Green online dot */}
+              <span className="absolute bottom-0 left-0 w-4 h-4 bg-green-500 border-2 border-white dark:border-gray-800 rounded-full" />
+              {/* Camera button */}
+              {isEditing && (
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="absolute -bottom-1 -right-1 w-7 h-7 bg-cyan-500 hover:bg-cyan-600 text-white rounded-full flex items-center justify-center transition-colors shadow-sm"
+                >
+                  <HiCamera className="w-3.5 h-3.5" />
+                </button>
+              )}
               <input
                 ref={fileInputRef}
                 type="file"
@@ -188,185 +277,277 @@ export default function Profile() {
               />
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-text-primary dark:text-white">
-                {profileData.name}
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                {displayName}
               </h2>
-              <p className="text-text-secondary dark:text-gray-400">
-                {profileData.email}
-              </p>
+              <a
+                href={`mailto:${displayEmail}`}
+                className="text-sm text-gray-500 dark:text-gray-400 underline underline-offset-2 hover:text-cyan-600 transition-colors"
+              >
+                {displayEmail}
+              </a>
             </div>
           </div>
+
+          {/* Gradient divider */}
+          <div className="h-px bg-gradient-to-r from-cyan-400 via-cyan-300 to-transparent mb-8" />
 
           {/* Profile Fields */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Full Name */}
-            <InputField
-              label={t("account.profile.fullName")}
-              placeholder={t("account.profile.enterFullName")}
-              error={errors.name}
-              {...register("name", {
-                required: t("validation.required", "هذا الحقل مطلوب"),
-              })}
-              className="bg-gray-50 dark:bg-gray-700 dark:text-white"
-            />
-
-            {/* Governorate */}
+          <div className="relative grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+            {/* Full name */}
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-text-secondary dark:text-gray-300">
-                {t("auth.governorate", "المحافظة")}
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                {t("account.profile.fullName")}
               </label>
-              <select
-                {...register("governorate_id", {
-                  required: t("validation.required", "هذا الحقل مطلوب"),
-                })}
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-text-primary dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent"
-              >
-                <option value="">
-                  {t("auth.selectGovernorate", "اختر المحافظة")}
-                </option>
-                {governorates.map((gov) => (
-                  <option key={gov.id} value={gov.id}>
-                    {gov.name}
-                  </option>
-                ))}
-              </select>
-              {errors.governorate_id && (
-                <p className="text-xs text-red-500 mt-1">
-                  {errors.governorate_id.message}
-                </p>
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
+                  <HiUser className="w-5 h-5 text-cyan-400" />
+                </span>
+                <input
+                  {...register("name", {
+                    required: t("validation.required", "هذا الحقل مطلوب"),
+                  })}
+                  readOnly={!isEditing}
+                  placeholder={t("account.profile.enterFullName")}
+                  className="w-full pl-11 pr-4 py-3 rounded-xl border border-cyan-300 dark:border-cyan-700 bg-cyan-50/40 dark:bg-cyan-950/20 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition-all read-only:cursor-default"
+                />
+              </div>
+              {errors.name && (
+                <p className="text-xs text-red-500">{errors.name.message}</p>
               )}
             </div>
 
-            {/* City */}
+            {/* Mobile number */}
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-text-secondary dark:text-gray-300">
-                {t("auth.city", "المدينة")}
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                {t("account.profile.mobileNumber")}
               </label>
-              <select
-                {...register("city_id", {
-                  required: t("validation.required", "هذا الحقل مطلوب"),
-                })}
-                disabled={!selectedGovernorateId}
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-text-primary dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <option value="">
-                  {t("auth.selectCity", "اختر المدينة")}
-                </option>
-                {cities.map((city) => (
-                  <option key={city.id} value={city.id}>
-                    {city.name}
-                  </option>
-                ))}
-              </select>
-              {errors.city_id && (
-                <p className="text-xs text-red-500 mt-1">
-                  {errors.city_id.message}
-                </p>
-              )}
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
+                  <HiPhone className="w-5 h-5 text-cyan-400" />
+                </span>
+                <input
+                  readOnly
+                  value={displayPhone}
+                  className="w-full pl-11 pr-4 py-3 rounded-xl border border-cyan-300 dark:border-cyan-700 bg-cyan-50/40 dark:bg-cyan-950/20 text-gray-900 dark:text-white cursor-default focus:outline-none"
+                />
+              </div>
             </div>
           </div>
 
-          {/* Save Button */}
-          <div className="mt-6 flex justify-end">
-            <Button
-              type="submit"
-              variant="primary"
-              isLoading={isUpdating}
-              className="gap-2"
-            >
-              <HiPencil className="w-4 h-4" />
-              {t("common.saveChanges", "حفظ التغييرات")}
-            </Button>
+          {/* Email address */}
+          <div className="relative space-y-2 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              {t("account.profile.emailAddress")}
+            </label>
+            <div className="relative">
+              <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
+                <HiMail className="w-5 h-5 text-cyan-400" />
+              </span>
+                <input
+                  readOnly
+                  value={displayEmail}
+                  className="w-full pl-11 pr-4 py-3 rounded-xl border border-cyan-300 dark:border-cyan-700 bg-cyan-50/40 dark:bg-cyan-950/20 text-gray-900 dark:text-white cursor-default focus:outline-none"
+                />
+            </div>
           </div>
+
+          {/* Governorate & City (edit mode only) */}
+          {isEditing && (
+            <div className="relative grid grid-cols-1 md:grid-cols-2 gap-5 mt-5">
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  {t("auth.governorate", "المحافظة")}
+                </label>
+                <select
+                  {...register("governorate_id", {
+                    required: t("validation.required", "هذا الحقل مطلوب"),
+                  })}
+                  onScroll={handleGovScroll}
+                  className="w-full px-4 py-3 rounded-xl border border-cyan-300 dark:border-cyan-700 bg-cyan-50/40 dark:bg-cyan-950/20 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent"
+                >
+                  <option value="">
+                    {t("auth.selectGovernorate", "اختر المحافظة")}
+                  </option>
+                  {governorateOptions.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                  {isFetchingMoreGov && (
+                    <option value="" disabled>
+                      {t("common.loading")}
+                    </option>
+                  )}
+                </select>
+                {errors.governorate_id && (
+                  <p className="text-xs text-red-500">
+                    {errors.governorate_id.message}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  {t("auth.city", "المدينة")}
+                </label>
+                <select
+                  {...register("city_id", {
+                    required: t("validation.required", "هذا الحقل مطلوب"),
+                  })}
+                  disabled={!selectedGovernorateId}
+                  onScroll={handleCityScroll}
+                  className="w-full px-4 py-3 rounded-xl border border-cyan-300 dark:border-cyan-700 bg-cyan-50/40 dark:bg-cyan-950/20 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <option value="">
+                    {t("auth.selectCity", "اختر المدينة")}
+                  </option>
+                  {cityOptions.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                  {isFetchingMoreCities && (
+                    <option value="" disabled>
+                      {t("common.loading")}
+                    </option>
+                  )}
+                </select>
+                {errors.city_id && (
+                  <p className="text-xs text-red-500">
+                    {errors.city_id.message}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Save button (edit mode only) */}
+          {isEditing && (
+            <div className="relative mt-6 flex justify-end">
+              <Button
+                type="submit"
+                variant="primary"
+                isLoading={isUpdating}
+                className="gap-2 bg-cyan-500 hover:bg-cyan-600 rounded-full px-6"
+              >
+                <HiPencil className="w-4 h-4" />
+                {t("common.saveChanges", "حفظ التغييرات")}
+              </Button>
+            </div>
+          )}
         </div>
       </form>
 
       {/* Security Section */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-text-primary dark:text-white mb-4">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 sm:p-8 shadow-sm">
+        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
           {t("account.profile.security")}
         </h2>
 
         {/* Change Password */}
-        <div className="flex items-center justify-between flex-wrap gap-4 py-4 border-b border-border-primary dark:border-gray-700">
-          <div>
-            <h3 className="font-medium text-text-primary dark:text-white">
-              {t("account.profile.changePassword")}
-            </h3>
-            <p className="text-sm text-text-secondary dark:text-gray-400">
-              {t("account.profile.changePasswordDesc")}
-            </p>
+        <div className="flex items-center justify-between flex-wrap gap-4 py-4 border-b border-gray-100 dark:border-gray-700">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center shrink-0">
+              <HiLockClosed className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-gray-900 dark:text-white">
+                {t("account.profile.changePassword")}
+              </h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {t("account.profile.changePasswordDesc")}
+              </p>
+            </div>
           </div>
-          <Button
-            variant="outline"
-            className="border-primary text-primary dark:border-primary/50 dark:text-primary-light"
+          <button
+            type="button"
             onClick={() => setIsPasswordModalOpen(true)}
+            className="px-5 py-2.5 bg-cyan-500 hover:bg-cyan-600 text-white text-sm font-semibold rounded-full transition-colors shadow-sm"
           >
             {t("account.profile.changePassword")}
-          </Button>
+          </button>
         </div>
 
         {/* Update Email */}
-        <div className="flex items-center justify-between flex-wrap gap-4 py-4 border-b border-border-primary dark:border-gray-700">
-          <div>
-            <h3 className="font-medium text-text-primary dark:text-white">
-              {t("account.profile.updateEmail")}
-            </h3>
-            <p className="text-sm text-text-secondary dark:text-gray-400">
-              {t("account.profile.currentEmail")}: {profileData.email}
-            </p>
+        <div className="flex items-center justify-between flex-wrap gap-4 py-4 border-b border-gray-100 dark:border-gray-700">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center shrink-0">
+              <HiMail className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-gray-900 dark:text-white">
+                {t("account.profile.updateEmail")}
+              </h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {t("account.profile.currentEmail")}: {displayEmail}
+              </p>
+            </div>
           </div>
-          <Button
-            variant="outline"
-            className="border-primary text-primary dark:border-primary/50 dark:text-primary-light"
+          <button
+            type="button"
             onClick={() => setIsEmailModalOpen(true)}
+            className="px-5 py-2.5 bg-cyan-500 hover:bg-cyan-600 text-white text-sm font-semibold rounded-full transition-colors shadow-sm"
           >
             {t("account.profile.updateEmail")}
-          </Button>
+          </button>
         </div>
 
         {/* Update Phone */}
         <div className="flex items-center justify-between flex-wrap gap-4 py-4">
-          <div>
-            <h3 className="font-medium text-text-primary dark:text-white">
-              {t("account.profile.updatePhone")}
-            </h3>
-            <p className="text-sm text-text-secondary dark:text-gray-400">
-              {t("account.profile.currentPhone")}: {profileData.phone}
-            </p>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center shrink-0">
+              <HiPhone className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-gray-900 dark:text-white">
+                {t("account.profile.updatePhone")}
+              </h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {t("account.profile.currentPhone")}: {displayPhone}
+              </p>
+            </div>
           </div>
-          <Button
-            variant="outline"
-            className="border-primary text-primary dark:border-primary/50 dark:text-primary-light"
+          <button
+            type="button"
             onClick={() => setIsPhoneModalOpen(true)}
+            className="px-5 py-2.5 bg-cyan-500 hover:bg-cyan-600 text-white text-sm font-semibold rounded-full transition-colors shadow-sm"
           >
             {t("account.profile.updatePhone")}
-          </Button>
+          </button>
         </div>
 
-        <p className="text-sm text-text-tertiary dark:text-gray-500 mt-4">
+        {/* Gradient divider */}
+        <div className="h-px bg-gradient-to-r from-cyan-400 via-cyan-300 to-transparent my-5" />
+
+        <p className="text-sm text-gray-400 dark:text-gray-500">
           {t("account.profile.loginActivityNote")}
         </p>
       </div>
 
-      {/* Delete Account Section */}
-      <div className="bg-red-50 dark:bg-red-900/10 rounded-2xl p-6 border border-red-200 dark:border-red-800 shadow-sm">
-        <div className="flex items-start gap-3">
-          <HiExclamation className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
-          <div className="flex-1">
-            <h2 className="text-lg font-semibold text-red-600 dark:text-red-400">
-              {t("account.profile.deleteAccount")}
-            </h2>
-            <p className="text-sm text-red-500/80 dark:text-red-400/80 mt-1 mb-4">
-              {t("account.profile.deleteAccountDesc")}
-            </p>
-            <a
-              href="/account/delete"
-              className="text-sm font-medium text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 underline"
-            >
-              {t("account.profile.manageAccountStatus")}
-            </a>
+      {/* Logout Section */}
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 sm:p-8 shadow-sm">
+        <div className="flex items-center justify-between flex-wrap gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center shrink-0">
+              <HiLogout className="w-5 h-5 text-red-500 dark:text-red-400" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-gray-900 dark:text-white">
+                {t("account.profile.logout")}
+              </h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {t("account.profile.logoutDesc")}
+              </p>
+            </div>
           </div>
+          <button
+            type="button"
+            onClick={() => setIsLogoutModalOpen(true)}
+            className="px-5 py-2.5 bg-red-500 hover:bg-red-600 text-white text-sm font-semibold rounded-full transition-colors shadow-sm"
+          >
+            {t("account.profile.logout")}
+          </button>
         </div>
       </div>
 
@@ -390,6 +571,15 @@ export default function Profile() {
         onClose={() => setIsVerifyModalOpen(false)}
         email={verifyEmail}
         phone={verifyPhone}
+      />
+      <LogoutPopup
+        isOpen={isLogoutModalOpen}
+        onClose={() => setIsLogoutModalOpen(false)}
+        onConfirm={() => {
+          logoutMutation.mutate();
+          setIsLogoutModalOpen(false);
+        }}
+        cancelButtonText={t("common.cancel")}
       />
     </div>
   );

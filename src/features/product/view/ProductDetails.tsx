@@ -9,6 +9,7 @@ import ProductQuantitySelector from "../components/ProductQuantitySelector";
 import ProductActions from "../components/ProductActions";
 import ProductDescription from "../components/ProductDescription";
 import ExtraDetailsTable from "../components/ExtraDetailsTable";
+import ExtrasCheckboxTable from "../components/ExtrasCheckboxTable";
 import ShopSelector from "../components/ShopSelector";
 import {
   SoldWithThisProduct,
@@ -29,6 +30,8 @@ import { useAuthStore } from "@/store/auth";
 import type { CartItem } from "@/features/cart/types";
 import { paths } from "@/app/routes/path/paths";
 import { useFavorites, useToggleFavorite } from "@/features/account/hooks/useFavorites";
+import { useCanRate } from "@/features/account/hooks/useRatings";
+import { RatingFormModal } from "@/features/account/components";
 
 function ProductDetails() {
   const { t } = useTranslation();
@@ -37,17 +40,19 @@ function ProductDetails() {
   const navigate = useNavigate();
   const { isRTL } = useLanguage();
 
-  // Get query params
   const lat = parseFloat(searchParams.get("lat") || "33.51380000");
   const lng = parseFloat(searchParams.get("lng") || "36.27650000");
   const initialShopId = parseInt(searchParams.get("shop_id") || "0", 10);
 
-  // Stateful shop selection
   const [selectedShopId, setSelectedShopId] = useState(initialShopId);
+  const [ratingModalOpen, setRatingModalOpen] = useState(false);
+  const [specialInstructions, setSpecialInstructions] = useState("");
+  const [selectedExtraIds, setSelectedExtraIds] = useState<number[]>([]);
 
   const productIdNum = parseInt(productId || "0", 10);
+  const token = useAuthStore((s) => s.token);
+  const { data: canRateData } = useCanRate(productIdNum);
 
-  // Fetch product details
   const {
     data: product,
     isLoading,
@@ -59,7 +64,6 @@ function ProductDetails() {
     shopId: selectedShopId,
   });
 
-  // Auto-sync: if selected shop is not in available_shops, select the first one
   useEffect(() => {
     if (product?.available_shops?.length) {
       const shopExists = product.available_shops.some(
@@ -71,11 +75,9 @@ function ProductDetails() {
     }
   }, [product?.available_shops, selectedShopId]);
 
-  // Ratings - reviews list from API, summary from product response
   const { reviews, isLoading: isRatingsLoading } =
     useProductRatings(productIdNum);
 
-  // Rating summary from product details response
   const ratingDistribution = useMemo((): RatingDistribution => {
     const breakdown = product?.rating_breakdown || [0, 0, 0, 0, 0];
     return {
@@ -88,22 +90,16 @@ function ProductDetails() {
   }, [product?.rating_breakdown]);
 
   const totalReviewsCount = useMemo(() => {
-    return (product?.rating_breakdown || []).reduce(
-      (sum, n) => sum + n,
-      0
-    );
+    return (product?.rating_breakdown || []).reduce((sum, n) => sum + n, 0);
   }, [product?.rating_breakdown]);
 
-  // Similar products (by category)
   const { data: similarProducts = [] } = useSimilarProducts(
     product?.category?.id
   );
 
-  // Products from same seller (by selected shop)
   const { data: sellerProducts = [] } =
     useProductsFromSameSeller(selectedShopId);
 
-  // Variant selector hook
   const {
     selectedAttributes,
     setAttributeValue,
@@ -122,13 +118,12 @@ function ProductDetails() {
   });
 
   const [quantity, setQuantity] = useState(1);
-  const { authenticated } = useAuthStore();
-  const { data: favoriteProducts = [] } = useFavorites("product", !!authenticated);
+  const { data: favoriteProducts = [] } = useFavorites("product", false);
   const toggleFavorite = useToggleFavorite();
-  const isFavorite = favoriteProducts.some((f) => f.id === productIdNum);
+  const isFavorite =
+    product?.is_favorite ?? favoriteProducts.some((f) => f.id === productIdNum);
   const addItem = useCartStore((s) => s.addItem);
 
-  // Navigate to product details
   const handleProductClick = useCallback(
     (id: number) => {
       navigate(paths.client.productDetails(id));
@@ -136,7 +131,8 @@ function ProductDetails() {
     [navigate]
   );
 
-  // Map bought_with to slider card format
+  const favoriteIds = favoriteProducts.map((f) => f.id);
+
   const boughtWithItems = useMemo(() => {
     if (!product?.bought_with?.length) return [];
     return product.bought_with.map((item) => ({
@@ -149,10 +145,10 @@ function ProductDetails() {
           : undefined,
       rating: 0,
       image: item.image,
+      isFavorite: item.is_favorite ?? favoriteIds.includes(item.id),
     }));
-  }, [product?.bought_with]);
+  }, [product?.bought_with, favoriteIds]);
 
-  // Map similar products to slider card format
   const similarProductItems = useMemo(() => {
     return similarProducts
       .filter((p) => p.id !== product?.id)
@@ -172,10 +168,10 @@ function ProductDetails() {
           p.amount_saved > 0
             ? `${t("product.youSaved", "You saved")} £${p.amount_saved.toFixed(2)}`
             : undefined,
+        isFavorite: (p as { is_favorite?: boolean }).is_favorite ?? favoriteIds.includes(p.id),
       }));
-  }, [similarProducts, product?.id, t]);
+  }, [similarProducts, product?.id, t, favoriteIds]);
 
-  // Map seller products to slider card format
   const sellerProductItems = useMemo(() => {
     return sellerProducts
       .filter((p) => p.id !== product?.id)
@@ -195,8 +191,9 @@ function ProductDetails() {
           p.amount_saved > 0
             ? `${t("product.youSaved", "You saved")} £${p.amount_saved.toFixed(2)}`
             : undefined,
+        isFavorite: (p as { is_favorite?: boolean }).is_favorite ?? favoriteIds.includes(p.id),
       }));
-  }, [sellerProducts, product?.id, t]);
+  }, [sellerProducts, product?.id, t, favoriteIds]);
 
   const handleAddToCart = () => {
     if (!product) return;
@@ -271,7 +268,12 @@ function ProductDetails() {
     }
   };
 
-  // Loading state
+  const handleToggleExtra = (id: number) => {
+    setSelectedExtraIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
+
   if (isLoading) {
     return (
       <div className="bg-custom-primary min-h-screen flex items-center justify-center">
@@ -280,7 +282,6 @@ function ProductDetails() {
     );
   }
 
-  // Error state
   if (error || !product) {
     return (
       <div className="bg-custom-primary min-h-screen flex items-center justify-center">
@@ -293,22 +294,51 @@ function ProductDetails() {
     );
   }
 
-  // Calculate savings
+  const isFood = product.product_type === "food";
+
+  // Build badges array from API fields
+  const badges: Array<{ label: string; className?: string }> = [];
+  if (product.price > product.price_after_discount) {
+    const pct = Math.round(
+      ((product.price - product.price_after_discount) / product.price) * 100
+    );
+    badges.push({
+      label: `${pct}% OFF`,
+      className: "bg-primary-light text-white",
+    });
+  }
+  if (product.is_most_ordered) {
+    badges.push({
+      label: t("product.mostOrdered", "Most Ordered"),
+      className: "bg-yellow-400 text-black",
+    });
+  }
+  if (product.is_instant_delivery) {
+    badges.push({
+      label: t("product.freeDelivery", "Free Delivery"),
+      className: "bg-yellow-400 text-black",
+    });
+  }
+
   const savings =
     product.price > product.price_after_discount
-      ? `${t("product.youSaved", "You saved")} ${
+      ? `${t("product.youSaved", "You saved")} £${(
           product.price - product.price_after_discount
-        }`
+        ).toFixed(2)}`
       : undefined;
 
-  // Format price
   const formatPrice = (price: number) => `£${price.toFixed(2)}`;
+
+  const hasShops =
+    !isFood &&
+    product.available_shops &&
+    product.available_shops.length > 0;
 
   return (
     <div className="bg-custom-primary">
       <div className="page-container py-8" dir={isRTL ? "rtl" : "ltr"}>
         <div className="grid grid-cols-1 gap-24 lg:grid-cols-2">
-          {/* Left Section - Product Images */}
+          {/* Left – Product Images */}
           <div>
             <ProductImageGallery
               images={currentImages}
@@ -318,13 +348,13 @@ function ProductDetails() {
             />
           </div>
 
-          {/* Right Section - Product Details */}
+          {/* Right – Product Details */}
           <div className="flex flex-col gap-6">
             <ProductInfo
               category={product.category?.name}
               name={product.name}
-              sku={product.sku}
-              origin={product.country}
+              sku={isFood ? undefined : product.sku}
+              origin={isFood ? undefined : product.country}
               price={formatPrice(currentPriceAfterDiscount || currentPrice)}
               originalPrice={
                 currentPriceAfterDiscount < currentPrice
@@ -332,29 +362,22 @@ function ProductDetails() {
                   : undefined
               }
               savings={savings}
+              sold={product.sold_number}
               rating={product.rating}
-              badges={
-                product.is_instant_delivery
-                  ? [
-                      {
-                        label: t("product.freeDelivery", "Instant Delivery"),
-                        className: "bg-green-500",
-                      },
-                    ]
-                  : []
+              badges={badges}
+              topRightSlot={
+                hasShops ? (
+                  <ShopSelector
+                    compact
+                    shops={product.available_shops}
+                    selectedShopId={selectedShopId}
+                    onShopChange={setSelectedShopId}
+                  />
+                ) : undefined
               }
             />
 
-            {/* Available Shops Selector */}
-            {product.available_shops && product.available_shops.length > 0 && (
-              <ShopSelector
-                shops={product.available_shops}
-                selectedShopId={selectedShopId}
-                onShopChange={setSelectedShopId}
-              />
-            )}
-
-            {/* Dynamic Attribute Selectors */}
+            {/* Attribute Selectors (color, size, etc.) */}
             {availableAttributes.map((attribute) => (
               <AttributeSelector
                 key={attribute.attribute}
@@ -363,10 +386,39 @@ function ProductDetails() {
                 onValueChange={(value) =>
                   setAttributeValue(attribute.attribute, value)
                 }
+                activeColor={isFood ? "teal" : "dark"}
               />
             ))}
 
-            {/* Quantity and Add to Cart */}
+            {/* Food: Extras table with checkboxes */}
+            {isFood && product.extras && product.extras.length > 0 && (
+              <ExtrasCheckboxTable
+                extras={product.extras}
+                selectedIds={selectedExtraIds}
+                onToggle={handleToggleExtra}
+              />
+            )}
+
+            {/* Food: Special instructions textarea */}
+            {isFood && (
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-semibold text-text-primary">
+                  {t("product.specialInstructions", "Special instructions")}
+                </label>
+                <textarea
+                  value={specialInstructions}
+                  onChange={(e) => setSpecialInstructions(e.target.value)}
+                  placeholder={t(
+                    "product.specialInstructionsPlaceholder",
+                    "Any special requests..."
+                  )}
+                  rows={3}
+                  className="w-full resize-none rounded-lg border border-gray-200 bg-custom-primary px-4 py-3 text-sm text-custom-primary placeholder-gray-400 outline-none transition-colors focus:border-primary-light focus:ring-1 focus:ring-primary-light dark:border-gray-700"
+                />
+              </div>
+            )}
+
+            {/* Quantity + Add to Cart */}
             <ProductQuantitySelector
               quantity={quantity}
               min={1}
@@ -378,8 +430,8 @@ function ProductDetails() {
 
             <ProductActions />
 
-            {/* Extra Details Table */}
-            {product.extra_details && product.extra_details.length > 0 && (
+            {/* Extra Details Table (non-food static key/value) */}
+            {!isFood && product.extra_details && product.extra_details.length > 0 && (
               <div className="mt-4">
                 <h3 className="text-lg font-semibold text-custom-primary mb-3">
                   {t("product.details", "Details")}
@@ -441,6 +493,24 @@ function ProductDetails() {
 
         {/* Product Reviews */}
         <div className="page-container">
+          {token && productIdNum > 0 && canRateData !== undefined && (
+            <div className="mt-10 mb-4">
+              {canRateData.can_rate ? (
+                <button
+                  type="button"
+                  onClick={() => setRatingModalOpen(true)}
+                  className="px-4 py-2 rounded-lg bg-cyan-500 hover:bg-cyan-600 text-white font-medium text-sm"
+                >
+                  {t("account.myReviews.rateProduct", "قيم هذا المنتج")}
+                </button>
+              ) : (
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  {canRateData.reason_ar || canRateData.reason ||
+                    t("account.myReviews.mustPurchaseToRate", "يجب شراء هذا المنتج قبل تقييمه")}
+                </p>
+              )}
+            </div>
+          )}
           {isRatingsLoading ? (
             <div className="mt-10 flex justify-center py-8">
               <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary-light" />
@@ -454,6 +524,15 @@ function ProductDetails() {
             />
           )}
         </div>
+
+        <RatingFormModal
+          isOpen={ratingModalOpen}
+          onClose={() => setRatingModalOpen(false)}
+          onSuccess={() => setRatingModalOpen(false)}
+          mode="create"
+          rateableType="product"
+          rateableId={productIdNum}
+        />
       </div>
     </div>
   );

@@ -5,10 +5,14 @@ import { useLanguage } from "@/context/LanguageContext";
 import { toast } from "sonner";
 import ProductItemsTable, { type ProductItemData } from "@/shared/component/table/ProductItemsTable";
 import BasePopup from "@/shared/component/BasePopup";
-import Button from "@/shared/ui/Button";
+import { Button, Select } from "@/shared/ui";
 import { HiMapPin, HiCalendar, HiCreditCard, HiClock, HiPlus } from "react-icons/hi2";
 import { useCartStore } from "@/store/cart";
+import { useAuthStore } from "@/store/auth";
 import { paths } from "@/app/routes/path/paths";
+import { useBasketRatings } from "../hooks/useBaskets";
+import ProductReviews from "@/shared/component/ProductReviews";
+import { RatingFormModal } from "@/features/account/components";
 import type { BasketDetailsData, BasketDetailItem } from "../types/basket";
 
 interface SubscriptionBasketDetailsProps {
@@ -23,7 +27,7 @@ export default function SubscriptionBasketDetails({
   const navigate = useNavigate();
   const addBasket = useCartStore((s) => s.addBasket);
 
-  const [selectedScheduleId] = useState<number | null>(
+  const [selectedScheduleId, setSelectedScheduleId] = useState<number | null>(
     basket.schedules?.[0]?.id ?? null
   );
   const [repeatOption, setRepeatOption] = useState<"automatic" | "once">(
@@ -38,14 +42,36 @@ export default function SubscriptionBasketDetails({
 
   // Extras popup state
   const [showExtrasPopup, setShowExtrasPopup] = useState(false);
+  const [ratingModalOpen, setRatingModalOpen] = useState(false);
 
   // Track which extras have been added to the table
   const [addedExtras, setAddedExtras] = useState<BasketDetailItem[]>([]);
+
+  const token = useAuthStore((s) => s.token);
+  const {
+    reviews: basketReviews,
+    averageRating: reviewsAverage,
+    totalReviews: reviewsTotal,
+    ratingDistribution: reviewsDistribution,
+    isLoading: isRatingsLoading,
+  } = useBasketRatings(basket.id, "schedule_basket");
 
   // Get selected schedule
   const selectedSchedule = useMemo(() => {
     return basket.schedules?.find((s) => s.id === selectedScheduleId) ?? null;
   }, [basket.schedules, selectedScheduleId]);
+
+  // Schedule options for Select (from API)
+  const scheduleOptions = useMemo(() => {
+    if (!basket.schedules?.length) return [];
+    return basket.schedules.map((schedule) => ({
+      value: schedule.id,
+      label:
+        schedule.discount_value > 0
+          ? `${schedule.title} (${schedule.discount_value}${schedule.discount_type === "percentage" ? "%" : ""} ${t("baskets.discountExtra")})`
+          : schedule.title,
+    }));
+  }, [basket.schedules, t]);
 
   // Helper: convert a BasketDetailItem to ProductItemData
   const mapItemToProductData = (item: BasketDetailItem): ProductItemData => {
@@ -190,8 +216,8 @@ export default function SubscriptionBasketDetails({
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Selected Basket Header */}
         <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-3">
+          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-3">
+            <div className="flex flex-wrap items-center gap-2 md:gap-3">
               <h2 className="text-lg font-bold text-gray-900">
                 {t("baskets.selectedBasket")}: {basket.name}
               </h2>
@@ -199,11 +225,26 @@ export default function SubscriptionBasketDetails({
                 {t("baskets.scheduled")}
               </span>
               {selectedSchedule && (
-                <span className="px-3 py-1 bg-cyan-100 text-cyan-700 text-xs font-medium rounded-full">
+                <span className="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-full">
                   {selectedSchedule.title}
                 </span>
               )}
             </div>
+            {basket.schedules && basket.schedules.length > 0 && (
+              <div className="w-full md:w-64 shrink-0">
+                <Select
+                  label={t("baskets.selectSchedule")}
+                  options={scheduleOptions}
+                  value={selectedScheduleId ?? ""}
+                  onChange={(e) =>
+                    setSelectedScheduleId(
+                      e.target.value ? Number(e.target.value) : null
+                    )
+                  }
+                  className="!mb-0"
+                />
+              </div>
+            )}
           </div>
 
           <div className="flex items-center gap-6 text-sm text-gray-600">
@@ -214,7 +255,7 @@ export default function SubscriptionBasketDetails({
             <div className="flex items-center gap-2">
               <HiClock className="w-4 h-4 text-gray-400" />
               <span className="font-medium">{t("baskets.nextDelivery")}:</span>
-              <span className="text-gray-900">{basket.next_delivery_date}</span>
+              <span className="text-gray-900">{basket.next_delivery_date ?? "-"}</span>
             </div>
           </div>
         </div>
@@ -240,9 +281,22 @@ export default function SubscriptionBasketDetails({
             </div>
           </div>
           {savings > 0 && (
-            <p className="text-sm text-green-600 font-medium">
-              {t("baskets.youSave")} ${savings.toFixed(2)} {scheduleDiscount > 0 && `(${selectedSchedule?.discount_value}%)`}
-            </p>
+            <div className="mt-2 p-3 border border-dashed border-green-300 rounded-lg bg-green-50/50">
+              <p className="text-sm text-green-700 font-medium">
+                {t("baskets.youSave")} ${savings.toFixed(2)}
+                {scheduleDiscount > 0 && selectedSchedule && (
+                  <>
+                    {" "}
+                    ({selectedSchedule.discount_type === "percentage"
+                      ? `${selectedSchedule.discount_value}%`
+                      : ""})
+                    {repeatOption === "automatic" && (
+                      <> {selectedSchedule.title} {t("baskets.subscriptionDiscountApplied")}</>
+                    )}
+                  </>
+                )}
+              </p>
+            </div>
           )}
         </div>
 
@@ -311,7 +365,7 @@ export default function SubscriptionBasketDetails({
                 }
                 className="w-5 h-5 text-cyan-500 mt-0.5"
               />
-              <div>
+              <div className="flex-1">
                 <div className="flex items-center gap-2">
                   <span className="font-semibold text-gray-900">
                     {t("baskets.repeatAutomatically")}
@@ -423,7 +477,48 @@ export default function SubscriptionBasketDetails({
             ✓ {t("baskets.confirmSubscriptionOrder")}
           </Button>
         </div>
+
+        {/* Rate this basket + Reviews */}
+        {token && (
+          <div className="mt-6">
+            <button
+              type="button"
+              onClick={() => setRatingModalOpen(true)}
+              className="px-4 py-2 rounded-lg bg-cyan-500 hover:bg-cyan-600 text-white font-medium text-sm"
+            >
+              {t("baskets.rateBasket", "قيم هذه السلة")}
+            </button>
+          </div>
+        )}
+        <div className="mt-6">
+          {isRatingsLoading ? (
+            <div className="flex justify-center py-6">
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-cyan-500" />
+            </div>
+          ) : (
+            <ProductReviews
+              averageRating={
+                reviewsTotal > 0
+                  ? reviewsAverage
+                  : Number(basket.rating) || 0
+              }
+              totalReviews={reviewsTotal}
+              ratingDistribution={reviewsDistribution}
+              reviews={basketReviews}
+              sectionTitle={t("baskets.basketReviews", "تقييمات السلة")}
+            />
+          )}
+        </div>
       </div>
+
+      <RatingFormModal
+        isOpen={ratingModalOpen}
+        onClose={() => setRatingModalOpen(false)}
+        onSuccess={() => setRatingModalOpen(false)}
+        mode="create"
+        rateableType="schedule_basket"
+        rateableId={basket.id}
+      />
 
       {/* Extras Popup */}
       <BasePopup

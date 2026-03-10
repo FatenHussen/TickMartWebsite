@@ -6,8 +6,13 @@ import type {
 } from "../types/order";
 
 export const _OrdersApi = {
-  getOrders: async (page = 1): Promise<OrdersListResponse> => {
-    const res = await _axios.get<OrdersListResponse>(apiRoutes.orders.list(page));
+  getOrders: async (
+    page = 1,
+    status?: string
+  ): Promise<OrdersListResponse> => {
+    const res = await _axios.get<OrdersListResponse>(
+      apiRoutes.orders.list({ page, status: status || undefined })
+    );
     return res.data;
   },
   getOrderById: async (

@@ -11,7 +11,7 @@ export default function GuestGuard() {
   const { authenticated } = useAuthStore();
 
   if (authenticated) {
-    return <Navigate to={paths.client.home} replace />;
+    return <Navigate to={paths.affiliateWelcome} replace />;
   }
 
   return <Outlet />;

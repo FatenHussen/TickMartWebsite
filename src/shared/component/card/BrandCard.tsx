@@ -41,8 +41,8 @@ export default function BrandCard({
         />
       </div>
 
-      {/* Brand name - Bold black text */}
-      <h3 className="font-bold text-slate-900 mb-2 text-center text-base">
+      {/* Brand name - medium weight, centered */}
+      <h3 className="font-medium text-slate-900 dark:text-slate-100 mb-2 text-center text-base">
         {name}
       </h3>
 

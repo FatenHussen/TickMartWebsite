@@ -27,6 +27,8 @@ export type ProductReviewsProps = {
   ratingDistribution: RatingDistribution;
   reviews: Review[];
   className?: string;
+  /** Optional section title (e.g. for recipe reviews instead of product) */
+  sectionTitle?: string;
 };
 
 export default function ProductReviews({
@@ -35,10 +37,12 @@ export default function ProductReviews({
   ratingDistribution,
   reviews,
   className,
+  sectionTitle,
 }: ProductReviewsProps) {
   const { t } = useTranslation();
   const [isRatingFilterOpen, setIsRatingFilterOpen] = useState(true);
   const [selectedRatings, setSelectedRatings] = useState<number[]>([]);
+  const heading = sectionTitle ?? t("product.productReviews");
 
   const totalReviewsCount = useMemo(() => {
     return Object.values(ratingDistribution).reduce((sum, n) => sum + n, 0);
@@ -94,7 +98,7 @@ export default function ProductReviews({
   return (
     <div className={cn("mt-10", className)}>
       <h2 className="mb-5 text-xl font-bold text-text-primary">
-        {t("product.productReviews")}
+        {heading}
       </h2>
 
       {/* TOP SUMMARY BOX (one box like the image) */}

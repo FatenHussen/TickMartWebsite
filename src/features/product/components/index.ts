@@ -35,3 +35,9 @@ export {
 export { default as BrandHeader } from "./BrandHeader";
 export { default as ProductFilters } from "./ProductFilters";
 export { default as ProductGrid } from "./ProductGrid";
+
+export { default as ExtrasCheckboxTable } from "./ExtrasCheckboxTable";
+export type { ExtrasCheckboxTableProps } from "./ExtrasCheckboxTable";
+
+export { default as AttributeSelector } from "./AttributeSelector";
+export type { AttributeSelectorProps } from "./AttributeSelector";

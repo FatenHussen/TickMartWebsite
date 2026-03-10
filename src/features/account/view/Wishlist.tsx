@@ -1,124 +1,129 @@
+import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuthStore } from "@/store/auth";
-import { useFavorites, useToggleFavorite } from "../hooks/useFavorites";
-import FavoriteItemCard from "../components/FavoriteItemCard";
+import { useAllFavorites, useToggleFavorite } from "../hooks/useFavorites";
+import { useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/utils/queryKeys";
+import WishlistFilters from "../components/WishlistFilters";
+import type { WishlistTypeFilter } from "../components/WishlistFilters";
+import WishlistProductCard from "../components/WishlistProductCard";
 import type { FavoriteType } from "../types";
-
-const FAVORITE_TYPES: FavoriteType[] = [
-  "product",
-  "recipe",
-  "basket",
-  "brand",
-  "shop",
-];
-
-const sectionTitleKeys: Record<FavoriteType, string> = {
-  product: "wishlist.products",
-  recipe: "wishlist.recipes",
-  basket: "wishlist.baskets",
-  brand: "wishlist.brands",
-  shop: "wishlist.shops",
-};
 
 export default function Wishlist() {
   const { t } = useTranslation();
   const { isRTL } = useLanguage();
   const { authenticated } = useAuthStore();
+  const queryClient = useQueryClient();
   const toggleFavorite = useToggleFavorite();
 
-  const handleToggle = (type: FavoriteType) => (id: number) => {
-    toggleFavorite.mutate({ type, id });
+  const [selectedType, setSelectedType] = useState<WishlistTypeFilter>("all");
+  const [selectedShopId, setSelectedShopId] = useState<number | "all">("all");
+  const [selectedCategory, setSelectedCategory] = useState("all");
+
+  const favoriteType = selectedType !== "all" ? (selectedType as FavoriteType) : undefined;
+  const shopIdParam = selectedShopId !== "all" ? selectedShopId : undefined;
+
+  const { data: allItems = [], isLoading } = useAllFavorites(
+    { type: favoriteType, shopId: shopIdParam },
+    !!authenticated
+  );
+
+  const categories = useMemo(() => {
+    const set = new Set<string>();
+    allItems.forEach((item) => {
+      if (item.category) set.add(item.category);
+    });
+    return Array.from(set);
+  }, [allItems]);
+
+  const filteredItems = useMemo(() => {
+    return allItems.filter((item) => {
+      if (selectedCategory !== "all" && item.category !== selectedCategory) return false;
+      return true;
+    });
+  }, [allItems, selectedCategory]);
+
+  const handleClearFilters = () => {
+    setSelectedType("all");
+    setSelectedShopId("all");
+    setSelectedCategory("all");
   };
 
-  const product = useFavorites("product", !!authenticated);
-  const recipe = useFavorites("recipe", !!authenticated);
-  const basket = useFavorites("basket", !!authenticated);
-  const brand = useFavorites("brand", !!authenticated);
-  const hasAnyFavorites =
-    (product.data?.length ?? 0) +
-      (recipe.data?.length ?? 0) +
-      (basket.data?.length ?? 0) +
-      (brand.data?.length ?? 0) >
-    0;
+  const handleToggle = (id: number, type?: FavoriteType) => {
+    const resolvedType: FavoriteType = type ?? "product";
+    toggleFavorite.mutate(
+      { type: resolvedType, id },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: queryKeys.favorites.all() });
+        },
+      }
+    );
+  };
 
-  return (
-    <div dir={isRTL ? "rtl" : "ltr"}>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-1">
-          {t("wishlist.title")}
-        </h1>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          {t("wishlist.description")}
-        </p>
-      </div>
-
-      {FAVORITE_TYPES.map((type) => (
-        <FavoritesSection
-          key={type}
-          type={type}
-          enabled={!!authenticated}
-          onToggle={handleToggle(type)}
-        />
-      ))}
-
-      {authenticated && !hasAnyFavorites && <EmptyState />}
-    </div>
-  );
-}
-
-function FavoritesSection({
-  type,
-  enabled,
-  onToggle,
-}: {
-  type: FavoriteType;
-  enabled: boolean;
-  onToggle: (id: number) => void;
-}) {
-  const { t } = useTranslation();
-  const { data = [], isLoading } = useFavorites(type, enabled);
-
-  if (!enabled) return null;
-  if (isLoading) {
+  if (!authenticated) {
     return (
-      <div className="mb-8">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
-          {t(sectionTitleKeys[type])}
-        </h2>
-        <div className="flex justify-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      <div dir={isRTL ? "rtl" : "ltr"}>
+        <WishlistHeader />
+        <div className="py-14 text-center text-gray-500 dark:text-gray-400">
+          {t("wishlist.loginRequired")}
         </div>
       </div>
     );
   }
-  if (data.length === 0) return null;
 
   return (
-    <div className="mb-8">
-      <h2 className="text-lg font-semibold text-gray-900 mb-4">
-        {t(sectionTitleKeys[type])}
-      </h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {data.map((item) => (
-          <FavoriteItemCard
-            key={`${type}-${item.id}`}
-            item={item}
-            type={type}
-            onToggle={onToggle}
-            isFavorite
-          />
-        ))}
+    <div dir={isRTL ? "rtl" : "ltr"}>
+      <WishlistHeader />
+
+      <div className="mb-6">
+        <WishlistFilters
+          selectedType={selectedType}
+          onTypeChange={setSelectedType}
+          selectedShopId={selectedShopId}
+          onShopChange={setSelectedShopId}
+          categories={categories}
+          selectedCategory={selectedCategory}
+          onCategoryChange={setSelectedCategory}
+          onClearFilters={handleClearFilters}
+        />
       </div>
+
+      {isLoading ? (
+        <div className="flex justify-center py-16">
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary" />
+        </div>
+      ) : filteredItems.length === 0 ? (
+        <div className="py-14 text-center text-gray-500 dark:text-gray-400">
+          {t("wishlist.noItemsFound")}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredItems.map((item) => (
+            <WishlistProductCard
+              key={`${item.type ?? "item"}-${item.id}`}
+              item={item}
+              type={item.type}
+              onToggle={(id) => handleToggle(id, item.type)}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
 
-function EmptyState() {
+function WishlistHeader() {
   const { t } = useTranslation();
   return (
-    <div className="py-14 text-center text-gray-500 dark:text-gray-400">
-      {t("wishlist.noItemsFound")}
+    <div className="mb-6">
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-1">
+        {t("wishlist.title")}
+      </h1>
+      <p className="text-sm text-gray-600 dark:text-gray-400">
+        {t("wishlist.description")}
+      </p>
     </div>
   );
 }

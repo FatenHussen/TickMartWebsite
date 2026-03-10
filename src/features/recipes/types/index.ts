@@ -21,6 +21,7 @@ export interface Recipe {
   orders_count: number;
   created_at: string;
   budges: RecipeBadge[];
+  is_favorite?: boolean;
 }
 
 // ============ Recipe Details Types ============

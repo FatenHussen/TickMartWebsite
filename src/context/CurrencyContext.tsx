@@ -1,11 +1,17 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 
-export type Currency = "USD" | "EUR" | "GBP" | "SYP";
+export type Currency = string;
+
+interface CurrencyState {
+  code: string;
+  symbol: string;
+}
 
 interface CurrencyContextType {
   currency: Currency;
-  setCurrency: (currency: Currency) => void;
+  currencySymbol: string;
+  setCurrency: (currency: Currency, symbol?: string) => void;
   getCurrencySymbol: () => string;
   formatPrice: (amount: number) => string;
 }
@@ -14,42 +20,58 @@ const CurrencyContext = createContext<CurrencyContextType | undefined>(
   undefined
 );
 
-const currencySymbols: Record<Currency, string> = {
+const defaultCurrencySymbols: Record<string, string> = {
   USD: "$",
   EUR: "€",
   GBP: "£",
   SYP: "ل.س",
+  AED: "د.إ",
+  SAR: "ر.س",
+  EGP: "ج.م",
 };
 
+function getStoredCurrency(): CurrencyState {
+  const storedCode = localStorage.getItem("currency");
+  const storedSymbol = localStorage.getItem("currencySymbol");
+  if (storedCode && storedSymbol) {
+    return { code: storedCode, symbol: storedSymbol };
+  }
+  if (storedCode && defaultCurrencySymbols[storedCode]) {
+    return {
+      code: storedCode,
+      symbol: defaultCurrencySymbols[storedCode],
+    };
+  }
+  return { code: "USD", symbol: defaultCurrencySymbols.USD };
+}
+
 export function CurrencyProvider({ children }: { children: ReactNode }) {
-  const [currency, setCurrencyState] = useState<Currency>(() => {
-    const stored = localStorage.getItem("currency") as Currency | null;
-    if (stored && ["USD", "EUR", "GBP", "SYP"].includes(stored)) {
-      return stored;
-    }
-    return "USD";
-  });
+  const [currencyState, setCurrencyState] = useState<CurrencyState>(
+    getStoredCurrency
+  );
 
   useEffect(() => {
-    localStorage.setItem("currency", currency);
-  }, [currency]);
+    localStorage.setItem("currency", currencyState.code);
+    localStorage.setItem("currencySymbol", currencyState.symbol);
+  }, [currencyState]);
 
-  const setCurrency = (newCurrency: Currency) => {
-    setCurrencyState(newCurrency);
+  const setCurrency = (newCurrency: Currency, symbol?: string) => {
+    const resolvedSymbol =
+      symbol ?? defaultCurrencySymbols[newCurrency] ?? newCurrency;
+    setCurrencyState({ code: newCurrency, symbol: resolvedSymbol });
   };
 
-  const getCurrencySymbol = () => {
-    return currencySymbols[currency];
-  };
+  const getCurrencySymbol = () => currencyState.symbol;
 
   const formatPrice = (amount: number) => {
-    return `${getCurrencySymbol()}${amount.toLocaleString()}`;
+    return `${currencyState.symbol}${amount.toLocaleString()}`;
   };
 
   return (
     <CurrencyContext.Provider
       value={{
-        currency,
+        currency: currencyState.code,
+        currencySymbol: currencyState.symbol,
         setCurrency,
         getCurrencySymbol,
         formatPrice,

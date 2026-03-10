@@ -8,7 +8,10 @@ import { Button } from "@/shared/ui";
 import { HiChevronDown } from "react-icons/hi";
 import { cn } from "@/shared/lib/utils";
 import { paths } from "@/app/routes/path/paths";
-import type { Currency } from "@/context/CurrencyContext";
+import { useMyCurrency, useUpdateCurrency } from "../hooks/useCurrencies";
+import { _CurrencyApi } from "../api/currency.service";
+import { useInfiniteSelect } from "@/shared/hooks/useInfiniteSelect";
+import type { CurrencyItem } from "../types";
 
 type ThemeOption = "light" | "dark" | "system";
 
@@ -16,23 +19,48 @@ export default function Settings() {
   const { t } = useTranslation();
   const { isRTL, language, setLanguage } = useLanguage();
   const { theme, setTheme } = useTheme();
-  const { currency, setCurrency } = useCurrency();
+  const { setCurrency } = useCurrency();
+
+  const {
+    options: currencyOptions,
+    items: currencies,
+    isLoading: currenciesLoading,
+    handleScroll: handleCurrencyScroll,
+    isFetchingNextPage: isFetchingMoreCurrencies,
+  } = useInfiniteSelect<CurrencyItem>({
+    queryKey: ["currencies", "select"],
+    fetchFn: async (page) => {
+      const res = await _CurrencyApi.getCurrencies(page);
+      return { items: res.data.items as CurrencyItem[], pagination: (res.data.pagination as { current_page: number; last_page: number; per_page: number; total: number } | null) ?? null };
+    },
+    mapToOption: (c) => ({ value: c.id, label: `${c.name} (${c.code})` }),
+  });
+  const { data: myCurrency } = useMyCurrency();
+  const updateCurrencyMutation = useUpdateCurrency();
 
   // Local state for form (to allow cancel)
   const [localLanguage, setLocalLanguage] = useState(language);
-  const [localCurrency, setLocalCurrency] = useState<Currency>(currency);
+  const [localCurrencyId, setLocalCurrencyId] = useState<number | null>(null);
   const [localTheme, setLocalTheme] = useState<ThemeOption>(
     theme === "light" ? "light" : theme === "dark" ? "dark" : "system"
   );
 
-  // Update local state when context changes
+  // Sync my-currency from API to context when data loads
+  useEffect(() => {
+    if (myCurrency) {
+      setCurrency(myCurrency.code, myCurrency.symbol);
+      setLocalCurrencyId(myCurrency.id);
+    }
+  }, [myCurrency, setCurrency]);
+
+  // Update local state when context/API changes
   useEffect(() => {
     setLocalLanguage(language);
   }, [language]);
 
   useEffect(() => {
-    setLocalCurrency(currency);
-  }, [currency]);
+    if (myCurrency) setLocalCurrencyId(myCurrency.id);
+  }, [myCurrency]);
 
   useEffect(() => {
     setLocalTheme(theme === "light" ? "light" : theme === "dark" ? "dark" : "system");
@@ -40,14 +68,27 @@ export default function Settings() {
 
   const handleCancel = () => {
     setLocalLanguage(language);
-    setLocalCurrency(currency);
+    if (myCurrency) setLocalCurrencyId(myCurrency.id);
     setLocalTheme(theme === "light" ? "light" : theme === "dark" ? "dark" : "system");
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setLanguage(localLanguage);
-    setCurrency(localCurrency);
-    
+
+    // Update currency via API if changed
+    if (localCurrencyId !== null && localCurrencyId !== myCurrency?.id) {
+      try {
+        await updateCurrencyMutation.mutateAsync({ currency_id: localCurrencyId });
+        const selected = currencies.find((c) => c.id === localCurrencyId);
+        if (selected) setCurrency(selected.code, selected.symbol);
+      } catch {
+        // Error toast handled by mutation
+        return;
+      }
+    } else if (myCurrency) {
+      setCurrency(myCurrency.code, myCurrency.symbol);
+    }
+
     // Handle system theme
     if (localTheme === "system") {
       const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
@@ -55,21 +96,15 @@ export default function Settings() {
     } else {
       setTheme(localTheme);
     }
-    
-    // TODO: Show success message
   };
 
+  const hasCurrencyChanged = localCurrencyId !== null && localCurrencyId !== myCurrency?.id;
   const hasChanges =
     localLanguage !== language ||
-    localCurrency !== currency ||
+    hasCurrencyChanged ||
     localTheme !== (theme === "light" ? "light" : theme === "dark" ? "dark" : "system");
 
-  const currencyOptions: { value: Currency; label: string }[] = [
-    { value: "USD", label: t("account.settings.currency.usd") },
-    { value: "EUR", label: t("account.settings.currency.eur") },
-    { value: "GBP", label: t("account.settings.currency.gbp") },
-    { value: "SYP", label: t("account.settings.currency.syp") },
-  ];
+  const currencySelectDisabled = currenciesLoading;
 
   return (
     <div
@@ -85,7 +120,7 @@ export default function Settings() {
 
       <div className="space-y-6">
         {/* Language Section */}
-        <div className="space-y-2">
+        {/* <div className="space-y-2">
           <label className="block text-sm font-normal text-gray-700 dark:text-gray-300">
             {t("account.settings.language.label")}
           </label>
@@ -111,7 +146,7 @@ export default function Settings() {
               )}
             />
           </div>
-        </div>
+        </div> */}
 
         {/* Currency Section */}
         <div className="space-y-2">
@@ -120,21 +155,35 @@ export default function Settings() {
           </label>
           <div className="relative w-full">
             <select
-              value={localCurrency}
-              onChange={(e) => setLocalCurrency(e.target.value as Currency)}
+              value={localCurrencyId ?? ""}
+              onChange={(e) => setLocalCurrencyId(Number(e.target.value) || null)}
+              disabled={currencySelectDisabled}
+              onScroll={handleCurrencyScroll}
               className={cn(
                 "w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600",
                 "bg-white dark:bg-gray-700 text-gray-900 dark:text-white",
                 "focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent",
                 "appearance-none cursor-pointer text-sm",
+                "disabled:opacity-50 disabled:cursor-not-allowed",
                 isRTL ? "pr-10" : "pl-4"
               )}
             >
-              {currencyOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
+              {currencySelectDisabled ? (
+                <option value="">
+                  {t("account.settings.currency.loading", "جاري التحميل...")}
                 </option>
-              ))}
+              ) : (
+                currencyOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))
+              )}
+              {isFetchingMoreCurrencies && (
+                <option value="" disabled>
+                  {t("common.loading")}
+                </option>
+              )}
             </select>
             <HiChevronDown
               className={cn(
@@ -149,7 +198,7 @@ export default function Settings() {
         </div>
 
         {/* Theme Section */}
-        <div className="space-y-2">
+        {/* <div className="space-y-2">
           <label className="block text-sm font-normal text-gray-700 dark:text-gray-300">
             {t("account.settings.theme.label")}
           </label>
@@ -176,7 +225,7 @@ export default function Settings() {
               </label>
             ))}
           </div>
-        </div>
+        </div> */}
 
         {/* Privacy & Data Section */}
         <div className="space-y-3 pt-6 border-t border-gray-200 dark:border-gray-700">

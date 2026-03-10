@@ -23,6 +23,16 @@ export type OrderItem = {
   price: string;
 };
 
+export type OrderLocationUpdate = {
+  orderId: string;
+  lat: number;
+  lng: number;
+  heading?: number;
+  speed?: number;
+  accuracy?: number;
+  ts?: number;
+};
+
 export type TrackOrderData = {
   orderNumber: string;
   status: TrackOrderStatus;

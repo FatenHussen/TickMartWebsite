@@ -40,6 +40,10 @@ _axios.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
     config.headers["Accept-Language"] = getAcceptLanguage();
+    // Let the browser set Content-Type with boundary when sending FormData
+    if (config.data instanceof FormData) {
+      delete config.headers["Content-Type"];
+    }
     return config;
   },
   (error) => {

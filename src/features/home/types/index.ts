@@ -25,6 +25,7 @@ export interface BrandItem {
   image: string;
   created_at: string;
   updated_at: string;
+  is_favorite?: boolean;
 }
 
 // Recipe Item (display_type_id: 7)
@@ -35,11 +36,18 @@ export interface RecipeItem {
   image: string;
   rating: number;
   price: number;
+  currency?: string;
+  currency_symbol?: string;
+  price_formatted?: string;
   price_after_discount: number;
+  price_after_discount_formatted?: string;
   discount: string;
   orders_count: number;
-  budges: SectionItemBadge[]; // Typo from API: "budges" instead of "badges"
+  top_badges?: SectionItemBadge[];
+  bottom_badges?: SectionItemBadge[];
+  budges?: SectionItemBadge[]; // Legacy typo field kept for backward compat
   created_at: string;
+  is_favorite?: boolean;
 }
 
 // Product Item (display_type_id: 2)
@@ -48,17 +56,25 @@ export interface ProductItem {
   category: string;
   name: string;
   description: string;
-  country: string;
+  country: string | null;
   price: number;
+  currency?: string;
+  currency_symbol?: string;
+  price_formatted?: string;
   price_after_discount: number;
+  price_after_discount_formatted?: string;
   amount_saved: number;
-  quantity: number;
+  amount_saved_formatted?: string;
+  quantity: number | null;
   image: string;
   discount: string;
-  budges: SectionItemBadge[]; // Typo from API
+  top_badges?: SectionItemBadge[];
+  bottom_badges?: SectionItemBadge[];
+  budges?: SectionItemBadge[]; // Legacy typo field kept for backward compat
   created_at: string;
   sold_number: number;
   rating: number;
+  is_favorite?: boolean;
 }
 
 // Shop Item (display_type_id: 3 - Nearby Shops)
@@ -90,34 +106,36 @@ export interface ShopItem {
   delivery_price?: string | number | null;
   /** Optional: discount badge e.g. "30% OFF" (API may add later) */
   discount_label?: string | null;
+  is_favorite?: boolean;
 }
 
 // Basket Item (display_type_id: 4)
 export interface BasketItem {
   id: number;
-  name: string;
-  category: string;
+  title: string;
+  desc: string | null;
   image: string;
-  num_varieties: number;
-  offer_ends_at: string;
+  category: string;
   original_price: number;
   discount_value: string;
   discount_type: "percentage" | "fixed";
   discount_amount: number;
-  final_price: number;
+  price_after_discount: number;
   rating: number;
   saving: number;
   num_sold: number;
   is_on_offer: boolean;
-  next_delivery_date: string;
+  offer_ends_at: string | null;
+  next_delivery_date: string | null;
+  items_count: number;
   delivery_price: number;
-  // Optional fields that may exist in some responses
-  desc?: string | null;
-  title?: string; // For backward compatibility
+  // Optional legacy fields
+  name?: string;
+  final_price?: number;
+  num_varieties?: number;
   top_badges?: SectionItemBadge[];
   bottom_badges?: SectionItemBadge[];
-  items_count?: number;
-  price_after_discount?: number; // For backward compatibility
+  is_favorite?: boolean;
 }
 
 // Base interface for backward compatibility
@@ -131,6 +149,7 @@ export interface SectionItemBase {
   discount: string | null;
   top_badges: SectionItemBadge[];
   bottom_badges: SectionItemBadge[];
+  is_favorite?: boolean;
 }
 
 // For API type sections (products, brands, recipes, baskets, shops)

@@ -8,12 +8,16 @@ import type {
 
 export const _BrandApi = {
   /**
-   * Get all brands with pagination
-   * @param page - Page number (optional)
+   * Get all brands with optional filters (search, type, pagination)
    */
-  getBrands: async (page?: number): Promise<BrandListResponse> => {
+  getBrands: async (filters?: {
+    search?: string;
+    type?: "new" | "top_rated" | "most_popular";
+    page?: number;
+    per_page?: number;
+  }): Promise<BrandListResponse> => {
     const response = await _axios.get<BrandListResponse>(
-      apiRoutes.brands.list(page)
+      apiRoutes.brands.list(filters)
     );
     return response.data;
   },
@@ -32,16 +36,22 @@ export const _BrandApi = {
   },
 
   /**
-   * Get products for a specific brand
-   * @param brandId - Brand ID
-   * @param page - Page number (optional)
+   * Get products for a specific brand with full product filter support.
    */
   getBrandProducts: async (
     brandId: number,
-    page?: number
+    filters?: {
+      is_free_delivery?: 0 | 1;
+      on_sale?: 0 | 1;
+      in_stock_only?: 0 | 1;
+      sortField?: string;
+      sortOrder?: "asc" | "desc";
+      page?: number;
+      per_page?: number;
+    }
   ): Promise<BrandProductsResponse> => {
     const response = await _axios.get<BrandProductsResponse>(
-      apiRoutes.brands.products(brandId, page)
+      apiRoutes.product.list({ brand_id: brandId, ...filters })
     );
     return response.data;
   },

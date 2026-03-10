@@ -7,6 +7,7 @@ export interface AttributeSelectorProps {
   attribute: AttributeOption;
   selectedValue?: string;
   onValueChange?: (value: string) => void;
+  activeColor?: "dark" | "teal";
   className?: string;
 }
 
@@ -14,6 +15,7 @@ export default function AttributeSelector({
   attribute,
   selectedValue,
   onValueChange,
+  activeColor = "teal",
   className,
 }: AttributeSelectorProps) {
   const isColorType = attribute.type === "color";
@@ -58,7 +60,7 @@ export default function AttributeSelector({
             );
           }
 
-          // Size selector - rounded buttons (like in Figma)
+          // Size / square selector – rounded pill buttons
           return (
             <button
               key={value}
@@ -68,7 +70,9 @@ export default function AttributeSelector({
               className={cn(
                 "h-9 min-w-9 px-4 rounded-full text-sm font-medium transition-all",
                 isSelected
-                  ? "bg-gray-800 text-white"
+                  ? activeColor === "teal"
+                    ? "bg-primary-light text-white"
+                    : "bg-gray-800 text-white"
                   : "bg-gray-100 text-gray-700 hover:bg-gray-200",
                 isDisabled && "opacity-30 cursor-not-allowed"
               )}

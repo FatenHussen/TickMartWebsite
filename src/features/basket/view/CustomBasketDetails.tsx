@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContext";
 import { toast } from "sonner";
@@ -6,6 +7,11 @@ import ProductItemsTable, { type ProductItemData } from "@/shared/component/tabl
 import Button from "@/shared/ui/Button";
 import { HiClock, HiHome, HiChevronRight } from "react-icons/hi2";
 import { useCartStore } from "@/store/cart";
+import { useAuthStore } from "@/store/auth";
+import { paths } from "@/app/routes/path/paths";
+import { useBasketRatings } from "../hooks/useBaskets";
+import ProductReviews from "@/shared/component/ProductReviews";
+import { RatingFormModal } from "@/features/account/components";
 import type { BasketDetailsData } from "../types/basket";
 
 interface CustomBasketDetailsProps {
@@ -17,6 +23,7 @@ export default function CustomBasketDetails({
 }: CustomBasketDetailsProps) {
   const { t } = useTranslation();
   const { isRTL } = useLanguage();
+  const navigate = useNavigate();
   const addBasket = useCartStore((s) => s.addBasket);
 
   const [itemQuantities, setItemQuantities] = useState<Record<number, number>>(
@@ -25,6 +32,16 @@ export default function CustomBasketDetails({
   const [selectedAlternatives, setSelectedAlternatives] = useState<
     Record<number, number>
   >({});
+  const [ratingModalOpen, setRatingModalOpen] = useState(false);
+
+  const token = useAuthStore((s) => s.token);
+  const {
+    reviews: basketReviews,
+    averageRating: reviewsAverage,
+    totalReviews: reviewsTotal,
+    ratingDistribution: reviewsDistribution,
+    isLoading: isRatingsLoading,
+  } = useBasketRatings(basket.id, "basket");
 
   // Convert basket items to ProductItemData format
   const productItems = useMemo<ProductItemData[]>(() => {
@@ -86,6 +103,11 @@ export default function CustomBasketDetails({
 
   // Handle add to cart
   const handleAddToCart = () => {
+    if (!basket.items?.length) {
+      toast.error(t("baskets.emptyBasket", "This basket has no items to add."));
+      return;
+    }
+
     const items = basket.items.map((item) => {
       const selectedAltId = selectedAlternatives[item.id];
       const shop_product_variant_id =
@@ -105,8 +127,14 @@ export default function CustomBasketDetails({
       };
     });
 
+    if (items.some((i) => !i.shop_product_variant_id || Number.isNaN(i.shop_product_variant_id))) {
+      toast.error(t("baskets.invalidBasketItems", "Some items in this basket are invalid."));
+      return;
+    }
+
     addBasket({ admin_basket_id: basket.id, items });
     toast.success(t("cart.addedToCart", "Added to cart"));
+    navigate(paths.client.cart);
   };
 
   // Format date
@@ -211,7 +239,8 @@ export default function CustomBasketDetails({
           </span>
           <Button
             onClick={handleAddToCart}
-            className="bg-cyan-500 hover:bg-cyan-600 text-white px-6"
+            disabled={!basket.items?.length}
+            className="bg-cyan-500 hover:bg-cyan-600 text-white px-6 disabled:opacity-50 disabled:cursor-not-allowed"
             size="lg"
           >
             Add basket to cart
@@ -254,7 +283,48 @@ export default function CustomBasketDetails({
             </div>
           </div>
         </div>
+
+        {/* Rate this basket + Reviews */}
+        {token && (
+          <div className="mt-6">
+            <button
+              type="button"
+              onClick={() => setRatingModalOpen(true)}
+              className="px-4 py-2 rounded-lg bg-cyan-500 hover:bg-cyan-600 text-white font-medium text-sm"
+            >
+              {t("baskets.rateBasket", "قيم هذه السلة")}
+            </button>
+          </div>
+        )}
+        <div className="mt-6">
+          {isRatingsLoading ? (
+            <div className="flex justify-center py-6">
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-cyan-500" />
+            </div>
+          ) : (
+            <ProductReviews
+              averageRating={
+                reviewsTotal > 0
+                  ? reviewsAverage
+                  : Number(basket.rating) || 0
+              }
+              totalReviews={reviewsTotal}
+              ratingDistribution={reviewsDistribution}
+              reviews={basketReviews}
+              sectionTitle={t("baskets.basketReviews", "تقييمات السلة")}
+            />
+          )}
+        </div>
       </div>
+
+      <RatingFormModal
+        isOpen={ratingModalOpen}
+        onClose={() => setRatingModalOpen(false)}
+        onSuccess={() => setRatingModalOpen(false)}
+        mode="create"
+        rateableType="basket"
+        rateableId={basket.id}
+      />
     </div>
   );
 }

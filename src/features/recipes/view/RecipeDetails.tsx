@@ -3,11 +3,12 @@ import { useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContext";
 import { toast } from "sonner";
-import { useRecipeDetails } from "../hooks/useRecipes";
+import { useRecipeDetails, useRecipeRatings } from "../hooks/useRecipes";
 import { useSectionsByPosition } from "@/features/home/hooks/useSections";
 import ApiSectionsRenderer from "@/shared/component/sections/ApiSectionsRenderer";
 import FullBleedSection from "@/shared/component/FullBleedSection";
 import Rating from "@/shared/component/Rating";
+import ProductReviews from "@/shared/component/ProductReviews";
 import Button from "@/shared/ui/Button";
 import ProductItemsTable, { type ProductItemData } from "@/shared/component/table/ProductItemsTable";
 import {
@@ -16,6 +17,8 @@ import {
   HiPlay,
 } from "react-icons/hi2";
 import { useCartStore } from "@/store/cart";
+import { useAuthStore } from "@/store/auth";
+import { RatingFormModal } from "@/features/account/components";
 import type { RecipeItem } from "../types";
 
 // Step colors for cooking steps
@@ -35,6 +38,13 @@ export default function RecipeDetails() {
   const recipeId = parseInt(id || "0", 10);
 
   const { data: recipe, isLoading, error } = useRecipeDetails(recipeId);
+  const {
+    reviews: recipeReviews,
+    averageRating: reviewsAverage,
+    totalReviews: reviewsTotal,
+    ratingDistribution: reviewsDistribution,
+    isLoading: isRatingsLoading,
+  } = useRecipeRatings(recipeId);
 
   const { beforeSections, afterSections } =
     useSectionsByPosition("recipe_details");
@@ -44,6 +54,9 @@ export default function RecipeDetails() {
   const [selectedVariants, setSelectedVariants] = useState<
     Record<number, number>
   >({});
+  const [ratingModalOpen, setRatingModalOpen] = useState(false);
+
+  const token = useAuthStore((s) => s.token);
 
   const addRecipe = useCartStore((s) => s.addRecipe);
 
@@ -291,6 +304,19 @@ export default function RecipeDetails() {
                   ))}
                 </div>
               )}
+
+              {/* Rate this recipe (logged-in users) */}
+              {token && recipeId > 0 && (
+                <div className="mt-4">
+                  <button
+                    type="button"
+                    onClick={() => setRatingModalOpen(true)}
+                    className="px-4 py-2 rounded-lg bg-cyan-500 hover:bg-cyan-600 text-white font-medium text-sm"
+                  >
+                    {t("recipes.rateRecipe", "قيم هذه الوصفة")}
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Right: Shopping List Summary */}
@@ -515,6 +541,23 @@ export default function RecipeDetails() {
           </div>
         </div>
 
+        {/* Recipe ratings / reviews */}
+        <div className="mt-10">
+          {isRatingsLoading ? (
+            <div className="flex justify-center py-8">
+              <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-cyan-500" />
+            </div>
+          ) : (
+            <ProductReviews
+              averageRating={reviewsTotal > 0 ? reviewsAverage : (recipe?.rating ?? 0)}
+              totalReviews={reviewsTotal}
+              ratingDistribution={reviewsDistribution}
+              reviews={recipeReviews}
+              sectionTitle={t("recipes.reviews", "تقييمات الوصفة")}
+            />
+          )}
+        </div>
+
         {/* Sections after main content */}
         {afterSections.length > 0 && (
           <FullBleedSection>
@@ -522,6 +565,15 @@ export default function RecipeDetails() {
           </FullBleedSection>
         )}
       </div>
+
+      <RatingFormModal
+        isOpen={ratingModalOpen}
+        onClose={() => setRatingModalOpen(false)}
+        onSuccess={() => setRatingModalOpen(false)}
+        mode="create"
+        rateableType="recipe"
+        rateableId={recipeId}
+      />
     </div>
   );
 }

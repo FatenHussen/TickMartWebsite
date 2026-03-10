@@ -1,49 +1,106 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect, useMemo } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import CategoriesLayout from "../layout/CategoriesLayout";
 import CategoriesSidebar from "../components/CategoriesSidebar";
 import ProductsHeader from "../components/ProductsHeader";
 import PromotionalBanners from "../components/PromotionalBanners";
 import HeroBanner from "../components/HeroBanner";
+import SubcategoryTabs from "../components/SubcategoryTabs";
 import ProductCard from "@/shared/component/card/ProductCard";
+import ProductCardSkeleton from "@/shared/component/skeleton/ProductCardSkeleton";
 import { useCategories } from "../hooks/useCategories";
-import { useProductsByCategory } from "../hooks/useProductsByCategory";
+import { _CategoriesApi } from "../api/categoriesApi";
+import { useInfiniteList } from "@/shared/hooks/useInfiniteList";
+import { useToggleFavorite } from "@/features/account/hooks/useFavorites";
 import { paths } from "@/app/routes/path/paths";
-import type { ApiCategory, CategoryChild } from "../types";
+import type { ApiCategory, ApiProduct, CategoryChild } from "../types";
+import type { CategoryTypeFilter } from "../components/CategoryFilters";
 
-// Badge color mapping
 const badgeColorMap: Record<string, string> = {
   success: "bg-green-500 text-white",
   warning: "bg-yellow-400 text-black",
   danger: "bg-red-500 text-white",
+  primary: "bg-primary-light text-white",
+  info: "bg-blue-500 text-white",
+  new: "bg-primary-light text-white",
 };
+
+// Map UI sortBy value → API sortField / sortOrder
+function mapSortToApi(sortBy: string): {
+  sortField?: string;
+  sortOrder?: "asc" | "desc";
+} {
+  switch (sortBy) {
+    case "priceLow":
+      return { sortField: "price", sortOrder: "asc" };
+    case "priceHigh":
+      return { sortField: "price", sortOrder: "desc" };
+    case "rating":
+      return { sortField: "rating", sortOrder: "desc" };
+    case "newest":
+      return { sortField: "created_at", sortOrder: "desc" };
+    default:
+      return {};
+  }
+}
 
 export default function CategoriesView() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const preselectedCategoryId = searchParams.get("category");
 
-  // Selected state
-  const [selectedCategory, setSelectedCategory] = useState<ApiCategory | null>(
-    null,
-  );
-  const [selectedSubcategory, setSelectedSubcategory] =
-    useState<CategoryChild | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<ApiCategory | null>(null);
+  const [selectedSubcategory, setSelectedSubcategory] = useState<CategoryChild | null>(null);
   const [sortBy, setSortBy] = useState<string>("recommended");
+  const [freeDeliveryOnly, setFreeDeliveryOnly] = useState(false);
+  const [inStockOnly, setInStockOnly] = useState(false);
+  const [categoryTypeFilter, setCategoryTypeFilter] = useState<CategoryTypeFilter>(undefined);
+  const [favoriteStates, setFavoriteStates] = useState<Record<number, boolean>>({});
 
-  // Fetch categories
   const { data: categories = [], isLoading: categoriesLoading } =
-    useCategories();
+    useCategories(categoryTypeFilter);
 
-  // Fetch products by selected subcategory (or category if no subcategory)
+  const toggleFavorite = useToggleFavorite();
+
   const categoryIdForProducts = selectedSubcategory?.id || selectedCategory?.id;
-  const { data: productsData, isLoading: productsLoading } =
-    useProductsByCategory(categoryIdForProducts);
 
-  // Handle category selection
+  const { sortField, sortOrder } = useMemo(() => mapSortToApi(sortBy), [sortBy]);
+
+  const productFilters = useMemo(
+    () => ({
+      sortField,
+      sortOrder,
+      is_free_delivery: freeDeliveryOnly ? (1 as const) : undefined,
+      in_stock_only: inStockOnly ? (1 as const) : undefined,
+    }),
+    [sortField, sortOrder, freeDeliveryOnly, inStockOnly],
+  );
+
+  const {
+    items: products,
+    observerTarget,
+    isLoading: productsLoading,
+    isFetchingNextPage,
+    hasNextPage,
+  } = useInfiniteList<ApiProduct>({
+    queryKey: [
+      "products",
+      "listByCategory",
+      "infinite",
+      categoryIdForProducts,
+      productFilters,
+    ],
+    fetchFn: (page) =>
+      _CategoriesApi
+        .getProductsByCategory(categoryIdForProducts!, page, productFilters)
+        .then((r) => r.data),
+    enabled: !!categoryIdForProducts,
+  });
+
   const handleCategorySelect = (category: ApiCategory) => {
     setSelectedCategory(category);
-    // Auto-select first subcategory if available
     if (category.children.length > 0) {
       setSelectedSubcategory(category.children[0]);
     } else {
@@ -51,24 +108,46 @@ export default function CategoriesView() {
     }
   };
 
-  // Handle subcategory selection
   const handleSubcategorySelect = (subcategory: CategoryChild) => {
     setSelectedSubcategory(subcategory);
   };
 
-  // Handle product click - navigate to product details
   const handleProductClick = (productId: number) => {
     navigate(paths.client.productDetails(productId));
   };
 
-  // Auto-select first category on load
+  const handleToggleFavorite = (productId: number) => {
+    const product = products.find((p) => p.id === productId);
+    const currentFavorite =
+      productId in favoriteStates
+        ? favoriteStates[productId]
+        : (product?.is_favorite ?? false);
+
+    setFavoriteStates((prev) => ({ ...prev, [productId]: !currentFavorite }));
+
+    toggleFavorite.mutate(
+      { type: "product", id: productId },
+      {
+        onSuccess: (res) => {
+          const isFavorite = res?.data?.is_favorite ?? !currentFavorite;
+          setFavoriteStates((prev) => ({ ...prev, [productId]: isFavorite }));
+        },
+        onError: () => {
+          setFavoriteStates((prev) => ({ ...prev, [productId]: currentFavorite }));
+        },
+      }
+    );
+  };
+
   useEffect(() => {
-    if (categories.length > 0 && !selectedCategory) {
-      const firstCategoryWithChildren =
-        categories.find((c) => c.children.length > 0) || categories[0];
-      handleCategorySelect(firstCategoryWithChildren);
-    }
-  }, [categories, selectedCategory]);
+    if (categories.length === 0 || selectedCategory) return;
+    const target = preselectedCategoryId
+      ? categories.find((c) => String(c.id) === preselectedCategoryId)
+      : null;
+    handleCategorySelect(target ?? categories[0]);
+  }, [categories]);
+
+  const subcategories = selectedCategory?.children ?? [];
 
   const sidebar = (
     <CategoriesSidebar
@@ -78,6 +157,8 @@ export default function CategoriesView() {
       onCategorySelect={handleCategorySelect}
       onSubcategorySelect={handleSubcategorySelect}
       isLoading={categoriesLoading}
+      categoryTypeFilter={categoryTypeFilter}
+      onCategoryTypeFilterChange={setCategoryTypeFilter}
     />
   );
 
@@ -85,7 +166,6 @@ export default function CategoriesView() {
     <div className="bg-gray-50 min-h-screen">
       <CategoriesLayout sidebar={sidebar} sidebarPosition="left">
         <div className="space-y-6">
-          {/* Hero Banner */}
           <HeroBanner
             title={t("categories.springCollection", "Spring Collection 2024")}
             subtitle={t(
@@ -96,59 +176,83 @@ export default function CategoriesView() {
             onButtonClick={() => console.log("Shop now clicked")}
           />
 
-          {/* Products Header */}
+          <SubcategoryTabs
+            subcategories={subcategories}
+            selectedSubcategoryId={selectedSubcategory?.id}
+            onSubcategorySelect={handleSubcategorySelect}
+          />
+
           <ProductsHeader
             categoryName={selectedCategory?.name || ""}
             subcategoryName={selectedSubcategory?.name}
             sortBy={sortBy}
             onSortChange={setSortBy}
+            freeDeliveryOnly={freeDeliveryOnly}
+            onFreeDeliveryToggle={(v) => setFreeDeliveryOnly(v)}
+            inStockOnly={inStockOnly}
+            onInStockToggle={(v) => setInStockOnly(v)}
           />
 
-          {/* Products Grid */}
-          {productsLoading ? (
+          {productsLoading && products.length === 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {[1, 2, 3, 4, 5, 6].map((i) => (
-                <div
-                  key={i}
-                  className="bg-white rounded-2xl h-80 animate-pulse"
-                />
+              {Array.from({ length: 6 }).map((_, i) => (
+                <ProductCardSkeleton key={`skeleton-${i}`} />
               ))}
             </div>
-          ) : productsData?.items && productsData.items.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {productsData.items.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  id={product.id}
-                  name={product.name}
-                  price={`£${product.price_after_discount.toFixed(2)}`}
-                  originalPrice={
-                    product.price > product.price_after_discount
-                      ? `£${product.price.toFixed(2)}`
-                      : undefined
-                  }
-                  rating={4.8}
-                  image={product.image}
-                  category={product.category}
-                  savings={
-                    product.amount_saved > 0
-                      ? `${t("product.youSaved", "You saved")} £${product.amount_saved}`
-                      : undefined
-                  }
-                  badge={
-                    product.budges && product.budges.length > 0
-                      ? product.budges.map((b) => ({
-                          label: b.name,
-                          className:
-                            badgeColorMap[b.color] || "bg-blue-500 text-white",
-                        }))
-                      : undefined
-                  }
-                  deliveryInfo={t("home.freeDelivery", "Free Delivery")}
-                  onClick={handleProductClick}
-                />
-              ))}
-            </div>
+          ) : products.length > 0 ? (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                {products.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    id={product.id}
+                    name={product.name}
+                    price={product.price_after_discount_formatted ?? `${product.currency_symbol ?? ""}${product.price_after_discount}`}
+                    originalPrice={
+                      product.price > product.price_after_discount
+                        ? (product.price_formatted ?? `${product.currency_symbol ?? ""}${product.price}`)
+                        : undefined
+                    }
+                    rating={product.rating ?? 0}
+                    image={product.image}
+                    category={product.category}
+                    sold={product.sold_number > 0 ? product.sold_number : undefined}
+                    isFavorite={
+                      product.id in favoriteStates
+                        ? favoriteStates[product.id]
+                        : (product.is_favorite ?? false)
+                    }
+                    onToggleFavorite={handleToggleFavorite}
+                    savings={
+                      product.amount_saved > 0
+                        ? `${t("product.youSaved", "You saved")} ${product.amount_saved_formatted ?? `${product.currency_symbol ?? ""}${product.amount_saved}`}`
+                        : undefined
+                    }
+                    badge={
+                      product.top_badges && product.top_badges.length > 0
+                        ? product.top_badges.map((b) => ({
+                            label: b.name,
+                            className:
+                              badgeColorMap[b.color] || "bg-primary-light text-white",
+                          }))
+                        : undefined
+                    }
+                    deliveryInfo={t("home.freeDelivery", "Free Delivery")}
+                    onClick={handleProductClick}
+                  />
+                ))}
+              </div>
+
+              {isFetchingNextPage && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-4">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <ProductCardSkeleton key={`loading-${i}`} />
+                  ))}
+                </div>
+              )}
+
+              {hasNextPage && <div ref={observerTarget} className="h-10" />}
+            </>
           ) : (
             <div className="flex items-center justify-center h-64 bg-white rounded-2xl">
               <p className="text-gray-500">
@@ -160,7 +264,6 @@ export default function CategoriesView() {
             </div>
           )}
 
-          {/* Promotional Banners */}
           <PromotionalBanners
             onBannerClick={(id) => console.log("Banner clicked:", id)}
           />

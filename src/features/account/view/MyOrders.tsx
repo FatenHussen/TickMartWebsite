@@ -2,10 +2,13 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContext";
+import { useCurrency } from "@/context/CurrencyContext";
 import { HiSearch } from "react-icons/hi";
 import { cn } from "@/shared/lib/utils";
 import OrderCard from "@/features/cart/components/OrderCard";
 import OrderDetailsModal from "../components/OrderDetailsModal";
+import ComplaintFormModal from "../components/ComplaintFormModal";
+import CancelOrderModal from "../components/CancelOrderModal";
 import { useOrdersInfinite } from "../hooks/useOrders";
 import { useInfiniteScroll } from "@/shared/hooks/useInfiniteScroll";
 import { paths } from "@/app/routes/path/paths";
@@ -28,10 +31,6 @@ function formatOrderDate(createdAt: string): string {
   }
 }
 
-function formatPrice(value: number): string {
-  return `£${value.toLocaleString()}`;
-}
-
 function toOrderStatus(apiStatus: string): OrderStatus {
   if (apiStatus === "out_delivery") return "out_for_delivery";
   if (
@@ -48,7 +47,7 @@ function toOrderStatus(apiStatus: string): OrderStatus {
   return "pending";
 }
 
-function mapOrderToCard(item: OrderListItem): Order {
+function mapOrderToCard(item: OrderListItem, formatPrice: (n: number) => string): Order {
   const status = toOrderStatus(item.status);
   const cartTypeLabel =
     item.cart_type === "admin_cart"
@@ -59,7 +58,7 @@ function mapOrderToCard(item: OrderListItem): Order {
 
   return {
     id: item.id,
-    orderNumber: String(item.id),
+    orderNumber: item.order_code ?? String(item.id),
     dateTime: formatOrderDate(item.created_at),
     status,
     items: [
@@ -78,7 +77,7 @@ function mapOrderToCard(item: OrderListItem): Order {
     actions: {
       viewDetails: true,
       trackOrder: status !== "delivered" && status !== "cancelled",
-      reorder: status === "delivered",
+      reorder: status === "delivered" || status === "cancelled",
       addComplaint: status === "delivered",
     },
   };
@@ -87,6 +86,7 @@ function mapOrderToCard(item: OrderListItem): Order {
 export default function MyOrders() {
   const { t } = useTranslation();
   const { isRTL } = useLanguage();
+  const { formatPrice } = useCurrency();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState<OrderStatus | "all">("all");
@@ -94,6 +94,9 @@ export default function MyOrders() {
   const [selectedOrderId, setSelectedOrderId] = useState<
     number | string | null
   >(null);
+  const [complaintModalOpen, setComplaintModalOpen] = useState(false);
+  const [complaintOrderId, setComplaintOrderId] = useState<number | string | null>(null);
+  const [cancelOrder, setCancelOrder] = useState<Order | null>(null);
 
   const {
     data: ordersData,
@@ -101,7 +104,7 @@ export default function MyOrders() {
     isFetchingNextPage,
     hasNextPage,
     fetchNextPage,
-  } = useOrdersInfinite();
+  } = useOrdersInfinite(activeFilter);
 
   const observerTarget = useInfiniteScroll({
     onLoadMore: fetchNextPage,
@@ -124,11 +127,8 @@ export default function MyOrders() {
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const filteredOrders = useMemo(() => {
-    let orders = ordersData.map(mapOrderToCard);
-
-    if (activeFilter !== "all") {
-      orders = orders.filter((o) => o.status === activeFilter);
-    }
+    // Status is now filtered server-side via useOrdersInfinite(activeFilter)
+    let orders = ordersData.map((item) => mapOrderToCard(item, formatPrice));
 
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
@@ -166,7 +166,7 @@ export default function MyOrders() {
     }
 
     return orders;
-  }, [ordersData, activeFilter, searchQuery, sortBy]);
+  }, [ordersData, activeFilter, searchQuery, sortBy, formatPrice]);
 
   const handleViewDetails = (orderId: number | string) => {
     setSelectedOrderId(orderId);
@@ -185,12 +185,18 @@ export default function MyOrders() {
     // TODO: Reorder logic
   };
 
-  const handleAddComplaint = (_orderId: number | string) => {
-    // TODO: Add complaint
+  const handleAddComplaint = (orderId: number | string) => {
+    setComplaintOrderId(orderId);
+    setComplaintModalOpen(true);
   };
 
-  const handleCancelOrder = (_orderId: number | string) => {
-    // TODO: Cancel order
+  const handleCancelOrder = (order: Order) => {
+    setCancelOrder(order);
+  };
+
+  const handleCancelOrderConfirm = () => {
+    // TODO: Cancel order API call
+    setCancelOrder(null);
   };
 
   const filterButtons: { value: OrderStatus | "all"; label: string }[] = [
@@ -317,7 +323,7 @@ export default function MyOrders() {
                   }
                   onCancelOrder={
                     order.status === "pending" || order.status === "preparing"
-                      ? () => handleCancelOrder(order.id)
+                      ? () => handleCancelOrder(order)
                       : undefined
                   }
                 />
@@ -342,7 +348,38 @@ export default function MyOrders() {
           setSelectedOrderId(null);
           navigate(paths.client.trackOrder.replace(":orderId", String(id)));
         }}
+        onAddComplaint={(id) => {
+          setSelectedOrderId(null);
+          setComplaintOrderId(id);
+          setComplaintModalOpen(true);
+        }}
       />
+
+      <ComplaintFormModal
+        isOpen={complaintModalOpen}
+        onClose={() => {
+          setComplaintModalOpen(false);
+          setComplaintOrderId(null);
+        }}
+        onSuccess={() => {
+          setComplaintModalOpen(false);
+          setComplaintOrderId(null);
+        }}
+        prefillOrderId={complaintOrderId}
+      />
+
+      {cancelOrder && (
+        <CancelOrderModal
+          isOpen={!!cancelOrder}
+          onClose={() => setCancelOrder(null)}
+          onConfirm={handleCancelOrderConfirm}
+          orderId={cancelOrder.orderNumber}
+          status={cancelOrder.status}
+          total={cancelOrder.total}
+          paymentMethod={cancelOrder.paymentMethod}
+          storeLabel={cancelOrder.items[0]?.store}
+        />
+      )}
     </div>
   );
 }

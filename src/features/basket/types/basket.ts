@@ -34,6 +34,7 @@ export interface BasketItem {
   top_badges?: BasketBadge[];
   bottom_badges?: BasketBadge[];
   items_count?: number;
+  is_favorite?: boolean;
 }
 
 // ==================== Basket Detail Item Types ====================
@@ -115,8 +116,14 @@ export interface BasketDetailsResponse {
 
 // ==================== Filter Types ====================
 export type BasketType = "all" | "custom" | "subscription";
+export type BasketSortType = "new" | "best_selling" | "top_rated";
 
 export interface BasketFilters {
   basketType: BasketType;
-  // Add more filters as needed
+  sortType?: BasketSortType;
+  priceMin?: number;
+  priceMax?: number;
+  ratingMin?: number;
+  itemsCountMin?: number;
+  itemsCountMax?: number;
 }

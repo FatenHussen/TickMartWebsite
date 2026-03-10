@@ -1,63 +1,39 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { HiStar } from "react-icons/hi";
-import type { FilterState } from "../types";
 
-export type { FilterState };
+export type CategoryTypeFilter = "new" | "most_popular" | "top_rated" | undefined;
 
 type CategoryFiltersProps = {
-  onFiltersChange?: (filters: FilterState) => void;
+  typeFilter?: CategoryTypeFilter;
+  onTypeFilterChange?: (type: CategoryTypeFilter) => void;
 };
 
+const TYPE_OPTIONS: { value: CategoryTypeFilter; labelKey: string }[] = [
+  { value: undefined, labelKey: "categories.typeAll" },
+  { value: "new", labelKey: "categories.typeNew" },
+  { value: "most_popular", labelKey: "categories.typeMostPopular" },
+  { value: "top_rated", labelKey: "categories.typeTopRated" },
+];
+
 export default function CategoryFilters({
-  onFiltersChange,
+  typeFilter,
+  onTypeFilterChange,
 }: CategoryFiltersProps) {
   const { t } = useTranslation();
-  const [filters, setFilters] = useState<FilterState>({
-    minPrice: "",
-    maxPrice: "",
-    brands: [],
-    ratings: [],
-    delivery: [],
-    offers: [],
-  });
+  const [localType, setLocalType] = useState<CategoryTypeFilter>(typeFilter ?? undefined);
 
-  const handleCheckboxChange = (
-    field: "brands" | "ratings" | "delivery" | "offers",
-    value: string
-  ) => {
-    const currentValues = filters[field];
-    const newValues = currentValues.includes(value)
-      ? currentValues.filter((v) => v !== value)
-      : [...currentValues, value];
-    const newFilters = { ...filters, [field]: newValues };
-    setFilters(newFilters);
-    onFiltersChange?.(newFilters);
-  };
+  useEffect(() => {
+    setLocalType(typeFilter ?? undefined);
+  }, [typeFilter]);
 
-  const handlePriceChange = (field: "minPrice" | "maxPrice", value: string) => {
-    const newFilters = { ...filters, [field]: value };
-    setFilters(newFilters);
-    onFiltersChange?.(newFilters);
+  const handleApply = () => {
+    onTypeFilterChange?.(localType);
   };
 
   const handleReset = () => {
-    const resetFilters: FilterState = {
-      minPrice: "",
-      maxPrice: "",
-      brands: [],
-      ratings: [],
-      delivery: [],
-      offers: [],
-    };
-    setFilters(resetFilters);
-    onFiltersChange?.(resetFilters);
+    setLocalType(undefined);
+    onTypeFilterChange?.(undefined);
   };
-
-  const brands = ["Organic Valley", "Fresh Farms", "Nature's Best"];
-  const ratings = ["4.5", "4.0"];
-  const deliveryOptions = ["Free delivery", "Express delivery"];
-  const offerOptions = ["On sale", "Subscription available"];
 
   return (
     <div className="space-y-5">
@@ -65,118 +41,27 @@ export default function CategoryFilters({
         {t("categories.filters", "Filters")}
       </h3>
 
-      {/* Price Range */}
+      {/* Category Type - من وثائق Categories API */}
       <div>
         <p className="text-sm font-semibold text-gray-700 mb-2">
-          {t("categories.priceRange", "Price Range")}
-        </p>
-        <div className="flex items-center gap-2">
-          <input
-            type="number"
-            placeholder={t("categories.min", "Min")}
-            value={filters.minPrice}
-            onChange={(e) => handlePriceChange("minPrice", e.target.value)}
-            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary-light"
-          />
-          <span className="text-gray-400">-</span>
-          <input
-            type="number"
-            placeholder={t("categories.max", "Max")}
-            value={filters.maxPrice}
-            onChange={(e) => handlePriceChange("maxPrice", e.target.value)}
-            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary-light"
-          />
-        </div>
-      </div>
-
-      {/* Brand */}
-      <div>
-        <p className="text-sm font-semibold text-gray-700 mb-2">
-          {t("categories.brand", "Brand")}
+          {t("categories.typeFilter", "Category Type")}
         </p>
         <div className="space-y-2">
-          {brands.map((brand) => (
+          {TYPE_OPTIONS.map((opt) => (
             <label
-              key={brand}
+              key={opt.value ?? "all"}
               className="flex items-center gap-2 cursor-pointer"
             >
               <input
-                type="checkbox"
-                checked={filters.brands.includes(brand)}
-                onChange={() => handleCheckboxChange("brands", brand)}
-                className="w-4 h-4 rounded border-gray-300 text-primary-light focus:ring-primary-light"
+                type="radio"
+                name="categoryType"
+                checked={(typeFilter ?? localType) === opt.value}
+                onChange={() => setLocalType(opt.value)}
+                className="w-4 h-4 border-gray-300 text-primary-light focus:ring-primary-light"
               />
-              <span className="text-sm text-gray-600">{brand}</span>
-            </label>
-          ))}
-        </div>
-      </div>
-
-      {/* Rating */}
-      <div>
-        <p className="text-sm font-semibold text-gray-700 mb-2">
-          {t("categories.rating", "Rating")}
-        </p>
-        <div className="space-y-2">
-          {ratings.map((rating) => (
-            <label
-              key={rating}
-              className="flex items-center gap-2 cursor-pointer"
-            >
-              <input
-                type="checkbox"
-                checked={filters.ratings.includes(rating)}
-                onChange={() => handleCheckboxChange("ratings", rating)}
-                className="w-4 h-4 rounded border-gray-300 text-primary-light focus:ring-primary-light"
-              />
-              <HiStar className="w-4 h-4 text-yellow-400" />
-              <span className="text-sm text-gray-600">{rating} & up</span>
-            </label>
-          ))}
-        </div>
-      </div>
-
-      {/* Delivery */}
-      <div>
-        <p className="text-sm font-semibold text-gray-700 mb-2">
-          {t("categories.delivery", "Delivery")}
-        </p>
-        <div className="space-y-2">
-          {deliveryOptions.map((option) => (
-            <label
-              key={option}
-              className="flex items-center gap-2 cursor-pointer"
-            >
-              <input
-                type="checkbox"
-                checked={filters.delivery.includes(option)}
-                onChange={() => handleCheckboxChange("delivery", option)}
-                className="w-4 h-4 rounded border-gray-300 text-primary-light focus:ring-primary-light"
-              />
-              <span className="text-sm text-gray-600">{option}</span>
-            </label>
-          ))}
-        </div>
-      </div>
-
-      {/* Offers */}
-      <div>
-        <p className="text-sm font-semibold text-gray-700 mb-2">
-          {t("categories.offers", "Offers")}
-        </p>
-        <div className="space-y-2">
-          {offerOptions.map((offer) => (
-            <label
-              key={offer}
-              className="flex items-center gap-2 cursor-pointer"
-            >
-              <input
-                type="checkbox"
-                checked={filters.offers.includes(offer)}
-                onChange={() => handleCheckboxChange("offers", offer)}
-                className="w-4 h-4 rounded border-gray-300 text-primary-light focus:ring-primary-light"
-              />
-              <span className="text-sm text-gray-600">{offer}</span>
+              <span className="text-sm text-gray-600">
+                {t(opt.labelKey, opt.value === undefined ? "All" : opt.value === "new" ? "New" : opt.value === "most_popular" ? "Most popular" : "Top rated")}
+              </span>
             </label>
           ))}
         </div>
@@ -185,12 +70,13 @@ export default function CategoryFilters({
       {/* Action Buttons */}
       <div className="space-y-2 pt-2">
         <button
-          onClick={() => onFiltersChange?.(filters)}
+          onClick={handleApply}
           className="w-full py-2.5 bg-primary-light text-white text-sm font-semibold rounded-lg hover:bg-primary-light/90 transition-colors"
         >
           {t("categories.applyFilters", "Apply filters")}
         </button>
         <button
+          type="button"
           onClick={handleReset}
           className="w-full py-2 text-sm text-primary-light hover:underline"
         >

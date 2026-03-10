@@ -30,4 +30,33 @@ export const packagesApi = {
     );
     return res.data;
   },
+
+  renew: async (packageId: number): Promise<{ success: boolean; message: string }> => {
+    const res = await _axios.post<{ success: boolean; message: string }>(
+      apiRoutes.packages.renew,
+      { package_id: packageId },
+    );
+    return res.data;
+  },
+
+  getSubscriptionBenefits: async (): Promise<{
+    has_subscription: boolean;
+    remaining_discounts: number;
+    remaining_free_deliveries: number;
+  }> => {
+    const res = await _axios.get<{
+      success: boolean;
+      data: {
+        has_subscription: boolean;
+        remaining_discounts: number;
+        remaining_free_deliveries: number;
+      };
+    }>(apiRoutes.packages.benefits);
+    const d = res.data?.data;
+    return {
+      has_subscription: d?.has_subscription ?? false,
+      remaining_discounts: d?.remaining_discounts ?? 0,
+      remaining_free_deliveries: d?.remaining_free_deliveries ?? 0,
+    };
+  },
 };

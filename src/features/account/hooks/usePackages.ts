@@ -29,3 +29,22 @@ export function useSubscribe() {
     },
   });
 }
+
+export function useRenewSubscription() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (packageId: number) => packagesApi.renew(packageId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.packages.all() });
+    },
+  });
+}
+
+export function useSubscriptionBenefits(enabled = true) {
+  return useQuery({
+    queryKey: queryKeys.packages.benefits(),
+    enabled,
+    queryFn: () => packagesApi.getSubscriptionBenefits(),
+    staleTime: 1000 * 60 * 2,
+  });
+}

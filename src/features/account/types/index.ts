@@ -59,29 +59,14 @@ export type BasketFilter =
   | "scheduled"
   | "occasion";
 
-// Subscription Package types (UI)
-export type PackageFeature = {
-  id: string;
-  text: string;
-};
-
-export type SubscriptionPackage = {
-  id: string;
-  name: string;
-  duration: string;
-  price: string;
-  currency: string;
-  features: PackageFeature[];
-  isCurrentPlan?: boolean;
-  isFeatured?: boolean;
-  gradient?: string;
-};
-
 // Packages API types
 export interface PackageApi {
   id: number;
   name: string;
-  price: string;
+  price: number | string;
+  currency?: string;
+  currency_symbol?: string;
+  price_formatted?: string;
   duration_days: number;
   monthly_orders_limit: number;
   free_delivery_count: number;
@@ -110,8 +95,8 @@ export interface PackagesListResponse {
   data: PackageApi[];
 }
 
-// Favorites API types
-export type FavoriteType = "product" | "recipe" | "basket" | "brand" | "shop";
+// Favorites API types - matches API: product, recipe, brand, basket, shop
+export type FavoriteType = "product" | "recipe" | "brand" | "basket" | "shop" | "vendor";
 
 export interface FavoriteBadge {
   id: number;
@@ -120,29 +105,137 @@ export interface FavoriteBadge {
   postion: string | null;
 }
 
-export interface FavoriteItem {
+export interface FavoriteBadgeApi {
   id: number;
   name: string;
+  color: string;
+  postion: string | null;
+  image?: string;
+}
+
+/** CTA / action button from API - primary + secondary text for AnimatedButton */
+export interface FavoriteButtonApi {
+  primary: string;
+  secondary?: string;
+}
+
+export interface FavoriteItem {
+  id: number;
+  name?: string;
+  title?: string;
   description?: string;
-  image: string;
+  desc?: string;
+  image?: string | null;
   rating?: number;
   price?: number;
+  original_price?: number;
   price_after_discount?: number;
   discount?: string;
+  discount_amount?: number;
+  discount_value?: string;
   orders_count?: number;
+  num_sold?: number;
+  saving?: number;
   created_at?: string;
   budges?: FavoriteBadge[];
+  top_badges?: FavoriteBadgeApi[];
+  bottom_badges?: FavoriteBadgeApi[];
+  /** CTA button: primary + secondary text for animated button (from API) */
+  button?: FavoriteButtonApi;
+  cta?: { primary?: string; secondary?: string; label?: string; sublabel?: string };
+  action_button?: { primary?: string; secondary?: string; primary_text?: string; secondary_text?: string; label?: string; sublabel?: string };
+  category?: string;
+  store?: string;
+  has_free_delivery?: boolean;
+  is_new?: boolean;
+  delivery_price?: number;
+  price_formatted?: string;
+  price_after_discount_formatted?: string;
+  currency_symbol?: string;
+  /** Present when API returns all favorites (no type filter) */
+  type?: FavoriteType;
+}
+
+export interface WishlistBadge {
+  id: number;
+  name: string;
+  color: string;
+  image?: string;
+}
+
+/** Normalized shape for display in wishlist cards */
+export interface WishlistDisplayItem {
+  id: number;
+  name: string;
+  category?: string;
+  image: string;
+  rating?: number;
+  priceDisplay: string;
+  originalPrice?: string;
+  /** Formatted savings amount e.g. "$180" - card prepends "You saved " */
+  savingsAmount?: string;
+  soldCount?: number;
+  showNew: boolean;
+  hasFreeDelivery: boolean;
+  detailPath: string;
+  /** Badges from top_badges / budges */
+  topBadges: WishlistBadge[];
+  /** Badges from bottom_badges */
+  bottomBadges: WishlistBadge[];
+  /** CTA button from API - used for AnimatedButton */
+  button?: { primary: string; secondary: string };
 }
 
 export interface FavoritesResponse {
   status: boolean;
   message: string;
-  data: FavoriteItem[];
+  data: FavoriteItem[] | { items: FavoriteItem[]; total: number };
 }
 
 export interface ToggleFavoritePayload {
   type: FavoriteType;
   id: number;
+}
+
+// Complaints API types
+export type ComplaintType = "product" | "order" | "driver" | "merchant";
+export type ComplaintStatus = "new" | "in_review" | "resolved" | "rejected";
+
+export interface ComplaintUser {
+  id: number;
+  name: string;
+  phone: string;
+}
+
+export interface Complaint {
+  id: number;
+  order_id: number;
+  type: ComplaintType;
+  message: string;
+  status: ComplaintStatus;
+  admin_response: string | null;
+  images: string[];
+  user: ComplaintUser;
+  created_at: string;
+}
+
+export interface ComplaintOrder {
+  id: number;
+  order_code: string;
+  status?: string;
+  total?: number;
+  created_at?: string;
+}
+
+export interface ComplaintsListResponse {
+  success: boolean;
+  data: Complaint[];
+  meta?: { current_page: number; total: number };
+}
+
+export interface ComplaintOrdersResponse {
+  success: boolean;
+  data: ComplaintOrder[];
 }
 
 // Wishlist types
@@ -264,7 +357,9 @@ export type ReviewType =
   | "store"
   | "delivery"
   | "scheduled_basket"
-  | "recipe";
+  | "recipe"
+  | "brand"
+  | "basket";
 
 export type Review = {
   id: string | number;
@@ -288,24 +383,46 @@ export type StoreReview = Review & {
   type: "store";
   storeName: string;
   storeIcon?: string;
+  reviewText?: string;
 };
 
 export type DeliveryReview = Review & {
   type: "delivery";
   orderId: string;
   deliveryDate: string;
+  /** When type is null from API (e.g. driver/person rating) */
+  targetName?: string;
+  reviewText?: string;
 };
 
 export type ScheduledBasketReview = Review & {
   type: "scheduled_basket";
   basketName: string;
+  basketImage?: string;
   orderId?: string;
+  reviewText?: string;
 };
 
 export type RecipeReview = Review & {
   type: "recipe";
   recipeName: string;
+  recipeImage?: string;
   triedDate: string;
+  reviewText?: string;
+};
+
+export type BrandReview = Review & {
+  type: "brand";
+  brandName: string;
+  brandIcon?: string;
+  reviewText?: string;
+};
+
+export type BasketReview = Review & {
+  type: "basket";
+  basketName: string;
+  basketImage?: string;
+  reviewText?: string;
 };
 
 export type ReviewUnion =
@@ -313,7 +430,9 @@ export type ReviewUnion =
   | StoreReview
   | DeliveryReview
   | ScheduledBasketReview
-  | RecipeReview;
+  | RecipeReview
+  | BrandReview
+  | BasketReview;
 
 export type UnreviewedItem = {
   id: string | number;
@@ -385,7 +504,10 @@ export interface AddressCity {
 
 export interface AddressArea {
   id: number;
-  name: string;
+  name: string | { ar?: string; en?: string };
+  base_fee?: number;
+  lat?: string;
+  lng?: string;
   city: AddressCity;
   created_at: string;
 }
@@ -466,4 +588,42 @@ export interface GenericApiResponse {
   status: boolean;
   message: string;
   data?: any;
+}
+
+// ==================== Currency API Types ====================
+export interface CurrencyItem {
+  id: number;
+  code: string;
+  name: string;
+  symbol: string;
+  is_default: boolean;
+}
+
+export interface CurrenciesListResponse {
+  status: boolean;
+  message: string;
+  data: {
+    items: CurrencyItem[];
+    pagination: null | Record<string, unknown>;
+  };
+}
+
+export interface MyCurrencyData {
+  id: number;
+  code: string;
+  name: string;
+  symbol: string;
+  exchange_rate: string;
+  is_default: boolean;
+  is_active: boolean;
+}
+
+export interface MyCurrencyResponse {
+  status: boolean;
+  message: string;
+  data: MyCurrencyData;
+}
+
+export interface UpdateCurrencyPayload {
+  currency_id: number;
 }
