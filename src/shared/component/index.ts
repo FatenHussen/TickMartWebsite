@@ -1,29 +1,39 @@
 // Progress Indicators
-export { default as ProgressIndicator } from "./ProgressIndicator";
-export { default as CheckoutProgressIndicator } from "./CheckoutProgressIndicator";
-export type { ProgressStep, ProgressStepStatus } from "./ProgressIndicator";
+export { default as ProgressIndicator } from"./ProgressIndicator";
+export { default as CheckoutProgressIndicator } from"./CheckoutProgressIndicator";
+export type { ProgressStep, ProgressStepStatus } from"./ProgressIndicator";
 
 // Popups
-export { default as BasePopup } from "./BasePopup";
-export type { BasePopupProps } from "./BasePopup";
-export { default as SuccessPopup } from "./SuccessPopup";
-export type { SuccessPopupProps } from "./SuccessPopup";
-export { default as LogoutPopup } from "./LogoutPopup";
-export type { LogoutPopupProps } from "./LogoutPopup";
+export { default as BasePopup } from"./BasePopup";
+export type { BasePopupProps } from"./BasePopup";
+export { default as SuccessPopup } from"./SuccessPopup";
+export type { SuccessPopupProps } from"./SuccessPopup";
+export { default as LogoutPopup } from"./LogoutPopup";
+export type { LogoutPopupProps } from"./LogoutPopup";
+
+// Table
+export {
+ GradientTable,
+ GradientTableHeader,
+ GradientTableHeaderCell,
+ GradientTableBody,
+ GradientTableRow,
+ GradientTableCell,
+} from"./table";
 
 // Pagination
-export { default as Pagination } from "./Pagination";
+export { default as Pagination } from"./Pagination";
 export type {
-  PaginationProps,
-  PaginationMode,
-  PaginationData,
-} from "../types/pagination";
+ PaginationProps,
+ PaginationMode,
+ PaginationData,
+} from"../types/pagination";
 export {
-  usePagination,
-  generatePageNumbers,
-  getItemsRange,
-} from "../hooks/usePagination";
+ usePagination,
+ generatePageNumbers,
+ getItemsRange,
+} from"../hooks/usePagination";
 export type {
-  UsePaginationReturn,
-  UsePaginationOptions,
-} from "../types/pagination";
+ UsePaginationReturn,
+ UsePaginationOptions,
+} from"../types/pagination";

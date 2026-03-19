@@ -1,493 +1,528 @@
 export const apiRoutes = {
-  /**
-   * Authentication endpoints
-   */
-  auth: {
-    login: "/user/auth/login" as const,
-    register: "/user/auth/register" as const,
-    sendOtp: "/user/auth/send-otp" as const,
-    verifyOtp: "/user/auth/verify-otp" as const,
-    sendPassword: "/user/auth/send-password" as const,
-    verifyPassword: "/user/auth/verify-password" as const,
-    resetPassword: "/user/auth/reset-password" as const,
-    me: "/user/auth/me" as const,
-    logout: "/user/auth/logout" as const,
-    sellerRegister: "/user/auth/seller-register" as const,
-    storeToken: "/user/auth/store-token" as const,
-  },
+ /**
+ * Authentication endpoints
+ */
+ auth: {
+ login:"/user/auth/login"as const,
+ register:"/user/auth/register"as const,
+ sendOtp:"/user/auth/send-otp"as const,
+ verifyOtp:"/user/auth/verify-otp"as const,
+ sendPassword:"/user/auth/send-password"as const,
+ verifyPassword:"/user/auth/verify-password"as const,
+ resetPassword:"/user/auth/reset-password"as const,
+ me:"/user/auth/me"as const,
+ logout:"/user/auth/logout"as const,
+ sellerRegister:"/user/auth/seller-register"as const,
+ storeToken:"/user/auth/store-token"as const,
+ },
 
-  /**
-   * Location endpoints
-   */
-  location: {
-    governorates: "/user/governorates" as const,
-    cities: "/user/cities" as const,
-    areas: (cityId: number) => `/user/areas?city_id=${cityId}` as const,
-    countries: "/user/countries" as const,
-  },
+ /**
+ * Search endpoints (navbar autocomplete)
+ * GET user/search?type=product|brand|shop|recipe&search=value
+ */
+ search: {
+ list: (type: "product" | "brand" | "shop" | "recipe", search: string) => {
+ const params = new URLSearchParams();
+ params.set("type", type);
+ if (search.trim()) params.set("search", search.trim());
+ return `/user/search?${params.toString()}` as const;
+ },
+ },
 
-  /**
-   * Address endpoints
-   */
-  addresses: {
-    list: "/user/addresses" as const,
-    create: "/user/addresses" as const,
-    update: (id: number | string) => `/user/addresses/${id}` as const,
-    delete: (id: number | string) => `/user/addresses/${id}` as const,
-    setDefault: (id: number | string) =>
-      `/user/addresses/${id}/set-default` as const,
-  },
+ /**
+ * Location endpoints
+ */
+ location: {
+ governorates:"/user/governorates"as const,
+ cities:"/user/cities"as const,
+ areas: (cityId: number) => `/user/areas?city_id=${cityId}` as const,
+ countries:"/user/countries"as const,
+ },
 
-  /**
-   * Sections endpoints
-   */
-  sections: {
-    getByPage: (pageSlug: string) =>
-      `/user/sections?page_slug=${pageSlug}` as const,
-  },
+ /**
+ * Address endpoints
+ */
+ addresses: {
+ list:"/user/addresses"as const,
+ create:"/user/addresses"as const,
+ update: (id: number | string) => `/user/addresses/${id}` as const,
+ delete: (id: number | string) => `/user/addresses/${id}` as const,
+ },
 
-  /**
-   * FAQs endpoints (Help Center)
-   * Requires type param. Returns { types: string[], faqs: { id, question, answer, type }[] }
-   */
-  faqs: {
-    list: (type: string) =>
-      `/user/faqs?type=${encodeURIComponent(type)}` as const,
-  },
+ /**
+ * Sections endpoints
+ */
+ sections: {
+ getByPage: (pageSlug: string) =>
+ `/user/sections?page_slug=${pageSlug}` as const,
+ },
 
-  notifications: {
-    list: "/notifications" as const,
-    markAsRead: "/notifications/mark-as-read" as const,
-    markAllAsRead: "/notifications/mark-all-as-read" as const,
-  },
+ /**
+ * FAQs endpoints (Help Center)
+ * Requires type param. Returns { types: string[], faqs: { id, question, answer, type }[] }
+ */
+ faqs: {
+ list: (type: string) =>
+ `/user/faqs?type=${encodeURIComponent(type)}` as const,
+ },
 
-  /**
-   * App settings (contact, welcome, colors - public)
-   */
-  settings: {
-    get: "/user/settings" as const,
-  },
+ notifications: {
+ list:"/notifications"as const,
+ markAsRead:"/notifications/mark-as-read"as const,
+ markAllAsRead:"/notifications/mark-all-as-read"as const,
+ },
 
-  /**
-   * Categories endpoints
-   */
-  categories: {
-    list: (filters?: {
-      name?: string;
-      parent_id?: number;
-      search?: string;
-      shop_id?: number;
-      type?: "new" | "most_popular" | "top_rated";
-      page?: number;
-      per_page?: number;
-    }) => {
-      const params = new URLSearchParams();
-      if (filters?.name) params.append("name", filters.name);
-      if (filters?.parent_id) params.append("parent_id", String(filters.parent_id));
-      if (filters?.search) params.append("search", filters.search.trim());
-      if (filters?.shop_id) params.append("shop_id", String(filters.shop_id));
-      if (filters?.type) params.append("type", filters.type);
-      if (filters?.page) params.append("page", String(filters.page));
-      if (filters?.per_page) params.append("per_page", String(filters.per_page));
-      return `/user/categories${params.toString() ? `?${params.toString()}` : ""}` as const;
-    },
-  },
+ /**
+ * App settings (contact, welcome, colors - public)
+ */
+ settings: {
+ get:"/user/settings"as const,
+ },
 
-  /**
-   * Product endpoints
-   */
-  product: {
-    list: (filters?: {
-      category_id?: number;
-      brand_id?: number;
-      shop_id?: number;
-      country_id?: number;
-      price_min?: number;
-      price_max?: number;
-      is_free_delivery?: boolean | 0 | 1;
-      on_sale?: boolean | 0 | 1;
-      in_stock_only?: boolean | 0 | 1;
-      attribute_values?: number[];
-      type?: "new" | "top_rated" | "most_popular";
-      search?: string;
-      sortField?: string;
-      sortOrder?: "asc" | "desc";
-      page?: number;
-      per_page?: number;
-    }) => {
-      const params = new URLSearchParams();
-      if (filters?.category_id)
-        params.append("category_id", String(filters.category_id));
-      if (filters?.brand_id) params.append("brand_id", String(filters.brand_id));
-      if (filters?.shop_id) params.append("shop_id", String(filters.shop_id));
-      if (filters?.country_id) params.append("country_id", String(filters.country_id));
-      if (filters?.price_min != null) params.append("price_min", String(filters.price_min));
-      if (filters?.price_max != null) params.append("price_max", String(filters.price_max));
-      if (filters?.is_free_delivery) params.append("is_free_delivery", "1");
-      if (filters?.on_sale) params.append("on_sale", "1");
-      if (filters?.in_stock_only) params.append("in_stock_only", "1");
-      if (filters?.attribute_values?.length) {
-        filters.attribute_values.forEach((v) =>
-          params.append("attribute_values[]", String(v))
-        );
-      }
-      if (filters?.type) params.append("type", filters.type);
-      if (filters?.search) params.append("search", filters.search.trim());
-      if (filters?.sortField) params.append("sortField", filters.sortField);
-      if (filters?.sortOrder) params.append("sortOrder", filters.sortOrder);
-      if (filters?.page) params.append("page", String(filters.page));
-      if (filters?.per_page) params.append("per_page", String(filters.per_page));
-      return `/user/products${
-        params.toString() ? `?${params.toString()}` : ""
-      }` as const;
-    },
-    details: (productId: number, lat: number, lng: number, shopId?: number) =>
-      `/user/products/${productId}?lat=${lat}&lng=${lng}${shopId ? `&shop_id=${shopId}` : ""}` as const,
-    listByCategory: (categoryId: number, page?: number) =>
-      `/user/products?category_id=${categoryId}${
-        page ? `&page=${page}` : ""
-      }` as const,
-    listByShop: (shopId: number, page?: number) =>
-      `/user/products?shop_id=${shopId}${page ? `&page=${page}` : ""}` as const,
-  },
+ /**
+ * Categories endpoints
+ */
+ categories: {
+ list: (filters?: {
+ name?: string;
+ parent_id?: number;
+ search?: string;
+ shop_id?: number;
+ type?:"new"|"most_popular"|"top_rated";
+ page?: number;
+ per_page?: number;
+ }) => {
+ const params = new URLSearchParams();
+ if (filters?.name) params.append("name", filters.name);
+ if (filters?.parent_id) params.append("parent_id", String(filters.parent_id));
+ if (filters?.search) params.append("search", filters.search.trim());
+ if (filters?.shop_id) params.append("shop_id", String(filters.shop_id));
+ if (filters?.type) params.append("type", filters.type);
+ if (filters?.page) params.append("page", String(filters.page));
+ if (filters?.per_page) params.append("per_page", String(filters.per_page));
+ return `/user/categories${params.toString() ? `?${params.toString()}` :""}` as const;
+ },
+ },
 
-  /**
-   * Shop endpoints
-   */
-  shop: {
-    list: (filters?: {
-      page?: number;
-      type?: "top_rated" | "offers" | "nearby";
-      lat?: number;
-      lng?: number;
-      governorate_id?: number;
-      category_id?: number;
-      search?: string;
-    }) => {
-      const params = new URLSearchParams();
-      if (filters?.page) params.append("page", String(filters.page));
-      if (filters?.type) params.append("type", filters.type);
-      if (filters?.lat != null) params.append("lat", String(filters.lat));
-      if (filters?.lng != null) params.append("lng", String(filters.lng));
-      if (filters?.governorate_id != null)
-        params.append("governorate_id", String(filters.governorate_id));
-      if (filters?.category_id != null)
-        params.append("category_id", String(filters.category_id));
-      if (filters?.search)
-        params.append("search", filters.search.trim());
-      return `/user/shops${
-        params.toString() ? `?${params.toString()}` : ""
-      }` as const;
-    },
-    details: (shopId: number) => `/user/shops/${shopId}` as const,
-  },
+ /**
+ * Product endpoints
+ */
+ product: {
+ list: (filters?: {
+ category_id?: number;
+ brand_id?: number;
+ shop_id?: number;
+ country_id?: number;
+ price_min?: number;
+ price_max?: number;
+ is_free_delivery?: boolean | 0 | 1;
+ on_sale?: boolean | 0 | 1;
+ in_stock_only?: boolean | 0 | 1;
+ attribute_values?: number[];
+ type?:"new"|"top_rated"|"most_popular";
+ search?: string;
+ sortField?: string;
+ sortOrder?:"asc"|"desc";
+ page?: number;
+ per_page?: number;
+ }) => {
+ const params = new URLSearchParams();
+ if (filters?.category_id)
+ params.append("category_id", String(filters.category_id));
+ if (filters?.brand_id) params.append("brand_id", String(filters.brand_id));
+ if (filters?.shop_id) params.append("shop_id", String(filters.shop_id));
+ if (filters?.country_id) params.append("country_id", String(filters.country_id));
+ if (filters?.price_min != null) params.append("price_min", String(filters.price_min));
+ if (filters?.price_max != null) params.append("price_max", String(filters.price_max));
+ if (filters?.is_free_delivery) params.append("is_free_delivery","1");
+ if (filters?.on_sale) params.append("on_sale","1");
+ if (filters?.in_stock_only) params.append("in_stock_only","1");
+ if (filters?.attribute_values?.length) {
+ filters.attribute_values.forEach((v) =>
+ params.append("attribute_values[]", String(v))
+ );
+ }
+ if (filters?.type) params.append("type", filters.type);
+ if (filters?.search) params.append("search", filters.search.trim());
+ if (filters?.sortField) params.append("sortField", filters.sortField);
+ if (filters?.sortOrder) params.append("sortOrder", filters.sortOrder);
+ if (filters?.page) params.append("page", String(filters.page));
+ if (filters?.per_page) params.append("per_page", String(filters.per_page));
+ return `/user/products${
+ params.toString() ? `?${params.toString()}` :""
+ }` as const;
+ },
+ details: (productId: number, lat: number, lng: number, shopId?: number) =>
+ `/user/products/${productId}?lat=${lat}&lng=${lng}${shopId ? `&shop_id=${shopId}` :""}` as const,
+ listByCategory: (categoryId: number, page?: number) =>
+ `/user/products?category_id=${categoryId}${
+ page ? `&page=${page}` :""
+ }` as const,
+ listByShop: (shopId: number, page?: number) =>
+ `/user/products?shop_id=${shopId}${page ? `&page=${page}` :""}` as const,
+ },
 
-  /**
-   * Ratings endpoints (product, recipe, shop, delivery, basket, etc.)
-   */
-  ratings: {
-    list: (
-      rateableId: number,
-      rateableType: string,
-      page?: number,
-      perPage?: number
-    ) => {
-      const params = new URLSearchParams();
-      params.set("rateable_id", String(rateableId));
-      params.set("rateable_type", rateableType);
-      if (page) params.set("page", String(page));
-      if (perPage) params.set("per_page", String(perPage));
-      return `/user/ratings?${params.toString()}` as const;
-    },
-    myRatings: (type?: string, rateableId?: number) => {
-      const params = new URLSearchParams();
-      if (type) params.set("type", type);
-      if (rateableId != null) params.set("rateable_id", String(rateableId));
-      const q = params.toString();
-      return `/user/ratings/my_ratings${q ? `?${q}` : ""}` as const;
-    },
-    canRate: (productId: number) =>
-      `/user/ratings/can-rate?product_id=${productId}` as const,
-    create: "/user/ratings" as const,
-    update: (id: number) => `/user/ratings/${id}` as const,
-    delete: (id: number) => `/user/ratings/${id}` as const,
-  },
+ /**
+ * Shop endpoints
+ */
+ shop: {
+ list: (filters?: {
+ page?: number;
+ type?:"top_rated"|"offers"|"nearby";
+ lat?: number;
+ lng?: number;
+ governorate_id?: number;
+ category_id?: number;
+ search?: string;
+ }) => {
+ const params = new URLSearchParams();
+ if (filters?.page) params.append("page", String(filters.page));
+ if (filters?.type) params.append("type", filters.type);
+ if (filters?.lat != null) params.append("lat", String(filters.lat));
+ if (filters?.lng != null) params.append("lng", String(filters.lng));
+ if (filters?.governorate_id != null)
+ params.append("governorate_id", String(filters.governorate_id));
+ if (filters?.category_id != null)
+ params.append("category_id", String(filters.category_id));
+ if (filters?.search)
+ params.append("search", filters.search.trim());
+ return `/user/shops${
+ params.toString() ? `?${params.toString()}` :""
+ }` as const;
+ },
+ details: (shopId: number) => `/user/shops/${shopId}` as const,
+ },
 
-  /**
-   * Recipe endpoints
-   */
-  recipes: {
-    list: (filters?: {
-      search?: string;
-      discount_min?: number;
-      discount_max?: number;
-      serves_min?: number;
-      serves_max?: number;
-      prepare_time_min?: number;
-      prepare_time_max?: number;
-      sortField?: "discount" | "rating" | "orders_count" | "created_at";
-      sortOrder?: "asc" | "desc";
-      page?: number;
-      per_page?: number;
-    }) => {
-      const params = new URLSearchParams();
-      if (filters?.search) params.append("search", filters.search.trim());
-      if (filters?.discount_min != null) params.append("discount_min", String(filters.discount_min));
-      if (filters?.discount_max != null) params.append("discount_max", String(filters.discount_max));
-      if (filters?.serves_min != null) params.append("serves_min", String(filters.serves_min));
-      if (filters?.serves_max != null) params.append("serves_max", String(filters.serves_max));
-      if (filters?.prepare_time_min != null) params.append("prepare_time_min", String(filters.prepare_time_min));
-      if (filters?.prepare_time_max != null) params.append("prepare_time_max", String(filters.prepare_time_max));
-      if (filters?.sortField) params.append("sortField", filters.sortField);
-      if (filters?.sortOrder) params.append("sortOrder", filters.sortOrder);
-      if (filters?.page) params.append("page", String(filters.page));
-      if (filters?.per_page) params.append("per_page", String(filters.per_page));
-      return `/user/recipes${params.toString() ? `?${params.toString()}` : ""}` as const;
-    },
-    details: (id: number | string) => `/user/recipes/${id}` as const,
-  },
+ /**
+ * Ratings endpoints (product, recipe, shop, delivery, basket, etc.)
+ */
+ ratings: {
+ list: (
+ rateableId: number,
+ rateableType: string,
+ page?: number,
+ perPage?: number
+ ) => {
+ const params = new URLSearchParams();
+ params.set("rateable_id", String(rateableId));
+ params.set("rateable_type", rateableType);
+ if (page) params.set("page", String(page));
+ if (perPage) params.set("per_page", String(perPage));
+ return `/user/ratings?${params.toString()}` as const;
+ },
+ myRatings: (type?: string, rateableId?: number) => {
+ const params = new URLSearchParams();
+ if (type) params.set("type", type);
+ if (rateableId != null) params.set("rateable_id", String(rateableId));
+ const q = params.toString();
+ return `/user/ratings/my_ratings${q ? `?${q}` :""}` as const;
+ },
+ canRate: (productId: number) =>
+ `/user/ratings/can-rate?product_id=${productId}` as const,
+ create:"/user/ratings"as const,
+ update: (id: number) => `/user/ratings/${id}` as const,
+ delete: (id: number) => `/user/ratings/${id}` as const,
+ },
 
-  /**
-   * Brand endpoints
-   */
-  brands: {
-    list: (filters?: {
-      search?: string;
-      type?: "new" | "top_rated" | "most_popular";
-      page?: number;
-      per_page?: number;
-    }) => {
-      const params = new URLSearchParams();
-      if (filters?.search) params.append("search", filters.search.trim());
-      if (filters?.type) params.append("type", filters.type);
-      if (filters?.page) params.append("page", String(filters.page));
-      if (filters?.per_page) params.append("per_page", String(filters.per_page));
-      return `/user/brands${
-        params.toString() ? `?${params.toString()}` : ""
-      }` as const;
-    },
-    details: (id: number | string) => `/user/brands/${id}` as const,
-    products: (brandId: number, page?: number) =>
-      `/user/products?brand_id=${brandId}${
-        page ? `&page=${page}` : ""
-      }` as const,
-  },
+ /**
+ * Recipe endpoints
+ */
+ recipes: {
+ list: (filters?: {
+ search?: string;
+ discount_min?: number;
+ discount_max?: number;
+ serves_min?: number;
+ serves_max?: number;
+ prepare_time_min?: number;
+ prepare_time_max?: number;
+ sort_by?:"newest"|"oldest"|"price_desc"|"price_asc";
+ page?: number;
+ per_page?: number;
+ }) => {
+ const params = new URLSearchParams();
+ if (filters?.search) params.append("search", filters.search.trim());
+ if (filters?.discount_min != null) params.append("discount_min", String(filters.discount_min));
+ if (filters?.discount_max != null) params.append("discount_max", String(filters.discount_max));
+ if (filters?.serves_min != null) params.append("serves_min", String(filters.serves_min));
+ if (filters?.serves_max != null) params.append("serves_max", String(filters.serves_max));
+ if (filters?.prepare_time_min != null) params.append("prepare_time_min", String(filters.prepare_time_min));
+ if (filters?.prepare_time_max != null) params.append("prepare_time_max", String(filters.prepare_time_max));
+ if (filters?.sort_by) params.append("sort_by", filters.sort_by);
+ if (filters?.page) params.append("page", String(filters.page));
+ if (filters?.per_page) params.append("per_page", String(filters.per_page));
+ return `/user/recipes${params.toString() ? `?${params.toString()}` :""}` as const;
+ },
+ details: (id: number | string) => `/user/recipes/${id}` as const,
+ },
 
-  /**
-   * Schedule endpoints (delivery frequency options)
-   */
-  schedules: {
-    list: (page?: number) =>
-      `/user/schedules${page ? `?page=${page}` : ""}` as const,
-  },
+ /**
+ * Brand endpoints
+ */
+ brands: {
+ list: (filters?: {
+ search?: string;
+ type?:"new"|"top_rated"|"most_popular";
+ page?: number;
+ per_page?: number;
+ }) => {
+ const params = new URLSearchParams();
+ if (filters?.search) params.append("search", filters.search.trim());
+ if (filters?.type) params.append("type", filters.type);
+ if (filters?.page) params.append("page", String(filters.page));
+ if (filters?.per_page) params.append("per_page", String(filters.per_page));
+ return `/user/brands${
+ params.toString() ? `?${params.toString()}` :""
+ }` as const;
+ },
+ details: (id: number | string) => `/user/brands/${id}` as const,
+ products: (brandId: number, page?: number) =>
+ `/user/products?brand_id=${brandId}${
+ page ? `&page=${page}` :""
+ }` as const,
+ },
 
-  /**
-   * Scheduled Basket endpoints (user account)
-   */
-  scheduledBaskets: {
-    list: (page?: number) =>
-      `/user/scheduled-baskets${page ? `?page=${page}` : ""}` as const,
-    details: (id: number | string) =>
-      `/user/scheduled-baskets/${id}` as const,
-    update: (id: number | string) =>
-      `/user/scheduled-baskets/${id}` as const,
-    delete: (id: number | string) =>
-      `/user/scheduled-baskets/${id}` as const,
-  },
+ /**
+ * Schedule endpoints (delivery frequency options)
+ */
+ schedules: {
+ list: (page?: number) =>
+ `/user/schedules${page ? `?page=${page}` :""}` as const,
+ },
 
-  /**
-   * Basket endpoints
-   */
-  baskets: {
-    list: (filters?: {
-      is_schedule?: 0 | 1;
-      category_id?: number;
-      price_min?: number;
-      price_max?: number;
-      rating_min?: number;
-      items_count_min?: number;
-      items_count_max?: number;
-      type?: "new" | "best_selling" | "top_rated";
-      page?: number;
-      per_page?: number;
-    }) => {
-      const params = new URLSearchParams();
-      if (filters?.is_schedule !== undefined)
-        params.append("is_schedule", String(filters.is_schedule));
-      if (filters?.category_id) params.append("category_id", String(filters.category_id));
-      if (filters?.price_min != null) params.append("price_min", String(filters.price_min));
-      if (filters?.price_max != null) params.append("price_max", String(filters.price_max));
-      if (filters?.rating_min != null) params.append("rating_min", String(filters.rating_min));
-      if (filters?.items_count_min != null) params.append("items_count_min", String(filters.items_count_min));
-      if (filters?.items_count_max != null) params.append("items_count_max", String(filters.items_count_max));
-      if (filters?.type) params.append("type", filters.type);
-      if (filters?.page) params.append("page", String(filters.page));
-      if (filters?.per_page) params.append("per_page", String(filters.per_page));
-      return `/user/baskets${
-        params.toString() ? `?${params.toString()}` : ""
-      }` as const;
-    },
-    details: (id: number | string) => `/user/baskets/${id}` as const,
-  },
+ /**
+ * Scheduled Basket endpoints (user account)
+ */
+ scheduledBaskets: {
+ list: (page?: number) =>
+ `/user/scheduled-baskets${page ? `?page=${page}` :""}` as const,
+ details: (id: number | string) =>
+ `/user/scheduled-baskets/${id}` as const,
+ update: (id: number | string) =>
+ `/user/scheduled-baskets/${id}` as const,
+ delete: (id: number | string) =>
+ `/user/scheduled-baskets/${id}` as const,
+ },
 
-  /**
-   * Order endpoints
-   */
-  orders: {
-    list: (filters?: { status?: string; page?: number; per_page?: number }) => {
-      const params = new URLSearchParams();
-      if (filters?.status) params.append("status", filters.status);
-      if (filters?.page) params.append("page", String(filters.page));
-      if (filters?.per_page) params.append("per_page", String(filters.per_page));
-      return `/user/orders${params.toString() ? `?${params.toString()}` : ""}` as const;
-    },
-    details: (id: number | string) => `/user/orders/${id}` as const,
-    preview: "/user/orders/preview" as const,
-    create: "/user/orders" as const,
-    couponPreview: "/user/orders/coupon-preview" as const,
-  },
+ /**
+ * Basket endpoints
+ */
+ baskets: {
+ list: (filters?: {
+ is_schedule?: 0 | 1;
+ category_id?: number;
+ price_min?: number;
+ price_max?: number;
+ rating_min?: number;
+ items_count_min?: number;
+ items_count_max?: number;
+ type?:"new"|"best_selling"|"top_rated";
+ page?: number;
+ per_page?: number;
+ }) => {
+ const params = new URLSearchParams();
+ if (filters?.is_schedule !== undefined)
+ params.append("is_schedule", String(filters.is_schedule));
+ if (filters?.category_id) params.append("category_id", String(filters.category_id));
+ if (filters?.price_min != null) params.append("price_min", String(filters.price_min));
+ if (filters?.price_max != null) params.append("price_max", String(filters.price_max));
+ if (filters?.rating_min != null) params.append("rating_min", String(filters.rating_min));
+ if (filters?.items_count_min != null) params.append("items_count_min", String(filters.items_count_min));
+ if (filters?.items_count_max != null) params.append("items_count_max", String(filters.items_count_max));
+ if (filters?.type) params.append("type", filters.type);
+ if (filters?.page) params.append("page", String(filters.page));
+ if (filters?.per_page) params.append("per_page", String(filters.per_page));
+ return `/user/baskets${
+ params.toString() ? `?${params.toString()}` :""
+ }` as const;
+ },
+ details: (id: number | string) => `/user/baskets/${id}` as const,
+ },
 
-  /**
-   * Favorites endpoints
-   */
-  favorites: {
-    list: (
-      type?: string,
-      params?: { shop_id?: number; category_id?: number; page?: number; per_page?: number }
-    ) => {
-      const p = new URLSearchParams();
-      if (type != null && type !== "") p.set("type", type);
-      if (params?.shop_id != null) p.append("shop_id", String(params.shop_id));
-      if (params?.category_id != null)
-        p.append("category_id", String(params.category_id));
-      if (params?.page != null) p.append("page", String(params.page));
-      if (params?.per_page != null) p.append("per_page", String(params.per_page));
-      const qs = p.toString();
-      return (qs ? `/user/favorites?${qs}` : "/user/favorites") as `${string}`;
-    },
-    toggle: "/user/favorites/toggle" as const,
-  },
+ /**
+ * Order endpoints
+ */
+ orders: {
+ list: (filters?: { status?: string; page?: number; per_page?: number }) => {
+ const params = new URLSearchParams();
+ if (filters?.status) params.append("status", filters.status);
+ if (filters?.page) params.append("page", String(filters.page));
+ if (filters?.per_page) params.append("per_page", String(filters.per_page));
+ return `/user/orders${params.toString() ? `?${params.toString()}` :""}` as const;
+ },
+ details: (id: number | string) => `/user/orders/${id}` as const,
+ preview:"/user/orders/preview"as const,
+ create:"/user/orders"as const,
+ couponPreview:"/user/orders/coupon-preview"as const,
+ cancel: (id: number | string) => `/user/orders/${id}/cancel` as const,
+ reorder: (id: number | string) => `/user/orders/reorder/${id}` as const,
+ active:"/user/orders/active"as const,
+ },
 
-  /**
-   * Complaints endpoints
-   */
-  complaints: {
-    list: (params?: {
-      status?: string;
-      order_id?: number;
-      from?: string;
-      to?: string;
-      page?: number;
-      per_page?: number;
-    }) => {
-      const p = new URLSearchParams();
-      if (params?.status) p.append("status", params.status);
-      if (params?.order_id != null) p.append("order_id", String(params.order_id));
-      if (params?.from) p.append("from", params.from);
-      if (params?.to) p.append("to", params.to);
-      if (params?.page != null) p.append("page", String(params.page));
-      if (params?.per_page != null) p.append("per_page", String(params.per_page));
-      return `/user/complaints${p.toString() ? `?${p.toString()}` : ""}` as const;
-    },
-    store: "/user/complaints/store" as const,
-    orders: "/user/complaints/orders" as const,
-  },
+ /**
+ * Active benefits (points exchanges + subscription benefits)
+ */
+ activeBenefits: {
+ get:"/user/active-benefits"as const,
+ },
 
-  /**
-   * Packages & subscription endpoints
-   */
-  packages: {
-    list: "/user/packages" as const,
-    mySubscription: "/user/my-subscription" as const,
-    subscribe: "/user/subscribe" as const,
-    renew: "/user/renew" as const,
-    benefits: "/user/subscription/benefits" as const,
-  },
+ /**
+ * Payment methods
+ */
+ paymentMethods: {
+ list:"/user/payment-methods"as const,
+ },
 
-  /**
-   * Currencies (list, user's currency, update)
-   */
-  currencies: {
-    list: "/user/currencies" as const,
-    myCurrency: "/user/currencies/my-currency" as const,
-    updateCurrency: "/user/currencies/update-currency" as const,
-  },
+ /**
+ * Favorites endpoints
+ */
+ favorites: {
+ list: (
+ type?: string,
+ params?: { shop_id?: number; category_id?: number; page?: number; per_page?: number }
+ ) => {
+ const p = new URLSearchParams();
+ if (type != null && type !=="") p.set("type", type);
+ if (params?.shop_id != null) p.append("shop_id", String(params.shop_id));
+ if (params?.category_id != null)
+ p.append("category_id", String(params.category_id));
+ if (params?.page != null) p.append("page", String(params.page));
+ if (params?.per_page != null) p.append("per_page", String(params.per_page));
+ const qs = p.toString();
+ return (qs ? `/user/favorites?${qs}` :"/user/favorites") as `${string}`;
+ },
+ toggle:"/user/favorites/toggle"as const,
+ },
 
-  /**
-   * My Baskets (user's subscription/custom/scheduled baskets)
-   */
-  myBaskets: {
-    list: (type?: "subscription" | "custom" | "user-schedule") => {
-      if (!type) return "/user/my-baskets" as const;
-      return `/user/my-baskets?type=${encodeURIComponent(type)}` as const;
-    },
-  },
+ /**
+ * Complaints endpoints
+ */
+ complaints: {
+ list: (params?: {
+ status?: string;
+ order_id?: number;
+ from?: string;
+ to?: string;
+ page?: number;
+ per_page?: number;
+ }) => {
+ const p = new URLSearchParams();
+ if (params?.status) p.append("status", params.status);
+ if (params?.order_id != null) p.append("order_id", String(params.order_id));
+ if (params?.from) p.append("from", params.from);
+ if (params?.to) p.append("to", params.to);
+ if (params?.page != null) p.append("page", String(params.page));
+ if (params?.per_page != null) p.append("per_page", String(params.per_page));
+ return `/user/complaints${p.toString() ? `?${p.toString()}` :""}` as const;
+ },
+ store:"/user/complaints/store"as const,
+ orders:"/user/complaints/orders"as const,
+ },
 
-  /**
-   * Legal documents (privacy policy, terms & conditions)
-   */
-  legalDocuments: {
-    privacyPolicy: "/user/legal-documents/privacy_policy" as const,
-    termsConditions: "/user/legal-documents/terms_conditions" as const,
-    marketerTermsConditions: "/user/legal-documents/marketer_terms_conditions" as const,
-  },
+ /**
+ * Packages & subscription endpoints
+ */
+ packages: {
+ list:"/user/packages"as const,
+ mySubscription:"/user/my-subscription"as const,
+ subscribe:"/user/subscribe"as const,
+ renew:"/user/renew"as const,
+ benefits:"/user/subscription/benefits"as const,
+ },
 
-  /**
-   * Points & rewards endpoints
-   */
-  points: {
-    summary: "/user/points/summary" as const,
-    transactions: (page?: number) =>
-      `/user/points/transactions${page ? `?page=${page}` : ""}` as const,
-    exchangeOptions: "/user/points/exchange/options" as const,
-  },
+ /**
+ * Currencies (list, user's currency, update)
+ */
+ currencies: {
+ list:"/user/currencies"as const,
+ myCurrency:"/user/currencies/my-currency"as const,
+ updateCurrency:"/user/currencies/update-currency"as const,
+ },
 
-  /**
-   * Marketer / Affiliate endpoints
-   */
-  marketer: {
-    request: "/user/auth/markter-request" as const,
-    statistics: "/user/markter/statistics" as const,
-    profile: "/user/markter/profile" as const,
-    orders: (params?: { per_page?: number; from?: string; to?: string; coupon_code?: string; page?: number }) => {
-      const p = new URLSearchParams();
-      if (params?.per_page) p.append("per_page", String(params.per_page));
-      if (params?.from) p.append("from", params.from);
-      if (params?.to) p.append("to", params.to);
-      if (params?.coupon_code) p.append("coupon_code", params.coupon_code);
-      if (params?.page) p.append("page", String(params.page));
-      return `/user/markter/orders${p.toString() ? `?${p.toString()}` : ""}` as const;
-    },
-    transactions: (params?: { per_page?: number; type?: string; from?: string; to?: string; page?: number }) => {
-      const p = new URLSearchParams();
-      if (params?.per_page) p.append("per_page", String(params.per_page));
-      if (params?.type) p.append("type", params.type);
-      if (params?.from) p.append("from", params.from);
-      if (params?.to) p.append("to", params.to);
-      if (params?.page) p.append("page", String(params.page));
-      return `/user/markter/transactions${p.toString() ? `?${p.toString()}` : ""}` as const;
-    },
-    withdrawRequest: "/user/markter/withdraw-request" as const,
-    withdrawRequests: (params?: { per_page?: number; status?: string; page?: number }) => {
-      const p = new URLSearchParams();
-      if (params?.per_page) p.append("per_page", String(params.per_page));
-      if (params?.status) p.append("status", params.status);
-      if (params?.page) p.append("page", String(params.page));
-      return `/user/markter/withdraw-requests${p.toString() ? `?${p.toString()}` : ""}` as const;
-    },
-    monthlyOrders: (year?: number) =>
-      `/user/markter/monthly-orders${year ? `?year=${year}` : ""}` as const,
-  },
+ /**
+ * My Baskets (user's subscription/custom/scheduled baskets)
+ */
+ myBaskets: {
+ list: (type?:"subscription"|"custom"|"user-schedule") => {
+ if (!type) return"/user/my-baskets"as const;
+ return `/user/my-baskets?type=${encodeURIComponent(type)}` as const;
+ },
+ },
 
-  /**
-   * Profile endpoints
-   */
-  profile: {
-    get: "/user/auth/profile" as const,
-    update: "/user/auth/profile/update" as const,
-    updatePassword: "/user/auth/profile/update_password" as const,
-    updateEmail: "/user/auth/profile/update_email" as const,
-    updatePhone: "/user/auth/profile/update_phone" as const,
-    verify: "/user/auth/profile/verify" as const,
-  },
+ /**
+ * Legal documents (privacy policy, terms & conditions)
+ */
+ legalDocuments: {
+ privacyPolicy:"/user/legal-documents/privacy_policy"as const,
+ termsConditions:"/user/legal-documents/terms_conditions"as const,
+ marketerTermsConditions:"/user/legal-documents/marketer_terms_conditions"as const,
+ },
+
+ /**
+ * Points & rewards endpoints
+ */
+ points: {
+ activePoints:"/user/active-points"as const,
+ summary:"/user/points/summary"as const,
+ transactions: (page?: number) =>
+ `/user/points/transactions${page ? `?page=${page}` :""}` as const,
+ exchangeOptions:"/user/points/exchange/options"as const,
+ exchangeCoupon:"/user/points/exchange/coupon"as const,
+ exchangeGift:"/user/points/exchange/gift"as const,
+ exchangeHistory: (page?: number) =>
+ `/user/points/exchange/history${page ? `?page=${page}` :""}` as const,
+ },
+
+ userGifts: {
+ setAddress: (id: number | string) => `/user/user-gifts/${id}/address` as const,
+ },
+
+ /**
+ * Marketer / Affiliate endpoints
+ */
+ marketer: {
+ request:"/user/auth/markter-request"as const,
+ statistics:"/user/markter/statistics"as const,
+ profile:"/user/markter/profile"as const,
+ orders: (params?: { per_page?: number; from?: string; to?: string; coupon_code?: string; page?: number }) => {
+ const p = new URLSearchParams();
+ if (params?.per_page) p.append("per_page", String(params.per_page));
+ if (params?.from) p.append("from", params.from);
+ if (params?.to) p.append("to", params.to);
+ if (params?.coupon_code) p.append("coupon_code", params.coupon_code);
+ if (params?.page) p.append("page", String(params.page));
+ return `/user/markter/orders${p.toString() ? `?${p.toString()}` :""}` as const;
+ },
+ transactions: (params?: { per_page?: number; type?: string; from?: string; to?: string; page?: number }) => {
+ const p = new URLSearchParams();
+ if (params?.per_page) p.append("per_page", String(params.per_page));
+ if (params?.type) p.append("type", params.type);
+ if (params?.from) p.append("from", params.from);
+ if (params?.to) p.append("to", params.to);
+ if (params?.page) p.append("page", String(params.page));
+ return `/user/markter/transactions${p.toString() ? `?${p.toString()}` :""}` as const;
+ },
+ withdrawRequest:"/user/markter/withdraw-request"as const,
+ withdrawRequests: (params?: { per_page?: number; status?: string; page?: number }) => {
+ const p = new URLSearchParams();
+ if (params?.per_page) p.append("per_page", String(params.per_page));
+ if (params?.status) p.append("status", params.status);
+ if (params?.page) p.append("page", String(params.page));
+ return `/user/markter/withdraw-requests${p.toString() ? `?${p.toString()}` :""}` as const;
+ },
+ monthlyOrders: (year?: number) =>
+ `/user/markter/monthly-orders${year ? `?year=${year}` :""}` as const,
+ },
+
+ /**
+ * Profile endpoints
+ */
+ profile: {
+ get:"/user/auth/profile"as const,
+ update:"/user/auth/profile/update"as const,
+ updatePassword:"/user/auth/profile/update_password"as const,
+ updateEmail:"/user/auth/profile/update_email"as const,
+ updatePhone:"/user/auth/profile/update_phone"as const,
+ verify:"/user/auth/profile/verify"as const,
+ },
 } as const;

@@ -5,30 +5,30 @@ import AuthGuard from "@/app/routes/guards/AuthGuard";
 import AffiliateWelcomePage from "@/features/affiliate/view/AffiliateWelcomePage";
 
 const clientPage = {
-  path: "/",
-  children: [
-    {
-      index: true,
-      element: <Navigate to="/home" replace />,
-    },
-    {
-      path: "home",
-      element: <Home />,
-    },
-    {
-      path: "affiliate-welcome",
-      element: (
-        <AuthGuard>
-          <AffiliateWelcomePage />
-        </AuthGuard>
-      ),
-    },
-  ],
+    path: "/",
+    children: [
+        {
+            index: true,
+            element: <Navigate to="/home" replace />,
+        },
+        {
+            path: "home",
+            element: <Home />,
+        },
+        {
+            path: "affiliate-welcome",
+            element: (
+                <AuthGuard>
+                    <AffiliateWelcomePage />
+                </AuthGuard>
+            ),
+        },
+    ],
 };
 
 export const HomeRoutes: any[] = [
-  {
-    element: <AppLayout />,
-    children: [clientPage],
-  },
+    {
+        element: <AppLayout />,
+        children: [clientPage],
+    },
 ];

@@ -1,6 +1,6 @@
 export {
-  sliderRegistry,
-  getSliderVariant,
-  type SliderVariantKey,
-} from "./sliderRegistry";
+ sliderRegistry,
+ getSliderVariant,
+ type SliderVariantKey,
+} from"./sliderRegistry";
 

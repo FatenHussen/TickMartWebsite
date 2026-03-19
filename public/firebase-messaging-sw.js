@@ -17,7 +17,7 @@ messaging.onBackgroundMessage((payload) => {
   const title = payload.notification?.title ?? "Tikmool";
   const options = {
     body: payload.notification?.body ?? "",
-    icon: "/images/shared/logo.png",
+    icon: "/images/shared/logo.jpg",
   };
   self.registration.showNotification(title, options);
 });

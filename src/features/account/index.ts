@@ -1,11 +1,11 @@
 // Components
-export * from "./components";
+export * from"./components";
 
 // Views
-export * from "./view";
+export * from"./view";
 
 // Types
-export * from "./types";
+export * from"./types";
 
 // Layout
-export { default as AccountLayout } from "./layout/AccountLayout";
+export { default as AccountLayout } from"./layout/AccountLayout";

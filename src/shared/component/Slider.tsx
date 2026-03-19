@@ -1,2 +1,2 @@
 // Re-export for backward compatibility
-export { default } from "./slider/core/Slider";
+export { default } from"./slider/core/Slider";

@@ -1,6 +1,6 @@
-import { Navigate, Outlet } from "react-router-dom";
-import { useAuthStore } from "@/store/auth";
-import { paths } from "../path/paths";
+import { Navigate, Outlet } from"react-router-dom";
+import { useAuthStore } from"@/store/auth";
+import { paths } from"../path/paths";
 
 /**
  * GuestGuard - Protects auth routes from authenticated users
@@ -8,11 +8,11 @@ import { paths } from "../path/paths";
  * If user is not authenticated, render the children (auth pages)
  */
 export default function GuestGuard() {
-  const { authenticated } = useAuthStore();
+ const { authenticated } = useAuthStore();
 
-  if (authenticated) {
-    return <Navigate to={paths.affiliateWelcome} replace />;
-  }
+ if (authenticated) {
+ return <Navigate to={paths.affiliateWelcome} replace />;
+ }
 
-  return <Outlet />;
+ return <Outlet />;
 }

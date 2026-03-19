@@ -1,129 +1,125 @@
-import React from "react";
-import { HiShoppingCart, HiClipboardList, HiCheckCircle } from "react-icons/hi";
-import { useLanguage } from "@/context/LanguageContext";
+import React from"react";
+import { HiShoppingCart, HiClipboardList, HiCheckCircle, HiCreditCard } from"react-icons/hi";
+import { useLanguage } from"@/context/LanguageContext";
 
-export type ProgressStepStatus = "completed" | "active" | "upcoming";
+export type ProgressStepStatus ="completed"|"active"|"upcoming";
 
 export type ProgressStep = {
-  id: string;
-  label: string;
-  icon?: React.ReactNode;
-  status?: ProgressStepStatus;
+ id: string;
+ label: string;
+ icon?: React.ReactNode;
+ status?: ProgressStepStatus;
 };
 
 type ProgressIndicatorProps = {
-  steps: ProgressStep[];
-  currentStep?: number | string; // Can be index or step id
-  className?: string;
+ steps: ProgressStep[];
+ currentStep?: number | string;
+ className?: string;
 };
 
-const defaultIcons = {
-  cart: HiShoppingCart,
-  details: HiClipboardList,
-  review: HiCheckCircle,
+const defaultIcons: Record<string, React.ComponentType<{ className?: string }>> = {
+ cart: HiShoppingCart,
+ checkout: HiCreditCard,
+ details: HiClipboardList,
+ review: HiCheckCircle,
 };
 
 export default function ProgressIndicator({
-  steps,
-  currentStep = 0,
-  className = "",
+ steps,
+ currentStep = 0,
+ className ="",
 }: ProgressIndicatorProps) {
-  const { isRTL } = useLanguage();
+ const { isRTL } = useLanguage();
 
-  // Determine current step index
-  const currentIndex =
-    typeof currentStep === "number"
-      ? currentStep
-      : steps.findIndex((step) => step.id === currentStep);
+ const currentIndex =
+ typeof currentStep ==="number"
+ ? currentStep
+ : steps.findIndex((step) => step.id === currentStep);
 
-  // Get step status
-  const getStepStatus = (index: number): ProgressStepStatus => {
-    if (index < currentIndex) return "completed";
-    if (index === currentIndex) return "active";
-    return "upcoming";
-  };
+ const getStepStatus = (index: number): ProgressStepStatus => {
+ if (index < currentIndex) return"completed";
+ if (index === currentIndex) return"active";
+ return"upcoming";
+ };
 
-  // Render step icon
-  const renderStepIcon = (step: ProgressStep, status: ProgressStepStatus) => {
-    if (step.icon) {
-      return step.icon;
-    }
+ const renderStepIcon = (step: ProgressStep, status: ProgressStepStatus) => {
+ if (step.icon) return step.icon;
+ const IconComponent = defaultIcons[step.id] || HiCheckCircle;
+ const isCheckoutActive = step.id ==="checkout"&& status ==="active";
+ return (
+ <IconComponent
+ className={`w-5 h-5 ${
+ isCheckoutActive
+ ?"text-custom-primary"
+ : status ==="completed"|| status ==="active"
+ ?"text-white"
+ :"text-gray-light"
+ }`}
+ />
+ );
+ };
 
-    // Default icon rendering based on status
-    const IconComponent = defaultIcons[step.id as keyof typeof defaultIcons] || HiCheckCircle;
+ return (
+ <div className={`w-full ${className}`} dir={isRTL ?"rtl":"ltr"}>
+ <div className="flex items-start">
+ {steps.map((step, index) => {
+ const status = getStepStatus(index);
+ const isCompleted = status ==="completed";
+ const isActive = status ==="active";
 
-    return (
-      <IconComponent
-        className={`w-5 h-5 ${
-          status === "completed" || status === "active"
-            ? "text-white"
-            : "text-gray-light"
-        }`}
-      />
-    );
-  };
+ return (
+ <React.Fragment key={step.id}>
+ <div className="flex flex-col items-center shrink-0">
+ <div
+ className={`w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all ${
+ isActive
+ ?"border-transparent"
+ : isCompleted
+ ?"bg-primary-light border-primary-light"
+ :"bg-custom-card border-gray-light"
+ }`}
+ style={
+ isActive
+ ? (steps[currentIndex]?.id ==="checkout"
+ ? {
+ background:"linear-gradient(180deg, #FFD700 0%, #F59E0B 100%)",
+ boxShadow:
+"0 4px 6px -4px rgba(245, 158, 11, 0.3), 0 10px 15px -3px rgba(245, 158, 11, 0.2)",
+ }
+ : {
+ background:"linear-gradient(180deg, #4CDAF6 0%, #2C8090 100%)",
+ boxShadow:
+"0 4px 6px -4px #BFDBFE, 0 10px 15px -3px #BFDBFE",
+ })
+ : undefined
+ }
+ >
+ {renderStepIcon(step, status)}
+ </div>
+ <span
+ className={`mt-2 text-sm font-medium whitespace-nowrap ${
+ step.id ==="checkout"&& isActive
+ ?"text-custom-primary font-bold"
+ : isCompleted || isActive
+ ?"text-primary-light"
+ :"text-gray-light"
+ }`}
+ >
+ {step.label}
+ </span>
+ </div>
 
-  return (
-    <div className={`w-full ${className}`} dir={isRTL ? "rtl" : "ltr"}>
-      <div className="flex items-center justify-between relative">
-        {/* Background connecting line */}
-        <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gray-bold -translate-y-1/2 z-0" />
-
-        {steps.map((step, index) => {
-          const status = getStepStatus(index);
-          const isCompleted = status === "completed";
-          const isActive = status === "active";
-
-          // Determine line color - yellow for completed steps, gray for upcoming
-          const lineColor =
-            index < steps.length - 1
-              ? index < currentIndex
-                ? "bg-secondary"
-                : "bg-gray-bold"
-              : "";
-
-          return (
-            <div key={step.id} className="relative z-10 flex flex-col items-center flex-1">
-              {/* Step Circle */}
-              <div
-                className={`w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all ${
-                  isCompleted || isActive
-                    ? "bg-primary-light border-primary-light"
-                    : "bg-white border-gray-light"
-                }`}
-              >
-                {renderStepIcon(step, status)}
-              </div>
-
-              {/* Step Label */}
-              <div className="mt-2 text-center">
-                <span
-                  className={`text-sm font-medium ${
-                    isCompleted || isActive
-                      ? "text-primary-light"
-                      : "text-gray-light"
-                  }`}
-                >
-                  {step.label}
-                </span>
-              </div>
-
-              {/* Connecting line to next step */}
-              {index < steps.length - 1 && (
-                <div
-                  className={`absolute top-6 ${
-                    isRTL ? "right-full" : "left-full"
-                  } w-full h-0.5 ${lineColor} z-0`}
-                  style={{
-                    width: "calc(100% - 3rem)",
-                    [isRTL ? "marginRight" : "marginLeft"]: "1.5rem",
-                  }}
-                />
-              )}
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
+ {index < steps.length - 1 && (
+ <div
+ className={`flex-1 h-0.5 mt-6 ${
+ index <= currentIndex ?"bg-secondary":"bg-gray-bold"
+ }`}
+ />
+ )}
+ </React.Fragment>
+ );
+ })}
+ </div>
+ </div>
+ );
 }

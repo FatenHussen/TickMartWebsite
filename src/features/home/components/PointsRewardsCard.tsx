@@ -1,14 +1,28 @@
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
+import { useLanguage } from "@/context/LanguageContext";
 import { HiGift, HiPercentBadge } from "react-icons/hi2";
 import { FaCoins } from "react-icons/fa6";
-import Button from "@/shared/ui/Button";
+import { paths } from "@/app/routes/path/paths";
 
-export default function PointsRewardsCard() {
+interface PointsRewardsCardProps {
+  points: number;
+  rewardsCount: number;
+  subscriptionName: string | null;
+}
+
+export default function PointsRewardsCard({
+  points,
+  rewardsCount,
+  subscriptionName,
+}: PointsRewardsCardProps) {
   const { t } = useTranslation();
+  const { isRTL } = useLanguage();
 
   return (
     <div
       className="rounded-xl p-4 sm:p-6 shadow-sm"
+      dir={isRTL ? "rtl" : "ltr"}
       style={{
         backgroundColor: "#fef9e7", // Light yellow background like image
       }}
@@ -30,7 +44,7 @@ export default function PointsRewardsCard() {
                 {t("home.yourPoints")}
               </p>
               <p className="text-base sm:text-lg font-bold" style={{ color: "#1a1a1a" }}>
-                2,450
+                {points.toLocaleString()}
               </p>
             </div>
           </div>
@@ -50,7 +64,7 @@ export default function PointsRewardsCard() {
                 {t("home.rewards")}
               </p>
               <p className="text-base sm:text-lg font-bold" style={{ color: "#1a1a1a" }}>
-                5 {t("home.available")}
+                {rewardsCount} {t("home.available")}
               </p>
             </div>
           </div>
@@ -73,24 +87,23 @@ export default function PointsRewardsCard() {
                 {t("home.activeSubscription")}
               </p>
               <p className="text-base sm:text-lg font-bold truncate" style={{ color: "#1a1a1a" }}>
-                Premium plus
+                {subscriptionName ?? "—"}
               </p>
             </div>
           </div>
         </div>
 
         {/* View Details Button */}
-        <Button
-          variant="primary"
-          size="sm"
-          className="w-full sm:w-auto whitespace-nowrap shrink-0"
+        <Link
+          to={paths.account.pointsRewards}
+          className="inline-flex items-center justify-center gap-2 font-semibold rounded-lg px-5 py-2 text-sm w-full sm:w-auto whitespace-nowrap shrink-0 focus:outline-none focus:ring-2 focus:ring-offset-2"
           style={{
             backgroundColor: "var(--color-primary)",
             color: "white",
           }}
         >
           {t("home.viewDetails")}
-        </Button>
+        </Link>
       </div>
     </div>
   );

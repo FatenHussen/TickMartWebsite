@@ -1,1 +1,1 @@
-export { default as CategoriesLayout } from "./CategoriesLayout";
+export { default as CategoriesLayout } from"./CategoriesLayout";

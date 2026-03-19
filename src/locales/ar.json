@@ -40,6 +40,14 @@
     "failedToSubmitComplaint": "فشل إرسال الشكوى",
     "previous": "السابق"
   },
+  "search": {
+    "allTypes": "الكل",
+    "products": "منتجات",
+    "brands": "ماركات",
+    "shops": "متاجر",
+    "recipes": "وصفات",
+    "noResults": "لا توجد نتائج لـ"
+  },
   "navbar": {
     "deliveringTo": "التوصيل إلى",
     "addAddress": "إضافة عنوان",
@@ -215,6 +223,7 @@
     "driverOnWay": "السائق في الطريق",
     "delivered": "تم التوصيل",
     "orderDelivered": "تم توصيل الطلب",
+    "confirmationCode": "رمز التأكيد",
     "nearbyStores": "المتاجر القريبة",
     "suggestedForYou": "مقترح لك",
     "basedOnSearches": "بناءً على بحثك",
@@ -279,7 +288,8 @@
     "typeTopRated": "الأعلى تقييماً",
     "sortRecommended": "موصى به",
     "noProducts": "لم يتم العثور على منتجات في هذه الفئة",
-    "categoriesTitle": "الفئات"
+    "categoriesTitle": "الفئات",
+    "showAllCategories": "عرض جميع الفئات"
   },
   "product": {
     "color": "اللون",
@@ -366,7 +376,7 @@
     "price": "السعر",
     "itemsTotal": "إجمالي العناصر",
     "items": "عناصر",
-    "subtotal": "المجموع الفرعي",
+    "subtotal": "المجموع الكلي",
     "deliveryFees": "رسوم التوصيل",
     "storeDiscounts": "خصومات المتجر",
     "couponDiscount": "خصم الكوبون",
@@ -381,9 +391,13 @@
     "continueShopping": "متابعة التسوق",
     "product": "المنتج",
     "quantity": "الكمية",
-    "subtotal": "المجموع الفرعي",
+    "subtotal": "المجموع الكلي",
     "updateCart": "تحديث السلة",
     "returnToShop": "العودة إلى المتجر",
+    "clearCart": "حذف الكل",
+    "clearCartTitle": "تفريغ السلة؟",
+    "clearCartConfirm": "هل أنت متأكد أنك تريد إزالة جميع العناصر من السلة؟",
+    "cartCleared": "تم تفريغ السلة",
     "couponCode": "رمز الكوبون",
     "enterCode": "أدخل الرمز",
     "applyCoupon": "تطبيق الكوبون",
@@ -420,14 +434,22 @@
     "categoryRequired": "يجب أن يكون للمنتجات تصنيف",
     "noValidItems": "لا توجد عناصر صالحة للجدولة",
     "saveSchedule": "حفظ الجدولة",
-    "saving": "جاري الحفظ..."
+    "saving": "جاري الحفظ...",
+    "store": "المتجر",
+    "variant": "الفارينت",
+    "free": "مجاني",
+    "freeItem": "منتج مجاني",
+    "freeFromPromotion": "مجاني من",
+    "freeItemsAdded": "ستتم إضافة المنتجات المجانية إلى طلبك:",
+    "promotion": "العرض",
+    "excludedFromCoupon": "لا يشمل الكوبون"
   },
   "trackOrder": {
     "title": "تتبع طلبك",
     "orderSummary": "ملخص الطلب",
     "store": "المتجر",
     "items": "العناصر",
-    "itemsSubtotal": "المجموع الفرعي للعناصر",
+    "itemsSubtotal": "المجموع الكلي للعناصر",
     "cashOnDelivery": "الدفع عند الاستلام",
     "driverDetails": "تفاصيل السائق",
     "driverName": "اسم السائق",
@@ -452,11 +474,14 @@
   },
   "orders": {
     "order": "الطلب",
+    "orderDetails": "تفاصيل الطلب",
+    "orderNotFound": "الطلب غير موجود.",
+    "trackOrderOnMap": "تتبع الطلب على الخريطة",
+    "trackOrder": "تتبع الطلب",
     "myOrders": "طلباتي",
     "myOrdersDescription": "راجع وتتبع وأعد طلب طلباتك السابقة.",
     "searchPlaceholder": "ابحث برقم الطلب أو المتجر أو المنتج",
     "noOrdersFound": "لم يتم العثور على طلبات.",
-    "orderDetails": "تفاصيل الطلب",
     "delivered": "تم التوصيل",
     "out_for_delivery": "قيد التوصيل",
     "preparing": "قيد التحضير",
@@ -504,7 +529,8 @@
     "points": "نقطة!",
     "pointsDescription": "يمكنك استخدام نقاطك لاحقاً للحصول على خصومات وعروض خاصة.",
     "backToHome": "العودة للصفحة الرئيسية",
-    "trackOrder": "تتبع الطلب"
+    "trackOrder": "تتبع الطلب",
+    "detailsOrder": "تفاصيل الطلب"
   },
   "logoutPopup": {
     "title": "تسجيل الخروج من حسابك؟",
@@ -943,6 +969,8 @@
     "save": "وفر",
     "sold": "مباع",
     "freeDelivery": "توصيل مجاني",
+    "Featured": "مميز",
+    "Sale": "تخفيض",
     "buttonPrimary": "عرض خاص اليوم",
     "buttonSecondary": "اطلب الآن"
   },
@@ -957,7 +985,7 @@
     "shoppingListFor": "قائمة التسوق لـ",
     "getIngredientsDesc": "احصل على جميع المكونات اللازمة لهذه الوصفة بنقرة واحدة",
     "viewFullList": "عرض القائمة الكاملة",
-    "itemsSubtotal": "المجموع الفرعي للعناصر",
+    "itemsSubtotal": "المجموع الكلي للعناصر",
     "recipeDiscount": "خصم الوصفة",
     "total": "المجموع",
     "pricesMayChange": "* قد يتغير السعر حسب التوفر",
@@ -983,7 +1011,16 @@
     "rateRecipe": "قيم هذه الوصفة",
     "reviews": "تقييمات الوصفة",
     "orders": "طلب",
-    "youSaved": "وفرت"
+    "youSaved": "وفرت",
+    "sortDefault": "الافتراضي",
+    "sortNewest": "الأحدث أولاً",
+    "sortOldest": "الأقدم أولاً",
+    "sortPriceDesc": "السعر: من الأعلى للأقل",
+    "sortPriceAsc": "السعر: من الأقل للأعلى",
+    "searchPlaceholder": "ابحث في الوصفات...",
+    "discountRange": "نسبة الخصم %",
+    "discountMin": "الحد الأدنى",
+    "discountMax": "الحد الأقصى"
   },
   "helpCenter": {
     "title": "مركز المساعدة",
@@ -1116,7 +1153,11 @@
       "transactions": "المعاملات",
       "transactionType": "النوع",
       "orderId": "الطلب",
-      "noTransactions": "لا توجد معاملات بعد"
+      "noTransactions": "لا توجد معاملات بعد",
+      "topProducts": "أفضل المنتجات",
+      "product": "المنتج",
+      "quantitySold": "الكمية المباعة",
+      "salesAmount": "مبلغ المبيعات"
     }
   },
   "vendor": {
@@ -1242,7 +1283,7 @@
     "oneTimeOnly": "مرة واحدة فقط",
     "oneTimeOnlyDescription": "احصل على هذه السلة مرة واحدة فقط",
     "orderSummary": "ملخص الطلب",
-    "subtotal": "المجموع الفرعي",
+    "subtotal": "المجموع الكلي",
     "scheduleDiscount": "خصم الجدولة",
     "deliveryFee": "رسوم التوصيل",
     "total": "الإجمالي",

@@ -35,6 +35,7 @@ body {
   --color-bg-hover: #e4f0fb;
   --color-bg-active: #e0f7fa;
   --color-bg-light: #f8fafc;
+  --color-bg-card: #ffffff;
 
   /* Text Colors */
   --color-text-primary: #2a2a2a;
@@ -72,6 +73,9 @@ body {
       --color-bg-hover: #334155;
       --color-bg-active: #1e3a5f;
       --color-bg-light: #334155;
+      --color-bg-card: #1e293b;
+      --color-bg-light-1: #E4F0FB;
+      --color-bg-light-2: #E5F3FF;
 
       /* Text Colors */
       --color-text-primary: #f5f5f5;
@@ -162,6 +166,10 @@ body {
 
   .bg-custom-light {
     background-color: var(--color-bg-light);
+  }
+
+  .bg-custom-card {
+    background-color: var(--color-bg-card);
   }
 
   /* Text Colors */
@@ -263,8 +271,8 @@ body {
   .bg-cart-items {
     background: linear-gradient(
       180deg,
-      var(--color-blue-off) 0%,
-      var(--color-blue-very-light) 100%
+      var(--color-bg-light-1) 100%,
+      var(--color-bg-light-2) 100%
     );
     border: 1px solid var(--color-blue-border);
     /* Drop shadows matching design: X 0, Y 4, Blur 6, Spread -4 and X 0, Y 10, Blur 15, Spread -3 */
@@ -275,7 +283,7 @@ body {
 }
 
 /* AnimatedButton - Creative Animation */
-.ab-track {
+.ab-track { 
   display: flex;
   flex-direction: column;
   will-change: transform;
@@ -453,4 +461,20 @@ body {
 /* Account Sidebar Gradient Background */
 .bg-account-sidebar {
   background: linear-gradient(180deg, #4CDAF6 0%, #2C8090 100%);
+}
+
+/* Equal Height Cards - Swiper Slides */
+.swiper-slide {
+  display: flex;
+  height: auto;
+}
+
+.swiper-slide > * {
+  width: 100%;
+  height: 100%;
+}
+
+/* Ensure swiper wrapper maintains equal height */
+.swiper-wrapper {
+  align-items: stretch;
 }

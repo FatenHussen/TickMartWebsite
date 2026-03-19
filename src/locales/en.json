@@ -40,6 +40,14 @@
     "failedToSubmitComplaint": "Failed to submit complaint",
     "previous": "Previous"
   },
+  "search": {
+    "allTypes": "All",
+    "products": "Products",
+    "brands": "Brands",
+    "shops": "Shops",
+    "recipes": "Recipes",
+    "noResults": "No results for"
+  },
   "navbar": {
     "deliveringTo": "Delivering to",
     "addAddress": "Add address",
@@ -215,6 +223,7 @@
     "driverOnWay": "Driver is on the way",
     "delivered": "Delivered",
     "orderDelivered": "Order delivered",
+    "confirmationCode": "Confirmation Code",
     "nearbyStores": "Nearby Stores",
     "suggestedForYou": "Suggested for You",
     "basedOnSearches": "Based on Your Searches",
@@ -279,7 +288,8 @@
     "typeTopRated": "Top rated",
     "sortRecommended": "Recommended",
     "noProducts": "No products found in this category",
-    "categoriesTitle": "Categories"
+    "categoriesTitle": "Categories",
+    "showAllCategories": "Show all categories"
   },
   "product": {
     "color": "Color",
@@ -384,6 +394,10 @@
     "subtotal": "Subtotal",
     "updateCart": "Update cart",
     "returnToShop": "Return to shop",
+    "clearCart": "Delete all",
+    "clearCartTitle": "Clear cart?",
+    "clearCartConfirm": "Are you sure you want to remove all items from your cart?",
+    "cartCleared": "Cart cleared",
     "couponCode": "Coupon Code",
     "enterCode": "Enter code",
     "applyCoupon": "Apply coupon",
@@ -420,7 +434,15 @@
     "categoryRequired": "Products must have a category",
     "noValidItems": "No valid items to schedule",
     "saveSchedule": "Save schedule",
-    "saving": "Saving..."
+    "saving": "Saving...",
+    "store": "Store",
+    "variant": "Variant",
+    "free": "FREE",
+    "freeItem": "Free item",
+    "freeFromPromotion": "Free from",
+    "freeItemsAdded": "Free items will be added to your order:",
+    "promotion": "Promotion",
+    "excludedFromCoupon": "Not eligible for coupon"
   },
   "trackOrder": {
     "title": "Track your order",
@@ -452,11 +474,14 @@
   },
   "orders": {
     "order": "Order",
+    "orderDetails": "Order Details",
+    "orderNotFound": "Order not found.",
+    "trackOrderOnMap": "Track Order on Map",
+    "trackOrder": "Track Order",
     "myOrders": "My Orders",
     "myOrdersDescription": "Review, track and reorder your past orders.",
     "searchPlaceholder": "Search by order number, store or item",
     "noOrdersFound": "No orders found.",
-    "orderDetails": "Order Details",
     "delivered": "Delivered",
     "out_for_delivery": "Out for delivery",
     "preparing": "Preparing",
@@ -504,7 +529,8 @@
     "points": "Points!",
     "pointsDescription": "You can use your points later for discounts and special offers.",
     "backToHome": "Back to home page",
-    "trackOrder": "Track Order"
+    "trackOrder": "Track Order",
+    "detailsOrder": "Details Order"
   },
   "logoutPopup": {
     "title": "Logout of your account?",
@@ -937,6 +963,8 @@
     "save": "Save",
     "sold": "Sold",
     "freeDelivery": "Free Delivery",
+    "Featured": "Featured",
+    "Sale": "Sale",
     "buttonPrimary": "Special Offer Today",
     "buttonSecondary": "Order Now"
   },
@@ -977,7 +1005,16 @@
     "rateRecipe": "Rate this recipe",
     "reviews": "Recipe reviews",
     "orders": "Orders",
-    "youSaved": "You saved"
+    "youSaved": "You saved",
+    "sortDefault": "Default",
+    "sortNewest": "Newest first",
+    "sortOldest": "Oldest first",
+    "sortPriceDesc": "Price: High to Low",
+    "sortPriceAsc": "Price: Low to High",
+    "searchPlaceholder": "Search recipes...",
+    "discountRange": "Discount %",
+    "discountMin": "Min",
+    "discountMax": "Max"
   },
   "marketer": {
     "title": "Become a marketer",
@@ -1042,7 +1079,11 @@
       "transactions": "Transactions",
       "transactionType": "Type",
       "orderId": "Order",
-      "noTransactions": "No transactions yet"
+      "noTransactions": "No transactions yet",
+      "topProducts": "Top Products",
+      "product": "Product",
+      "quantitySold": "Qty Sold",
+      "salesAmount": "Sales Amount"
     }
   },
   "helpCenter": {

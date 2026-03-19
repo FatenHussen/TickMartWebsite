@@ -1,60 +1,60 @@
-import type { RouteObject } from "react-router";
+import type { RouteObject } from"react-router";
 
-// import { Navigate } from "react-router";
-import { authRoutes } from "./auth";
+// import { Navigate } from"react-router";
+import { authRoutes } from"./auth";
 
-// import { authRoutes } from "./auth";
-import { HomeRoutes } from "./home";
-import { CategoriesRoutes } from "./categories";
-import { ProductsRoutes } from "./product";
-import { SectionsRoutes } from "./sections";
-import { StoreRoutes } from "./store";
-import { CartRoutes } from "./cart";
-import { TrackOrderRoutes } from "./trackOrder";
-import { AccountRoutes } from "./account";
-import { MarketerRoutes } from "./marketer";
-import { VendorRoutes } from "./vendor";
-import { LegalRoutes } from "./legal";
+// import { authRoutes } from"./auth";
+import { HomeRoutes } from"./home";
+import { CategoriesRoutes } from"./categories";
+import { ProductsRoutes } from"./product";
+import { SectionsRoutes } from"./sections";
+import { StoreRoutes } from"./store";
+import { CartRoutes } from"./cart";
+import { TrackOrderRoutes } from"./trackOrder";
+import { AccountRoutes } from"./account";
+import { MarketerRoutes } from"./marketer";
+import { VendorRoutes } from"./vendor";
+import { LegalRoutes } from"./legal";
 
 // ----------------------------------------------------------------------
 
 export const routesSection: RouteObject[] = [
-  // Auth
-  ...authRoutes,
+ // Auth
+ ...authRoutes,
 
-  //   // Client
-  ...HomeRoutes,
+ // // Client
+ ...HomeRoutes,
 
-  // Categories
-  ...CategoriesRoutes,
+ // Categories
+ ...CategoriesRoutes,
 
-  // Products
-  ...ProductsRoutes,
+ // Products
+ ...ProductsRoutes,
 
-  // Sections (Brands, Recipes, Products, Baskets)
-  ...SectionsRoutes,
+ // Sections (Brands, Recipes, Products, Baskets)
+ ...SectionsRoutes,
 
-  // Store
-  ...StoreRoutes,
+ // Store
+ ...StoreRoutes,
 
-  // Cart
-  ...CartRoutes,
+ // Cart
+ ...CartRoutes,
 
-  // Track Order
-  ...TrackOrderRoutes,
+ // Track Order
+ ...TrackOrderRoutes,
 
-  // Account
-  ...AccountRoutes,
+ // Account
+ ...AccountRoutes,
 
-  // Marketer
-  ...MarketerRoutes,
+ // Marketer
+ ...MarketerRoutes,
 
-  // Vendor
-  ...VendorRoutes,
+ // Vendor
+ ...VendorRoutes,
 
-  // Legal (Privacy, Terms)
-  ...LegalRoutes,
+ // Legal (Privacy, Terms)
+ ...LegalRoutes,
 
-  // No match
-  { path: "*", element: <h2>error 404</h2> },
+ // No match
+ { path:"*", element: <h2>error 404</h2> },
 ];
