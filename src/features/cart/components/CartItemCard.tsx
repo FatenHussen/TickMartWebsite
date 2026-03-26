@@ -8,6 +8,8 @@ import type { CartItem } from "../types";
 type CartItemCardProps = {
     item: CartItem;
     previewPrices?: Map<number, { price: number; priceBeforeDiscount?: number }>;
+    /** When set, overrides previewPrices lookup (e.g. same variant, different extras) */
+    previewPrice?: { price: number; priceBeforeDiscount?: number };
     /** Product name from preview orderItems (takes precedence over item.name) */
     displayName?: string;
     /** Variant values from preview orderItems (e.g. ["#fc0303", "Medium"]) */
@@ -24,6 +26,7 @@ type CartItemCardProps = {
 export default function CartItemCard({
     item,
     previewPrices,
+    previewPrice,
     displayName,
     displayVariant,
     freeQuantity = 0,
@@ -36,9 +39,11 @@ export default function CartItemCard({
     const { isRTL } = useLanguage();
     const { formatPrice } = useCurrency();
 
-    const preview = item.shop_product_variant_id != null
-        ? previewPrices?.get(item.shop_product_variant_id)
-        : undefined;
+    const preview =
+        previewPrice ??
+        (item.shop_product_variant_id != null
+            ? previewPrices?.get(item.shop_product_variant_id)
+            : undefined);
     const displayPrice = preview
         ? formatPrice(preview.price)
         : item.price;

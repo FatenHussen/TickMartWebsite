@@ -39,6 +39,15 @@ export const packagesApi = {
  return res.data;
  },
 
+ cancelSubscription: async (
+   packageId: number
+ ): Promise<{ status: boolean; message: string }> => {
+   const res = await _axios.delete<{ status: boolean; message: string }>(
+     apiRoutes.packages.cancelSubscription(packageId)
+   );
+   return res.data;
+ },
+
  getSubscriptionBenefits: async (): Promise<{
  has_subscription: boolean;
  remaining_discounts: number;

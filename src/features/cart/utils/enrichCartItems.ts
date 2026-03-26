@@ -1,6 +1,31 @@
 import type { CartItem, OrderPreviewOrderItem, OrderPreviewResponse } from "../types";
 import { toNum } from "../utils";
 
+/** Stable key for matching cart extras to preview order lines */
+export function extrasSignature(extras?: number[]): string {
+  if (!extras?.length) return "";
+  return [...extras].sort((a, b) => a - b).join(",");
+}
+
+/** Match preview order item to cart line (variant + optional extras) */
+export function matchPreviewOrderItem(
+  cartItem: CartItem,
+  orderItems: OrderPreviewOrderItem[] | undefined
+): OrderPreviewOrderItem | undefined {
+  if (!orderItems?.length || cartItem.shop_product_variant_id == null) return undefined;
+  const sameVariant = orderItems.filter(
+    (it) => it.shop_product_variant_id === cartItem.shop_product_variant_id
+  );
+  if (sameVariant.length === 0) return undefined;
+  if (sameVariant.length === 1) return sameVariant[0];
+  const sig = extrasSignature(cartItem.extras);
+  return (
+    sameVariant.find(
+      (it) => extrasSignature(it.extras) === sig
+    ) ?? sameVariant[0]
+  );
+}
+
 /** Build preview prices map from orderItems (price = before, price_after_discount = after) */
 export function buildPreviewPricesMap(
   orderItems: OrderPreviewOrderItem[] | undefined
@@ -47,12 +72,9 @@ export function enrichCartItemsWithPreview(
 ): EnrichedCartItem[] {
   if (!preview) return items as EnrichedCartItem[];
 
-  const orderItemsByVariant = buildOrderItemsByVariant(
-    preview.orderItems as OrderPreviewOrderItem[] | undefined
-  );
-  const previewPricesMap = buildPreviewPricesMap(
-    preview.orderItems as OrderPreviewOrderItem[] | undefined
-  );
+  const previewOrderItems = preview.orderItems as OrderPreviewOrderItem[] | undefined;
+  const orderItemsByVariant = buildOrderItemsByVariant(previewOrderItems);
+  const previewPricesMap = buildPreviewPricesMap(previewOrderItems);
   const excludedSet = new Set(
     preview.coupon?.excluded_items ?? preview.excluded_items ?? []
   );
@@ -71,11 +93,21 @@ export function enrichCartItemsWithPreview(
   return items.map((item) => {
     const orderItem =
       item.shop_product_variant_id != null
-        ? orderItemsByVariant.get(item.shop_product_variant_id)
+        ? matchPreviewOrderItem(item, previewOrderItems) ??
+          orderItemsByVariant.get(item.shop_product_variant_id)
         : undefined;
     const previewPrices =
       item.shop_product_variant_id != null
-        ? previewPricesMap.get(item.shop_product_variant_id)
+        ? orderItem
+          ? (() => {
+              const priceBefore = toNum(orderItem.price);
+              const priceAfter = toNum(orderItem.price_after_discount ?? orderItem.price);
+              return {
+                price: priceAfter || priceBefore,
+                priceBeforeDiscount: priceBefore > 0 ? priceBefore : undefined,
+              };
+            })()
+          : previewPricesMap.get(item.shop_product_variant_id)
         : undefined;
 
     const priceAfterDiscount = orderItem

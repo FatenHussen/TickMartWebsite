@@ -44,7 +44,7 @@ export default function ScheduleDelivery({
  const [selectedDate, setSelectedDate] = useState<Date>(() => new Date());
 
  const activeSchedules = useMemo(
- () => schedules.filter((s: ScheduleItem) => s.is_active),
+ () => schedules.filter((s: ScheduleItem) => s.is_active !== false),
  [schedules],
  );
 

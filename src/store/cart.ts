@@ -10,11 +10,16 @@ function formatPrice(value: number): string {
  return `£${value.toFixed(2)}`;
 }
 
+function extrasLineKey(extras?: number[]): string {
+ if (!extras?.length) return "";
+ return `-e-${[...extras].sort((a, b) => a - b).join("-")}`;
+}
+
 function getLineId(
- item: Pick<CartItem,"productId"|"variantId"|"shop_product_variant_id">
+ item: Pick<CartItem,"productId"|"variantId"|"shop_product_variant_id"|"extras">
 ): string {
  if (item.shop_product_variant_id != null) {
- return `spv-${item.shop_product_variant_id}`;
+ return `spv-${item.shop_product_variant_id}${extrasLineKey(item.extras)}`;
  }
  const pid = item.productId ?? 0;
  const vid = item.variantId ??"base";
@@ -237,10 +242,16 @@ export const useCartStore = create<CartStore>()(
  const s = get();
  return s.items
  .filter((i) => i.shop_product_variant_id != null)
- .map((i) => ({
+ .map((i) => {
+ const base: OrderPreviewItem = {
  shop_product_variant_id: i.shop_product_variant_id!,
  quantity: i.quantity,
- }));
+ };
+ if (i.extras?.length) {
+ base.extras = [...i.extras];
+ }
+ return base;
+ });
  },
  }),
  {

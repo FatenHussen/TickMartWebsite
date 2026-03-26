@@ -7,14 +7,23 @@ import {
     useMyBaskets,
     type MyBasketFilterType,
 } from "../hooks/useMyBaskets";
-import { useDeleteScheduledBasket } from "../hooks/useScheduledBaskets";
+import {
+    useDeleteScheduledBasket,
+    usePauseScheduledBasket,
+    useResumeScheduledBasket,
+} from "../hooks/useScheduledBaskets";
+import {
+    usePauseSubscription,
+    useResumeSubscription,
+} from "../hooks/useMyBasketMutations";
 import type { MyBasketListItem } from "../types/myBasket";
 import DeleteBasketPopup from "../components/DeleteBasketPopup";
 import {
     HiTrash,
     HiCalendar,
     HiPencil,
-    HiClock,
+    HiPause,
+    HiPlay,
 } from "react-icons/hi";
 import Button from "@/shared/ui/Button";
 
@@ -33,6 +42,10 @@ export default function MyBaskets() {
     const [typeFilter, setTypeFilter] = useState<MyBasketFilterType>("all");
     const { data: baskets = [], isLoading, error } = useMyBaskets(typeFilter);
     const deleteBasketMutation = useDeleteScheduledBasket();
+    const pauseScheduledMutation = usePauseScheduledBasket();
+    const resumeScheduledMutation = useResumeScheduledBasket();
+    const pauseSubscriptionMutation = usePauseSubscription();
+    const resumeSubscriptionMutation = useResumeSubscription();
 
     const [sortBy, setSortBy] = useState<"next_delivery" | "created" | "name">(
         "next_delivery"
@@ -73,11 +86,10 @@ export default function MyBaskets() {
                 const dateB = getNextRunDate(b) ? new Date(getNextRunDate(b)).getTime() : 0;
                 return dateA - dateB;
             }
-            if (sortBy === "created" && "start_date" in a && "start_date" in b) {
-                return (
-                    new Date((b as { start_date: string }).start_date).getTime() -
-                    new Date((a as { start_date: string }).start_date).getTime()
-                );
+            if (sortBy === "created") {
+                const dateA = ("start_date" in a && a.start_date) || a.created_at || "";
+                const dateB = ("start_date" in b && b.start_date) || b.created_at || "";
+                return new Date(dateB).getTime() - new Date(dateA).getTime();
             }
             if (sortBy === "name") {
                 return a.name.localeCompare(b.name);
@@ -86,20 +98,6 @@ export default function MyBaskets() {
         });
         return result;
     }, [baskets, sortBy]);
-
-    // Group into active vs paused (by is_active)
-    const { activeBaskets, pausedBaskets } = useMemo(() => {
-        const active: MyBasketListItem[] = [];
-        const paused: MyBasketListItem[] = [];
-        for (const b of sortedBaskets) {
-            if (!b.is_active) {
-                paused.push(b);
-            } else {
-                active.push(b);
-            }
-        }
-        return { activeBaskets: active, pausedBaskets: paused };
-    }, [sortedBaskets]);
 
     const handleViewDetails = (basketId: number, basketType: MyBasketListItem["basket_type"]) => {
         if (basketType === "user-schedule") {
@@ -135,8 +133,41 @@ export default function MyBaskets() {
         setBasketToDelete(null);
     };
 
+    const handlePauseResume = (basket: MyBasketListItem) => {
+        const isPaused = basket.is_paused ?? !basket.is_active;
+        if (basket.basket_type === "user-schedule") {
+            if (isPaused) {
+                resumeScheduledMutation.mutate(basket.id);
+            } else {
+                pauseScheduledMutation.mutate(basket.id);
+            }
+        } else if (basket.basket_type === "subscription") {
+            if (isPaused) {
+                resumeSubscriptionMutation.mutate(basket.id);
+            } else {
+                pauseSubscriptionMutation.mutate(basket.id);
+            }
+        }
+    };
+
+    const isPauseResumePending = (basket: MyBasketListItem) => {
+        if (basket.basket_type === "user-schedule") {
+            return (
+                (pauseScheduledMutation.isPending && pauseScheduledMutation.variables === basket.id) ||
+                (resumeScheduledMutation.isPending && resumeScheduledMutation.variables === basket.id)
+            );
+        }
+        if (basket.basket_type === "subscription") {
+            return (
+                (pauseSubscriptionMutation.isPending && pauseSubscriptionMutation.variables === basket.id) ||
+                (resumeSubscriptionMutation.isPending && resumeSubscriptionMutation.variables === basket.id)
+            );
+        }
+        return false;
+    };
+
     const renderBasketCard = (basket: MyBasketListItem) => {
-        const isPaused = !basket.is_active;
+        const isPaused = basket.is_paused ?? !basket.is_active;
         const categoryName = getCategoryName(basket);
         const scheduleText = getScheduleText(basket);
         const nextRunDate = getNextRunDate(basket);
@@ -186,7 +217,7 @@ export default function MyBaskets() {
                 </div>
 
                 {/* Schedule & Next delivery */}
-                {(scheduleText || nextRunDate) && (
+                {(scheduleText || nextRunDate || (isPaused && basket.paused_at)) && (
                     <div className="space-y-1.5 text-sm text-custom-secondary mb-4">
                         {scheduleText && (
                             <div className="flex items-center gap-1.5">
@@ -194,11 +225,11 @@ export default function MyBaskets() {
                                 <span>{scheduleText}</span>
                             </div>
                         )}
-                        {nextRunDate && (
+                        {(nextRunDate || (isPaused && basket.paused_at)) && (
                             <div className="flex items-center gap-1.5">
                                 <span className="font-medium text-custom-primary">
                                     {isPaused
-                                        ? `${t("baskets.pausedSince")} ${nextRunDate}`
+                                        ? `${t("baskets.pausedSince")} ${basket.paused_at ?? nextRunDate}`
                                         : `${t("baskets.nextDelivery")}: ${nextRunDate}`}
                                 </span>
                             </div>
@@ -226,11 +257,12 @@ export default function MyBaskets() {
                             {basket.final_price}
                         </span>
                     )}
-                    {"start_date" in basket && basket.start_date && (
+                    {(("start_date" in basket && basket.start_date) || basket.created_at) ? (
                         <span className="text-custom-secondary">
-                            {t("baskets.createdOn")} {basket.start_date}
+                            {t("baskets.createdOn")}{" "}
+                            {("start_date" in basket && basket.start_date) || basket.created_at}
                         </span>
-                    )}
+                    ) : null}
                 </div>
 
                 {/* Action Buttons */}
@@ -255,36 +287,47 @@ export default function MyBaskets() {
                         {t("baskets.editItems")}
                     </Button>
                     {basket.basket_type === "user-schedule" && (
-                        <>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleViewDetails(basket.id, basket.basket_type)}
-                                className="flex items-center gap-1.5 px-3 py-2 border border-custom-secondary text-custom-primary hover:bg-custom-light rounded-lg text-sm font-medium"
-                            >
-                                <HiCalendar className="w-4 h-4" />
-                                {isPaused ? t("baskets.reschedule") : t("baskets.editSchedule")}
-                            </Button>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleViewDetails(basket.id, basket.basket_type)}
-                                className="flex items-center gap-1.5 px-3 py-2 border border-custom-secondary text-custom-primary hover:bg-custom-light rounded-lg text-sm font-medium"
-                            >
-                                <HiClock className="w-4 h-4" />
-                                {isPaused ? t("baskets.resumeBasket") : t("baskets.pauseBasket")}
-                            </Button>
-                            <button
-                                type="button"
-                                onClick={() => handleDeleteClick(basket)}
-                                className="flex items-center gap-1.5 ml-auto text-sm text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300"
-                            >
-                                <HiTrash className="w-4 h-4" />
-                                {t("baskets.deleteBasket")}
-                            </button>
-                        </>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleViewDetails(basket.id, basket.basket_type)}
+                            className="flex items-center gap-1.5 px-3 py-2 border border-custom-secondary text-custom-primary hover:bg-custom-light rounded-lg text-sm font-medium"
+                        >
+                            <HiCalendar className="w-4 h-4" />
+                            {isPaused ? t("baskets.reschedule") : t("baskets.editSchedule")}
+                        </Button>
+                    )}
+                    {(basket.basket_type === "user-schedule" || basket.basket_type === "subscription") && (
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            disabled={isPauseResumePending(basket)}
+                            onClick={() => handlePauseResume(basket)}
+                            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium ${
+                                isPaused
+                                    ? "border border-green-500 text-green-600 hover:bg-green-50 dark:text-green-400 dark:hover:bg-green-900/20"
+                                    : "border border-amber-500 text-amber-600 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-900/20"
+                            }`}
+                        >
+                            {isPaused ? (
+                                <HiPlay className="w-4 h-4 shrink-0" />
+                            ) : (
+                                <HiPause className="w-4 h-4 shrink-0" />
+                            )}
+                            {isPaused ? t("baskets.resumeBasket") : t("baskets.pauseBasket")}
+                        </Button>
+                    )}
+                    {basket.basket_type === "user-schedule" && (
+                        <button
+                            type="button"
+                            onClick={() => handleDeleteClick(basket)}
+                            className="flex items-center gap-1.5 ml-auto text-sm text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300"
+                        >
+                            <HiTrash className="w-4 h-4" />
+                            {t("baskets.deleteBasket")}
+                        </button>
                     )}
                 </div>
             </div>
@@ -345,10 +388,11 @@ export default function MyBaskets() {
                         key={opt.value}
                         type="button"
                         onClick={() => setTypeFilter(opt.value)}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${typeFilter === opt.value
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                            typeFilter === opt.value
                                 ? "bg-primary text-white"
                                 : "bg-custom-card text-custom-secondary border border-custom-primary hover:border-primary"
-                            }`}
+                        }`}
                     >
                         {t(opt.labelKey)}
                     </button>
@@ -376,27 +420,8 @@ export default function MyBaskets() {
 
             {/* Baskets List */}
             {sortedBaskets.length > 0 ? (
-                <div className="space-y-8">
-                    {activeBaskets.length > 0 && (
-                        <section>
-                            <h2 className="text-lg font-semibold text-custom-primary mb-4">
-                                {t("baskets.activeAndUpcoming")}
-                            </h2>
-                            <div className="space-y-4">
-                                {activeBaskets.map(renderBasketCard)}
-                            </div>
-                        </section>
-                    )}
-                    {pausedBaskets.length > 0 && (
-                        <section>
-                            <h2 className="text-lg font-semibold text-custom-primary mb-4">
-                                {t("baskets.pausedBaskets")}
-                            </h2>
-                            <div className="space-y-4">
-                                {pausedBaskets.map(renderBasketCard)}
-                            </div>
-                        </section>
-                    )}
+                <div className="space-y-4">
+                    {sortedBaskets.map(renderBasketCard)}
                 </div>
             ) : (
                 <div className="py-14 text-center text-custom-secondary">

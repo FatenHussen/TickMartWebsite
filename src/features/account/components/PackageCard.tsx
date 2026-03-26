@@ -4,15 +4,21 @@ import type { PackageApi } from"../types";
 import { formatPackageDuration } from"../utils/formatPackageDuration";
 
 type PackageCardProps = {
- package: PackageApi;
- isCurrentPlan?: boolean;
- onSubscribe?: (packageId: number) => void;
+  package: PackageApi;
+  isCurrentPlan?: boolean;
+  hasActiveSubscription?: boolean;
+  onSubscribe?: (packageId: number) => void;
+  onCancel?: (packageId: number) => void;
+  isCancelling?: boolean;
 };
 
 export default function PackageCard({
- package: pkg,
- isCurrentPlan = false,
- onSubscribe,
+  package: pkg,
+  isCurrentPlan = false,
+  hasActiveSubscription = false,
+  onSubscribe,
+  onCancel,
+  isCancelling = false,
 }: PackageCardProps) {
  const { t } = useTranslation();
 
@@ -132,16 +138,27 @@ export default function PackageCard({
  /{t("packages.month")}
  </span>
  </div>
- {!isCurrentPlan && (
- <button
- type="button"
- onClick={() => onSubscribe?.(pkg.id)}
- className="rounded-lg px-5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
- style={{ backgroundColor:"#38BDF8"}}
- >
- {t("packages.subscribe")}
- </button>
- )}
+ {isCurrentPlan && onCancel && (
+        <button
+          type="button"
+          onClick={() => onCancel(pkg.id)}
+          disabled={isCancelling}
+          className="rounded-lg px-5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+          style={{ backgroundColor: "#EF4444" }}
+        >
+          {isCancelling ? "..." : t("packages.cancelSubscription")}
+        </button>
+      )}
+      {!isCurrentPlan && !hasActiveSubscription && (
+        <button
+          type="button"
+          onClick={() => onSubscribe?.(pkg.id)}
+          className="rounded-lg px-5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+          style={{ backgroundColor: "#38BDF8" }}
+        >
+          {t("packages.subscribe")}
+        </button>
+      )}
  </div>
  </div>
  </div>

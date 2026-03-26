@@ -5,7 +5,7 @@ import { useAuthStore } from "@/store/auth";
 import { useFavorites, useToggleFavorite } from "@/features/account/hooks/useFavorites";
 import SliderSection from "../slider/core/SliderSection";
 import ProductCard from "../card/ProductCard";
-import BrandCard from "../card/BrandCard";
+import BrandCardWithRating from "../card/BrandCardWithRating";
 import BasketCard from "../card/BasketCard";
 import ShopCard from "../card/ShopCard";
 import PromotionalBannerCard from "../banner/PromotionalBannerCard";
@@ -24,6 +24,11 @@ import {
     mapPageSlugToRoute,
     mapActionPageSlugToRoute,
 } from "@/utils/routeMapper";
+import type { ProductCardBadge } from "@/shared/component/card/ProductCard";
+import {
+    mapApiBottomBadgesToProductCard,
+    mapApiTopBadgesToProductCard,
+} from "@/shared/lib/mapProductBadges";
 
 type ApiSectionsRendererProps = {
     sections: Section[];
@@ -430,12 +435,26 @@ function ProductSection({
             renderItem={(item) => {
                 if (isProductItem(item)) {
                     const hasDiscount = item.discount && parseFloat(item.discount) > 0;
-                    const topBadge =
-                        item.top_badges?.[0] ??
-                        item.budges?.find(
-                            (b) => b.postion === "top" || b.position === "top"
-                        );
                     const isFav = isFavoriteFor(item.id, item.is_favorite);
+
+                    const discountBadges: ProductCardBadge[] = hasDiscount
+                        ? [
+                              {
+                                  label: `-${item.discount}%`,
+                                  className: "bg-red-500 text-white",
+                                  rawLabel: true,
+                                  align: "left",
+                              },
+                          ]
+                        : [];
+
+                    const fromApi =
+                        mapApiTopBadgesToProductCard(
+                            item.top_badges?.length ? item.top_badges : item.budges
+                        ) ?? [];
+
+                    const topMerged = [...discountBadges, ...fromApi];
+                    const badge = topMerged.length ? topMerged : undefined;
 
                     return (
                         <ProductCard
@@ -454,19 +473,11 @@ function ProductSection({
                             }
                             rating={item.rating || 0}
                             image={item.image}
-                            badge={
-                                hasDiscount
-                                    ? {
-                                        label: `-${item.discount}%`,
-                                        className: "bg-red-500",
-                                    }
-                                    : topBadge
-                                        ? {
-                                            label: topBadge.name,
-                                            className: `bg-${topBadge.color}-500`,
-                                        }
-                                        : undefined
-                            }
+                            badge={badge}
+                            bottomBadges={mapApiBottomBadgesToProductCard(
+                                item.bottom_badges
+                            )}
+                            t={t}
                             isFavorite={isFav}
                             onClick={() => onItemClick(item)}
                             onToggleFavorite={(id) => onToggleFavorite(id, isFav)}
@@ -476,10 +487,26 @@ function ProductSection({
                 // Fallback for backward compatibility
                 const data = getItemData(item) as any;
                 const hasDiscount = data.discount && parseFloat(data.discount) > 0;
-                const topBadge = (data.top_badges as any[])?.[0] ?? data.budges?.[0];
                 const isFav = isFavoriteFor(data.id, data.is_favorite);
 
-                console.log(data);
+                const discountBadgesFb: ProductCardBadge[] = hasDiscount
+                    ? [
+                          {
+                              label: `-${data.discount}%`,
+                              className: "bg-red-500 text-white",
+                              rawLabel: true,
+                              align: "left",
+                          },
+                      ]
+                    : [];
+
+                const fromApiFb =
+                    mapApiTopBadgesToProductCard(
+                        data.top_badges?.length ? data.top_badges : data.budges
+                    ) ?? [];
+
+                const topMergedFb = [...discountBadgesFb, ...fromApiFb];
+                const badgeFb = topMergedFb.length ? topMergedFb : undefined;
 
                 return (
                     <ProductCard
@@ -500,16 +527,11 @@ function ProductSection({
                         }
                         rating={data.rating || 0}
                         image={data.image || ""}
-                        badge={
-                            hasDiscount
-                                ? { label: `-${data.discount}%`, className: "bg-red-500" }
-                                : topBadge
-                                    ? {
-                                        label: topBadge.name,
-                                        className: `bg-${topBadge.color}-500`,
-                                    }
-                                    : undefined
-                        }
+                        badge={badgeFb}
+                        bottomBadges={mapApiBottomBadgesToProductCard(
+                            data.bottom_badges
+                        )}
+                        t={t}
                         isFavorite={isFav}
                         onClick={() => onItemClick(item)}
                         onToggleFavorite={(id) => onToggleFavorite(id, isFav)}
@@ -543,12 +565,26 @@ function RecipeSection({
             renderItem={(item) => {
                 if (isRecipeItem(item)) {
                     const hasDiscount = item.discount && parseFloat(item.discount) > 0;
-                    const topBadge =
-                        item.top_badges?.[0] ??
-                        item.budges?.find(
-                            (b) => b.postion === "top" || b.position === "top"
-                        );
                     const isFav = isFavoriteFor(item.id, item.is_favorite);
+
+                    const discountBadges: ProductCardBadge[] = hasDiscount
+                        ? [
+                              {
+                                  label: `-${item.discount}%`,
+                                  className: "bg-red-500 text-white",
+                                  rawLabel: true,
+                                  align: "left",
+                              },
+                          ]
+                        : [];
+
+                    const fromApi =
+                        mapApiTopBadgesToProductCard(
+                            item.top_badges?.length ? item.top_badges : item.budges
+                        ) ?? [];
+
+                    const topMerged = [...discountBadges, ...fromApi];
+                    const badge = topMerged.length ? topMerged : undefined;
 
                     return (
                         <ProductCard
@@ -567,19 +603,11 @@ function RecipeSection({
                             }
                             rating={item.rating || 0}
                             image={item.image}
-                            badge={
-                                hasDiscount
-                                    ? {
-                                        label: `-${item.discount}%`,
-                                        className: "bg-red-500",
-                                    }
-                                    : topBadge
-                                        ? {
-                                            label: topBadge.name,
-                                            className: `bg-${topBadge.color}-500`,
-                                        }
-                                        : undefined
-                            }
+                            badge={badge}
+                            bottomBadges={mapApiBottomBadgesToProductCard(
+                                item.bottom_badges
+                            )}
+                            t={t}
                             isFavorite={isFav}
                             onClick={() => onItemClick(item)}
                             onToggleFavorite={(id) => onToggleFavorite(id, isFav)}
@@ -589,8 +617,26 @@ function RecipeSection({
                 // Fallback
                 const data = getItemData(item) as any;
                 const hasDiscount = data.discount && parseFloat(data.discount) > 0;
-                const topBadge = (data.top_badges as any[])?.[0] ?? data.budges?.[0];
                 const isFav = isFavoriteFor(data.id, data.is_favorite);
+
+                const discountBadgesFb: ProductCardBadge[] = hasDiscount
+                    ? [
+                          {
+                              label: `-${data.discount}%`,
+                              className: "bg-red-500 text-white",
+                              rawLabel: true,
+                              align: "left",
+                          },
+                      ]
+                    : [];
+
+                const fromApiFb =
+                    mapApiTopBadgesToProductCard(
+                        data.top_badges?.length ? data.top_badges : data.budges
+                    ) ?? [];
+
+                const topMergedFb = [...discountBadgesFb, ...fromApiFb];
+                const badgeFb = topMergedFb.length ? topMergedFb : undefined;
 
                 return (
                     <ProductCard
@@ -611,16 +657,11 @@ function RecipeSection({
                         }
                         rating={data.rating || 0}
                         image={data.image || ""}
-                        badge={
-                            hasDiscount
-                                ? { label: `-${data.discount}%`, className: "bg-red-500" }
-                                : topBadge
-                                    ? {
-                                        label: topBadge.name,
-                                        className: `bg-${topBadge.color}-500`,
-                                    }
-                                    : undefined
-                        }
+                        badge={badgeFb}
+                        bottomBadges={mapApiBottomBadgesToProductCard(
+                            data.bottom_badges
+                        )}
+                        t={t}
                         isFavorite={isFav}
                         onClick={() => onItemClick(item)}
                         onToggleFavorite={(id) => onToggleFavorite(id, isFav)}
@@ -807,11 +848,9 @@ function BrandSection({
             renderItem={(item) => {
                 if (isBrandItem(item)) {
                     return (
-                        <BrandCard
+                        <BrandCardWithRating
                             key={item.id}
-                            name={item.name}
-                            image={item.image}
-                            rating={0}
+                            item={item}
                             onClick={() => onItemClick(item)}
                         />
                     );
@@ -819,11 +858,16 @@ function BrandSection({
                 // Fallback for backward compatibility
                 const data = getItemData(item);
                 return (
-                    <BrandCard
+                    <BrandCardWithRating
                         key={data.id}
-                        name={(data as any).name || (data as any).title || ""}
-                        image={data.image || ""}
-                        rating={0}
+                        item={{
+                            id: (data as { id: number }).id,
+                            name: (data as any).name || (data as any).title || "",
+                            image: data.image || "",
+                            rating: (data as { rating?: number }).rating,
+                            average_rating: (data as { average_rating?: number })
+                                .average_rating,
+                        }}
                         onClick={() => onItemClick(item)}
                     />
                 );

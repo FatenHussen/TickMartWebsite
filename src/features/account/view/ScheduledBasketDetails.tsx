@@ -1,14 +1,16 @@
-import { useState, useMemo } from"react";
+import { useState, useMemo, useEffect } from"react";
 import { useParams, useNavigate } from"react-router-dom";
 import { useTranslation } from"react-i18next";
 import { toast } from"sonner";
 import { useLanguage } from"@/context/LanguageContext";
 import { paths } from"@/app/routes/path/paths";
+import { useSchedules } from"@/features/cart/hooks/useSchedules";
+import type { ScheduleItem } from"@/features/cart/types";
 import ProductItemsTable, {
  type ProductItemData,
 } from"@/shared/component/table/ProductItemsTable";
 import BasePopup from"@/shared/component/BasePopup";
-import Button from"@/shared/ui/Button";
+import { Button, Select } from"@/shared/ui";
 import { HiClock, HiCalendar, HiTrash, HiPlus } from"react-icons/hi2";
 import {
  useScheduledBasketDetails,
@@ -16,7 +18,11 @@ import {
  useDeleteScheduledBasket,
 } from"../hooks/useScheduledBaskets";
 import DeleteBasketPopup from"../components/DeleteBasketPopup";
-import type { ScheduledBasketExtraItem } from"../types/scheduledBasket";
+import AddProductModal from"../components/AddProductModal";
+import type {
+ ScheduledBasketExtraItem,
+ ScheduledBasketSchedule,
+} from"../types/scheduledBasket";
 
 export default function ScheduledBasketDetails() {
  const { t } = useTranslation();
@@ -33,10 +39,13 @@ export default function ScheduledBasketDetails() {
 
  const updateMutation = useUpdateScheduledBasket();
  const deleteMutation = useDeleteScheduledBasket();
+ const { items: scheduleItems = [], isLoading: isSchedulesLoading } =
+ useSchedules();
 
  // Editable state
  const [editedName, setEditedName] = useState<string | null>(null);
- const [editedNextRunDate, setEditedNextRunDate] = useState<string | null>(
+ /** Local override when user picks another schedule from the list */
+ const [editedScheduleId, setEditedScheduleId] = useState<number | null>(
  null
  );
  const [itemQuantities, setItemQuantities] = useState<
@@ -44,13 +53,45 @@ export default function ScheduledBasketDetails() {
  >({});
  const [deletePopupOpen, setDeletePopupOpen] = useState(false);
  const [showExtrasPopup, setShowExtrasPopup] = useState(false);
+ const [showAddProductModal, setShowAddProductModal] = useState(false);
  const [addedExtras, setAddedExtras] = useState<ScheduledBasketExtraItem[]>(
  []
  );
 
+ useEffect(() => {
+ setEditedName(null);
+ setEditedScheduleId(null);
+ }, [basketId]);
+
  // Derived values
  const basketName = editedName ?? basket?.name ??"";
- const nextRunDate = editedNextRunDate ?? basket?.next_run_date ??"";
+ const selectedScheduleId =
+ editedScheduleId ?? basket?.schedule?.id ?? null;
+
+ const effectiveSchedule = useMemo<
+ ScheduleItem | ScheduledBasketSchedule | null
+ >(() => {
+ if (!basket) return null;
+ if (selectedScheduleId == null) return basket.schedule ?? null;
+ const fromList = scheduleItems.find((s) => s.id === selectedScheduleId);
+ return fromList ?? basket.schedule ?? null;
+ }, [basket, scheduleItems, selectedScheduleId]);
+
+ const scheduleSelectOptions = useMemo(
+ () =>
+ scheduleItems
+ .filter((s) => s.is_active !== false)
+ .map((s) => ({
+ value: s.id,
+ label:
+ s.discount_value > 0
+ ? `${s.name} (${s.discount_value}${
+ s.discount_type ==="percentage"?"%": ""
+ } ${t("baskets.discountExtra")})`
+ : s.name,
+ })),
+ [scheduleItems, t]
+ );
 
  // Available extras (exclude already added)
  const availableExtras = useMemo(() => {
@@ -63,14 +104,22 @@ export default function ScheduledBasketDetails() {
  if (!basket) return [];
  const baseItems = basket.items.map((item) => {
  const quantity = itemQuantities[item.id] ?? item.quantity;
- const subtotal = item.price * quantity;
+ const unitAfter =
+ item.price_after_discount ?? item.price ?? 0;
+ const subtotal = unitAfter * quantity;
+ const priceLineFormatted =
+ quantity === item.quantity &&
+ item.price_after_discount_formatted
+ ? item.price_after_discount_formatted
+ : undefined;
  return {
  id: item.id,
  name: item.product.name,
  image: item.product.image,
  quantity: quantity,
- unit_price: item.price,
+ unit_price: unitAfter,
  subtotal: subtotal,
+ priceLineFormatted,
  can_adjust: true,
  min_quantity: 1,
  max_quantity: 999,
@@ -100,24 +149,43 @@ export default function ScheduledBasketDetails() {
  return [...baseItems, ...extraItems];
  }, [basket, itemQuantities, addedExtras]);
 
- // Calculate totals
- const subtotal = useMemo(() => {
- return productItems.reduce((sum, item) => sum + item.subtotal, 0);
- }, [productItems]);
+ // Calculate totals (API lines use original_price vs price_after_discount; avoid double-applying schedule %)
+ const subtotalBeforeDiscount = useMemo(() => {
+ if (!basket) return 0;
+ let sum = 0;
+ for (const item of basket.items) {
+ const qty = itemQuantities[item.id] ?? item.quantity;
+ const orig =
+ item.original_price ?? item.price ?? item.price_after_discount ?? 0;
+ sum += orig * qty;
+ }
+ for (const extra of addedExtras) {
+ const qty = itemQuantities[extra.id] ?? extra.quantity ?? 1;
+ sum += extra.unit_price * qty;
+ }
+ return sum;
+ }, [basket, itemQuantities, addedExtras]);
+
+ const totalAfterDiscount = useMemo(
+ () =>
+ productItems.reduce(
+ (sum, item) =>
+ sum + (Number.isFinite(item.subtotal) ? item.subtotal : 0),
+ 0
+ ),
+ [productItems]
+ );
+
+ const scheduleDiscountAmount = useMemo(
+ () => Math.max(0, subtotalBeforeDiscount - totalAfterDiscount),
+ [subtotalBeforeDiscount, totalAfterDiscount]
+ );
 
  const totalQuantity = useMemo(() => {
  return productItems.reduce((sum, item) => sum + item.quantity, 0);
  }, [productItems]);
 
- const scheduleDiscount = useMemo(() => {
- if (!basket?.schedule) return 0;
- if (basket.schedule.discount_type ==="percentage") {
- return (subtotal * basket.schedule.discount_value) / 100;
- }
- return basket.schedule.discount_value;
- }, [basket?.schedule, subtotal]);
-
- const total = subtotal - scheduleDiscount;
+ const currencySymbol = basket?.items[0]?.currency_symbol ??"$";
 
  // Handle quantity change
  const handleQuantityChange = (itemId: number, newQuantity: number) => {
@@ -152,6 +220,11 @@ export default function ScheduledBasketDetails() {
  // Handle save
  const handleSave = () => {
  if (!basket) return;
+ const resolvedScheduleId = selectedScheduleId ?? basket.schedule?.id;
+ if (resolvedScheduleId == null) {
+ toast.error(t("baskets.selectSchedule"));
+ return;
+ }
 
  const existingItems = basket.items.map((item) => ({
  product_id: item.product.id,
@@ -169,7 +242,7 @@ export default function ScheduledBasketDetails() {
  id: basket.id,
  payload: {
  name: basketName,
- next_run_date: nextRunDate,
+ schedule_id: resolvedScheduleId,
  items: [...existingItems, ...newItems],
  },
  },
@@ -250,10 +323,11 @@ export default function ScheduledBasketDetails() {
  ? t("baskets.active")
  : t("baskets.paused")}
  </span>
- {/* Category */}
+ {basket.category && (
  <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">
  {basket.category}
  </span>
+ )}
  </div>
 
  {/* Delete Button */}
@@ -274,21 +348,36 @@ export default function ScheduledBasketDetails() {
  </span>
  <span>{t("checkout.items")}</span>
  </div>
- <div className="flex items-center gap-2">
+ <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 flex-1 min-w-0">
+ <div className="flex items-center gap-2 shrink-0">
  <HiClock className="w-4 h-4 text-custom-tertiary"/>
- <span className="font-medium">{t("baskets.nextDelivery")}:</span>
- <input
- type="date"
- value={nextRunDate}
- onChange={(e) => setEditedNextRunDate(e.target.value)}
- className="text-custom-primary border border-custom-secondary rounded-md px-2 py-1 text-sm focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 focus:outline-none"
+ <span className="font-medium whitespace-nowrap">
+ {t("baskets.nextDelivery")}:
+ </span>
+ <span className="text-custom-primary">
+ {basket.next_run_date ||"—"}
+ </span>
+ </div>
+ <div className="w-full sm:w-72 max-w-full">
+ <Select
+ label={t("baskets.selectSchedule")}
+ options={scheduleSelectOptions}
+ value={selectedScheduleId ??""}
+ onChange={(e) =>
+ setEditedScheduleId(
+ e.target.value ? Number(e.target.value) : null
+ )
+ }
+ disabled={isSchedulesLoading || scheduleSelectOptions.length === 0}
+ className="!mb-0"
  />
  </div>
  </div>
  </div>
+ </div>
 
- {/* Schedule Info */}
- {basket.schedule && (
+ {/* Schedule Info (reflects selected schedule from dropdown) */}
+ {effectiveSchedule && (
  <div className="bg-custom-card rounded-lg shadow-sm p-4 mb-4">
  <div className="flex items-center gap-3">
  <div className="w-8 h-8 rounded-full bg-cyan-100 flex items-center justify-center shrink-0">
@@ -296,16 +385,16 @@ export default function ScheduledBasketDetails() {
  </div>
  <div>
  <h4 className="font-semibold text-custom-primary">
- {basket.schedule.name}
+ {effectiveSchedule.name}
  </h4>
  <p className="text-sm text-custom-secondary">
- {t("baskets.every")} {basket.schedule.interval_days}{""}
+ {t("baskets.every")} {effectiveSchedule.interval_days}{""}
  {t("baskets.days")}
- {basket.schedule.discount_value > 0 && (
+ {effectiveSchedule.discount_value > 0 && (
  <span className="text-green-600 font-medium">
  {""}
- &bull; {basket.schedule.discount_value}
- {basket.schedule.discount_type ==="percentage"
+ &bull; {effectiveSchedule.discount_value}
+ {effectiveSchedule.discount_type ==="percentage"
  ?"%"
  :""}{""}
  {t("baskets.discountExtra")}
@@ -324,32 +413,36 @@ export default function ScheduledBasketDetails() {
  <div>
  <span className="text-custom-secondary">{t("baskets.subtotal")}:</span>
  <span className="font-bold text-custom-primary ml-2">
- {subtotal.toFixed(2)}
+ {currencySymbol}
+ {subtotalBeforeDiscount.toFixed(2)}
  </span>
  </div>
- {scheduleDiscount > 0 && (
+ {scheduleDiscountAmount > 0 && (
  <div>
  <span className="text-custom-secondary">
  {t("baskets.scheduleDiscount")}:
  </span>
  <span className="font-bold text-red-600 ml-2">
- -{scheduleDiscount.toFixed(2)}
+ -{currencySymbol}
+ {scheduleDiscountAmount.toFixed(2)}
  </span>
  </div>
  )}
  <div>
  <span className="text-custom-secondary">{t("baskets.total")}:</span>
  <span className="font-bold text-cyan-600 text-lg ml-2">
- {total.toFixed(2)}
+ {currencySymbol}
+ {totalAfterDiscount.toFixed(2)}
  </span>
  </div>
  </div>
  </div>
- {scheduleDiscount > 0 && (
+ {scheduleDiscountAmount > 0 && effectiveSchedule && (
  <p className="text-sm text-green-600 font-medium">
- {t("baskets.youSave")} {scheduleDiscount.toFixed(2)} (
- {basket.schedule.discount_value}
- {basket.schedule.discount_type ==="percentage"?"%":""})
+ {t("baskets.youSave")} {currencySymbol}
+ {scheduleDiscountAmount.toFixed(2)} (
+ {effectiveSchedule.discount_value}
+ {effectiveSchedule.discount_type ==="percentage"?"%":""})
  </p>
  )}
  </div>
@@ -363,7 +456,7 @@ export default function ScheduledBasketDetails() {
  showCompanyColumn={false}
  showVariantColumn={true}
  showActionColumn={addedExtras.length > 0}
- currencySymbol=""
+ currencySymbol={currencySymbol}
  />
  </div>
 
@@ -387,12 +480,15 @@ export default function ScheduledBasketDetails() {
  <div className="flex items-center gap-4">
  <div className={isRTL ?"text-left":"text-right"}>
  <div className="text-sm text-custom-secondary">
- {t("baskets.subtotal")}: {subtotal.toFixed(2)}
+ {t("baskets.subtotal")}: {currencySymbol}
+ {subtotalBeforeDiscount.toFixed(2)}
  </div>
  <div className="text-lg font-bold text-cyan-600">
- {t("baskets.total")}: {total.toFixed(2)}
+ {t("baskets.total")}: {currencySymbol}
+ {totalAfterDiscount.toFixed(2)}
  </div>
  </div>
+ <div className="flex items-center gap-2 flex-wrap">
  {availableExtras.length > 0 && (
  <Button
  onClick={() => setShowExtrasPopup(true)}
@@ -402,6 +498,14 @@ export default function ScheduledBasketDetails() {
  {t("baskets.addMoreItems")}
  </Button>
  )}
+ <Button
+ onClick={() => setShowAddProductModal(true)}
+ className="flex items-center gap-2 bg-cyan-500 hover:bg-cyan-600 text-white px-4 py-2 rounded-lg text-sm font-medium shrink-0"
+ >
+ <HiPlus className="w-4 h-4"/>
+ {t("baskets.addProduct")}
+ </Button>
+ </div>
  </div>
  </div>
  </div>
@@ -485,6 +589,17 @@ export default function ScheduledBasketDetails() {
  )}
  </div>
  </BasePopup>
+
+ {/* Add Product Modal */}
+ <AddProductModal
+ isOpen={showAddProductModal}
+ onClose={() => setShowAddProductModal(false)}
+ basket={basket}
+ scheduleId={selectedScheduleId ?? basket.schedule!.id}
+ addedExtras={addedExtras}
+ itemQuantities={itemQuantities}
+ updateMutation={updateMutation}
+ />
 
  {/* Delete Basket Popup */}
  <DeleteBasketPopup

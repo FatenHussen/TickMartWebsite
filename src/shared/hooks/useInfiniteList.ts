@@ -13,6 +13,8 @@ export interface UseInfiniteListOptions<T> {
  staleTime?: number;
  gcTime?: number;
  threshold?: number;
+ /** IntersectionObserver root (e.g. scrollable container). Defaults to viewport. */
+ root?: Element | null;
 }
 
 export function useInfiniteList<T>({
@@ -22,6 +24,7 @@ export function useInfiniteList<T>({
  staleTime,
  gcTime,
  threshold = 300,
+ root = null,
 }: UseInfiniteListOptions<T>) {
  const {
  data,
@@ -58,6 +61,7 @@ export function useInfiniteList<T>({
  isLoading: isLoading || isFetchingNextPage,
  threshold,
  enabled: items.length > 0,
+ root,
  });
 
  return {

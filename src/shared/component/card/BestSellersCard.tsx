@@ -1,9 +1,12 @@
 import { cn } from"../../lib/utils";
-import Button from"@/shared/ui/Button";
 import FavoriteButton from"@/shared/component/FavoriteButton";
 import Rating from"@/shared/component/Rating";
 import AnimatedButton from"../../ui/AnimatedButton";
 import Badge from"@/shared/component/Badge";
+import {
+ type ProductCardBadge,
+ resolveProductCardBadgeLabel,
+} from"./ProductCard";
 
 export type BestSellersCardProps = {
  id: number;
@@ -13,13 +16,20 @@ export type BestSellersCardProps = {
  rating: number;
  image: string;
  category?: string; // e.g.,"Clothes"
- badges?: Array<{ label: string; className?: string }>; // Top-left badges (e.g.,"New","Recommended")
- topRightBadge?: { label: string; className?: string }; // Top-right badge (e.g.,"Most Ordered")
+ /** Top badges (left/right) — same shape as ProductCard */
+ badge?: ProductCardBadge | ProductCardBadge[];
+ /** @deprecated Prefer `badge`; kept for sliders that still pass these */
+ badges?: Array<{ label: string; className?: string }>;
+ /** @deprecated Prefer `badge` with align:"right" */
+ topRightBadge?: { label: string; className?: string };
+ /** Bottom animated label rows (same as ProductCard `bottomBadges`) */
+ bottomBadges?: ProductCardBadge[];
  isFavorite?: boolean;
  sold?: number; // Quantity sold like 1238
  savings?: string; // Savings text like"You saved $180"
- buttonText?: string; // Button text like"Special Offer Today"
- buttonTextSecond?: string; // Second value for animated button
+ /** Legacy single bottom animated row when `bottomBadges` is omitted */
+ buttonText?: string;
+ buttonTextSecond?: string;
 
  onToggleFavorite?: (id: number) => void;
  onClick?: (id: number) => void;
@@ -36,8 +46,10 @@ export default function BestSellersCard({
  rating,
  image,
  category,
+ badge,
  badges = [],
  topRightBadge,
+ bottomBadges,
  isFavorite = false,
  sold,
  savings,
@@ -48,6 +60,35 @@ export default function BestSellersCard({
  t,
  className,
 }: BestSellersCardProps) {
+ const legacyTop: ProductCardBadge[] = [
+ ...badges.map((b) => ({ ...b, align: "left" as const })),
+ ...(topRightBadge
+ ? [{ ...topRightBadge, align: "right" as const }]
+ : []),
+ ];
+ const explicitTop =
+ badge !== undefined
+ ? Array.isArray(badge)
+ ? badge
+ : [badge]
+ : null;
+ const allTopBadges = explicitTop ?? legacyTop;
+ const leftBadges = allTopBadges.filter((b) => (b.align ?? "left") === "left");
+ const rightBadges = allTopBadges.filter((b) => b.align === "right");
+
+ const resolvedBottomBadges: ProductCardBadge[] | undefined =
+ bottomBadges !== undefined
+ ? bottomBadges
+ : buttonText
+ ? [
+ {
+ label: buttonText,
+ className:
+"bg-blue-500 hover:bg-blue-600 text-xs font-semibold text-white",
+ },
+ ]
+ : undefined;
+
  return (
  <div
  className={cn(
@@ -72,31 +113,30 @@ export default function BestSellersCard({
  loading="lazy"
  />
 
- {/* Top-left badges - Stacked */}
- {badges.length > 0 && (
- <div className="absolute left-3 top-3 z-10 flex flex-col gap-2">
- {badges.map((badge, idx) => (
+ {/* Top-left badges */}
+ {leftBadges.length > 0 && (
+ <div className="absolute left-3 top-3 z-10 flex flex-col gap-1">
+ {leftBadges.map((b, idx) => (
  <Badge
  key={idx}
- label={t ? t(`home.${badge.label}`) : badge.label}
- className={cn(
-"text-white",
- badge.className ||"bg-blue-500"
- )}
+ label={resolveProductCardBadgeLabel(b, t)}
+ className={cn(b.className ||"bg-blue-500 text-white")}
  />
  ))}
  </div>
  )}
 
- {/* Top-right badge - Yellow"Most Ordered"*/}
- {topRightBadge && (
+ {/* Top-right badges */}
+ {rightBadges.length > 0 && (
+ <div className="absolute right-3 top-3 z-10 flex flex-col items-end gap-1">
+ {rightBadges.map((b, idx) => (
  <Badge
- label={t ? t(`home.${topRightBadge.label}`) : topRightBadge.label}
- className={cn(
-"absolute right-3 top-3 z-10 text-black",
- topRightBadge.className ||"bg-yellow-400"
- )}
+ key={idx}
+ label={resolveProductCardBadgeLabel(b, t)}
+ className={cn(b.className ||"bg-yellow-400 text-black")}
  />
+ ))}
+ </div>
  )}
 
  {/* Rating badge (bottom-left) - White with yellow star */}
@@ -158,30 +198,33 @@ export default function BestSellersCard({
  </p>
  )}
 
- {/* Button */}
- {buttonText && (
- <div className="mt-auto">
- {buttonTextSecond ? (
+ {/* Bottom animated badges (same pattern as ProductCard) */}
+ {resolvedBottomBadges && resolvedBottomBadges.length > 0 && (
+ <div className="mt-auto flex w-full flex-col gap-2 pt-3">
+ {resolvedBottomBadges.map((b, idx) => {
+ const primary = resolveProductCardBadgeLabel(b, t);
+ const secondary =
+ buttonTextSecond && idx === 0 && bottomBadges === undefined
+ ? buttonTextSecond
+ : primary;
+ return (
  <AnimatedButton
+ key={idx}
  variant="primary"
  size="sm"
+ type="button"
  onClick={(e) => e.stopPropagation()}
- className="bg-blue-500 hover:bg-blue-600 text-xs font-semibold px-4 w-full"
+ className={cn(
+"w-full justify-center text-xs font-semibold",
+ b.className
+ )}
  note={{
- primary: buttonText,
- secondary: buttonTextSecond,
+ primary,
+ secondary,
  }}
  />
- ) : (
- <Button
- variant="primary"
- size="sm"
- onClick={(e) => e.stopPropagation()}
- className="w-full bg-blue-500 hover:bg-blue-600 text-xs font-semibold px-4"
- >
- {buttonText}
- </Button>
- )}
+ );
+ })}
  </div>
  )}
  </div>

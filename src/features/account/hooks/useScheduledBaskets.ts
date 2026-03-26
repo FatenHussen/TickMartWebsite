@@ -56,18 +56,52 @@ export function useUpdateScheduledBasket() {
 }
 
 export function useDeleteScheduledBasket() {
- const queryClient = useQueryClient();
+    const queryClient = useQueryClient();
 
- return useMutation({
- mutationFn: (id: number | string) =>
- _ScheduledBasketApi.deleteScheduledBasket(id),
- onSuccess: () => {
- queryClient.invalidateQueries({
- queryKey: scheduledBasketsKeys.all(),
- });
- queryClient.invalidateQueries({
- queryKey: queryKeys.myBaskets.all(),
- });
- },
- });
+    return useMutation({
+        mutationFn: (id: number | string) =>
+            _ScheduledBasketApi.deleteScheduledBasket(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: scheduledBasketsKeys.all(),
+            });
+            queryClient.invalidateQueries({
+                queryKey: queryKeys.myBaskets.all(),
+            });
+        },
+    });
+}
+
+export function usePauseScheduledBasket() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (id: number | string) =>
+            _ScheduledBasketApi.pauseScheduledBasket(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: scheduledBasketsKeys.all(),
+            });
+            queryClient.invalidateQueries({
+                queryKey: queryKeys.myBaskets.all(),
+            });
+        },
+    });
+}
+
+export function useResumeScheduledBasket() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (id: number | string) =>
+            _ScheduledBasketApi.resumeScheduledBasket(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: scheduledBasketsKeys.all(),
+            });
+            queryClient.invalidateQueries({
+                queryKey: queryKeys.myBaskets.all(),
+            });
+        },
+    });
 }

@@ -75,6 +75,8 @@ export interface ProductItem {
  sold_number: number;
  rating: number;
  is_favorite?: boolean;
+ is_instant_delivery?: number;
+ shop_product_variant_id?: number;
 }
 
 // Shop Item (display_type_id: 3 - Nearby Shops)

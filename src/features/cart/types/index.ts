@@ -32,6 +32,8 @@ export type CartItem = {
  shop_product_variant_id?: number;
  /** For API: cannot mix instant and non-instant delivery in same cart */
  is_instant_delivery?: boolean;
+ /** Extra detail / add-on IDs for order preview & create (POST items[].extras) */
+ extras?: number[];
 };
 
 export type CartType ="default"|"recipe"|"basket"|"schedule_admin_cart";
@@ -43,7 +45,8 @@ export interface ScheduleItem {
  interval_days: number;
  discount_type:"percentage"|"fixed";
  discount_value: number;
- is_active: boolean;
+ /** Omitted on some API responses; treat missing as active */
+ is_active?: boolean;
 }
 
 export interface SchedulesResponse {
@@ -77,6 +80,7 @@ export interface CreateScheduledBasketPayload {
 export type OrderPreviewItem = {
  shop_product_variant_id: number;
  quantity: number;
+ extras?: number[];
 };
 
 /** GET user/orders/active response */
@@ -217,6 +221,7 @@ export interface OrderPreviewOrderItem {
  variant?: string[];
  image?: string;
  shop_name?: string;
+ extras?: number[];
 }
 
 export interface OrderPreviewResponse {

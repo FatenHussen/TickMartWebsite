@@ -40,6 +40,17 @@ export function useRenewSubscription() {
  });
 }
 
+export function useCancelSubscription() {
+ const queryClient = useQueryClient();
+ return useMutation({
+ mutationFn: (packageId: number) =>
+   packagesApi.cancelSubscription(packageId),
+ onSuccess: () => {
+   queryClient.invalidateQueries({ queryKey: queryKeys.packages.all() });
+ },
+ });
+}
+
 export function useSubscriptionBenefits(enabled = true) {
  return useQuery({
  queryKey: queryKeys.packages.benefits(),

@@ -39,12 +39,22 @@ export interface ScheduledBasketProduct {
  id: number;
  name: string;
  image: string;
+ is_instant_delivery?: number;
 }
 
 export interface ScheduledBasketDetailItem {
  id: number;
  quantity: number;
- price: number;
+ /** Legacy; prefer price_after_discount */
+ price?: number;
+ /** Unit price before schedule discount */
+ original_price?: number;
+ /** Unit price after schedule discount (use for line math) */
+ price_after_discount?: number;
+ price_after_discount_formatted?: string;
+ discount_amount?: number;
+ currency?: string;
+ currency_symbol?: string;
  product: ScheduledBasketProduct;
  variant: {
  name: string[];
@@ -70,7 +80,7 @@ export interface ScheduledBasketDetail {
  start_date: string;
  next_run_date: string;
  schedule: ScheduledBasketSchedule;
- category: string;
+ category?: string;
  items: ScheduledBasketDetailItem[];
  /** Optional: products that can be added to this basket */
  extras?: ScheduledBasketExtraItem[];
@@ -102,6 +112,6 @@ export interface UpdateScheduledBasketItemPayload {
 
 export interface UpdateScheduledBasketPayload {
  name: string;
- next_run_date: string;
+ schedule_id: number;
  items: UpdateScheduledBasketItemPayload[];
 }

@@ -1,6 +1,9 @@
 import { cn } from"@/shared/lib/utils";
 import Rating from"../Rating";
 import FavoriteButton from"../FavoriteButton";
+import Badge from"../Badge";
+import AnimatedButton from"@/shared/ui/AnimatedButton";
+import type { ProductCardBadge } from"./ProductCard";
 
 const DEFAULT_STORE_IMAGE =
 "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400";
@@ -11,9 +14,13 @@ type ShopCardProps = {
  description?: string | null;
  image?: string | null;
  isOpenNow?: boolean;
+ /** Extra top badges (same as ProductCard); "Open" is still controlled by `isOpenNow` */
+ badge?: ProductCardBadge | ProductCardBadge[];
  rating?: number;
  deliveryPrice?: string | number | null;
  discountLabel?: string | null;
+ /** Bottom animated rows; when omitted, Delivery + discount use AnimatedButton like ProductCard */
+ bottomBadges?: ProductCardBadge[];
  isFavorite?: boolean;
  onFavorite?: (id: number | string) => void;
  onClick?: () => void;
@@ -26,9 +33,11 @@ export default function ShopCard({
  description,
  image,
  isOpenNow = false,
+ badge,
  rating = 0,
  deliveryPrice,
  discountLabel,
+ bottomBadges,
  isFavorite = false,
  onFavorite,
  onClick,
@@ -41,6 +50,18 @@ export default function ShopCard({
  ? `£${deliveryPrice.toFixed(2)} delivery`
  : String(deliveryPrice)
  : null;
+
+ const openBadge: ProductCardBadge[] = isOpenNow
+ ? [{ label:"Open", className:"bg-green-500 text-white text-xs font-medium", align:"left" }]
+ : [];
+ const extraBadge = badge
+ ? Array.isArray(badge)
+ ? badge
+ : [badge]
+ : [];
+ const allTop = [...openBadge, ...extraBadge];
+ const leftBadges = allTop.filter((b) => (b.align ??"left") ==="left");
+ const rightBadges = allTop.filter((b) => b.align ==="right");
 
  return (
  <div
@@ -65,14 +86,25 @@ export default function ShopCard({
  className="h-full w-full object-cover"
  loading="lazy"
  />
- {/* Open badge - top left */}
- {isOpenNow && (
- <span className="absolute left-3 top-3 rounded-full bg-green-500 px-2.5 py-0.5 text-xs font-medium text-white">
- Open
- </span>
+ {leftBadges.length > 0 && (
+ <div className="absolute left-3 top-3 z-10 flex flex-col gap-1">
+ {leftBadges.map((b, idx) => (
+ <Badge
+ key={idx}
+ label={b.label}
+ className={cn("rounded-full px-2.5 py-0.5", b.className)}
+ />
+ ))}
+ </div>
  )}
- {/* Favorite - top right */}
- <div className="absolute right-3 top-3 z-10">
+ <div className="absolute right-3 top-3 z-10 flex flex-col items-end gap-1">
+ {rightBadges.map((b, idx) => (
+ <Badge
+ key={idx}
+ label={b.label}
+ className={cn("rounded-lg", b.className)}
+ />
+ ))}
  <FavoriteButton
  isFavorite={isFavorite}
  onToggle={(e) => {
@@ -99,21 +131,49 @@ export default function ShopCard({
  {description && (
  <p className="mb-3 text-sm text-custom-secondary">{description}</p>
  )}
- <div className="flex flex-wrap items-center justify-between gap-2">
- <div className="flex flex-wrap items-center gap-2">
- <span className="rounded-lg bg-primary-light px-3 py-1 text-sm font-medium text-white">
- Delivery
- </span>
- {discountLabel && (
- <span className="rounded-lg bg-red-500 px-2.5 py-1 text-xs font-medium text-white">
- {discountLabel}
- </span>
+ <div className="mt-auto flex w-full flex-col gap-2">
+ {bottomBadges !== undefined
+ ? bottomBadges.map((b, idx) => (
+ <AnimatedButton
+ key={idx}
+ variant="primary"
+ size="sm"
+ type="button"
+ onClick={(e) => e.stopPropagation()}
+ className={cn(
+"w-full justify-center bg-custom-accent text-xs font-semibold text-custom-inverse hover:opacity-90",
+ b.className
  )}
- </div>
- {deliveryText && (
- <span className="text-sm font-medium text-custom-primary">
- {deliveryText}
- </span>
+ note={{ primary: b.label, secondary: b.label }}
+ />
+ ))
+ : (
+ <>
+ <AnimatedButton
+ variant="primary"
+ size="sm"
+ type="button"
+ onClick={(e) => e.stopPropagation()}
+ className="w-full justify-center bg-primary-light text-sm font-medium text-white"
+ note={{
+ primary:"Delivery",
+ secondary: deliveryText ??"Order now",
+ }}
+ />
+ {discountLabel && (
+ <AnimatedButton
+ variant="primary"
+ size="sm"
+ type="button"
+ onClick={(e) => e.stopPropagation()}
+ className="w-full justify-center bg-red-500 text-xs font-medium text-white hover:opacity-90"
+ note={{
+ primary: discountLabel,
+ secondary: discountLabel,
+ }}
+ />
+ )}
+ </>
  )}
  </div>
  </div>

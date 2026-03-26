@@ -23,13 +23,16 @@ export default function Rating({
  lg:"text-base",
  };
 
+ const displayValue =
+ typeof rating === "number" ? rating.toFixed(1) : rating;
+
  return (
  <div className={`flex items-center gap-1 ${className}`}>
  {showStar && (
  <span className={`text-yellow-500 ${starSizeClasses[size]}`}>★</span>
  )}
  <span className={`${sizeClasses[size]} text-slate-600 font-medium`}>
- {rating}
+ {displayValue}
  </span>
  </div>
  );

@@ -27,6 +27,9 @@ export interface ShopVariant {
  variant_id: number;
  attributes: VariantAttribute[];
  price: number;
+ currency?: string;
+ currency_symbol?: string;
+ price_formatted?: string;
  quantity: number;
  shop_id: number;
  images: ProductImage[];
@@ -47,6 +50,7 @@ export interface ExtraDetail {
  id: number;
  key: string;
  value: string;
+ price?: number;
 }
 
 export interface ProductIcon {
@@ -56,13 +60,36 @@ export interface ProductIcon {
  description: string;
 }
 
+export interface ProductApiBadge {
+ id: number;
+ name: string;
+ color: string;
+ /** API typo: "postion" */
+ postion?: string;
+ position?: string;
+}
+
 export interface BoughtWithProduct {
  id: number;
  name: string;
+ description?: string;
+ category?: string;
+ country?: string;
  price: number;
  price_after_discount?: number;
+ price_formatted?: string;
+ price_after_discount_formatted?: string;
+ amount_saved?: number;
+ amount_saved_formatted?: string;
  image: string;
+ currency?: string;
+ currency_symbol?: string;
+ rating?: number;
+ sold_number?: number;
  is_favorite?: boolean;
+ top_badges?: ProductApiBadge[];
+ bottom_badges?: ProductApiBadge[];
+ shop_product_variant_id?: number;
 }
 
 export interface ProductExtra {
@@ -74,11 +101,14 @@ export interface ProductExtra {
 export interface ProductDetailsData {
  id: number;
  name: string;
- description: string;
- full_description: string;
+ description?: string;
+ full_description?: string;
  country: string;
  price: number;
+ currency_symbol?: string;
+ price_formatted?: string;
  price_after_discount: number;
+ price_after_discount_formatted?: string;
  quantity: number;
  sku: string;
  model: string;

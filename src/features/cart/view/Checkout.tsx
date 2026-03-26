@@ -73,11 +73,33 @@ export default function Checkout() {
         coupon: storedCoupon,
         paymentMethodId: storedPaymentId,
         additionalNotes: storedNotes,
+        pointCouponExchangeId,
+        pointFreeDeliveryExchangeId,
+        useSubscriptionDiscount,
+        useSubscriptionFreeDelivery,
+        promotionId,
         setAddressId,
         setCoupon,
         setPaymentMethodId,
         setAdditionalNotes,
     } = useCheckoutStore();
+
+    const previewBenefits = useMemo(
+        () => ({
+            pointCouponExchangeId,
+            pointFreeDeliveryExchangeId,
+            useSubscriptionDiscount,
+            useSubscriptionFreeDelivery,
+            promotionId,
+        }),
+        [
+            pointCouponExchangeId,
+            pointFreeDeliveryExchangeId,
+            useSubscriptionDiscount,
+            useSubscriptionFreeDelivery,
+            promotionId,
+        ]
+    );
 
     const { methods: paymentMethods } = usePaymentMethods();
 
@@ -97,7 +119,7 @@ export default function Checkout() {
     const { data: preview } = useOrderPreview(
         selectedAddressId ? Number(selectedAddressId) : null,
         storedCoupon || undefined,
-        undefined,
+        previewBenefits,
         selectedPaymentMethodId || undefined
     );
 

@@ -116,6 +116,7 @@ export const apiRoutes = {
  price_min?: number;
  price_max?: number;
  is_free_delivery?: boolean | 0 | 1;
+ is_instant_delivery?: 0 | 1;
  on_sale?: boolean | 0 | 1;
  in_stock_only?: boolean | 0 | 1;
  attribute_values?: number[];
@@ -135,6 +136,8 @@ export const apiRoutes = {
  if (filters?.price_min != null) params.append("price_min", String(filters.price_min));
  if (filters?.price_max != null) params.append("price_max", String(filters.price_max));
  if (filters?.is_free_delivery) params.append("is_free_delivery","1");
+ if (filters?.is_instant_delivery != null)
+ params.append("is_instant_delivery", String(filters.is_instant_delivery));
  if (filters?.on_sale) params.append("on_sale","1");
  if (filters?.in_stock_only) params.append("in_stock_only","1");
  if (filters?.attribute_values?.length) {
@@ -428,6 +431,8 @@ export const apiRoutes = {
  subscribe:"/user/subscribe"as const,
  renew:"/user/renew"as const,
  benefits:"/user/subscription/benefits"as const,
+ cancelSubscription: (packageId: number | string) =>
+ `/user/packages/${packageId}/cancel-subscription` as const,
  },
 
  /**

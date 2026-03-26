@@ -2,6 +2,7 @@ import { useEffect, type ReactNode } from"react";
 import * as ReactDOM from"react-dom";
 import { HiX } from"react-icons/hi";
 import { useTranslation } from"react-i18next";
+import { cn } from"@/shared/lib/utils";
 
 export type BasePopupProps = {
  isOpen: boolean;
@@ -17,6 +18,8 @@ export type BasePopupProps = {
  closeOnEscape?: boolean;
  className?: string;
  contentClassName?: string;
+ /** Merged with default backdrop (e.g. stronger blur, gradient overlay) */
+ backdropClassName?: string;
 };
 
 const maxWidthClasses = {
@@ -41,6 +44,7 @@ export default function BasePopup({
  closeOnEscape = true,
  className ="",
  contentClassName ="",
+ backdropClassName,
 }: BasePopupProps) {
  const { t } = useTranslation();
 
@@ -79,13 +83,19 @@ export default function BasePopup({
  <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
  {/* Backdrop */}
  <div
- className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+ className={cn(
+"absolute inset-0 bg-black/50 backdrop-blur-sm",
+ backdropClassName
+ )}
  onClick={closeOnBackdrop ? onClose : undefined}
  />
 
  {/* Modal */}
  <div
- className={`relative w-full ${maxWidthClasses[maxWidth]} mx-4 rounded-2xl overflow-hidden shadow-2xl bg-custom-card ${className}`}
+ className={cn(
+`relative w-full ${maxWidthClasses[maxWidth]} mx-4 rounded-2xl overflow-hidden shadow-2xl bg-custom-card`,
+ className
+ )}
  onClick={(e) => e.stopPropagation()}
  >
  {/* Close Button - z-20 so it stays above content and remains clickable */}

@@ -280,13 +280,25 @@ export type PointsHistoryItem = {
 };
 
 // Points API types
+export interface PointsSummaryValue {
+ point_value: string;
+ point_value_usd: string;
+ estimated_value: string;
+ estimated_value_formatted: string;
+ currency_code: string;
+ currency_symbol: string;
+}
+
 export interface PointsSummaryData {
- balance: number;
- pending_points: number;
- expired_points: number;
- redeemed_points: number;
- expire_at: string;
- last_earned_at: string;
+ points: number;
+ value: PointsSummaryValue;
+ next_reward: string;
+ expiry: string;
+ earning_rules: string[];
+ /** @deprecated Legacy fields - use points, value, expiry, earning_rules */
+ balance?: number;
+ pending_points?: number;
+ expire_at?: string;
 }
 
 export interface PointsSummaryResponse {

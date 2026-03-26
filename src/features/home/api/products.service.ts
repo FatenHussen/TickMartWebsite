@@ -7,6 +7,8 @@ export interface ProductsFilters {
  brand_id?: number;
  shop_id?: number;
  page?: number;
+ is_instant_delivery?: 0 | 1;
+ per_page?: number;
 }
 
 export const _ProductsApi = {

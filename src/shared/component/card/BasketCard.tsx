@@ -2,7 +2,9 @@ import Button from"@/shared/ui/Button";
 import AnimatedButton from"@/shared/ui/AnimatedButton";
 import FavoriteButton from"@/shared/component/FavoriteButton";
 import Rating from"@/shared/component/Rating";
+import Badge from"@/shared/component/Badge";
 import { cn } from"@/shared/lib/utils";
+import type { ProductCardBadge } from"./ProductCard";
 
 export type BasketCardProps = {
  id: number;
@@ -12,9 +14,14 @@ export type BasketCardProps = {
  originalPrice?: string;
  rating?: number;
  image: string;
+ /** Top-left savings label — rendered as a Badge (same family as ProductCard top badges) */
  saveAmount?: string; //"Save $12"
+ /** Extra top badges (left/right), same shape as ProductCard */
+ badge?: ProductCardBadge | ProductCardBadge[];
  savings?: string; //"You saved $180"
  offerEndingDate?: string; //"Offer ending date: 11/1/2022"
+ /** Bottom animated rows — same as ProductCard `bottomBadges`. If omitted, shows default promo row */
+ bottomBadges?: ProductCardBadge[];
  isFavorite?: boolean;
  onToggleFavorite?: (id: number) => void;
  onAddToCart?: (id: number) => void;
@@ -32,8 +39,10 @@ export default function BasketCard({
  rating,
  image,
  saveAmount,
+ badge,
  savings,
  offerEndingDate,
+ bottomBadges,
  isFavorite = false,
  onToggleFavorite,
  onAddToCart,
@@ -41,6 +50,25 @@ export default function BasketCard({
  t,
  className,
 }: BasketCardProps) {
+ const saveAsBadge: ProductCardBadge[] = saveAmount
+ ? [
+ {
+ label: saveAmount,
+ className:
+"bg-yellow-400 text-slate-900 shadow-sm text-xs font-semibold",
+ align: "left",
+ },
+ ]
+ : [];
+ const extraBadges = badge
+ ? Array.isArray(badge)
+ ? badge
+ : [badge]
+ : [];
+ const allTopBadges = [...saveAsBadge, ...extraBadges];
+ const leftBadges = allTopBadges.filter((b) => (b.align ?? "left") === "left");
+ const rightBadges = allTopBadges.filter((b) => b.align === "right");
+
  return (
  <div
  className={cn(
@@ -65,15 +93,28 @@ export default function BasketCard({
  loading="lazy"
  />
 
- {/* Save Badge (top-left) - Yellow */}
- {saveAmount && (
- <span className="absolute left-3 top-3 z-10 rounded-lg bg-yellow-400 px-3 py-1.5 text-xs font-semibold text-slate-900 shadow-sm">
- {saveAmount}
- </span>
+ {/* Top-left badges */}
+ {leftBadges.length > 0 && (
+ <div className="absolute left-3 top-3 z-10 flex flex-col gap-1">
+ {leftBadges.map((b, idx) => (
+ <Badge
+ key={idx}
+ label={b.label}
+ className={cn(b.className ||"bg-yellow-400 text-slate-900")}
+ />
+ ))}
+ </div>
  )}
 
- {/* Favorite (top-right) */}
- <div className="absolute right-3 top-3 z-10">
+ {/* Top-right badges + favorite */}
+ <div className="absolute right-3 top-3 z-10 flex flex-col items-end gap-1">
+ {rightBadges.map((b, idx) => (
+ <Badge
+ key={`rb-${idx}`}
+ label={b.label}
+ className={cn(b.className ||"bg-blue-500 text-white")}
+ />
+ ))}
  <FavoriteButton
  isFavorite={isFavorite}
  onToggle={(e) => {
@@ -126,9 +167,8 @@ export default function BasketCard({
  </p>
  )}
 
- {/* Buttons */}
- <div className="mt-auto space-y-2">
- {/* Add to Cart Button - Yellow */}
+ {/* Buttons + bottom animated badges (ProductCard pattern) */}
+ <div className="mt-auto flex flex-col gap-2">
  <Button
  variant="primary"
  size="md"
@@ -142,17 +182,37 @@ export default function BasketCard({
  {t ? t("home.addToCart") :"Add to Cart"}
  </Button>
 
- {/* Special Offer Today Button - Light blue */}
+ {bottomBadges !== undefined
+ ? bottomBadges.map((b, idx) => (
+ <AnimatedButton
+ key={idx}
+ variant="primary"
+ size="sm"
+ type="button"
+ onClick={(e) => e.stopPropagation()}
+ className={cn(
+"w-full justify-center text-xs font-semibold",
+ b.className
+ )}
+ note={{
+ primary: b.label,
+ secondary: b.label,
+ }}
+ />
+ ))
+ : (
  <AnimatedButton
  variant="primary"
  size="sm"
+ type="button"
  onClick={(e) => e.stopPropagation()}
- className="bg-blue-500 hover:bg-blue-600 text-xs font-semibold px-4 w-full"
+ className="w-full justify-center bg-blue-500 hover:bg-blue-600 text-xs font-semibold text-white"
  note={{
  primary:"Special Offer Today",
  secondary:"Order Now",
  }}
  />
+ )}
  </div>
  </div>
  </div>

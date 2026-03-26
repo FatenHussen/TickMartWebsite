@@ -24,6 +24,8 @@ export interface ProductItemData {
     quantity: number;
     unit_price: number;
     subtotal: number;
+    /** When set (e.g. API price_after_discount_formatted at default qty), shown in price column instead of computed */
+    priceLineFormatted?: string;
     min_quantity?: number;
     max_quantity?: number;
     can_adjust?: boolean;
@@ -279,7 +281,8 @@ export default function ProductItemsTable({
 
                                     {/* Price */}
                                     <td className={cn("py-4 px-6 font-semibold text-custom-primary", isRTL ? "text-left" : "text-right")}>
-                                        {currencySymbol}{item.subtotal.toFixed(2)}
+                                        {item.priceLineFormatted ??
+                                            `${currencySymbol}${Number.isFinite(item.subtotal) ? item.subtotal.toFixed(2) : "0.00"}`}
                                     </td>
 
                                     {/* Action */}

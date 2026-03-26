@@ -28,6 +28,7 @@ import { _ScheduledBasketApi } from "@/features/account/api/scheduledBasketApi";
 import { queryKeys } from "@/utils/queryKeys";
 import type { OrderSummary, OrderPreviewItemPrice, OrderPreviewOrderItem } from "../types";
 import { toNum } from "../utils";
+import { matchPreviewOrderItem } from "../utils/enrichCartItems";
 
 function parseSubtotal(s: string): number {
     return parseFloat(String(s).replace(/[^0-9.]/g, "")) || 0;
@@ -459,12 +460,29 @@ export default function Cart() {
                             {/* Cart Items */}
                             <div className="space-y-4 bg-cart-items rounded-2xl p-4">
                                 {items.map((item) => {
-                                    const orderItem = item.shop_product_variant_id != null ? orderItemsByVariant.get(item.shop_product_variant_id) : undefined;
+                                    const orderItem = matchPreviewOrderItem(
+                                        item,
+                                        preview?.orderItems as OrderPreviewOrderItem[] | undefined
+                                    );
+                                    const previewPriceForItem = orderItem
+                                        ? (() => {
+                                              const priceBefore = toNum(orderItem.price);
+                                              const priceAfter = toNum(
+                                                  orderItem.price_after_discount ?? orderItem.price
+                                              );
+                                              return {
+                                                  price: priceAfter || priceBefore,
+                                                  priceBeforeDiscount:
+                                                      priceBefore > 0 ? priceBefore : undefined,
+                                              };
+                                          })()
+                                        : undefined;
                                     return (
                                         <CartItemCard
                                             key={item.id}
                                             item={item}
                                             previewPrices={previewPricesMap}
+                                            previewPrice={previewPriceForItem}
                                             displayName={orderItem?.product_name}
                                             displayVariant={orderItem?.variant}
                                             freeQuantity={item.shop_product_variant_id != null ? freeItemsByVariant.get(item.shop_product_variant_id) : undefined}

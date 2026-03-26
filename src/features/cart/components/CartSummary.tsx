@@ -1,5 +1,5 @@
 import { useState, useEffect, type ReactNode } from "react";
-import { HiArrowRight, HiTruck, HiClock } from "react-icons/hi";
+import { HiArrowRight, HiTruck, HiClock, HiGift } from "react-icons/hi";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContext";
 import { useCurrency } from "@/context/CurrencyContext";
@@ -19,6 +19,8 @@ type CartSummaryProps = {
     onAddAddress?: () => void;
     benefitsContent?: ReactNode;
     couponDisabled?: boolean;
+    /** Points earned from this order (e.g. 145); shows rewards banner when provided */
+    pointsEarned?: number;
 };
 
 export default function CartSummary({
@@ -31,6 +33,7 @@ export default function CartSummary({
     onAddAddress,
     benefitsContent,
     couponDisabled = false,
+    pointsEarned,
 }: CartSummaryProps) {
     const { t } = useTranslation();
     const { isRTL } = useLanguage();
@@ -66,13 +69,33 @@ export default function CartSummary({
     );
 
     const teal = "#00AED1";
-    const cardStyle =
-        "p-6 sticky top-4 rounded-2xl border border-custom-secondary bg-custom-card dark:bg-custom-tertiary dark:border-custom-primary shadow-sm";
+    const cardGradientBg = "linear-gradient(180deg, #77BEFF 0%, #E5F3FF 100%)";
+    const cardBorderGradient = "linear-gradient(180deg, #4CDAF6, #2C8090)";
+    const cardShadow =
+        "0 8px 10px -6px rgba(0, 174, 209, 0.1), 0 20px 25px -5px rgba(0, 174, 209, 0.1)";
+    const cardWrapperStyle = {
+        padding: "1px",
+        borderRadius: "24px",
+        background: cardBorderGradient,
+        boxShadow: cardShadow,
+    };
+    const cardInnerStyle = {
+        background: cardGradientBg,
+        borderRadius: "23px",
+        minHeight: "100%",
+    };
+    const cardStyle = "p-6 rounded-[23px]";
 
     if (status === "loading") {
         return (
             <div
-                className={`${cardStyle} space-y-6 animate-pulse`}
+                className="sticky top-4"
+                style={cardWrapperStyle}
+                dir={isRTL ? "rtl" : "ltr"}
+            >
+                <div
+                    className={`${cardStyle} space-y-6 animate-pulse`}
+                    style={cardInnerStyle}
                 dir={isRTL ? "rtl" : "ltr"}
             >
                 <div className="h-6 bg-custom-muted rounded w-1/3" />
@@ -92,16 +115,15 @@ export default function CartSummary({
                 <p className="text-sm text-custom-secondary text-center">
                     {t("cart.loadingPreview", "Loading order summary...")}
                 </p>
+                </div>
             </div>
         );
     }
 
     if (status === "no-address") {
         return (
-            <div
-                className={cardStyle}
-                dir={isRTL ? "rtl" : "ltr"}
-            >
+            <div className="sticky top-4" style={cardWrapperStyle} dir={isRTL ? "rtl" : "ltr"}>
+                <div className={cardStyle} style={cardInnerStyle}>
                 <h2 className="text-lg font-bold text-custom-primary mb-4">
                     {t("checkout.orderSummary")}
                 </h2>
@@ -118,40 +140,34 @@ export default function CartSummary({
                 >
                     {t("cart.addAddress", "Add Address")}
                 </Button>
+                </div>
             </div>
         );
     }
 
+    const discountGreen = "#22C55E";
+
     return (
-        <div
-            className={`${cardStyle} space-y-5`}
-            dir={isRTL ? "rtl" : "ltr"}
-        >
+        <div className="sticky top-4" style={cardWrapperStyle} dir={isRTL ? "rtl" : "ltr"}>
+            <div
+                className={`${cardStyle} space-y-5`}
+                style={cardInnerStyle}
+            >
             {/* Order Summary Header */}
             <h2 className="text-lg font-bold text-custom-primary">
                 {t("checkout.orderSummary")}
             </h2>
-
-            {/* Total - Prominent at top with separator */}
-            <div className="flex items-center justify-between pt-2 border-b-2 pb-5" style={{ borderColor: teal }}>
-                <span className="text-lg font-bold text-custom-primary">
-                    {t("orders.total")}:
-                </span>
-                <span className="text-lg font-bold text-custom-primary">
-                    {summary.total}
-                </span>
-            </div>
 
             {/* Coupon Code */}
             <div>
                 <div className="flex gap-2">
                     <Input
                         type="text"
-                        placeholder={t("cart.enterCode")}
+                        placeholder={t("cart.enterCode", "Enter coupon code")}
                         value={localCoupon}
                         onChange={(e) => setLocalCoupon(e.target.value)}
                         onKeyDown={handleCouponKeyDown}
-                        className="flex-1 bg-custom-card dark:bg-custom-primary rounded-xl border border-custom-secondary focus:border-primary-light"
+                        className="flex-1 bg-white rounded-xl border border-gray-200 focus:border-[#00AED1] focus:ring-1 focus:ring-[#00AED1]"
                         disabled={couponDisabled}
                     />
                     <Button
@@ -159,7 +175,8 @@ export default function CartSummary({
                         variant="primary"
                         onClick={handleApplyCoupon}
                         disabled={isLoading || couponDisabled}
-                        className="text-white whitespace-nowrap hover:opacity-90 rounded-xl bg-primary-light"
+                        className="text-white whitespace-nowrap hover:opacity-90 rounded-xl shrink-0"
+                        style={{ backgroundColor: teal }}
                     >
                         {isLoading ? "..." : t("cart.apply", "Apply")}
                     </Button>
@@ -196,81 +213,61 @@ export default function CartSummary({
             )}
 
             {/* Price Breakdown */}
-            <div className="space-y-2 text-sm">
-                <div className="flex items-center justify-between">
-                    <span className="text-custom-secondary">{t("cart.numOfItems")}:</span>
-                    <span className="font-medium text-custom-primary">
-                        {summary.numOfItems}
-                    </span>
+            <div className="space-y-2 text-sm text-custom-primary">
+                <div className="flex justify-between">
+                    <span className="text-custom-secondary">{t("cart.numOfItems", "Num of items")}:</span>
+                    <span className="font-medium">{summary.numOfItems}</span>
                 </div>
-                {summary.subtotalBeforeDiscount != null && (
-                    <div className="flex items-center justify-between">
-                        <span className="text-custom-secondary">
-                            {t("cart.subtotalBeforeDiscount", "Subtotal before discount")}:
-                        </span>
-                        <span className="font-medium text-custom-secondary line-through">
-                            {summary.subtotalBeforeDiscount}
-                        </span>
-                    </div>
-                )}
-                <div className="flex items-center justify-between">
-                    <span className="text-custom-secondary">
-                        {t("cart.itemsSubtotal", "Items subtotal")}:
-                    </span>
-                    <span className="font-medium text-custom-primary">
-                        {summary.subtotal}
-                    </span>
+                <div className="flex justify-between">
+                    <span className="text-custom-secondary">{t("cart.itemsSubtotal", "Items subtotal")}:</span>
+                    <span className="font-medium">{summary.subtotal}</span>
                 </div>
                 {summary.productDiscount != null && (
-                    <div className="flex items-center justify-between">
-                        <span className="text-custom-secondary">
-                            {t("cart.productDiscount", "Product discount")}:
-                        </span>
-                        <span className="font-medium" style={{ color: "#22C55E" }}>
-                            {summary.productDiscount}
-                        </span>
+                    <div className="flex justify-between">
+                        <span className="text-custom-secondary">{t("cart.productDiscount", "Product discount")}:</span>
+                        <span className="font-medium" style={{ color: discountGreen }}>{summary.productDiscount}</span>
                     </div>
                 )}
-                <div className="flex items-center justify-between">
-                    <span className="text-custom-secondary">
-                        {t("cart.basketDiscount", "Basket discount")}:
-                    </span>
-                    <span className="font-medium" style={{ color: "#22C55E" }}>
-                        {summary.storeDiscounts}
-                    </span>
+                <div className="flex justify-between">
+                    <span className="text-custom-secondary">{t("cart.basketDiscount", "Basket discount")}:</span>
+                    <span className="font-medium" style={{ color: discountGreen }}>{summary.storeDiscounts}</span>
                 </div>
-                <div className="flex items-center justify-between">
-                    <span className="text-custom-secondary">
-                        {t("checkout.couponDiscount")}:
-                    </span>
-                    <span className="font-medium" style={{ color: "#22C55E" }}>
-                        {summary.couponDiscount}
-                    </span>
+                <div className="flex justify-between">
+                    <span className="text-custom-secondary">{t("cart.deliveryFee", "Delivery fee")}:</span>
+                    <span className="font-medium">{summary.shipping}</span>
+                </div>
+                {/* <div className="flex justify-between">
+                    <span className="text-custom-secondary">{t("cart.tax", "Tax")}:</span>
+                    <span className="font-medium">{summary.tax}</span>
+                </div> */}
+                <div className="flex justify-between">
+                    <span className="text-custom-secondary">{t("checkout.couponDiscount", "Coupon discount")}:</span>
+                    <span className="font-medium" style={{ color: discountGreen }}>{summary.couponDiscount}</span>
                 </div>
                 {summary.subscriptionDiscount != null && (
-                    <div className="flex items-center justify-between">
-                        <span className="text-custom-secondary">
-                            {t("cart.subscriptionDiscount", "Subscription discount")}:
-                        </span>
-                        <span className="font-medium" style={{ color: "#22C55E" }}>
-                            {summary.subscriptionDiscount}
-                        </span>
+                    <div className="flex justify-between">
+                        <span className="text-custom-secondary">{t("cart.subscriptionDiscount", "Subscription discount")}:</span>
+                        <span className="font-medium" style={{ color: discountGreen }}>{summary.subscriptionDiscount}</span>
                     </div>
                 )}
                 {summary.promotionDiscount != null && (
-                    <div className="flex items-center justify-between">
-                        <span className="text-custom-secondary">
-                            {t("cart.promotionDiscount", "Promotion discount")}:
-                        </span>
-                        <span className="font-medium" style={{ color: "#22C55E" }}>
-                            {summary.promotionDiscount}
-                        </span>
+                    <div className="flex justify-between">
+                        <span className="text-custom-secondary">{t("cart.promotionDiscount", "Promotion discount")}:</span>
+                        <span className="font-medium" style={{ color: discountGreen }}>{summary.promotionDiscount}</span>
                     </div>
                 )}
+
+                {/* Separator + Total */}
+                <div className="pt-3 mt-1 border-t border-[#00AED1]/30">
+                    <div className="flex justify-between pt-2">
+                        <span className="font-bold text-custom-primary">{t("orders.total", "Total")}:</span>
+                        <span className="font-bold text-custom-primary">{summary.total}</span>
+                    </div>
+                </div>
             </div>
 
-            {/* Free Delivery Progress - White card, teal accents */}
-            <div className="bg-custom-card dark:bg-custom-primary rounded-xl p-4 shadow-sm border border-custom-secondary/30">
+            {/* Free Delivery Progress - White inner card */}
+            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
                 <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-semibold text-custom-primary">
                         {t("cart.freeDeliveryProgress", "Free delivery progress")}
@@ -284,23 +281,33 @@ export default function CartSummary({
                           })
                         : t("cart.freeDeliveryUnlocked", "You've unlocked free delivery!")}
                 </p>
-                <div className="relative h-2.5 rounded-full overflow-hidden bg-custom-muted dark:bg-custom-hover">
+                <div className="relative h-2.5 rounded-full overflow-hidden bg-gray-100">
                     <div
                         className="h-full rounded-full transition-all duration-500"
-                        style={{ width: `${progressPercentage}%`, backgroundColor: teal }}
+                        style={{
+                            width: `${progressPercentage}%`,
+                            background: `linear-gradient(90deg, #4CDAF6 0%, ${teal} 100%)`,
+                        }}
                     />
                 </div>
             </div>
 
-            {/* Points Earned */}
-            {/* <div className="rounded-lg p-4 flex items-center gap-3" style={{ backgroundColor: "#E9E0F5" }}>
-                <HiGift className="w-5 h-5 shrink-0" style={{ color: "#6B46C1" }} />
-                <p className="text-sm font-medium" style={{ color: "#6B46C1" }}>
-                    {t("cart.pointsEarned", "You'll earn 145 points from this order.")}
-                </p>
-            </div> */}
+            {/* Rewards / Points Earned */}
+            {pointsEarned != null && pointsEarned > 0 && (
+                <div
+                    className="rounded-xl py-3 px-4 flex items-center gap-3 w-full"
+                    style={{ backgroundColor: "#E9E0F5" }}
+                >
+                    <HiGift className="w-5 h-5 shrink-0" style={{ color: "#6B46C1" }} />
+                    <p className="text-sm font-medium" style={{ color: "#6B46C1" }}>
+                        {t("cart.pointsEarned", "You'll earn {{points}} points from this order.", {
+                            points: pointsEarned,
+                        })}
+                    </p>
+                </div>
+            )}
 
-            {/* Active Benefits - Bordered list style */}
+            {/* Active Benefits */}
             {benefitsContent && (
                 <div className="space-y-4 pt-1">
                     {benefitsContent}
@@ -314,22 +321,23 @@ export default function CartSummary({
                 size="lg"
                 fullWidth
                 onClick={onCheckout}
-                className="hover:opacity-90 text-white flex items-center justify-center gap-2 rounded-lg"
+                className="hover:opacity-90 text-white flex items-center justify-center gap-2 rounded-2xl font-bold"
                 style={{
                     background: "linear-gradient(180deg, #4CDAF6 0%, #00AED1 100%)",
                 }}
             >
-                {t("cart.proceedToCheckout")}
+                {t("cart.proceedToCheckout", "Proceed to checkout")}
                 <HiArrowRight className="w-5 h-5" />
             </Button>
 
-            {/* Estimated Delivery */}
-            <div className="flex items-center justify-center gap-2 text-sm">
+            {/* Estimated Delivery Footer */}
+            <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
                 <HiClock className="w-4 h-4 shrink-0" style={{ color: "#FFD700" }} />
-                <span className="text-custom-secondary">
+                <span>
                     {t("cart.estimatedDelivery", "Estimated delivery:")}{" "}
-                    <span className="font-medium text-custom-primary">Today, 2-4 PM</span>
+                    <span className="font-medium">Today, 2–4 PM</span>
                 </span>
+            </div>
             </div>
         </div>
     );

@@ -26,6 +26,7 @@ import {
 } from "react-icons/hi";
 import { paths } from "@/app/routes/path/paths";
 import { useState, useEffect, useMemo, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useAuthStore } from "@/store/auth";
 import { useAddresses } from "@/features/account/hooks/useAddress";
 import { useCheckoutStore } from "@/store/checkout";
@@ -54,6 +55,8 @@ export default function Navbar() {
     const [showAccountDropdown, setShowAccountDropdown] = useState(false);
     const [logoError, setLogoError] = useState(false);
     const closeDropdownTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const profileButtonRef = useRef<HTMLButtonElement>(null);
+    const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left?: number; right?: number } | null>(null);
 
     const { data: addresses = [], isLoading: addressesLoading } =
         useAddresses(authenticated);
@@ -115,7 +118,8 @@ export default function Navbar() {
             const target = e.target as HTMLElement;
             if (
                 target.closest("[data-account-dropdown]") ||
-                target.closest("[data-account-dropdown-trigger]")
+                target.closest("[data-account-dropdown-trigger]") ||
+                target.closest("[data-account-dropdown-panel]")
             )
                 return;
             setShowAccountDropdown(false);
@@ -123,6 +127,29 @@ export default function Navbar() {
         document.addEventListener("click", handleClickOutside);
         return () => document.removeEventListener("click", handleClickOutside);
     }, [showAccountDropdown]);
+
+    // Compute dropdown position when open (for portal - escapes overflow)
+    useEffect(() => {
+        if (!showAccountDropdown || !profileButtonRef.current) return;
+        const updatePosition = () => {
+            const btn = profileButtonRef.current;
+            if (!btn) return;
+            const rect = btn.getBoundingClientRect();
+            setDropdownPosition({
+                top: rect.bottom + 12,
+                ...(isRTL
+                    ? { left: rect.left, right: undefined }
+                    : { left: undefined, right: window.innerWidth - rect.right }),
+            });
+        };
+        updatePosition();
+        window.addEventListener("scroll", updatePosition, true);
+        window.addEventListener("resize", updatePosition);
+        return () => {
+            window.removeEventListener("scroll", updatePosition, true);
+            window.removeEventListener("resize", updatePosition);
+        };
+    }, [showAccountDropdown, isRTL]);
 
     // Clear close timeout on unmount
     useEffect(() => () => {
@@ -363,6 +390,7 @@ export default function Navbar() {
                                     }}
                                 >
                                     <button
+                                        ref={profileButtonRef}
                                         data-account-dropdown-trigger
                                         type="button"
                                         onClick={(e) => {
@@ -384,8 +412,10 @@ export default function Navbar() {
                                             </div>
                                         {/* )} */}
                                     </button>
-                                    {showAccountDropdown && (
+                                    {showAccountDropdown && dropdownPosition && createPortal(
                                         <div
+                                            data-account-dropdown-panel
+                                            dir={isRTL ? "rtl" : "ltr"}
                                             onMouseEnter={() => {
                                                 if (closeDropdownTimeoutRef.current) {
                                                     clearTimeout(closeDropdownTimeoutRef.current);
@@ -399,10 +429,15 @@ export default function Navbar() {
                                                     closeDropdownTimeoutRef.current = null;
                                                 }, 180);
                                             }}
-                                            className={`absolute top-full pt-3 z-50 transition-opacity duration-200 ${isRTL ? "left-0 right-auto" : "right-0 left-auto"
-                                                }`}
+                                            className="fixed z-[9999] pt-3 transition-opacity duration-200"
+                                            style={{
+                                                top: dropdownPosition.top,
+                                                ...(dropdownPosition.left != null
+                                                    ? { left: dropdownPosition.left, right: "auto" }
+                                                    : { right: dropdownPosition.right ?? 0, left: "auto" }),
+                                            }}
                                         >
-                                            <div className="bg-custom-card rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15),0_0_0_1px_rgba(0,0,0,0.05)] dark:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.4)] min-w-[260px] overflow-hidden">
+                                            <div className={`bg-custom-card rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15),0_0_0_1px_rgba(0,0,0,0.05)] dark:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.4)] min-w-[260px] overflow-hidden ${isRTL ? "ml-0" : "mr-0"}`}>
                                                 <div className="p-2 max-h-[70vh] overflow-y-auto">
                                                     {accountItems.map((item) => {
                                                         const Icon = item.icon;
@@ -422,7 +457,8 @@ export default function Navbar() {
                                                     })}
                                                 </div>
                                             </div>
-                                        </div>
+                                        </div>,
+                                        document.body
                                     )}
                                 </div>
                             )}

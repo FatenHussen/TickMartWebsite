@@ -1,5 +1,7 @@
 import SliderSection from"../core/SliderSection";
 import BestSellersCard from"@/shared/component/card/BestSellersCard";
+import { useTranslation } from"react-i18next";
+import type { ProductCardBadge } from"@/shared/component/card/ProductCard";
 import type { SliderVariantProps } from"./variant.types";
 
 type SellerProduct = {
@@ -10,6 +12,8 @@ type SellerProduct = {
  rating: number;
  image: string;
  category?: string;
+ badge?: ProductCardBadge | ProductCardBadge[];
+ bottomBadges?: ProductCardBadge[];
  badges?: Array<{ label: string; className?: string }>;
  topRightBadge?: { label: string; className?: string };
  sold?: number;
@@ -45,6 +49,7 @@ export default function ProductsFromSameSellerVariant({
  payload,
  ui,
 }: SliderVariantProps) {
+ const { t } = useTranslation();
  const items: SellerProduct[] =
  (payload as { items?: SellerProduct[] })?.items || defaultProducts;
  const onProductClick =
@@ -79,12 +84,15 @@ export default function ProductsFromSameSellerVariant({
  rating={product.rating}
  image={product.image}
  category={product.category}
+ badge={product.badge}
+ bottomBadges={product.bottomBadges}
  badges={product.badges}
  topRightBadge={product.topRightBadge}
  sold={product.sold}
  savings={product.savings}
  buttonText={product.buttonText}
  buttonTextSecond={product.buttonTextSecond}
+ t={t}
  isFavorite={(product as { isFavorite?: boolean }).isFavorite ?? favoriteIds.includes(product.id as number)}
  onToggleFavorite={(id) => onToggleFavorite?.(id)}
  onClick={(id) => onProductClick?.(id)}

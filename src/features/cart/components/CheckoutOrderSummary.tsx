@@ -189,6 +189,23 @@ export default function CheckoutOrderSummary({
                             {summary.subtotal}
                         </span>
                     </div>
+                    {summary.deliveryFees && summary.deliveryFees !== "-" && (
+                        <div className="flex items-center justify-between">
+                            <span className="text-custom-primary text-sm">
+                                {t("checkout.deliveryFees")}
+                            </span>
+                            <span
+                                className="font-semibold text-sm text-custom-primary"
+                                style={
+                                    summary.deliveryFees === "Free"
+                                        ? { color: "var(--color-green)" }
+                                        : undefined
+                                }
+                            >
+                                {summary.deliveryFees}
+                            </span>
+                        </div>
+                    )}
                     {summary.storeDiscounts && (
                         <div className="flex items-center justify-between">
                             <span className="text-custom-primary text-sm">Discounts</span>

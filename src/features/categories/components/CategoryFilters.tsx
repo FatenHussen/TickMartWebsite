@@ -55,7 +55,7 @@ export default function CategoryFilters({
  <input
  type="radio"
  name="categoryType"
- checked={(typeFilter ?? localType) === opt.value}
+ checked={localType === opt.value}
  onChange={() => setLocalType(opt.value)}
  className="w-4 h-4 border-custom-secondary text-primary-light focus:ring-primary-light"
  />

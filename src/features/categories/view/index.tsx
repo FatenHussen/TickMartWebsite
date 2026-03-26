@@ -13,17 +13,12 @@ import { _CategoriesApi } from "../api/categoriesApi";
 import { useInfiniteList } from "@/shared/hooks/useInfiniteList";
 import { useToggleFavorite } from "@/features/account/hooks/useFavorites";
 import { paths } from "@/app/routes/path/paths";
-import type { ApiCategory, ApiProduct, CategoryChild } from "../types";
+import type { ApiCategory, ApiProduct, CategoryChild, ProductBadge } from "../types";
 import type { CategoryTypeFilter } from "../components/CategoryFilters";
-
-const badgeColorMap: Record<string, string> = {
-    success: "bg-green-500 text-white",
-    warning: "bg-yellow-400 text-black",
-    danger: "bg-red-500 text-white",
-    primary: "bg-primary-light text-white",
-    info: "bg-blue-500 text-white",
-    new: "bg-primary-light text-white",
-};
+import {
+    mapApiBottomBadgesToProductCard,
+    mapApiTopBadgesToProductCard,
+} from "@/shared/lib/mapProductBadges";
 
 // Map UI sortBy value → API sortField / sortOrder
 function mapSortToApi(sortBy: string): {
@@ -59,8 +54,7 @@ export default function CategoriesView() {
     const [categoryTypeFilter, setCategoryTypeFilter] = useState<CategoryTypeFilter>(undefined);
     const [favoriteStates, setFavoriteStates] = useState<Record<number, boolean>>({});
 
-    const { data: categories = [], isLoading: categoriesLoading } =
-        useCategories(categoryTypeFilter);
+    const { data: categories = [], isLoading: categoriesLoading } = useCategories();
 
     const toggleFavorite = useToggleFavorite();
 
@@ -76,8 +70,9 @@ export default function CategoriesView() {
             sortOrder,
             is_free_delivery: freeDeliveryOnly ? (1 as const) : undefined,
             in_stock_only: inStockOnly ? (1 as const) : undefined,
+            type: categoryTypeFilter,
         }),
-        [sortField, sortOrder, freeDeliveryOnly, inStockOnly],
+        [sortField, sortOrder, freeDeliveryOnly, inStockOnly, categoryTypeFilter],
     );
 
     const {
@@ -244,16 +239,16 @@ export default function CategoriesView() {
                                                 ? `${t("product.youSaved", "You saved")} ${product.amount_saved_formatted ?? `${product.currency_symbol ?? ""}${product.amount_saved}`}`
                                                 : undefined
                                         }
-                                        badge={
-                                            product.top_badges && product.top_badges.length > 0
-                                                ? product.top_badges.map((b) => ({
-                                                    label: b.name,
-                                                    className:
-                                                        badgeColorMap[b.color] || "bg-primary-light text-white",
-                                                }))
-                                                : undefined
-                                        }
+                                        badge={mapApiTopBadgesToProductCard(
+                                            product.top_badges?.length
+                                                ? product.top_badges
+                                                : (product as { budges?: ProductBadge[] }).budges
+                                        )}
+                                        bottomBadges={mapApiBottomBadgesToProductCard(
+                                            product.bottom_badges
+                                        )}
                                         deliveryInfo={t("home.freeDelivery", "Free Delivery")}
+                                        t={t}
                                         onClick={handleProductClick}
                                     />
                                 ))}
