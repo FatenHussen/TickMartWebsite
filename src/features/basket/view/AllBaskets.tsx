@@ -13,6 +13,10 @@ import { useInfiniteScroll } from "@/shared/hooks/useInfiniteScroll";
 import SideContentLayout from "@/layout/SideContentLayout";
 import BasketFiltersSidebar from "../components/BasketFiltersSidebar";
 import type { BasketItem, BasketFilters } from "../types/basket";
+import {
+    mapApiBottomBadgesToProductCard,
+    mapApiTopBadgesToProductCard,
+} from "@/shared/lib/mapProductBadges";
 
 const DEFAULT_FILTERS: BasketFilters = { basketType: "all" };
 
@@ -89,7 +93,10 @@ export default function AllBaskets() {
     };
 
     const handleAddToCart = (basketId: number) => {
-        console.log("Add to cart:", basketId);
+        const basket = allBaskets.find((b) => b.id === basketId);
+        navigate(`/basket/${basketId}`, {
+            state: { next_delivery_date: basket?.next_delivery_date },
+        });
     };
 
     const toggleFavorite = useToggleFavorite();
@@ -177,6 +184,14 @@ export default function AllBaskets() {
                                                 ? `${t("baskets.save")} ${basket.saving_formatted ?? `${basket.currency_symbol ?? "$"}${basket.saving}`}`
                                                 : undefined
                                         }
+                                        badge={mapApiTopBadgesToProductCard(
+                                            basket.top_badges?.length
+                                                ? basket.top_badges
+                                                : basket.budges
+                                        )}
+                                        bottomBadges={mapApiBottomBadgesToProductCard(
+                                            basket.bottom_badges
+                                        )}
                                         offerEndingDate={
                                             basket.is_on_offer
                                                 ? `${t("baskets.offerEnding")}: ${basket.offer_ends_at}`

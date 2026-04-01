@@ -3,11 +3,6 @@ import { createRoot } from"react-dom/client";
 import { Toaster } from"sonner";
 import"./index.css";
 import App from"./App.tsx";
-
-
-
-import FcmTokenManager from"./components/FcmTokenManager.tsx";
-
 import { createBrowserRouter, Outlet, RouterProvider } from"react-router-dom";
 import { routesSection } from"./app/routes/section/index.tsx";
 import { QueryClient, QueryClientProvider } from"@tanstack/react-query";
@@ -26,7 +21,6 @@ const router = createBrowserRouter([
  Component: () => (
  <QueryClientProvider client={queryClient}>
  <App>
- <FcmTokenManager />
  <Outlet />
  <Toaster richColors closeButton position="top-center"/>
  </App>

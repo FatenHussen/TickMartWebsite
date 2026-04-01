@@ -69,7 +69,6 @@ export default function CartSummary({
     );
 
     const teal = "#00AED1";
-    const cardGradientBg = "linear-gradient(180deg, #77BEFF 0%, #E5F3FF 100%)";
     const cardBorderGradient = "linear-gradient(180deg, #4CDAF6, #2C8090)";
     const cardShadow =
         "0 8px 10px -6px rgba(0, 174, 209, 0.1), 0 20px 25px -5px rgba(0, 174, 209, 0.1)";
@@ -80,11 +79,10 @@ export default function CartSummary({
         boxShadow: cardShadow,
     };
     const cardInnerStyle = {
-        background: cardGradientBg,
         borderRadius: "23px",
         minHeight: "100%",
     };
-    const cardStyle = "p-6 rounded-[23px]";
+    const cardStyle = "bg-cart-summary p-6 rounded-[23px]";
 
     if (status === "loading") {
         return (

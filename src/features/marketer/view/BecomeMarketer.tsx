@@ -8,6 +8,7 @@ import { useMarketerTermsConditions } from"@/features/legal/hooks/useLegalDocume
 import { useSendMarketerRequest } from"@/features/marketer/hooks/useMarketer";
 import { useAuthStore } from"@/store/auth";
 import { toast } from"sonner";
+import { getApiErrorMessage, getApiSuccessMessage } from"@/shared/lib/apiMessage";
 
 export default function BecomeMarketer() {
  const { isRTL } = useLanguage();
@@ -63,15 +64,11 @@ export default function BecomeMarketer() {
  if (res.status || res.success) {
  setShowSuccessModal(true);
  } else {
- toast.error(res.message);
+ toast.error(getApiSuccessMessage(res, "Request failed"));
  }
  },
  onError: (err: unknown) => {
- const msg =
- (err as { response?: { data?: { message?: string } }; message?: string })
- ?.response?.data?.message ||
- (err as { message?: string })?.message ||
-"Request failed";
+ const msg = getApiErrorMessage(err, "Request failed");
  toast.error(msg);
  },
  });

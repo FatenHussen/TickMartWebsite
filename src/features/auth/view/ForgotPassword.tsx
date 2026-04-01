@@ -47,7 +47,7 @@ export default function ForgotPassword() {
  aria-hidden
  />
  <span className="text-xl font-bold text-custom-primary">
- Tikmool
+ Tikmart
  </span>
  </div>
 

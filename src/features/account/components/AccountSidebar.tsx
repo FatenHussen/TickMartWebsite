@@ -22,6 +22,7 @@ import {
  HiCog,
  HiLogout,
  HiTrendingUp,
+ HiTrash,
 } from"react-icons/hi";
 import type { IconType } from"react-icons";
 
@@ -180,6 +181,25 @@ export default function AccountSidebar({ user }: AccountSidebarProps) {
  <HiLogout className="w-5 h-5 shrink-0"style={{ color:"#DC3545"}} />
  <span className="text-sm font-medium">{t("account.menu.logout")}</span>
  </button>
+ </li>
+
+ {/* Delete Account */}
+ <li>
+ <NavLink
+ to="/account/delete"
+ className={cn(
+"flex items-center gap-3 px-6 py-3 transition-all duration-200",
+ location.pathname === "/account/delete"
+ ?"bg-custom-primary text-red-500 font-medium shadow-md"
+ :"text-red-400",
+ location.pathname === "/account/delete" && !isRTL &&"ml-3 rounded-l-3xl",
+ location.pathname === "/account/delete" && isRTL &&"mr-3 rounded-r-3xl",
+ isRTL &&"flex-row-reverse"
+ )}
+ >
+ <HiTrash className="w-5 h-5 shrink-0" />
+ <span className="text-sm font-medium">{t("account.menu.deleteAccount")}</span>
+ </NavLink>
  </li>
  </ul>
  </nav>

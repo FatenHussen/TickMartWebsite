@@ -6,6 +6,8 @@ export type ApiProductBadgeLike = {
     id?: number;
     name: string;
     color?: string | null;
+    type?: string | null;
+    image?: string | null;
     /** API typo */
     postion?: string | null;
     position?: string | null;
@@ -17,27 +19,44 @@ function horizontalAlign(pos: string | null | undefined): "left" | "right" {
     return "left";
 }
 
+export type MapApiBadgesOptions = {
+    /** Max badges to map (default: all badges) */
+    max?: number;
+};
+
 /** Map `top_badges` / `budges` → ProductCard top overlay badges */
 export function mapApiTopBadgesToProductCard(
-    badges: ApiProductBadgeLike[] | undefined | null
+    badges: ApiProductBadgeLike[] | undefined | null,
+    options?: MapApiBadgesOptions
 ): ProductCardBadge[] | undefined {
     if (!badges?.length) return undefined;
-    return badges.map((b) => ({
+    const max = options?.max !== undefined ? options.max : badges.length;
+    const slice = max <= 0 ? [] : badges.slice(0, max);
+    if (!slice.length) return undefined;
+    return slice.map((b) => ({
         label: b.name,
         className: getProductBadgeClassName(b.color),
         align: horizontalAlign(b.position ?? b.postion),
         rawLabel: true,
+        type: b.type ?? undefined,
+        image: b.image ?? undefined,
     }));
 }
 
 /** Map `bottom_badges` → ProductCard bottom AnimatedButton rows */
 export function mapApiBottomBadgesToProductCard(
-    badges: ApiProductBadgeLike[] | undefined | null
+    badges: ApiProductBadgeLike[] | undefined | null,
+    options?: MapApiBadgesOptions
 ): ProductCardBadge[] | undefined {
     if (!badges?.length) return undefined;
-    return badges.map((b) => ({
+    const max = options?.max !== undefined ? options.max : badges.length;
+    const slice = max <= 0 ? [] : badges.slice(0, max);
+    if (!slice.length) return undefined;
+    return slice.map((b) => ({
         label: b.name,
         className: getProductBadgeClassName(b.color),
         rawLabel: true,
+        type: b.type ?? undefined,
+        image: b.image ?? undefined,
     }));
 }

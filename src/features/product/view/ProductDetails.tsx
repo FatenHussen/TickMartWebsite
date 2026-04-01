@@ -628,13 +628,18 @@ function ProductDetails() {
             <div className="page-container py-8" dir={isRTL ? "rtl" : "ltr"}>
                 <div className="grid grid-cols-1 gap-24 lg:grid-cols-2">
                     {/* Left – Product Images */}
-                    <div>
+                    <div className="flex flex-col gap-8">
                         <ProductImageGallery
                             key={selectedVariant?.id ?? "base"}
                             images={currentImages}
                             isFavorite={isFavorite}
                             onToggleFavorite={handleToggleFavorite}
                             onShare={handleShare}
+                        />
+
+                        <ProductDescription
+                            description={product.description}
+                            fullDescription={product.full_description}
                         />
                     </div>
 
@@ -733,7 +738,7 @@ function ProductDetails() {
                         {!isFood &&
                             product.category_details &&
                             product.category_details.length > 0 && (
-                                <div className="mt-4">
+                                <div className="">
                                     <h3 className="text-lg font-semibold text-custom-primary mb-3">
                                         {t(
                                             "product.categoryDetails",
@@ -766,10 +771,6 @@ function ProductDetails() {
                                 </div>
                             )}
 
-                        <ProductDescription
-                            description={product.description}
-                            fullDescription={product.full_description}
-                        />
                     </div>
                 </div>
 

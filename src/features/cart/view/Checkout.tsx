@@ -7,6 +7,7 @@ import CheckoutAddressSection from "../components/CheckoutAddressSection";
 import CheckoutPaymentSection from "../components/CheckoutPaymentSection";
 import CheckoutOrderSummary from "../components/CheckoutOrderSummary";
 import CheckoutProgressIndicator from "@/shared/component/CheckoutProgressIndicator";
+import OrderFlowHeader from "@/shared/component/OrderFlowHeader";
 import { useAddresses } from "@/features/account/hooks/useAddress";
 import { useOrderPreview } from "../hooks/useOrderPreview";
 import { useCartStore } from "@/store/cart";
@@ -14,10 +15,10 @@ import { useCheckoutStore } from "@/store/checkout";
 import AddressForm from "@/features/account/view/AddressForm";
 import { usePaymentMethods } from "../hooks/usePaymentMethods";
 import type { DeliveryAddress, CheckoutOrderSummary as CheckoutOrderSummaryType } from "../types";
-import { toNum } from "../utils";
 import { enrichCartItemsWithPreview, getFreeOnlyDisplayItems } from "../utils/enrichCartItems";
 import { useCurrency } from "@/context/CurrencyContext";
 import type { Address } from "@/features/account/types";
+import { mapPreviewToCheckoutSummary } from "../utils/orderSummary";
 
 import circle from "/images/shared/circle.png";
 import circleBottom from "/images/shared/circleBottom.png";
@@ -113,7 +114,7 @@ export default function Checkout() {
         paymentMethods[0]?.id ||
         ""
     );
-    const [additionalNotes, setLocalAdditionalNotes] = useState(storedNotes);
+    const [additionalNotes] = useState(storedNotes);
     const [showAddAddressForm, setShowAddAddressForm] = useState(false);
 
     const { data: preview } = useOrderPreview(
@@ -138,20 +139,8 @@ export default function Checkout() {
 
     const checkoutSummary = useMemo<CheckoutOrderSummaryType | null>(() => {
         if (!preview) return null;
-        const couponDisc = preview.coupon?.applied ? preview.coupon.discount : 0;
-        return {
-            items: displayItems,
-            itemsTotal: `£${toNum(preview.subtotal).toFixed(2)}`,
-            subtotal: `£${toNum(preview.subtotal).toFixed(2)}`,
-            deliveryFees:
-                toNum(preview.delivery_price) === 0
-                    ? "Free"
-                    : `£${toNum(preview.delivery_price).toFixed(2)}`,
-            storeDiscounts: `-£${toNum(preview.basket_discount_amount).toFixed(2)}`,
-            couponDiscount: `-£${toNum(couponDisc).toFixed(2)}`,
-            total: `£${toNum(preview.total).toFixed(2)}`,
-        };
-    }, [preview, displayItems]);
+        return mapPreviewToCheckoutSummary(preview, displayItems, formatPrice);
+    }, [displayItems, formatPrice, preview]);
 
     useEffect(() => {
         if (defaultAddress && !storedAddressId && checkoutAddresses.length > 0) {
@@ -202,6 +191,7 @@ export default function Checkout() {
 
     return (
         <div className="bg-custom-primary min-h-screen relative">
+               <OrderFlowHeader />
             <div className="page-container py-6" dir={isRTL ? "rtl" : "ltr"}>
                 <img src={circle} alt="" className="absolute left-0 top-0" />
                 <img
@@ -209,6 +199,8 @@ export default function Checkout() {
                     alt=""
                     className="absolute right-0 -bottom-2/4"
                 />
+
+             
 
                 {/* Progress Indicator */}
                 <div className="mb-8">
@@ -221,12 +213,12 @@ export default function Checkout() {
                             summary={
                                 checkoutSummary ?? {
                                     items: [],
-                                    itemsTotal: "£0.00",
-                                    subtotal: "£0.00",
+                                    itemsTotal: formatPrice(0),
+                                    subtotal: formatPrice(0),
                                     deliveryFees: "-",
-                                    storeDiscounts: "£0.00",
-                                    couponDiscount: "£0.00",
-                                    total: "£0.00",
+                                    storeDiscounts: formatPrice(0),
+                                    couponDiscount: formatPrice(0),
+                                    total: formatPrice(0),
                                 }
                             }
                             onPlaceOrder={handlePlaceOrder}
@@ -256,7 +248,7 @@ export default function Checkout() {
                         )}
 
                         {/* Additional Info Section */}
-                        <div className="mb-6">
+                        {/* <div className="mb-6">
                             <h2 className="text-lg font-bold text-custom-primary mb-4">
                                 {t("checkout.additionalInfoOptional", "Additional Info (Optional)")}
                             </h2>
@@ -270,7 +262,7 @@ export default function Checkout() {
                                 rows={4}
                                 className="w-full px-4 py-3 rounded-xl border border-custom-primary bg-custom-card text-custom-primary placeholder:text-custom-secondary focus:outline-none focus:ring-2 focus:ring-primary-light focus:border-primary-light resize-none"
                             />
-                        </div>
+                        </div> */}
 
                         {/* Payment Method Section */}
                         <CheckoutPaymentSection

@@ -32,11 +32,19 @@ export default function AnimatedButton({
  {...props}
  style={{ ...(props.style || {}), ...style }}
  className={cn(
-"relative overflow-hidden rounded-full flex items-center justify-center w-2/4",
+"relative inline-flex overflow-hidden rounded-full items-center justify-center",
  heightClassName,
  className
  )}
  >
+ <span className="invisible grid pointer-events-none">
+ <span className={cn("col-start-1 row-start-1 whitespace-nowrap px-1", heightClassName)}>
+ {note.primary}
+ </span>
+ <span className={cn("col-start-1 row-start-1 whitespace-nowrap px-1", heightClassName)}>
+ {note.secondary}
+ </span>
+ </span>
  <span className="ab-track">
  <span className={cn("ab-row", heightClassName)}>{note.primary}</span>
  <span className={cn("ab-row", heightClassName)}>{note.secondary}</span>

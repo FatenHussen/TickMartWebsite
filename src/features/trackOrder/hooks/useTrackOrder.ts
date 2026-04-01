@@ -50,14 +50,19 @@ function mapApiToTrackOrder(
  ].filter(Boolean);
 
  const deliveryIsFree = raw.delivery_price === 0;
+  const basketDiscount = Number(raw.basket_discount ?? 0);
+  const couponDiscount = Number(raw.coupon_discount ?? 0);
 
  return {
  orderNumber: raw.order_code ?? String(raw.id),
  status: raw.status as TrackOrderStatus,
  store: storeName,
  items,
+    totalQuantity: raw.total_quantity,
  paymentMethod: raw.payment_method?.name ??"",
  itemsSubtotal: formatPrice(raw.subtotal),
+    ...(basketDiscount > 0 && { basketDiscount: `-${formatPrice(basketDiscount)}` }),
+    ...(couponDiscount > 0 && { couponDiscount: `-${formatPrice(couponDiscount)}` }),
  deliveryFee: deliveryIsFree ?"Free delivery": formatPrice(raw.delivery_price),
  deliveryIsFree,
  totalAmount: formatPrice(raw.total),

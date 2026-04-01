@@ -21,29 +21,19 @@ export default function PointsRewardsCard({
 
   return (
     <div
-      className="rounded-xl p-4 sm:p-6 shadow-sm"
+      className="rounded-xl border border-custom-primary bg-amber-50/90 p-4 shadow-sm dark:bg-slate-800/80 dark:ring-1 dark:ring-white/10 sm:p-6"
       dir={isRTL ? "rtl" : "ltr"}
-      style={{
-        backgroundColor: "#fef9e7", // Light yellow background like image
-      }}
     >
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 lg:gap-8 w-full sm:w-auto">
           {/* Your Points */}
           <div className="flex items-center gap-3 flex-1 sm:flex-initial min-w-0 sm:min-w-[180px] lg:min-w-[220px]">
-            <div
-              className="w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center shrink-0"
-              style={{
-                backgroundColor: "#fde047", // Bright yellow like image
-              }}
-            >
-              <FaCoins className="text-xl sm:text-2xl text-slate-900" />
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-yellow-300 sm:h-14 sm:w-14 dark:bg-yellow-500/35">
+              <FaCoins className="text-xl text-yellow-900 sm:text-2xl dark:text-yellow-100" />
             </div>
             <div className="min-w-0">
-              <p className="text-xs mb-1" style={{ color: "#6b7280" }}>
-                {t("home.yourPoints")}
-              </p>
-              <p className="text-base sm:text-lg font-bold" style={{ color: "#1a1a1a" }}>
+              <p className="mb-1 text-xs text-custom-secondary">{t("home.yourPoints")}</p>
+              <p className="text-base font-bold text-custom-primary sm:text-lg">
                 {points.toLocaleString()}
               </p>
             </div>
@@ -51,19 +41,12 @@ export default function PointsRewardsCard({
 
           {/* Rewards */}
           <div className="flex items-center gap-3 flex-1 sm:flex-initial min-w-0 sm:min-w-[180px] lg:min-w-[220px]">
-            <div
-              className="w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center shrink-0"
-              style={{
-                backgroundColor: "#bbf7d0", // Light green like image
-              }}
-            >
-              <HiGift className="text-xl sm:text-2xl" style={{ color: "#16a34a" }} />
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-green-200 sm:h-14 sm:w-14 dark:bg-emerald-900/50">
+              <HiGift className="text-xl text-green-700 sm:text-2xl dark:text-emerald-300" />
             </div>
             <div className="min-w-0">
-              <p className="text-xs mb-1" style={{ color: "#6b7280" }}>
-                {t("home.rewards")}
-              </p>
-              <p className="text-base sm:text-lg font-bold" style={{ color: "#1a1a1a" }}>
+              <p className="mb-1 text-xs text-custom-secondary">{t("home.rewards")}</p>
+              <p className="text-base font-bold text-custom-primary sm:text-lg">
                 {rewardsCount} {t("home.available")}
               </p>
             </div>
@@ -71,22 +54,12 @@ export default function PointsRewardsCard({
 
           {/* Active Subscription */}
           <div className="flex items-center gap-3 flex-1 sm:flex-initial min-w-0 sm:min-w-[180px] lg:min-w-[220px]">
-            <div
-              className="w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center shrink-0"
-              style={{
-                backgroundColor: "#fce7f3", // Light pink like image
-              }}
-            >
-              <HiPercentBadge
-                className="text-xl sm:text-2xl"
-                style={{ color: "#dc2626" }}
-              />
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-pink-100 sm:h-14 sm:w-14 dark:bg-rose-900/45">
+              <HiPercentBadge className="text-xl text-rose-600 sm:text-2xl dark:text-rose-300" />
             </div>
             <div className="min-w-0">
-              <p className="text-xs mb-1" style={{ color: "#6b7280" }}>
-                {t("home.activeSubscription")}
-              </p>
-              <p className="text-base sm:text-lg font-bold truncate" style={{ color: "#1a1a1a" }}>
+              <p className="mb-1 text-xs text-custom-secondary">{t("home.activeSubscription")}</p>
+              <p className="truncate text-base font-bold text-custom-primary sm:text-lg">
                 {subscriptionName ?? "—"}
               </p>
             </div>
@@ -96,11 +69,7 @@ export default function PointsRewardsCard({
         {/* View Details Button */}
         <Link
           to={paths.account.pointsRewards}
-          className="inline-flex items-center justify-center gap-2 font-semibold rounded-lg px-5 py-2 text-sm w-full sm:w-auto whitespace-nowrap shrink-0 focus:outline-none focus:ring-2 focus:ring-offset-2"
-          style={{
-            backgroundColor: "var(--color-primary)",
-            color: "white",
-          }}
+          className="inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-lg bg-custom-accent px-5 py-2 text-sm font-semibold whitespace-nowrap text-white focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2 focus:ring-offset-[var(--color-bg-primary)] sm:w-auto dark:focus:ring-offset-slate-900"
         >
           {t("home.viewDetails")}
         </Link>

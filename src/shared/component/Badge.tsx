@@ -4,6 +4,10 @@ export type BadgeProps = {
  label: string;
  variant?:"default"|"blue"|"yellow"|"green"|"red"|"gray";
  className?: string;
+ imageSrc?: string;
+ type?: "image" | "text" | string;
+ imageAlt?: string;
+ imageClassName?: string;
 };
 
 const variantStyles = {
@@ -19,7 +23,27 @@ export default function Badge({
  label,
  variant ="default",
  className,
+ imageSrc,
+ type,
+ imageAlt,
+ imageClassName,
 }: BadgeProps) {
+ const shouldRenderImage = Boolean(imageSrc && (type === "image" || !type));
+
+ if (shouldRenderImage) {
+ return (
+ <img
+ src={imageSrc}
+ alt={imageAlt ?? label}
+ className={cn(
+ "h-6 w-auto max-w-[96px] rounded-lg object-contain",
+ imageClassName,
+ className
+ )}
+ />
+ );
+ }
+
  return (
  <span
  className={cn(

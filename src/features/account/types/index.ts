@@ -103,6 +103,8 @@ export interface FavoriteBadge {
  name: string;
  color: string;
  postion: string | null;
+ type?: string;
+ image?: string;
 }
 
 export interface FavoriteBadgeApi {
@@ -110,6 +112,7 @@ export interface FavoriteBadgeApi {
  name: string;
  color: string;
  postion: string | null;
+ type?: string;
  image?: string;
 }
 
@@ -173,6 +176,7 @@ export interface WishlistBadge {
  id: number;
  name: string;
  color: string;
+ type?: string;
  image?: string;
 }
 

@@ -1,20 +1,26 @@
-import CategoryTopNav from"@/shared/component/CategoryTopNav";
+import CategoryTopNav, {
+    type CategoryNavItem,
+} from "@/shared/component/CategoryTopNav";
 
-function CategoryStore() {
- const topNavCategories: any[] = [
- { id: 1, name:"testing", selected: true },
- { id: 2, name:"testing", selected: false },
- { id: 3, name:"testing", selected: false },
- { id: 4, name:"testing", selected: false },
- { id: 5, name:"testing", selected: false },
- { id: 6, name:"testing", selected: false },
- ];
+type CategoryStoreProps = {
+    categories: CategoryNavItem[];
+    onSelectCategory: (categoryId: number) => void;
+};
 
- return (
- <div className="mt-6 bg-blue-off rounded-3xl p-6 flex justify-start">
- <CategoryTopNav categories={topNavCategories} />
- </div>
- );
+function CategoryStore({
+    categories,
+    onSelectCategory,
+}: CategoryStoreProps) {
+    if (categories.length === 0) return null;
+
+    return (
+        <div className="mt-6 bg-blue-off rounded-3xl p-6 flex justify-start">
+            <CategoryTopNav
+                categories={categories}
+                onCategoryClick={onSelectCategory}
+            />
+        </div>
+    );
 }
 
 export default CategoryStore;

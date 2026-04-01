@@ -1,14 +1,14 @@
 import { useEffect, useRef } from"react";
 import axios from"axios";
-import { requestFcmToken } from"@/firebase";
+import { requestFcmToken, setupForegroundMessageListener } from"@/firebase";
 import { useAuthStore } from"@/store/auth";
 
 const DEVICE_ID_KEY ="fcm_device_id";
 const LAST_TOKEN_KEY ="fcm_last_token";
 
 const BASE_URL = import.meta.env.DEV
- ?"https://tikmool.octopus-software.online/api"
- :"https://tikmool.octopus-software.online/api/";
+ ?"https://tickdash.tickmartsy.com/api"
+ :"https://tickdash.tickmartsy.com/api/";
 
 function getOrCreateDeviceId(): string {
  let id = localStorage.getItem(DEVICE_ID_KEY);
@@ -43,6 +43,7 @@ async function sendTokenToServer(
 
 export default function FcmTokenManager() {
  const ran = useRef(false);
+ const unsubscribeRef = useRef<null | (() => void)>(null);
  const token = useAuthStore((s) => s.token);
 
  useEffect(() => {
@@ -63,6 +64,28 @@ export default function FcmTokenManager() {
 
  await sendTokenToServer(fcmToken, deviceId, token);
  })();
+ }, [token]);
+
+ useEffect(() => {
+ if (!token) return;
+
+ let mounted = true;
+
+ (async () => {
+ if (unsubscribeRef.current) return;
+ const unsubscribe = await setupForegroundMessageListener();
+ if (!mounted) {
+ unsubscribe();
+ return;
+ }
+ unsubscribeRef.current = unsubscribe;
+ })();
+
+ return () => {
+ mounted = false;
+ unsubscribeRef.current?.();
+ unsubscribeRef.current = null;
+ };
  }, [token]);
 
  return null;

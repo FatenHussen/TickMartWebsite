@@ -29,12 +29,15 @@ export interface ProductBadge {
  id: number;
  name: string;
  color:"success"|"warning"|"danger"| string;
+ type?: string;
+ image?: string;
  postion:"top"|"bottom"| string;
 }
 
 // Product from API
 export interface ApiProduct {
  id: number;
+category_id?: number;
  category: string;
  name: string;
  description: string;

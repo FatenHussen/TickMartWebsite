@@ -4,11 +4,14 @@ import AnimatedButton from "../../ui/AnimatedButton";
 import Button from "@/shared/ui/Button";
 import Badge from "@/shared/component/Badge";
 import FavoriteButton from "@/shared/component/FavoriteButton";
+import LazyImage from "@/shared/component/LazyImage";
 
 export type ProductCardBadge = {
     label: string;
     className?: string;
     align?: "left" | "right";
+    type?: "image" | "text" | string;
+    image?: string;
     /** When true, `label` is shown as-is (API `name`). Otherwise `t` maps `home.${label}` when `t` is passed */
     rawLabel?: boolean;
 };
@@ -25,6 +28,7 @@ export function resolveProductCardBadgeLabel(
 export type ProductCardProps = {
     id: number;
     name: string;
+    description?: string;
     store?: string;
     price: string;
     originalPrice?: string;
@@ -36,6 +40,7 @@ export type ProductCardProps = {
     isFavorite?: boolean;
     sold?: number;
     savings?: string;
+    discountLabel?: string;
     deliveryInfo?: string;
     /** Bottom-row badges (e.g. API `bottom_badges`) — each rendered as an animated label button */
     bottomBadges?: ProductCardBadge[];
@@ -54,6 +59,7 @@ export default function ProductCard({
 
     id,
     name,
+    description,
     store: _store,
     price,
     originalPrice,
@@ -64,6 +70,7 @@ export default function ProductCard({
     isFavorite = false,
     sold,
     savings,
+    discountLabel,
     deliveryInfo,
     bottomBadges,
     onToggleFavorite,
@@ -76,6 +83,7 @@ export default function ProductCard({
     const allBadges = badge ? (Array.isArray(badge) ? badge : [badge]) : [];
     const leftBadges = allBadges.filter((b) => (b.align ?? "left") === "left");
     const rightBadges = allBadges.filter((b) => b.align === "right");
+    const bottomBadgesShown = bottomBadges?? [];
 
     return (
         <div
@@ -94,11 +102,11 @@ export default function ProductCard({
         >
             {/* Image Section */}
             <div className="relative h-48 w-full">
-                <img
+                <LazyImage
                     src={image}
                     alt={name}
                     className="h-full w-full object-cover"
-                    loading="lazy"
+                    wrapperClassName="h-full w-full"
                 />
 
                 {/* Left Badges (top-left, stacked vertically) */}
@@ -108,32 +116,33 @@ export default function ProductCard({
                             <Badge
                                 key={idx}
                                 label={resolveProductCardBadgeLabel(b, t)}
+                                type={b.type}
+                                imageSrc={b.image}
+                                imageAlt={resolveProductCardBadgeLabel(b, t)}
                                 className={cn(b.className || "bg-blue-500 text-white")}
                             />
                         ))}
                     </div>
                 )}
 
-                {/* Right Badges (top-right, stacked vertically) */}
+                {/* Right Badges (top-right, stacked vertically under favorite) */}
                 {rightBadges.length > 0 && (
-                    <div className="absolute right-3 top-3 z-10 flex flex-col items-end gap-1">
+                    <div className="absolute right-3 top-14 z-10 flex flex-col items-end gap-1">
                         {rightBadges.map((b, idx) => (
                             <Badge
                                 key={idx}
                                 label={resolveProductCardBadgeLabel(b, t)}
+                                type={b.type}
+                                imageSrc={b.image}
+                                imageAlt={resolveProductCardBadgeLabel(b, t)}
                                 className={cn(b.className || "bg-yellow-500 text-white")}
                             />
                         ))}
                     </div>
                 )}
 
-                {/* Rating (bottom-left) */}
-                <div className="absolute bottom-3 left-3 z-10 rounded-sm bg-blue-off">
-                    <Rating rating={rating} size="sm" className="px-2 py-1" />
-                </div>
-
-                {/* Favorite Button (bottom-right) */}
-                <div className="absolute bottom-3 right-3 z-10">
+                {/* Favorite Button (top-right) */}
+                <div className="absolute right-3 top-3 z-20">
                     <FavoriteButton
                         isFavorite={isFavorite}
                         onToggle={(e) => {
@@ -144,19 +153,24 @@ export default function ProductCard({
                         ariaLabel="Toggle favorite"
                     />
                 </div>
+
+                {/* Rating (bottom-left) */}
+                <div className="absolute bottom-3 left-3 z-10 rounded-sm bg-blue-off">
+                    <Rating rating={rating} size="sm" className="px-2 py-1" />
+                </div>
             </div>
 
             {/* Info Section */}
             <div className="bg-custom-secondary px-4 pb-4 pt-4 flex flex-col flex-1">
                 {/* Product Name - 2 lines */}
-                <h3 className="min-h-[3rem] line-clamp-2 text-base font-bold text-custom-primary">
+                <h3 className="line-clamp-2 text-base font-bold text-custom-primary">
                     {name}
                 </h3>
 
-                {/* Category */}
-                {category && (
+                {/* Description or category */}
+                {(description || category) && (
                     <p className="mt-1 line-clamp-1 text-xs text-custom-secondary">
-                        {category}
+                        {description || category}
                     </p>
                 )}
 
@@ -166,8 +180,13 @@ export default function ProductCard({
                     <span className="text-lg font-bold text-custom-primary">{price}</span>
 
                     {/* Original price + savings + sold — all on the same row */}
-                    {(originalPrice || savings || sold) && (
+                    {(originalPrice || savings || sold != null || discountLabel) && (
                         <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                            {discountLabel && (
+                                <span className="text-sm font-semibold text-red-500">
+                                    {discountLabel}
+                                </span>
+                            )}
                             {originalPrice && (
                                 <span className="text-sm text-custom-tertiary line-through">
                                     {originalPrice}
@@ -181,9 +200,9 @@ export default function ProductCard({
                                     {savings}
                                 </span>
                             )}
-                            {sold && (
+                            {sold != null && (
                                 <span className="ml-auto text-sm font-medium text-custom-secondary">
-                                    {sold.toLocaleString()} Sold
+                                    {sold.toLocaleString()} {t?.("product.sold") || "Sold"}
                                 </span>
                             )}
                         </div>
@@ -191,7 +210,7 @@ export default function ProductCard({
                 </div>
 
                 {/* View details + bottom badges + delivery */}
-                {(onViewDetails || bottomBadges?.length || deliveryInfo) && (
+                {(onViewDetails || bottomBadgesShown.length > 0 || deliveryInfo) && (
                     <div className="mt-auto flex w-full flex-col gap-2 pt-3">
                         {onViewDetails && (
                             <Button
@@ -208,7 +227,7 @@ export default function ProductCard({
                                 {viewDetailsLabel ?? "View details"}
                             </Button>
                         )}
-                        {bottomBadges?.map((b, idx) => {
+                        {bottomBadgesShown.map((b, idx) => {
                             const text = resolveProductCardBadgeLabel(b, t);
                             return (
                                 <AnimatedButton

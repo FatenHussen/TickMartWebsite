@@ -5,6 +5,8 @@ export interface BasketBadge {
  id: number;
  name: string;
  color: string;
+ type?: string;
+ image?: string;
  position:"top"|"bottom"| null;
 }
 
@@ -36,6 +38,8 @@ export interface BasketItem {
  desc?: string | null;
  top_badges?: BasketBadge[];
  bottom_badges?: BasketBadge[];
+ /** Legacy typo from API */
+ budges?: BasketBadge[];
  items_count?: number;
  is_favorite?: boolean;
 }

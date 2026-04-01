@@ -2,6 +2,7 @@ import { useState, useCallback, useMemo } from"react";
 import { useTranslation } from"react-i18next";
 import { useLanguage } from"@/context/LanguageContext";
 import { toast } from"sonner";
+import { getApiErrorMessage, getApiSuccessMessage } from"@/shared/lib/apiMessage";
 import {
  HiSearch,
  HiChevronDown,
@@ -390,17 +391,17 @@ function ComplaintFormSection({
  createMutation.mutate(formData, {
  onSuccess: (res) => {
  if (res.success) {
- toast.success(res.message || t("complaints.submit"));
+ toast.success(getApiSuccessMessage(res, t("complaints.submit")));
  onCreateSuccess();
  setType("");
  setOrderId("");
  setMessage("");
  setFiles([]);
  } else {
- toast.error(res.message ||"Failed to submit complaint");
+ toast.error(getApiSuccessMessage(res, "Failed to submit complaint"));
  }
  },
- onError: () => toast.error("Failed to submit complaint"),
+ onError: (err) => toast.error(getApiErrorMessage(err, "Failed to submit complaint")),
  });
  };
 

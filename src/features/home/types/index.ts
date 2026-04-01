@@ -14,6 +14,8 @@ export interface SectionItemBadge {
  id: number;
  name: string;
  color?: string;
+ type?: string;
+ image?: string;
  postion?: string | null; // Typo from API:"postion"instead of"position"
  position?: string | null; // Support both spellings
 }
@@ -26,6 +28,9 @@ export interface BrandItem {
  created_at: string;
  updated_at: string;
  is_favorite?: boolean;
+ top_badges?: SectionItemBadge[];
+ bottom_badges?: SectionItemBadge[];
+ budges?: SectionItemBadge[];
 }
 
 // Recipe Item (display_type_id: 7)
@@ -42,6 +47,9 @@ export interface RecipeItem {
  price_after_discount: number;
  price_after_discount_formatted?: string;
  discount: string;
+ /** Units sold (or API-defined sold metric) */
+ sold?: number;
+ sold_formatted?: string;
  orders_count: number;
  top_badges?: SectionItemBadge[];
  bottom_badges?: SectionItemBadge[];
@@ -111,6 +119,10 @@ export interface ShopItem {
  /** Optional: discount badge e.g."30% OFF"(API may add later) */
  discount_label?: string | null;
  is_favorite?: boolean;
+ /** Same badge shape as other section items; may also live on `vendor` */
+ top_badges?: SectionItemBadge[];
+ bottom_badges?: SectionItemBadge[];
+ budges?: SectionItemBadge[];
 }
 
 // Basket Item (display_type_id: 4)
@@ -139,6 +151,7 @@ export interface BasketItem {
  num_varieties?: number;
  top_badges?: SectionItemBadge[];
  bottom_badges?: SectionItemBadge[];
+ budges?: SectionItemBadge[];
  is_favorite?: boolean;
 }
 

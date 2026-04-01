@@ -20,61 +20,59 @@ export default function ProductQuantitySelector({
  addToCartText ="Add To Cart",
  className,
 }: ProductQuantitySelectorProps) {
- const handleDecrease = () => {
- if (quantity > min) onQuantityChange?.(quantity - 1);
- };
+    const handleDecrease = () => {
+        if (quantity > min) onQuantityChange?.(quantity - 1);
+    };
 
- const handleIncrease = () => {
- if (!max || quantity < max) onQuantityChange?.(quantity + 1);
- };
+    const handleIncrease = () => {
+        if (!max || quantity < max) onQuantityChange?.(quantity + 1);
+    };
 
- return (
- <div className={cn("flex items-center gap-4", className)}>
- {/* Quantity Selector - Bordered design */}
- <div className="flex items-center border border-primary-light rounded-lg overflow-hidden">
- <button
- type="button"
- onClick={handleDecrease}
- disabled={quantity <= min}
- className={cn(
-"h-10 w-10 flex items-center justify-center text-primary-light transition-colors",
-"hover:bg-primary-light/10",
-"disabled:opacity-40 disabled:cursor-not-allowed"
- )}
- aria-label="Decrease quantity"
- >
- <HiMinus className="h-4 w-4"/>
- </button>
+    return (
+        <div className={cn("flex flex-wrap items-center gap-4", className)}>
+            <div className="flex items-center gap-3">
+                <button
+                    type="button"
+                    onClick={handleDecrease}
+                    disabled={quantity <= min}
+                    className={cn(
+                        "flex h-10 w-10 items-center justify-center rounded-md border border-[#DCE8EE] bg-white text-[#495666] transition-colors",
+                        "hover:bg-[#F6FAFC]",
+                        "disabled:opacity-40 disabled:cursor-not-allowed"
+                    )}
+                    aria-label="Decrease quantity"
+                >
+                    <HiMinus className="h-4 w-4" />
+                </button>
 
- <span className="min-w-12 text-center text-base font-semibold text-text-primary">
- {quantity}
- </span>
+                <span className="min-w-6 text-center text-base font-medium text-text-primary">
+                    {quantity}
+                </span>
 
- <button
- type="button"
- onClick={handleIncrease}
- disabled={max !== undefined && quantity >= max}
- className={cn(
-"h-10 w-10 flex items-center justify-center text-primary-light transition-colors",
-"hover:bg-primary-light/10",
-"disabled:opacity-40 disabled:cursor-not-allowed"
- )}
- aria-label="Increase quantity"
- >
- <HiPlus className="h-4 w-4"/>
- </button>
- </div>
+                <button
+                    type="button"
+                    onClick={handleIncrease}
+                    disabled={max !== undefined && quantity >= max}
+                    className={cn(
+                        "flex h-10 w-10 items-center justify-center rounded-md border border-[#DCE8EE] bg-white text-[#495666] transition-colors",
+                        "hover:bg-[#F6FAFC]",
+                        "disabled:opacity-40 disabled:cursor-not-allowed"
+                    )}
+                    aria-label="Increase quantity"
+                >
+                    <HiPlus className="h-4 w-4" />
+                </button>
+            </div>
 
- {/* Add To Cart Button - Gradient cyan */}
- {onAddToCart && (
- <button
- type="button"
- onClick={onAddToCart}
- className="flex-1 h-10 rounded-full bg-linear-to-r from-cyan-400 to-cyan-500 px-8 font-semibold text-white transition-all hover:from-cyan-500 hover:to-cyan-600 hover:shadow-lg"
- >
- {addToCartText}
- </button>
- )}
- </div>
- );
+            {onAddToCart && (
+                <button
+                    type="button"
+                    onClick={onAddToCart}
+                    className="h-10 min-w-[240px] rounded-md bg-gradient-to-b from-[#4FD4EA] to-[#2798B7] px-8 text-lg font-semibold text-white shadow-[0_10px_24px_rgba(39,152,183,0.18)] transition-all hover:from-[#42CBE3] hover:to-[#228DAA]"
+                >
+                    {addToCartText}
+                </button>
+            )}
+        </div>
+    );
 }

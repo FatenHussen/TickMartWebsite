@@ -1,8 +1,10 @@
-import { useState } from"react";
+import { AnimatePresence, motion } from"framer-motion";
+import { memo, useCallback, useEffect, useMemo, useState } from"react";
 import { HiShare } from"react-icons/hi2";
 import { HiChevronLeft, HiChevronRight } from"react-icons/hi";
 import { cn } from"@/shared/lib/utils";
 import Button from"@/shared/ui/Button";
+import LazyImage from"@/shared/component/LazyImage";
 import FavoriteButton from"@/shared/component/FavoriteButton";
 
 export type ProductImageGalleryProps = {
@@ -13,6 +15,55 @@ export type ProductImageGalleryProps = {
  className?: string;
 };
 
+const MAIN_IMAGE_TRANSITION_SECONDS = 0.38;
+const THUMBNAILS_TO_SHOW = 4;
+
+type ThumbnailButtonProps = {
+ image: string;
+ index: number;
+ isSelected: boolean;
+ onSelect: (index: number) => void;
+};
+
+const ThumbnailButton = memo(function ThumbnailButton({
+ image,
+ index,
+ isSelected,
+ onSelect,
+}: ThumbnailButtonProps) {
+ return (
+  <button
+   type="button"
+   onClick={() => onSelect(index)}
+   className={cn(
+    "group relative shrink-0 overflow-hidden rounded-xl bg-slate-100 ring-1 transition-all duration-300 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900/30",
+    "h-16 w-16 sm:h-[72px] sm:w-[72px]",
+    isSelected
+     ?"scale-105 ring-2 ring-slate-900 shadow-sm"
+     :"ring-slate-200 hover:-translate-y-0.5 hover:ring-slate-300 hover:shadow-sm"
+   )}
+   aria-label={`Thumbnail ${index + 1}`}
+   aria-pressed={isSelected}
+  >
+   <div className="absolute inset-0">
+    <LazyImage
+     src={image}
+     alt={`Thumbnail ${index + 1}`}
+     className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+     wrapperClassName="h-full w-full"
+     effect=""
+    />
+   </div>
+   <span
+    className={cn(
+     "absolute inset-0 transition-colors duration-300",
+     isSelected ?"bg-slate-900/5":"bg-transparent group-hover:bg-slate-900/5"
+    )}
+   />
+  </button>
+ );
+});
+
 export default function ProductImageGallery({
  images,
  isFavorite = false,
@@ -20,43 +71,88 @@ export default function ProductImageGallery({
  onShare,
  className,
 }: ProductImageGalleryProps) {
+ const safeImages = useMemo(() => images.filter(Boolean), [images]);
  const [selectedIndex, setSelectedIndex] = useState(0);
-
- const thumbnailsToShow = 4;
  const [thumbnailStartIndex, setThumbnailStartIndex] = useState(0);
+
+ useEffect(() => {
+  setSelectedIndex((prev) => {
+   if (safeImages.length === 0) return 0;
+   return Math.min(prev, safeImages.length - 1);
+  });
+ }, [safeImages.length]);
+
+ useEffect(() => {
+  setThumbnailStartIndex((prev) => {
+   if (safeImages.length <= THUMBNAILS_TO_SHOW) return 0;
+   return Math.min(prev, Math.max(0, safeImages.length - THUMBNAILS_TO_SHOW));
+  });
+ }, [safeImages.length]);
+
+ useEffect(() => {
+  if (selectedIndex < thumbnailStartIndex) {
+   setThumbnailStartIndex(selectedIndex);
+   return;
+  }
+
+  if (selectedIndex >= thumbnailStartIndex + THUMBNAILS_TO_SHOW) {
+   setThumbnailStartIndex(selectedIndex - THUMBNAILS_TO_SHOW + 1);
+  }
+ }, [selectedIndex, thumbnailStartIndex]);
 
  const canGoPrev = thumbnailStartIndex > 0;
  const canGoNext =
- thumbnailStartIndex + thumbnailsToShow < (images?.length || 0);
+ thumbnailStartIndex + THUMBNAILS_TO_SHOW < safeImages.length;
 
- const visibleThumbnails = images.slice(
+ const visibleThumbnails = safeImages.slice(
  thumbnailStartIndex,
- thumbnailStartIndex + thumbnailsToShow
+  thumbnailStartIndex + THUMBNAILS_TO_SHOW
  );
 
- const handleThumbnailClick = (index: number) => setSelectedIndex(index);
+ const handleThumbnailSelect = useCallback((nextIndex: number) => {
+  if (!safeImages[nextIndex]) return;
+  setSelectedIndex(nextIndex);
+ }, [safeImages]);
 
- const handlePreviousThumbnails = () => {
+ const handlePreviousThumbnails = useCallback(() => {
  setThumbnailStartIndex((prev) => Math.max(0, prev - 1));
- };
+ }, []);
 
- const handleNextThumbnails = () => {
+ const handleNextThumbnails = useCallback(() => {
  setThumbnailStartIndex((prev) =>
- Math.min(images.length - thumbnailsToShow, prev + 1)
+   Math.min(safeImages.length - THUMBNAILS_TO_SHOW, prev + 1)
  );
- };
+ }, [safeImages.length]);
+
+ if (safeImages.length === 0) {
+  return null;
+ }
 
  return (
  <div className={cn("flex flex-col gap-4", className)}>
  {/* Main Image */}
  <div className="relative w-full overflow-hidden rounded-2xl bg-slate-100">
  <div className="aspect-[1/1] w-full">
- <img
- src={images[selectedIndex]}
- alt={`Product view ${selectedIndex + 1}`}
- className="h-full w-full object-cover"
- loading="lazy"
- />
+  <div className="relative h-full w-full">
+   <AnimatePresence mode="wait" initial={false}>
+    <motion.div
+     key={safeImages[selectedIndex]}
+     className="absolute inset-0"
+     initial={{ opacity: 0, scale: 1.02 }}
+     animate={{ opacity: 1, scale: 1 }}
+     exit={{ opacity: 0, scale: 0.985 }}
+     transition={{ duration: MAIN_IMAGE_TRANSITION_SECONDS, ease:"easeOut" }}
+    >
+     <LazyImage
+      src={safeImages[selectedIndex]}
+      alt={`Product view ${selectedIndex + 1}`}
+      className="h-full w-full object-cover"
+      wrapperClassName="h-full w-full"
+      effect=""
+     />
+    </motion.div>
+   </AnimatePresence>
+  </div>
  </div>
 
  {/* Top-right icons */}
@@ -87,7 +183,7 @@ export default function ProductImageGallery({
  </div>
 
  {/* Thumbnail Carousel */}
- {images.length > 1 && (
+  {safeImages.length > 1 && (
  <div className="relative flex items-center">
  {/* Prev */}
  {canGoPrev && (
@@ -102,31 +198,19 @@ export default function ProductImageGallery({
  )}
 
  {/* Thumbnails */}
- <div className="mx-auto flex w-full justify-center gap-3 px-12">
+   <div className="mx-auto flex w-full justify-center gap-3 overflow-x-auto px-0 py-1 sm:px-12 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
  {visibleThumbnails.map((image, idx) => {
  const actualIndex = thumbnailStartIndex + idx;
  const isSelected = selectedIndex === actualIndex;
 
  return (
- <button
- key={actualIndex}
- type="button"
- onClick={() => handleThumbnailClick(actualIndex)}
- className={cn(
-"relative h-16 w-16 overflow-hidden rounded-xl ring-1 transition-all",
- isSelected
- ?"ring-slate-900"
- :"ring-slate-200 hover:ring-slate-300"
- )}
- aria-label={`Thumbnail ${actualIndex + 1}`}
- >
- <img
- src={image}
- alt={`Thumbnail ${actualIndex + 1}`}
- className="h-full w-full object-cover"
- loading="lazy"
- />
- </button>
+    <ThumbnailButton
+    key={`${image}-${actualIndex}`}
+    image={image}
+    index={actualIndex}
+    isSelected={isSelected}
+    onSelect={handleThumbnailSelect}
+    />
  );
  })}
  </div>

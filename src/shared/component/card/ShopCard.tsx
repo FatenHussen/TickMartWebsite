@@ -2,8 +2,12 @@ import { cn } from"@/shared/lib/utils";
 import Rating from"../Rating";
 import FavoriteButton from"../FavoriteButton";
 import Badge from"../Badge";
+import LazyImage from"../LazyImage";
 import AnimatedButton from"@/shared/ui/AnimatedButton";
-import type { ProductCardBadge } from"./ProductCard";
+import {
+ type ProductCardBadge,
+ resolveProductCardBadgeLabel,
+} from"./ProductCard";
 
 const DEFAULT_STORE_IMAGE =
 "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400";
@@ -59,7 +63,7 @@ export default function ShopCard({
  ? badge
  : [badge]
  : [];
- const allTop = [...openBadge, ...extraBadge];
+ const allTop = [...openBadge, ...extraBadge].slice(0, 1);
  const leftBadges = allTop.filter((b) => (b.align ??"left") ==="left");
  const rightBadges = allTop.filter((b) => b.align ==="right");
 
@@ -80,18 +84,21 @@ export default function ShopCard({
  >
  {/* Image area */}
  <div className="relative aspect-[4/3] w-full overflow-hidden bg-custom-muted">
- <img
+ <LazyImage
  src={imageSrc}
  alt={name}
  className="h-full w-full object-cover"
- loading="lazy"
+ wrapperClassName="h-full w-full"
  />
  {leftBadges.length > 0 && (
  <div className="absolute left-3 top-3 z-10 flex flex-col gap-1">
  {leftBadges.map((b, idx) => (
  <Badge
  key={idx}
- label={b.label}
+ label={resolveProductCardBadgeLabel(b)}
+ type={b.type}
+ imageSrc={b.image}
+ imageAlt={resolveProductCardBadgeLabel(b)}
  className={cn("rounded-full px-2.5 py-0.5", b.className)}
  />
  ))}
@@ -101,7 +108,10 @@ export default function ShopCard({
  {rightBadges.map((b, idx) => (
  <Badge
  key={idx}
- label={b.label}
+ label={resolveProductCardBadgeLabel(b)}
+ type={b.type}
+ imageSrc={b.image}
+ imageAlt={resolveProductCardBadgeLabel(b)}
  className={cn("rounded-lg", b.className)}
  />
  ))}
@@ -133,7 +143,7 @@ export default function ShopCard({
  )}
  <div className="mt-auto flex w-full flex-col gap-2">
  {bottomBadges !== undefined
- ? bottomBadges.map((b, idx) => (
+ ? bottomBadges.slice(0, 1).map((b, idx) => (
  <AnimatedButton
  key={idx}
  variant="primary"

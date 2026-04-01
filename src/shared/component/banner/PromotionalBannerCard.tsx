@@ -1,5 +1,6 @@
 import { useNavigate } from"react-router-dom";
 import Button from"@/shared/ui/Button";
+import LazyImage from"@/shared/component/LazyImage";
 import { cn } from"@/shared/lib/utils";
 import type { SectionItemBase } from"@/features/home/types";
 
@@ -107,11 +108,10 @@ export default function PromotionalBannerCard({
  {/* Right Side - Illustration Image */}
  <div className="flex items-center justify-center md:justify-end">
  {image ? (
- <img
+ <LazyImage
  src={image}
  alt={title}
  className="h-auto max-h-[280px] md:max-h-80 lg:max-h-[380px] w-full object-contain drop-shadow-lg"
- loading="lazy"
  />
  ) : (
  <div className="h-56 w-full max-w-sm rounded-lg bg-custom-card/20 md:h-72"/>

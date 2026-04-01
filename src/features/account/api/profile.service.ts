@@ -96,4 +96,11 @@ export const _ProfileApi = {
  );
  return response.data;
  },
+
+ deleteAccount: async (): Promise<GenericApiResponse> => {
+ const response = await _axios.post<GenericApiResponse>(
+ apiRoutes.profile.deleteAccount
+ );
+ return response.data;
+ },
 };

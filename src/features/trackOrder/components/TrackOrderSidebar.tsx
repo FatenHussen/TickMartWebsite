@@ -65,7 +65,7 @@ export default function TrackOrderSidebar({
  {/* Items */}
  <div className="mt-4 pt-4 border-t border-custom-secondary">
  <div className="text-xs text-custom-secondary mb-2">
- {t("trackOrder.items")}
+{t("trackOrder.items")} ({order.totalQuantity})
  </div>
  <div className="space-y-2">
  {order.items.map((item) => (
@@ -102,6 +102,22 @@ export default function TrackOrderSidebar({
  {order.itemsSubtotal}
  </span>
  </div>
+{order.basketDiscount && (
+<div className="flex items-center justify-between text-sm">
+<span className="text-custom-secondary">Discounts</span>
+<span className="font-medium" style={{ color:"#22c55e" }}>
+{order.basketDiscount}
+</span>
+</div>
+)}
+{order.couponDiscount && (
+<div className="flex items-center justify-between text-sm">
+<span className="text-custom-secondary">Coupon discount</span>
+<span className="font-medium" style={{ color:"#22c55e" }}>
+{order.couponDiscount}
+</span>
+</div>
+)}
  <div className="flex items-center justify-between text-sm">
  <span className="text-custom-secondary">
  {t("checkout.deliveryFees")}

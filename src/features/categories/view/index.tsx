@@ -5,9 +5,9 @@ import CategoriesLayout from "../layout/CategoriesLayout";
 import CategoriesSidebar from "../components/CategoriesSidebar";
 import ProductsHeader from "../components/ProductsHeader";
 import PromotionalBanners from "../components/PromotionalBanners";
-import SubcategoryTabs from "../components/SubcategoryTabs";
 import ProductCard from "@/shared/component/card/ProductCard";
 import ProductCardSkeleton from "@/shared/component/skeleton/ProductCardSkeleton";
+import CategoryTopNav from "@/shared/component/CategoryTopNav";
 import { useCategories } from "../hooks/useCategories";
 import { _CategoriesApi } from "../api/categoriesApi";
 import { useInfiniteList } from "@/shared/hooks/useInfiniteList";
@@ -154,6 +154,35 @@ export default function CategoriesView() {
     }, [categories]);
 
     const subcategories = selectedCategory?.children ?? [];
+    const buildDiscountLabel = (product: ApiProduct) => {
+        const rawDiscount = String(product.discount ?? "").trim();
+        if (rawDiscount) {
+            return rawDiscount.includes("%")
+                ? rawDiscount
+                : `${t("product.discount", "Discount")} ${rawDiscount}`;
+        }
+
+        if (product.price > product.price_after_discount && product.price > 0) {
+            const percentage = Math.round(
+                ((product.price - product.price_after_discount) / product.price) * 100,
+            );
+            return `${percentage}% ${t("product.discount", "Discount")}`;
+        }
+
+        return undefined;
+    };
+    const subcategoryNavItems = [
+        {
+            id: 0,
+            name: t("common.all", "All"),
+            selected: !showAllCategories && selectedCategory != null && selectedSubcategory == null,
+        },
+        ...subcategories.map((subcategory) => ({
+            id: subcategory.id,
+            name: subcategory.name,
+            selected: selectedSubcategory?.id === subcategory.id,
+        })),
+    ];
 
     const sidebar = (
         <CategoriesSidebar
@@ -183,11 +212,27 @@ export default function CategoriesView() {
                         onButtonClick={() => console.log("Shop now clicked")}
                     /> */}
 
-                    <SubcategoryTabs
-                        subcategories={subcategories}
-                        selectedSubcategoryId={selectedSubcategory?.id}
-                        onSubcategorySelect={handleSubcategorySelect}
-                    />
+                    {subcategoryNavItems.length > 0 && (
+                        <div className="bg-blue-off rounded-3xl p-6 flex justify-start">
+                            <CategoryTopNav
+                                categories={subcategoryNavItems}
+                                onCategoryClick={(subcategoryId) => {
+                                    if (subcategoryId === 0) {
+                                        setShowAllCategories(false);
+                                        setSelectedSubcategory(null);
+                                        return;
+                                    }
+
+                                    const subcategory = subcategories.find(
+                                        (item) => item.id === subcategoryId,
+                                    );
+                                    if (subcategory) {
+                                        handleSubcategorySelect(subcategory);
+                                    }
+                                }}
+                            />
+                        </div>
+                    )}
 
                     <ProductsHeader
                         categoryName={
@@ -218,6 +263,7 @@ export default function CategoriesView() {
                                         key={product.id}
                                         id={product.id}
                                         name={product.name}
+                                        description={product.description}
                                         price={product.price_after_discount_formatted ?? `${product.currency_symbol ?? ""}${product.price_after_discount}`}
                                         originalPrice={
                                             product.price > product.price_after_discount
@@ -227,18 +273,15 @@ export default function CategoriesView() {
                                         rating={product.rating ?? 0}
                                         image={product.image}
                                         category={product.category}
-                                        sold={product.sold_number > 0 ? product.sold_number : undefined}
+                                        sold={product.sold_number ?? 0}
                                         isFavorite={
                                             product.id in favoriteStates
                                                 ? favoriteStates[product.id]
                                                 : (product.is_favorite ?? false)
                                         }
                                         onToggleFavorite={handleToggleFavorite}
-                                        savings={
-                                            product.amount_saved > 0
-                                                ? `${t("product.youSaved", "You saved")} ${product.amount_saved_formatted ?? `${product.currency_symbol ?? ""}${product.amount_saved}`}`
-                                                : undefined
-                                        }
+                                        savings={`${t("product.youSaved", "You saved")} ${product.amount_saved_formatted ?? `${product.currency_symbol ?? ""}${product.amount_saved}`}`}
+                                        discountLabel={buildDiscountLabel(product)}
                                         badge={mapApiTopBadgesToProductCard(
                                             product.top_badges?.length
                                                 ? product.top_badges

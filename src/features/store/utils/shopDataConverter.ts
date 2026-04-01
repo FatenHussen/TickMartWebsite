@@ -68,6 +68,7 @@ export function convertShopDataToStoreMeta(shop: ShopDetailsData): StoreMeta {
  mobile: shop.mobile,
  email: shop.email,
  schedule,
+    workingHours: shop.working_hours,
  status: shop.is_open_now ?"open":"closed",
  tags,
  services,
@@ -78,5 +79,6 @@ export function convertShopDataToStoreMeta(shop: ShopDetailsData): StoreMeta {
  logo:
  shop.logo_url ||
 "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=200&q=60",
+    isFavorite: shop.is_favorite ?? false,
  };
 }

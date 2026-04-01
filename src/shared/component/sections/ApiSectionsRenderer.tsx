@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuthStore } from "@/store/auth";
@@ -14,6 +14,7 @@ import type {
     Section,
     SectionItem,
     SectionItemManual,
+    SectionItemBadge,
     BrandItem,
     RecipeItem,
     ProductItem,
@@ -28,7 +29,19 @@ import type { ProductCardBadge } from "@/shared/component/card/ProductCard";
 import {
     mapApiBottomBadgesToProductCard,
     mapApiTopBadgesToProductCard,
+    type ApiProductBadgeLike,
 } from "@/shared/lib/mapProductBadges";
+
+/** Shop list may send badges on the item or on `vendor` */
+function shopTopBadgesFromItem(item: ShopItem) {
+    if (item.top_badges?.length) return item.top_badges;
+    if (item.vendor?.top_badges?.length) return item.vendor.top_badges;
+    return item.budges;
+}
+
+function shopBottomBadgesFromItem(item: ShopItem) {
+    return item.bottom_badges ?? item.vendor?.bottom_badges;
+}
 
 type ApiSectionsRendererProps = {
     sections: Section[];
@@ -189,30 +202,31 @@ export default function ApiSectionsRenderer({
 
     return (
         <>
-            {sections.map((section) => (
-                <SectionByDisplayType
-                    key={section.id}
-                    section={section}
-                    onViewAll={() => handleViewAll(section)}
-                    onItemClick={(item) => handleItemClick(section, item)}
-                    t={t}
-                    productIsFavoriteFor={makeIsFavoriteFor("product", productFavoriteIds)}
-                    recipeIsFavoriteFor={makeIsFavoriteFor("recipe", recipeFavoriteIds)}
-                    basketIsFavoriteFor={makeIsFavoriteFor("basket", basketFavoriteIds)}
-                    shopIsFavoriteFor={makeIsFavoriteFor("shop", shopFavoriteIds)}
-                    onToggleProductFavorite={(id, cur) =>
-                        handleToggleFavorite("product", id, cur)
-                    }
-                    onToggleRecipeFavorite={(id, cur) =>
-                        handleToggleFavorite("recipe", id, cur)
-                    }
-                    onToggleBasketFavorite={(id, cur) =>
-                        handleToggleFavorite("basket", id, cur)
-                    }
-                    onToggleShopFavorite={(id, cur) =>
-                        handleToggleFavorite("shop", id, cur)
-                    }
-                />
+            {sections.map((section, index) => (
+                <LazySection key={section.id} eager={index < 2}>
+                    <SectionByDisplayType
+                        section={section}
+                        onViewAll={() => handleViewAll(section)}
+                        onItemClick={(item) => handleItemClick(section, item)}
+                        t={t}
+                        productIsFavoriteFor={makeIsFavoriteFor("product", productFavoriteIds)}
+                        recipeIsFavoriteFor={makeIsFavoriteFor("recipe", recipeFavoriteIds)}
+                        basketIsFavoriteFor={makeIsFavoriteFor("basket", basketFavoriteIds)}
+                        shopIsFavoriteFor={makeIsFavoriteFor("shop", shopFavoriteIds)}
+                        onToggleProductFavorite={(id, cur) =>
+                            handleToggleFavorite("product", id, cur)
+                        }
+                        onToggleRecipeFavorite={(id, cur) =>
+                            handleToggleFavorite("recipe", id, cur)
+                        }
+                        onToggleBasketFavorite={(id, cur) =>
+                            handleToggleFavorite("basket", id, cur)
+                        }
+                        onToggleShopFavorite={(id, cur) =>
+                            handleToggleFavorite("shop", id, cur)
+                        }
+                    />
+                </LazySection>
             ))}
         </>
     );
@@ -437,6 +451,8 @@ function ProductSection({
                     const hasDiscount = item.discount && parseFloat(item.discount) > 0;
                     const isFav = isFavoriteFor(item.id, item.is_favorite);
 
+                    
+
                     const discountBadges: ProductCardBadge[] = hasDiscount
                         ? [
                               {
@@ -454,7 +470,7 @@ function ProductSection({
                         ) ?? [];
 
                     const topMerged = [...discountBadges, ...fromApi];
-                    const badge = topMerged.length ? topMerged : undefined;
+                    const badge = topMerged.length ? topMerged.slice(0, 1) : undefined;
 
                     return (
                         <ProductCard
@@ -506,7 +522,7 @@ function ProductSection({
                     ) ?? [];
 
                 const topMergedFb = [...discountBadgesFb, ...fromApiFb];
-                const badgeFb = topMergedFb.length ? topMergedFb : undefined;
+                const badgeFb = topMergedFb.length ? topMergedFb.slice(0, 1) : undefined;
 
                 return (
                     <ProductCard
@@ -584,7 +600,7 @@ function RecipeSection({
                         ) ?? [];
 
                     const topMerged = [...discountBadges, ...fromApi];
-                    const badge = topMerged.length ? topMerged : undefined;
+                    const badge = topMerged.length ? topMerged.slice(0, 1) : undefined;
 
                     return (
                         <ProductCard
@@ -607,6 +623,11 @@ function RecipeSection({
                             bottomBadges={mapApiBottomBadgesToProductCard(
                                 item.bottom_badges
                             )}
+                            sold={
+                                item.sold !== undefined && item.sold > 0
+                                    ? item.sold
+                                    : undefined
+                            }
                             t={t}
                             isFavorite={isFav}
                             onClick={() => onItemClick(item)}
@@ -636,7 +657,7 @@ function RecipeSection({
                     ) ?? [];
 
                 const topMergedFb = [...discountBadgesFb, ...fromApiFb];
-                const badgeFb = topMergedFb.length ? topMergedFb : undefined;
+                const badgeFb = topMergedFb.length ? topMergedFb.slice(0, 1) : undefined;
 
                 return (
                     <ProductCard
@@ -661,6 +682,11 @@ function RecipeSection({
                         bottomBadges={mapApiBottomBadgesToProductCard(
                             data.bottom_badges
                         )}
+                        sold={
+                            typeof data.sold === "number" && data.sold > 0
+                                ? data.sold
+                                : undefined
+                        }
                         t={t}
                         isFavorite={isFav}
                         onClick={() => onItemClick(item)}
@@ -721,10 +747,18 @@ function BasketSection({
                             rating={item.rating}
                             image={item.image}
                             saveAmount={saveAmount}
+                            badge={mapApiTopBadgesToProductCard(
+                                item.top_badges?.length ? item.top_badges : item.budges
+                            )}
                             savings={savings}
                             offerEndingDate={offerEndingDate}
+                            bottomBadges={mapApiBottomBadgesToProductCard(
+                                item.bottom_badges
+                            )}
                             isFavorite={isFav}
+                            t={t}
                             onClick={() => onItemClick(item)}
+                            onAddToCart={() => onItemClick(item)}
                             onToggleFavorite={(id) => onToggleFavorite(id, isFav)}
                         />
                     );
@@ -751,8 +785,16 @@ function BasketSection({
                                 : undefined
                         }
                         image={data.image || ""}
+                        badge={mapApiTopBadgesToProductCard(
+                            data.top_badges?.length ? data.top_badges : data.budges
+                        )}
+                        bottomBadges={mapApiBottomBadgesToProductCard(
+                            data.bottom_badges
+                        )}
                         isFavorite={isFav}
+                        t={t}
                         onClick={() => onItemClick(item)}
+                        onAddToCart={() => onItemClick(item)}
                         onToggleFavorite={(id) => onToggleFavorite(id, isFav)}
                     />
                 );
@@ -792,9 +834,15 @@ function ShopSection({
                             description={item.description}
                             image={item.image ?? item.logo_url}
                             isOpenNow={item.is_open_now}
+                            badge={mapApiTopBadgesToProductCard(
+                                shopTopBadgesFromItem(item)
+                            )}
                             rating={item.average_rating}
                             deliveryPrice={item.delivery_price}
                             discountLabel={item.discount_label}
+                            bottomBadges={mapApiBottomBadgesToProductCard(
+                                shopBottomBadgesFromItem(item)
+                            )}
                             isFavorite={isFav}
                             onFavorite={(id) => onToggleFavorite(Number(id), isFav)}
                             onClick={() => onItemClick(item)}
@@ -806,6 +854,10 @@ function ShopSection({
                     data.id as number,
                     data.is_favorite as boolean | undefined
                 );
+                const shopData = data as Record<string, unknown>;
+                const vendor = shopData.vendor as
+                    | { top_badges?: unknown[]; bottom_badges?: unknown[] }
+                    | undefined;
                 return (
                     <ShopCard
                         key={data.id as number}
@@ -814,9 +866,20 @@ function ShopSection({
                         description={(data.description as string) ?? null}
                         image={(data.image as string) ?? (data.logo_url as string) ?? null}
                         isOpenNow={(data.is_open_now as boolean) ?? false}
+                        badge={mapApiTopBadgesToProductCard(
+                            (shopData.top_badges as ShopItem["top_badges"])?.length
+                                ? (shopData.top_badges as ShopItem["top_badges"])
+                                : vendor?.top_badges?.length
+                                  ? (vendor.top_badges as ShopItem["top_badges"])
+                                  : (shopData.budges as ShopItem["budges"])
+                        )}
                         rating={(data.average_rating as number) ?? 0}
                         deliveryPrice={(data.delivery_price as string | number) ?? null}
                         discountLabel={(data.discount_label as string) ?? null}
+                        bottomBadges={mapApiBottomBadgesToProductCard(
+                            ((shopData.bottom_badges as ShopItem["bottom_badges"]) ??
+                                vendor?.bottom_badges) as ApiProductBadgeLike[] | undefined
+                        )}
                         isFavorite={isFav}
                         onFavorite={(id) => onToggleFavorite(Number(id), isFav)}
                         onClick={() => onItemClick(item)}
@@ -857,16 +920,29 @@ function BrandSection({
                 }
                 // Fallback for backward compatibility
                 const data = getItemData(item);
+                const d = data as {
+                    id: number;
+                    name?: string;
+                    title?: string;
+                    image?: string;
+                    rating?: number;
+                    average_rating?: number;
+                    top_badges?: SectionItemBadge[];
+                    bottom_badges?: SectionItemBadge[];
+                    budges?: SectionItemBadge[];
+                };
                 return (
                     <BrandCardWithRating
                         key={data.id}
                         item={{
-                            id: (data as { id: number }).id,
-                            name: (data as any).name || (data as any).title || "",
-                            image: data.image || "",
-                            rating: (data as { rating?: number }).rating,
-                            average_rating: (data as { average_rating?: number })
-                                .average_rating,
+                            id: d.id,
+                            name: d.name || d.title || "",
+                            image: d.image || "",
+                            rating: d.rating,
+                            average_rating: d.average_rating,
+                            top_badges: d.top_badges,
+                            bottom_badges: d.bottom_badges,
+                            budges: d.budges,
                         }}
                         onClick={() => onItemClick(item)}
                     />
@@ -874,4 +950,39 @@ function BrandSection({
             }}
         />
     );
+}
+
+/** Defers rendering children until the placeholder enters the viewport.
+ *  The first `eager` sections render immediately (above the fold). */
+function LazySection({
+    children,
+    eager = false,
+}: {
+    children: React.ReactNode;
+    eager?: boolean;
+}) {
+    const ref = useRef<HTMLDivElement | null>(null);
+    const [visible, setVisible] = useState(eager);
+
+    useEffect(() => {
+        const el = ref.current;
+        if (!el || visible) return;
+
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting) {
+                    setVisible(true);
+                    observer.disconnect();
+                }
+            },
+            { rootMargin: "300px" }
+        );
+
+        observer.observe(el);
+        return () => observer.disconnect();
+    }, [visible]);
+
+    if (visible) return <>{children}</>;
+
+    return <div ref={ref} className="min-h-[200px]" />;
 }

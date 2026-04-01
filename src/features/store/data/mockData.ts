@@ -15,12 +15,21 @@ export type StoreMeta = {
  mobile: string;
  email: string;
  schedule: string;
+  workingHours?: Record<
+    string,
+    {
+      open?: string;
+      close?: string;
+      closed?: boolean;
+    }
+  >;
  status:"open"|"closed";
  tags: Badge[];
  services: Badge[];
  perks: Badge[];
  heroImage: string;
  logo: string;
+  isFavorite?: boolean;
 };
 
 export const store: StoreMeta = {
@@ -33,6 +42,15 @@ export const store: StoreMeta = {
  mobile:"+20 12 3456 7890",
  email:"contact@glamour.com",
  schedule:"9:00 AM – 11:00 PM",
+  workingHours: {
+    monday: { open:"9:00 AM", close:"11:00 PM" },
+    tuesday: { open:"9:00 AM", close:"11:00 PM" },
+    wednesday: { open:"9:00 AM", close:"11:00 PM" },
+    thursday: { open:"9:00 AM", close:"11:00 PM" },
+    friday: { open:"9:00 AM", close:"11:00 PM" },
+    saturday: { open:"9:00 AM", close:"11:00 PM" },
+    sunday: { closed:true },
+  },
  status:"open",
  tags: [
  { label:"Open", variant:"success"},
@@ -53,5 +71,6 @@ export const store: StoreMeta = {
  heroImage:
 "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=1600&q=80",
  logo:"https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=200&q=60",
+  isFavorite: false,
 };
 

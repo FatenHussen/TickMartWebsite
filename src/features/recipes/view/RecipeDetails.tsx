@@ -8,6 +8,7 @@ import { useSectionsByPosition } from "@/features/home/hooks/useSections";
 import ApiSectionsRenderer from "@/shared/component/sections/ApiSectionsRenderer";
 import FullBleedSection from "@/shared/component/FullBleedSection";
 import Rating from "@/shared/component/Rating";
+import Badge from "@/shared/component/Badge";
 import ProductReviews from "@/shared/component/ProductReviews";
 import Button from "@/shared/ui/Button";
 import ProductItemsTable, { type ProductItemData } from "@/shared/component/table/ProductItemsTable";
@@ -224,7 +225,7 @@ export default function RecipeDetails() {
     const hasDiscount = recipe.discount && parseFloat(recipe.discount) > 0;
     const imageUrl = recipe.image.startsWith("http")
         ? recipe.image
-        : `https://tikmool.octopus-software.online/storage/${recipe.image}`;
+        : `https://tickdash.tickmartsy.com/storage/${recipe.image}`;
 
     // Calculate totals based on current quantities
     const calculateItemTotal = (item: RecipeItem, index: number) => {
@@ -338,12 +339,14 @@ export default function RecipeDetails() {
                             {(recipe.badges ?? recipe.budges) && (recipe.badges ?? recipe.budges)!.length > 0 && (
                                 <div className="flex flex-wrap gap-2">
                                     {(recipe.badges ?? recipe.budges)!.map((badge) => (
-                                        <span
+                                        <Badge
                                             key={badge.id}
+                                            label={badge.name}
+                                            type={badge.type}
+                                            imageSrc={badge.image}
+                                            imageAlt={badge.name}
                                             className="px-3 py-1 rounded-full text-xs font-medium bg-cyan-100 text-cyan-700 dark:bg-cyan-900 dark:text-cyan-300"
-                                        >
-                                            {badge.name}
-                                        </span>
+                                        />
                                     ))}
                                 </div>
                             )}

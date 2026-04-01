@@ -17,7 +17,7 @@ import { useMyRatings, useDeleteRating } from"../hooks/useRatings";
 import type { MyRatingItem } from"@/features/product/types/ratings";
 import type { ReviewType, ReviewUnion } from"../types";
 
-const STORAGE_BASE ="https://tikmool.octopus-software.online/storage";
+const STORAGE_BASE ="https://tickdash.tickmartsy.com/storage";
 
 function toStorageUrl(path: string | null | undefined): string {
  if (!path) return"";

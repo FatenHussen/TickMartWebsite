@@ -161,8 +161,10 @@ export const apiRoutes = {
  `/user/products?category_id=${categoryId}${
  page ? `&page=${page}` :""
  }` as const,
- listByShop: (shopId: number, page?: number) =>
- `/user/products?shop_id=${shopId}${page ? `&page=${page}` :""}` as const,
+listByShop: (shopId: number, page?: number, categoryId?: number) =>
+`/user/products?shop_id=${shopId}${page ? `&page=${page}` :""}${
+categoryId != null ? `&category_id=${categoryId}` :""
+}` as const,
  },
 
  /**
@@ -529,5 +531,6 @@ export const apiRoutes = {
  updateEmail:"/user/auth/profile/update_email"as const,
  updatePhone:"/user/auth/profile/update_phone"as const,
  verify:"/user/auth/profile/verify"as const,
+ deleteAccount:"/user/auth/profile/delete-account"as const,
  },
 } as const;

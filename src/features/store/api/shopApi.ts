@@ -1,5 +1,6 @@
 import _axios from"@/app/middleware/interceptor";
 import { apiRoutes } from"@/utils/apiRoutes";
+import type { ProductsResponse } from"@/features/categories/types";
 import type {
  ShopDetailsResponse,
  ShopsListResponse,
@@ -29,4 +30,19 @@ export const _ShopApi = {
  );
  return response.data.data;
  },
+
+getShopProducts: async (params: {
+shopId: number;
+page?: number;
+categoryId?: number;
+}): Promise<ProductsResponse["data"]> => {
+const response = await _axios.get<ProductsResponse>(
+apiRoutes.product.listByShop(
+params.shopId,
+params.page,
+params.categoryId
+)
+);
+return response.data.data;
+},
 };

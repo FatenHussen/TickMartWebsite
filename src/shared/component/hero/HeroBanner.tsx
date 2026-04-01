@@ -1,4 +1,5 @@
 import Button from"@/shared/ui/Button";
+import LazyImage from"@/shared/component/LazyImage";
 import { useTranslation } from"react-i18next";
 
 type HeroBannerProps = {
@@ -77,7 +78,7 @@ export default function HeroBanner({
  {/* Image/Illustration */}
  {imagePosition !=="center"&& (
  <div className={`flex items-center justify-center ${imageOrder[imagePosition]}`}>
- <img
+ <LazyImage
  src={image}
  alt={title}
  className="h-auto max-h-96 w-full object-contain"

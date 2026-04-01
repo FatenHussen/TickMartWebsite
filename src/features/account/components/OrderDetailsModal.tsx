@@ -1,10 +1,19 @@
 import { useEffect, useState } from"react";
 import { useTranslation } from"react-i18next";
 import { useLanguage } from"@/context/LanguageContext";
-import { HiX, HiClipboardList } from"react-icons/hi";
+import {
+ HiX,
+ HiClipboardList,
+ HiLocationMarker,
+ HiCreditCard,
+ HiPhone,
+ HiUser,
+ HiSparkles,
+} from"react-icons/hi";
 import { cn } from"@/shared/lib/utils";
 import { useOrderDetail } from"../hooks/useOrderDetail";
 import RatingFormModal from"./RatingFormModal";
+import type { OrderDetailItem, OrderDetailVariantAttribute } from"../types/order";
 
 type OrderDetailsModalProps = {
  orderId: number | string | null;
@@ -49,6 +58,62 @@ function getCartTypeLabel(cartType: string): string {
  if (cartType ==="admin_cart") return"Basket";
  if (cartType ==="recipe") return"Recipe";
  return"Products";
+}
+
+function normalizeVariantAttributes(
+ item: OrderDetailItem
+): OrderDetailVariantAttribute[] {
+ const attrs = item.variant_attributes;
+ if (!attrs) return [];
+
+ if (Array.isArray(attrs)) {
+ return attrs
+ .map((attr) => ({
+ attribute: attr.attribute ?? attr.type,
+ value: attr.value,
+ }))
+ .filter((attr) => attr.attribute && attr.value);
+ }
+
+ return Object.entries(attrs)
+ .filter(([, value]) => value != null && value !=="")
+ .map(([attribute, value]) => ({ attribute, value }));
+}
+
+function getAreaLabel(
+ area?: string | { en?: string; ar?: string } | null
+): string | null {
+ if (!area) return null;
+ if (typeof area ==="string") return area;
+ return area.en ?? area.ar ?? null;
+}
+
+function DetailRow({
+ label,
+ value,
+ icon,
+ isRTL,
+}: {
+ label: string;
+ value: string;
+ icon: React.ReactNode;
+ isRTL: boolean;
+}) {
+ return (
+ <div className="flex items-start gap-3 rounded-2xl bg-white/70 p-3 border border-white/80">
+ <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-100 to-cyan-50 text-cyan-700">
+ {icon}
+ </div>
+ <div className="min-w-0 flex-1">
+ <p className="text-xs font-medium uppercase tracking-wide text-custom-secondary/80">
+ {label}
+ </p>
+ <p className={cn("mt-1 text-sm font-semibold text-custom-primary", isRTL ?"text-left":"text-right sm:text-left")}>
+ {value}
+ </p>
+ </div>
+ </div>
+ );
 }
 
 export default function OrderDetailsModal({
@@ -106,6 +171,20 @@ export default function OrderDetailsModal({
  const canTrack =
  order && !isDelivered && String(order.status ??"").toLowerCase() !=="cancelled";
 
+ const deliveryAddressParts = order?.user_address
+ ? [
+ order.user_address.label,
+ order.user_address.street_name,
+ order.user_address.building_number,
+ order.user_address.floor_apartment,
+ order.user_address.nearest_landmark,
+ getAreaLabel(order.user_address.area),
+ ].filter(Boolean)
+ : [];
+
+ const cardClassName =
+ "rounded-[24px] border border-[#D9EEF4] bg-gradient-to-br from-white via-white to-[#F5FCFE] p-4 shadow-[0_12px_30px_rgba(44,128,144,0.08)]";
+
  return (
  <div
  className={cn(
@@ -122,7 +201,7 @@ export default function OrderDetailsModal({
 
  {/* Drawer */}
  <div
- className="relative w-full max-w-lg lg:max-w-xl h-full bg-custom-card shadow-2xl flex flex-col transition-transform duration-300 ease-out"
+ className="relative w-full max-w-lg lg:max-w-xl h-full overflow-hidden bg-[#F8FCFD] shadow-2xl flex flex-col transition-transform duration-300 ease-out"
  style={{
  transform: isSlideReady
  ?"translateX(0)"
@@ -134,11 +213,15 @@ export default function OrderDetailsModal({
  >
  {/* Header */}
  <div
- className="shrink-0 px-6 py-5 text-white"
+ className="shrink-0 px-6 py-5 text-white overflow-hidden"
  style={{
  background:"linear-gradient(135deg, #4CDAF6 0%, #2C8090 100%)",
  }}
  >
+ <div className="absolute inset-0 opacity-20 pointer-events-none">
+ <div className="absolute -top-12 -end-10 h-40 w-40 rounded-full bg-white/30 blur-2xl"/>
+ <div className="absolute bottom-0 start-10 h-24 w-24 rounded-full bg-white/20 blur-xl"/>
+ </div>
  <div className="flex items-start justify-between gap-4">
  <div className="flex items-center gap-3">
  <div className="w-12 h-12 rounded-xl bg-custom-card/20 flex items-center justify-center">
@@ -146,7 +229,7 @@ export default function OrderDetailsModal({
  </div>
  <div>
  <h2 className="text-lg font-bold">
- {t("orders.order")} #{orderId}
+ {t("orders.order")} #{order?.order_code ?? orderId}
  </h2>
  {order && (
  <p className="text-sm text-white/90 mt-0.5">
@@ -165,24 +248,49 @@ export default function OrderDetailsModal({
  </button>
  </div>
  {order && (
+ <>
  <div className="mt-4 flex flex-wrap items-center gap-2">
  <span
  className={cn(
-"px-3 py-1 rounded-full text-xs font-medium",
+ "px-3 py-1 rounded-full text-xs font-semibold shadow-sm",
  getStatusColor(order.status)
  )}
  >
  {t(`orders.${order.status ==="out_delivery"?"out_for_delivery": order.status}`)}
  </span>
- <span className="px-3 py-1 rounded-full text-xs bg-custom-card/20">
+ <span className="px-3 py-1 rounded-full text-xs bg-white/15 border border-white/20">
  {getCartTypeLabel(order.cart_type)}
  </span>
  {order.is_instant_delivery ? (
- <span className="px-3 py-1 rounded-full text-xs bg-custom-card/20">
+ <span className="px-3 py-1 rounded-full text-xs bg-white/15 border border-white/20 inline-flex items-center gap-1">
+ <HiSparkles className="h-3.5 w-3.5"/>
  {t("orders.instantDelivery","Instant delivery")}
  </span>
  ) : null}
  </div>
+ <div className="mt-5 grid grid-cols-3 gap-3">
+ <div className="rounded-2xl bg-white/15 border border-white/15 px-3 py-3 backdrop-blur-sm">
+ <p className="text-[11px] uppercase tracking-wide text-white/70">
+ {t("orders.orderItems","Order items")}
+ </p>
+ <p className="mt-1 text-lg font-bold">{order.items.length}</p>
+ </div>
+ <div className="rounded-2xl bg-white/15 border border-white/15 px-3 py-3 backdrop-blur-sm">
+ <p className="text-[11px] uppercase tracking-wide text-white/70">
+ {t("orders.delivery","Delivery")}
+ </p>
+ <p className="mt-1 text-lg font-bold">
+ {order.delivery_price === 0 ? t("orders.free","Free") : formatPrice(order.delivery_price)}
+ </p>
+ </div>
+ <div className="rounded-2xl bg-white/15 border border-white/15 px-3 py-3 backdrop-blur-sm">
+ <p className="text-[11px] uppercase tracking-wide text-white/70">
+ {t("orders.total")}
+ </p>
+ <p className="mt-1 text-lg font-bold">{formatPrice(order.total)}</p>
+ </div>
+ </div>
+ </>
  )}
  </div>
 
@@ -193,39 +301,44 @@ export default function OrderDetailsModal({
  <div className="animate-spin rounded-full h-10 w-10 border-2 border-[#2C8090] border-t-transparent"/>
  </div>
  ) : order ? (
- <div className="p-6 space-y-6">
+ <div className="p-6 space-y-6 bg-[radial-gradient(circle_at_top,_rgba(76,218,246,0.08),_transparent_30%)]">
  {/* Items */}
- <div>
- <h3 className="text-base font-semibold text-custom-primary mb-3">
- {t("orders.orderItems","Order items")} ({order.total_quantity})
+ <div className={cardClassName}>
+ <h3 className="text-base font-semibold text-custom-primary mb-3 flex items-center gap-2">
+ <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-cyan-50 text-cyan-700">
+ <HiClipboardList className="h-5 w-5"/>
+ </span>
+ {t("orders.orderItems","Order items")} ({order.items.length})
  </h3>
- <div className="rounded-xl border border-custom-primary overflow-hidden">
+ <div className="space-y-3">
  {order.items.map((item) => {
  const productId = item.product_id ?? item.id;
+  const variantAttributes = normalizeVariantAttributes(item);
  return (
  <div
  key={item.id}
- className="flex items-start gap-3 p-4 border-b border-custom-primary last:border-b-0"
+ className="flex items-start gap-3 rounded-2xl border border-[#E6F3F7] bg-white p-4 shadow-sm"
  >
+ <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-100 to-cyan-50 text-cyan-700 font-bold">
+ {item.quantity}
+ </div>
  <div className="flex-1 min-w-0">
  <p className="font-medium text-custom-primary">
  {item.product_name}
  </p>
- {item.variant_attributes?.length > 0 && (
+ {variantAttributes.length > 0 && (
  <div className="flex flex-wrap gap-2 mt-1">
- {item.variant_attributes.map((attr, i) => (
+ {variantAttributes.map((attr, i) => (
  <span
  key={i}
- className="text-xs px-2 py-0.5 rounded bg-custom-tertiary text-custom-secondary"
+ className="text-xs px-2.5 py-1 rounded-full bg-cyan-50 text-cyan-700 border border-cyan-100"
  >
  {attr.attribute}: {attr.value}
  </span>
  ))}
  </div>
  )}
- <p className="text-sm text-custom-secondary mt-1">
- {t("orders.qty")}: {item.quantity}
- </p>
+ <p className="text-sm text-custom-secondary mt-1">{t("orders.qty")}: {item.quantity}</p>
  {isDelivered && (
  <button
  type="button"
@@ -243,12 +356,12 @@ export default function OrderDetailsModal({
  </button>
  )}
  </div>
- <div className={cn("shrink-0 text-right", isRTL &&"text-left")}>
+ <div className={cn("shrink-0 rounded-2xl bg-[#F7FBFC] px-3 py-2 text-right", isRTL &&"text-left")}>
  <p className="font-semibold text-custom-primary">
- {formatPrice(item.price * item.quantity)}
+ {formatPrice((item.final_price_with_extras ?? item.price) * item.quantity)}
  </p>
  <p className="text-xs text-custom-secondary">
- {formatPrice(item.price)} each
+ {formatPrice(item.final_price_with_extras ?? item.price)} each
  </p>
  </div>
  </div>
@@ -259,13 +372,16 @@ export default function OrderDetailsModal({
 
  {/* Summary */}
  <div
- className="rounded-xl p-4"
+ className="rounded-[24px] p-5 shadow-[0_12px_30px_rgba(250,204,21,0.14)]"
  style={{
- background:"linear-gradient(180deg, #FBFBE4 0%, #FFFAB6 30%)",
- border:"1px solid #E5E7EB",
+ background:"linear-gradient(180deg, #FFFDEB 0%, #FFF7B8 32%, #FFFCE7 100%)",
+ border:"1px solid #F4E7A6",
  }}
  >
- <h3 className="text-base font-semibold text-custom-primary mb-3">
+ <h3 className="text-base font-semibold text-custom-primary mb-4 flex items-center gap-2">
+ <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-white/70 text-amber-600">
+ <HiSparkles className="h-5 w-5"/>
+ </span>
  {t("orders.summary","Summary")}
  </h3>
  <div className="space-y-2 text-sm">
@@ -285,6 +401,24 @@ export default function OrderDetailsModal({
  <span>-{formatPrice(order.coupon_discount)}</span>
  </div>
  )}
+ {Number(order.promotion_discount ?? 0) > 0 && (
+ <div className="flex justify-between text-green-600">
+ <span>{t("orders.promotionDiscount","Promotion")}</span>
+ <span>-{formatPrice(Number(order.promotion_discount))}</span>
+ </div>
+ )}
+ {Number(order.subscription_discount ?? 0) > 0 && (
+ <div className="flex justify-between text-green-600">
+ <span>{t("orders.subscriptionDiscount","Subscription discount")}</span>
+ <span>-{formatPrice(Number(order.subscription_discount))}</span>
+ </div>
+ )}
+ {Number(order.coupon_discount_from_points ?? 0) > 0 && (
+ <div className="flex justify-between text-green-600">
+ <span>{t("orders.pointsDiscount","Points discount")}</span>
+ <span>-{formatPrice(Number(order.coupon_discount_from_points))}</span>
+ </div>
+ )}
  <div className="flex justify-between">
  <span className="text-custom-secondary">
  {t("orders.delivery","Delivery")}
@@ -295,7 +429,7 @@ export default function OrderDetailsModal({
  : formatPrice(order.delivery_price)}
  </span>
  </div>
- <div className="flex justify-between pt-3 mt-3 border-t border-custom-secondary">
+ <div className="flex justify-between pt-4 mt-4 border-t border-amber-200">
  <span className="font-semibold text-custom-primary">
  {t("orders.total")}
  </span>
@@ -303,11 +437,65 @@ export default function OrderDetailsModal({
  className="text-lg font-bold"
  style={{ color:"#16A34A"}}
  >
- {formatPrice(order.total + (order.delivery_price || 0))}
+ {formatPrice(order.total)}
  </span>
  </div>
  </div>
  </div>
+
+ {/* Delivery details */}
+ {order.user_address && (
+ <div className={cardClassName}>
+ <h3 className="text-base font-semibold text-custom-primary mb-4 flex items-center gap-2">
+ <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-cyan-50 text-cyan-700">
+ <HiLocationMarker className="h-5 w-5"/>
+ </span>
+ {t("orders.deliveryDetails","Delivery details")}
+ </h3>
+ <div className="space-y-3 text-sm">
+ <DetailRow
+ label={t("orders.recipient","Recipient")}
+ value={order.user.name}
+ icon={<HiUser className="h-5 w-5"/>}
+ isRTL={isRTL}
+ />
+ {(order.user.phone ?? order.user_address.contact_phone) && (
+ <DetailRow
+ label={t("orders.phone","Phone")}
+ value={String(order.user.phone ?? order.user_address.contact_phone)}
+ icon={<HiPhone className="h-5 w-5"/>}
+ isRTL={isRTL}
+ />
+ )}
+ {deliveryAddressParts.length > 0 && (
+ <DetailRow
+ label={t("orders.address","Address")}
+ value={deliveryAddressParts.join(", ")}
+ icon={<HiLocationMarker className="h-5 w-5"/>}
+ isRTL={isRTL}
+ />
+ )}
+ </div>
+ </div>
+ )}
+
+ {/* Payment method */}
+ {order.payment_method && (
+ <div className={cardClassName}>
+ <h3 className="text-base font-semibold text-custom-primary mb-4 flex items-center gap-2">
+ <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-cyan-50 text-cyan-700">
+ <HiCreditCard className="h-5 w-5"/>
+ </span>
+ {t("orders.paymentMethod","Payment method")}
+ </h3>
+ <DetailRow
+ label={t("orders.method","Method")}
+ value={order.payment_method.name}
+ icon={<HiCreditCard className="h-5 w-5"/>}
+ isRTL={isRTL}
+ />
+ </div>
+ )}
 
  {/* Rate delivery & order + Add complaint (delivered only) */}
  {isDelivered && (

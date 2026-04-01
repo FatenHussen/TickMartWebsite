@@ -64,6 +64,8 @@ export interface ProductApiBadge {
  id: number;
  name: string;
  color: string;
+ type?: string;
+ image?: string;
  /** API typo: "postion" */
  postion?: string;
  position?: string;

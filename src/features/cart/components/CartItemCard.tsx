@@ -18,6 +18,7 @@ type CartItemCardProps = {
     isExcludedFromCoupon?: boolean;
     /** When false, plus/minus and delete are disabled (e.g. when cart_type !== "default") */
     canEditQuantity?: boolean;
+    promotionBadges?: string[];
     onQuantityChange: (itemId: number | string, quantity: number) => void;
     onRemove: (itemId: number | string) => void;
     onMoveToWishlist?: (itemId: number | string) => void;
@@ -32,8 +33,10 @@ export default function CartItemCard({
     freeQuantity = 0,
     isExcludedFromCoupon = false,
     canEditQuantity = true,
+    promotionBadges = [],
     onQuantityChange,
     onRemove,
+    onMoveToWishlist,
 }: CartItemCardProps) {
     const { t } = useTranslation();
     const { isRTL } = useLanguage();
@@ -53,7 +56,6 @@ export default function CartItemCard({
     const priceNum = preview?.price ?? (item.priceNumeric ?? toNum(item.price));
     const priceBeforeNum = preview?.priceBeforeDiscount;
     const originalSubtotal = priceBeforeNum != null ? priceBeforeNum * item.quantity : undefined;
-    const displaySubtotal = priceNum > 0 ? formatPrice(priceNum * item.quantity) : item.subtotal;
     const displayOriginalSubtotal = originalSubtotal != null && originalSubtotal > (priceNum * item.quantity)
         ? formatPrice(originalSubtotal)
         : undefined;
@@ -75,48 +77,48 @@ export default function CartItemCard({
 
     return (
         <div
-            className="bg-transparent rounded-2xl border border-summary p-4 relative"
+            className="relative rounded-3xl border border-[#4CDAF6] bg-[#F4F9FF] p-4 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.25)] md:p-5"
             dir={isRTL ? "rtl" : "ltr"}
         >
             {/* Delete button - top right (hidden when canEditQuantity is false) */}
             {canEditQuantity && (
                 <button
                     onClick={() => onRemove(item.id)}
-                    className="absolute top-3 right-3 text-red-500 hover:text-red-600 transition-colors z-10"
+                    className="absolute right-4 top-4 z-10 text-[#FF4D4F] transition-colors hover:text-red-600"
                     aria-label="Remove item"
                 >
-                    <HiTrash className="w-5 h-5" />
+                    <HiTrash className="h-5 w-5" />
                 </button>
             )}
 
-            <div className={canEditQuantity ? "flex gap-4 pr-8" : "flex gap-4"}>
+            <div className={canEditQuantity ? "flex flex-col gap-4 pr-8 md:flex-row md:items-stretch md:gap-4" : "flex flex-col gap-4 md:flex-row md:items-stretch md:gap-4"}>
                 {/* Product Image */}
-                <div className="w-24 h-24 rounded-lg overflow-hidden shrink-0 bg-custom-card">
+                <div className="h-[126px] w-[126px] shrink-0 overflow-hidden rounded-2xl bg-white shadow-sm md:h-auto md:self-stretch">
                     {item.image ? (
                         <img
                             src={item.image}
                             alt={item.name}
-                            className="w-full h-full object-cover"
+                            className="h-full w-full object-cover"
                         />
                     ) : (
-                        <div className="w-full h-full bg-custom-muted dark:bg-custom-hover flex items-center justify-center">
+                        <div className="flex h-full w-full items-center justify-center bg-custom-muted dark:bg-custom-hover">
                             <span className="text-gray-light text-xs">No image</span>
                         </div>
                     )}
                 </div>
 
                 {/* Product Details - Middle Section */}
-                <div className="flex-1 min-w-0">
-                    <h3 className="text-lg font-bold text-custom-primary mb-1">
+                <div className="min-w-0 flex-1">
+                    <h3 className="mb-1 text-[17px] font-bold leading-7 text-[#1F2937]">
                         {displayName ?? item.name}
                     </h3>
                     {item.store && (
-                        <p className="text-sm text-custom-secondary mb-1">
+                        <p className="mb-1 text-sm text-custom-secondary">
                             {t("cart.store", "Store")}: {item.store}
                         </p>
                     )}
                     {variantText && (
-                        <p className="text-sm text-custom-secondary mb-1">
+                        <p className="mb-1 text-sm text-custom-secondary">
                             {t("cart.variant", "Variant")}: {variantText}
                         </p>
                     )}
@@ -131,73 +133,91 @@ export default function CartItemCard({
                         </p>
                     )}
                     {item.description && (
-                        <p className="text-sm text-custom-secondary mb-2">
+                        <p className="mb-3 text-sm leading-6 text-[#6B7280]">
                             {item.description}
                         </p>
                     )}
 
+                    {promotionBadges.length > 0 && (
+                        <div className="mb-3 flex flex-wrap items-center gap-2">
+                            {promotionBadges.map((badge, index) => (
+                                <span
+                                    key={`${badge}-${index}`}
+                                    className={`rounded-full px-3 py-1 text-sm font-medium leading-5 ${
+                                        index % 2 === 0
+                                            ? "bg-[#DDF8E8] text-[#16A34A]"
+                                            : "bg-[#FDE8D0] text-[#FF5A1F]"
+                                    }`}
+                                >
+                                    {badge}
+                                </span>
+                            ))}
+                        </div>
+                    )}
+
                     {/* Price before and after discount */}
-                    <div className="mb-4">
-                        {displayOriginalPrice && (
-                            <span className="text-sm text-custom-secondary line-through mr-2">
-                                {displayOriginalPrice}
-                            </span>
-                        )}
-                        <span className="text-xl font-bold text-custom-primary">
-                            {displayPrice}
-                        </span>
-                        <div className="mt-0.5">
-                            {displayOriginalSubtotal != null && (
-                                <span className="text-sm text-custom-secondary line-through mr-2">
-                                    {t("cart.subtotal", "Subtotal")}: {displayOriginalSubtotal}
+                    <div className="space-y-1">
+                        <div className="flex items-end gap-2">
+                            {displayOriginalPrice && (
+                                <span className="text-[14px] font-medium leading-5 text-[#9CA3AF] line-through">
+                                    {displayOriginalPrice}
                                 </span>
                             )}
-                            <span className="text-sm font-semibold text-custom-primary">
-                                {t("cart.subtotal", "Subtotal")}: {displaySubtotal}
+                            <span className="text-[36px] font-extrabold leading-none text-[#111827] md:text-[40px]">
+                                {displayPrice}
                             </span>
                         </div>
-                        {item.savingsText && !preview && (
-                            <p className="text-sm text-green-600 mt-1 font-medium">
-                                {item.savingsText}
-                            </p>
-                        )}
+                        <div>
+                            {displayOriginalSubtotal != null ? (
+                                <span className="text-sm font-semibold text-[#16A34A]">
+                                    {t("cart.youSave", "You save")}{" "}
+                                    {formatPrice((originalSubtotal ?? 0) - priceNum * item.quantity)}
+                                </span>
+                            ) : (
+                                <span className="text-sm font-semibold text-[#16A34A]">
+                                    {item.savingsText || ""}
+                                </span>
+                            )}
+                        </div>
                     </div>
                 </div>
 
                 {/* Quantity Selector and Save for Later - Right Section */}
-                <div className="flex items-center gap-4 shrink-0">
+                <div className="flex shrink-0 flex-col items-end justify-center gap-4 md:min-w-[210px]">
                     {/* Quantity Selector */}
-                    <div className="flex items-center border border-custom-secondary rounded-lg bg-custom-card">
+                    <div className="flex items-center rounded-full border border-[#E5E7EB] bg-white shadow-sm">
                         <button
                             type="button"
                             onClick={canEditQuantity ? handleDecrease : undefined}
                             disabled={!canEditQuantity}
-                            className={canEditQuantity ? "p-2 hover:bg-custom-light transition-colors" : "p-2 opacity-50 cursor-not-allowed"}
+                            className={canEditQuantity ? "p-3 text-[#64748B] transition-colors hover:bg-[#F8FAFC]" : "cursor-not-allowed p-3 opacity-50"}
                             aria-label="Decrease quantity"
                         >
-                            <HiMinus className="w-4 h-4 text-custom-primary" />
+                            <HiMinus className="h-4 w-4" />
                         </button>
-                        <span className="px-4 py-2 text-custom-primary font-medium min-w-[2rem] text-center border-x border-custom-secondary">
+                        <span className="min-w-[2.5rem] px-3 py-2 text-center text-2xl font-semibold leading-none text-[#111827]">
                             {item.quantity}
                         </span>
                         <button
                             type="button"
                             onClick={canEditQuantity ? handleIncrease : undefined}
                             disabled={!canEditQuantity}
-                            className={canEditQuantity ? "p-2 hover:bg-custom-light transition-colors" : "p-2 opacity-50 cursor-not-allowed"}
+                            className={canEditQuantity ? "p-3 text-[#64748B] transition-colors hover:bg-[#F8FAFC]" : "cursor-not-allowed p-3 opacity-50"}
                             aria-label="Increase quantity"
                         >
-                            <HiPlus className="w-4 h-4 text-custom-primary" />
+                            <HiPlus className="h-4 w-4" />
                         </button>
                     </div>
 
                     {/* Save for later */}
-                    {/* <button
-                        onClick={() => onMoveToWishlist?.(item.id)}
-                        className="text-sm text-primary-light hover:underline whitespace-nowrap"
-                    >
-                        Save for later
-                    </button> */}
+                    {onMoveToWishlist && (
+                        <button
+                            onClick={() => onMoveToWishlist(item.id)}
+                            className="whitespace-nowrap text-base font-medium text-primary-light hover:underline"
+                        >
+                            {t("cart.saveForLater", "Save for later")}
+                        </button>
+                    )}
                 </div>
             </div>
         </div>

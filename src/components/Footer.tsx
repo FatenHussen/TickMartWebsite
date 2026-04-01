@@ -48,7 +48,7 @@ export default function Footer() {
                     <Link to="/home" className="flex items-center gap-2">
                         <img
                             src="/images/shared/logo-footer.png"
-                            alt="Tikmool"
+                            alt="Tikmart"
                             className="h-44 w-auto object-contain"
                         />
                     </Link>

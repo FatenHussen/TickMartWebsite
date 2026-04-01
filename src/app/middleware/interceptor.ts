@@ -2,6 +2,7 @@ import axios from "axios";
 import { toast } from "sonner";
 import { useAuthStore } from "@/store/auth";
 import i18n from "@/i18n/config";
+import { getApiErrorMessage, getApiSuccessMessage } from "@/shared/lib/apiMessage";
 
 const MUTATION_METHODS = ["post", "put", "patch", "delete"] as const;
 
@@ -19,8 +20,8 @@ function getAcceptLanguage(): string {
 }
 
 const BASE_URL = import.meta.env.DEV
-    ? "https://tikmool.octopus-software.online/api"
-    : "https://tikmool.octopus-software.online/api/";
+    ? "https://tickdash.tickmartsy.com/api"
+    : "https://tickdash.tickmartsy.com/api/";
 
 const _axios = axios.create({
     baseURL: BASE_URL,
@@ -55,10 +56,7 @@ _axios.interceptors.request.use(
 _axios.interceptors.response.use(
     (response) => {
         if (isMutationMethod(response.config.method ?? "")) {
-            const message =
-                (response.data?.message as string) ||
-                (response.data?.data?.message as string) ||
-                "Operation completed successfully.";
+            const message = getApiSuccessMessage(response.data);
             toast.success(message);
         }
         return response;
@@ -68,12 +66,9 @@ _axios.interceptors.response.use(
             if (error.response.status === 401) {
                 useAuthStore.getState().logoutLocal();
             }
-            const message =
-                (error.response?.data?.message as string) ||
-                (error.response?.data?.data?.message as string) ||
-                error.message ||
-                "Something went wrong.";
+            const message = getApiErrorMessage(error);
             if (isMutationMethod(error.config?.method ?? "")) {
+                error.__toastHandled = true;
                 toast.error(message);
             }
             console.error("API Error:", error.response.data);

@@ -5,6 +5,7 @@ import { _CurrencyApi } from"../api/currency.service";
 import { queryKeys } from"@/utils/queryKeys";
 import type { UpdateCurrencyPayload } from"../types";
 import type { CurrencyItem } from"../types";
+import { getApiErrorMessage } from"@/shared/lib/apiMessage";
 
 /**
  * Hook to fetch list of available currencies
@@ -48,11 +49,7 @@ export function useUpdateCurrency() {
  },
  onError: (err: unknown) => {
  console.error("[update-currency] error:", err);
- const errorMessage =
- (err as { response?: { data?: { message?: string } }; message?: string })
- ?.response?.data?.message ||
- (err as { message?: string })?.message ||
- t("account.settings.currency.updateError","فشل تحديث العملة");
+ const errorMessage = getApiErrorMessage(err, t("account.settings.currency.updateError","فشل تحديث العملة"));
  toast.error(errorMessage);
  },
  });

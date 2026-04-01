@@ -3,6 +3,7 @@ import { useTranslation } from"react-i18next";
 import { toast } from"sonner";
 import { HiCloudUpload } from"react-icons/hi";
 import { cn } from"@/shared/lib/utils";
+import { getApiErrorMessage, getApiSuccessMessage } from"@/shared/lib/apiMessage";
 import BasePopup from"@/shared/component/BasePopup";
 import Button from"@/shared/ui/Button";
 import { useComplaintOrders, useCreateComplaint } from"../hooks/useComplaints";
@@ -61,7 +62,7 @@ export default function ComplaintFormModal({
  createMutation.mutate(formData, {
  onSuccess: (res) => {
  if (res.success) {
- toast.success(res.message || t("common.complaintSubmitted"));
+ toast.success(getApiSuccessMessage(res, t("common.complaintSubmitted")));
  onSuccess?.();
  onClose();
  setType("");
@@ -69,10 +70,10 @@ export default function ComplaintFormModal({
  setMessage("");
  setFiles([]);
  } else {
- toast.error(res.message || t("common.failedToSubmitComplaint"));
+ toast.error(getApiSuccessMessage(res, t("common.failedToSubmitComplaint")));
  }
  },
- onError: () => toast.error(t("common.failedToSubmitComplaint")),
+ onError: (err) => toast.error(getApiErrorMessage(err, t("common.failedToSubmitComplaint"))),
  });
  };
 

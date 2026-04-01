@@ -10,11 +10,14 @@ type Product = {
     originalPrice?: string;
     rating: number;
     image: string;
-    badge?: { label: string; className?: string; align?: "left" | "right" } | Array<{
-        label: string;
-        className?: string;
-        align?: "left" | "right";
-    }>;
+    badge?:
+        | { label: string; className?: string; align?: "left" | "right"; rawLabel?: boolean }
+        | Array<{
+              label: string;
+              className?: string;
+              align?: "left" | "right";
+              rawLabel?: boolean;
+          }>;
     bottomBadges?: Array<{ label: string; className?: string }>;
     category?: string;
     sold?: number;

@@ -7,17 +7,21 @@ export type CategoryNavItem = {
 type CategoryTopNavProps = {
  categories: CategoryNavItem[];
  onFilterClick?: () => void;
+onCategoryClick?: (categoryId: number) => void;
 };
 
 export default function CategoryTopNav({
  categories,
+onCategoryClick,
 }: CategoryTopNavProps) {
  return (
  <div className="flex items-center rtl:flex-row-reverse">
  <div className="flex items-center gap-2 flex-wrap">
- {categories.map((category) => (
- <div
+{categories.map((category) => (
+<button
  key={category.id}
+type="button"
+onClick={() => onCategoryClick?.(category.id)}
  className={`px-4 py-2 rounded-full font-medium text-sm transition-colors ${
  category.selected
  ?"bg-primary-light text-white"
@@ -25,7 +29,7 @@ export default function CategoryTopNav({
  }`}
  >
  {category.name}
- </div>
+</button>
  ))}
  </div>
  {/* <Button

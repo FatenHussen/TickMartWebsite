@@ -5,6 +5,8 @@ export interface RecipeBadge {
  id: number;
  name: string;
  color:"success"|"warning"|"danger"| string;
+ type?: string;
+ image?: string;
  postion:"top"|"bottom"| null;
 }
 
@@ -18,6 +20,8 @@ export interface Recipe {
  price: number;
  price_after_discount: number;
  discount: string;
+ sold?: number;
+ sold_formatted?: string;
  orders_count: number;
  created_at: string;
  budges: RecipeBadge[];

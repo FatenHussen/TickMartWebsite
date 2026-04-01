@@ -2,6 +2,7 @@ import { useTranslation } from"react-i18next";
 import { cn } from"@/shared/lib/utils";
 import Rating from"@/shared/component/Rating";
 import Badge from"@/shared/component/Badge";
+import LazyImage from"@/shared/component/LazyImage";
 import FavoriteButton from"@/shared/component/FavoriteButton";
 import type { Recipe } from"../types";
 import { mapActionPageSlugToRoute } from"@/utils/routeMapper";
@@ -31,7 +32,7 @@ export default function RecipeCard({
  const navigate = useNavigate();
  const hasDiscount = recipe.discount && parseFloat(recipe.discount) > 0;
  const topBadge = recipe.budges?.find(
- (b) => (b.postion ==="top"|| b.postion === null) && b.color
+ (b) => (b.postion ==="top"|| b.postion === null) && (b.type === "image" || Boolean(b.image) || Boolean(b.color))
  );
 
  const handleClick = () => {
@@ -42,7 +43,7 @@ export default function RecipeCard({
  // Build image URL
  const imageUrl = recipe.image.startsWith("http")
  ? recipe.image
- : `https://tikmool.octopus-software.online/storage/${recipe.image}`;
+ : `https://tickdash.tickmartsy.com/storage/${recipe.image}`;
 
  return (
  <div
@@ -59,11 +60,11 @@ export default function RecipeCard({
  >
  {/* Image Section */}
  <div className="relative h-48 w-full">
- <img
+ <LazyImage
  src={imageUrl}
  alt={recipe.name}
  className="h-full w-full object-cover"
- loading="lazy"
+ wrapperClassName="h-full w-full"
  />
 
  {/* Discount Badge */}
@@ -81,6 +82,9 @@ export default function RecipeCard({
  <div className="absolute left-3 top-3 z-10">
  <Badge
  label={topBadge.name}
+ type={topBadge.type}
+ imageSrc={topBadge.image}
+ imageAlt={topBadge.name}
  className={
  badgeColorMap[topBadge.color] ||"bg-blue-500 text-white"
  }
@@ -125,13 +129,18 @@ export default function RecipeCard({
 
  {/* Price Section */}
  <div className="mt-3">
- <div className="flex items-baseline gap-2">
+ <div className="flex items-baseline gap-2 flex-wrap">
  <span className="text-lg font-bold text-custom-primary">
  {recipe.price_after_discount}
  </span>
  {hasDiscount && recipe.price && (
  <span className="text-sm text-custom-tertiary line-through">
  {recipe.price}
+ </span>
+ )}
+ {recipe.sold !== undefined && recipe.sold > 0 && (
+ <span className="ml-auto text-sm font-medium text-custom-secondary">
+ {recipe.sold.toLocaleString()} {t("home.sold")}
  </span>
  )}
  </div>

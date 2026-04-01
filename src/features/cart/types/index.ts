@@ -215,11 +215,14 @@ export interface OrderPreviewItemPrice {
 export interface OrderPreviewOrderItem {
  shop_product_variant_id: number;
  product_name?: string;
+  product_image?: string;
  quantity: number;
  price?: number | string;
+  product_discount?: number | string;
  price_after_discount?: number | string;
+  total?: number | string;
  variant?: string[];
- image?: string;
+  image?: string;
  shop_name?: string;
  extras?: number[];
 }

@@ -1,6 +1,7 @@
 import { useTranslation } from"react-i18next";
 import { useLanguage } from"@/context/LanguageContext";
 import { toast } from"sonner";
+import { getApiErrorMessage, getApiSuccessMessage } from"@/shared/lib/apiMessage";
 import PackageCard from"../components/PackageCard";
 import {
   usePackages,
@@ -24,13 +25,13 @@ export default function MyPackages() {
  subscribeMutation.mutate(packageId, {
  onSuccess: (res) => {
  if (res.status) {
- toast.success(res.message || t("packages.subscribe"));
+ toast.success(getApiSuccessMessage(res, t("packages.subscribe")));
  } else {
- toast.error(res.message || t("common.subscriptionFailed"));
+ toast.error(getApiSuccessMessage(res, t("common.subscriptionFailed")));
  }
  },
- onError: () => {
-      toast.error(t("common.subscriptionFailed"));
+ onError: (err) => {
+      toast.error(getApiErrorMessage(err, t("common.subscriptionFailed")));
     },
   });
   };
@@ -40,13 +41,13 @@ export default function MyPackages() {
     cancelMutation.mutate(packageId, {
       onSuccess: (res) => {
         if (res.status) {
-          toast.success(res.message || t("packages.cancelSubscriptionSuccess"));
+          toast.success(getApiSuccessMessage(res, t("packages.cancelSubscriptionSuccess")));
         } else {
-          toast.error(res.message || t("common.subscriptionFailed"));
+          toast.error(getApiSuccessMessage(res, t("common.subscriptionFailed")));
         }
       },
-      onError: () => {
-        toast.error(t("common.subscriptionFailed"));
+      onError: (err) => {
+        toast.error(getApiErrorMessage(err, t("common.subscriptionFailed")));
       },
     });
   };

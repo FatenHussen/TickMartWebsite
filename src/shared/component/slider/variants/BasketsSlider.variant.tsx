@@ -1,6 +1,18 @@
 import SliderSection from"../core/SliderSection";
 import BasketCard from"@/shared/component/card/BasketCard";
+import { useTranslation } from"react-i18next";
 import type { SliderVariantProps } from"./variant.types";
+import {
+ mapApiBottomBadgesToProductCard,
+ mapApiTopBadgesToProductCard,
+} from"@/shared/lib/mapProductBadges";
+
+type ApiBadgeDemo = {
+ id: number;
+ name: string;
+ color: string;
+ postion: string;
+};
 
 type Basket = {
  id: number | string;
@@ -13,6 +25,8 @@ type Basket = {
  saveAmount?: string;
  savings?: string;
  offerEndingDate?: string;
+ top_badges?: ApiBadgeDemo[];
+ bottom_badges?: ApiBadgeDemo[];
 };
 
 const defaultBaskets: Basket[] = [
@@ -27,6 +41,12 @@ const defaultBaskets: Basket[] = [
  saveAmount:"Save $12",
  savings:"You saved $180",
  offerEndingDate:"Offer ending date: 11/1/2022",
+ top_badges: [
+ { id: 1, name:"Save $12", color:"warning", postion:"top" },
+ ],
+ bottom_badges: [
+ { id: 2, name:"Order now", color:"primary", postion:"bottom" },
+ ],
  },
  {
  id: 2,
@@ -39,6 +59,12 @@ const defaultBaskets: Basket[] = [
  saveAmount:"Save $12",
  savings:"You saved $180",
  offerEndingDate:"Offer ending date: 11/1/2022",
+ top_badges: [
+ { id: 1, name:"Save $12", color:"warning", postion:"top" },
+ ],
+ bottom_badges: [
+ { id: 2, name:"Order now", color:"primary", postion:"bottom" },
+ ],
  },
 ];
 
@@ -48,6 +74,7 @@ export default function BasketsSliderVariant({
  payload,
  ui,
 }: SliderVariantProps) {
+ const { t } = useTranslation();
  const items: Basket[] =
  (payload as { items?: Basket[] })?.items || defaultBaskets;
  const limitedItems =
@@ -76,8 +103,11 @@ export default function BasketsSliderVariant({
  rating={basket.rating}
  image={basket.image}
  saveAmount={basket.saveAmount}
+ badge={mapApiTopBadgesToProductCard(basket.top_badges)}
+ bottomBadges={mapApiBottomBadgesToProductCard(basket.bottom_badges)}
  savings={basket.savings}
  offerEndingDate={basket.offerEndingDate}
+ t={t}
  onToggleFavorite={(id) => console.log("toggle fav", id)}
  onAddToCart={(id) => console.log("add to cart", id)}
  onClick={(id) => console.log("open basket", id)}

@@ -53,7 +53,7 @@ export default function ChangePassword() {
  <span className="text-white text-xl">🌀</span>
  </div>
  <span className="text-xl font-bold text-custom-primary">
- Tikmool
+ Tikmart
  </span>
  </div>
 

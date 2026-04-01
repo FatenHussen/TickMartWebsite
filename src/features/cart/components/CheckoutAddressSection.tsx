@@ -29,18 +29,18 @@ export default function CheckoutAddressSection({
  );
 
  return (
- <div className="mb-6"dir={isRTL ?"rtl":"ltr"}>
+ <section className="mb-8"dir={isRTL ?"rtl":"ltr"}>
  {/* Header */}
- <div className="flex items-center justify-between mb-4">
- <h2 className="text-lg font-bold text-custom-primary">
+ <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+ <h2 className="text-[20px] font-bold leading-none text-custom-primary md:text-[22px]">
  {t("checkout.deliveryAddress")}
  </h2>
- <div className="flex items-center gap-3">
+ <div className="flex flex-wrap items-center gap-3">
  {addresses.length > 1 && (
  <button
  type="button"
  onClick={() => setShowAddressPicker((p) => !p)}
- className="px-4 py-2 rounded-lg bg-custom-card border border-primary-light text-primary-light text-sm font-medium hover:bg-primary-light/5 transition-colors"
+ className="inline-flex min-h-[52px] items-center justify-center rounded-2xl border border-[#E7EAF0] bg-white px-6 text-[15px] font-medium text-custom-secondary shadow-[0_2px_8px_rgba(15,23,42,0.04)] transition-colors hover:bg-slate-50"
  >
  {t("checkout.changeAddress")}
  </button>
@@ -51,9 +51,11 @@ export default function CheckoutAddressSection({
  variant="outline"
  size="sm"
  onClick={onAddNewAddress}
- className="px-4 py-2 rounded-lg bg-custom-card border border-primary-light text-primary-light hover:bg-primary-light/5 flex items-center gap-1.5 text-sm font-medium"
+ className="inline-flex min-h-[56px] rounded-2xl border-2 border-primary-light bg-white px-6 text-[15px] font-medium text-primary-light shadow-none hover:bg-primary-light/5"
  >
- <HiPlus className="w-4 h-4"/>
+ <span className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-current">
+ <HiPlus className="h-4 w-4"/>
+ </span>
  {t("checkout.addNewAddress")}
  </Button>
  )}
@@ -62,7 +64,7 @@ export default function CheckoutAddressSection({
 
  {/* Address picker dropdown - when Change address clicked */}
  {showAddressPicker && addresses.length > 1 && (
- <div className="mb-4 p-4 bg-custom-card rounded-xl border border-custom-primary space-y-2 max-h-48 overflow-y-auto">
+ <div className="mb-5 space-y-2 rounded-2xl border border-[#D8EAF0] bg-white p-3 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
  {addresses.map((addr) => (
  <button
  key={addr.id}
@@ -71,10 +73,10 @@ export default function CheckoutAddressSection({
  onAddressSelect(addr.id);
  setShowAddressPicker(false);
  }}
- className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
+ className={`w-full rounded-xl px-4 py-3 text-left transition-colors ${
  selectedAddressId === addr.id
- ?"bg-primary-light/10 font-medium text-primary-light border border-primary-light"
- :"hover:bg-blue-off text-custom-primary"
+ ?"border border-primary-light bg-primary-light/10 font-medium text-primary-light"
+ :"text-custom-primary hover:bg-blue-off"
  }`}
  >
  <div className="flex items-center justify-between gap-2">
@@ -93,47 +95,52 @@ export default function CheckoutAddressSection({
 
  {/* Selected Address Card */}
  {selectedAddress && (
- <div className="checkout-address-card relative overflow-visible">
+ <div className="relative overflow-hidden rounded-[20px] border-2 border-primary-light bg-[#EEF8FD] px-5 py-5 shadow-[0_10px_30px_rgba(14,165,233,0.08)] sm:px-6">
  {/* Checkmark - top right (or top left in RTL) */}
  <div
  className={cn(
-"absolute top-4 w-7 h-7 rounded-full flex items-center justify-center bg-primary-light shrink-0",
+"absolute top-5 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-primary-light shadow-[0_4px_12px_rgba(14,165,233,0.25)] shrink-0",
  isRTL ?"left-4":"right-4"
  )}
  >
- <HiCheck className="w-5 h-5 text-white"/>
+ <HiCheck className="h-5 w-5 text-white"/>
  </div>
- <div className="flex items-start justify-between gap-4">
- <div className="flex-1">
- <div className="flex items-center gap-2 mb-3">
- <span className="font-bold text-custom-primary text-base">
+ <div className="flex items-center justify-between gap-4">
+ <div className="min-w-0 flex-1 pr-12">
+ <div className="mb-3 flex flex-wrap items-center gap-2.5">
+ <span className="text-[19px] font-semibold leading-none text-custom-primary">
  {selectedAddress.fullName}
  </span>
  {selectedAddress.tags?.map((tag, index) => (
  <span
  key={index}
- className="text-xs px-2.5 py-0.5 rounded-full bg-primary-light text-white font-medium"
+ className={cn(
+ "rounded-full px-3 py-1 text-xs font-medium leading-none",
+ index === 0
+ ? "bg-primary-light text-white"
+ : "bg-transparent text-custom-primary"
+ )}
  >
  {tag}
  </span>
  ))}
  </div>
- <div className="text-sm text-custom-secondary mb-2">
+ <div className="mb-3 text-[15px] font-medium text-custom-secondary">
  {selectedAddress.phoneNumber}
  </div>
- <div className="text-sm text-custom-secondary">
+ <div className="max-w-[620px] text-[15px] leading-7 text-custom-secondary">
  {selectedAddress.address}
  </div>
  </div>
  {/* Right side - Delivery illustration */}
- <div className="shrink-0">
- <div className="w-20 h-20 flex items-center justify-center">
- <img src={imgDelivery} width={100} height={100} alt=""/>
+ <div className="pointer-events-none shrink-0 self-end pr-6">
+ <div className="flex h-[108px] w-[108px] items-end justify-center sm:h-[118px] sm:w-[118px]">
+ <img src={imgDelivery} width={118} height={118} alt=""/>
  </div>
  </div>
  </div>
  </div>
  )}
- </div>
+ </section>
  );
 }

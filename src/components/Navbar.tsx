@@ -23,6 +23,7 @@ import {
     HiQuestionMarkCircle,
     HiCog,
     HiTrendingUp,
+    HiTag,
 } from "react-icons/hi";
 import { paths } from "@/app/routes/path/paths";
 import { useState, useEffect, useMemo, useRef } from "react";
@@ -198,6 +199,13 @@ export default function Navbar() {
             ]
             : baseAccountItems
         : [];
+    const desktopShortcutItems = [
+        { path: paths.client.home, label: t("offers") || "Offers", icon: HiTag },
+        { path: paths.account.baskets, label: t("account.menu.myBaskets") || "Baskets", icon: HiShoppingBag },
+        { path: paths.account.wishlist, label: t("account.menu.wishlist") || "Wishlist", icon: HiHeart },
+        { path: paths.account.orders, label: t("account.menu.myOrders") || "Orders", icon: HiCube },
+        { path: paths.client.cart, label: t("cart.title") || "Cart", icon: HiShoppingCart, badge: cartCount },
+    ];
 
     return (
         <div className="bg-custom-card" dir={isRTL ? "rtl" : "ltr"}>
@@ -209,13 +217,13 @@ export default function Navbar() {
                         <Link
                             to={paths.client.home}
                             className="flex items-center gap-2 shrink-0"
-                            aria-label="Tikmool Home"
+                            aria-label="Tikmart Home"
                         >
                             {!logoError ? (
                                 <img
                                     src="/images/shared/logo.jpg"
-                                    alt="Tikmool"
-                                    className="h-9 md:h-10 w-auto object-contain"
+                                    alt="Tikmart"
+                                    className="h-9 md:h-10 w-auto max-w-[min(160px,40vw)] object-contain"
                                     onError={() => setLogoError(true)}
                                 />
                             ) : (
@@ -261,7 +269,7 @@ export default function Navbar() {
                                             {t("navbar.deliveringTo")}
                                         </span>
                                         <span className="text-sm font-medium text-custom-primary truncate w-full">
-                                            {t("auth.login") || "Login"}
+                                            {t("common.login") || "Login"}
                                         </span>
                                     </div>
                                 </Link>
@@ -330,26 +338,36 @@ export default function Navbar() {
 
                         {/* Right Icons */}
                         <div className="flex items-center gap-1.5 sm:gap-2 lg:gap-3 shrink-0">
-                            {/* Wishlist - Shown when nav visible (lg+) */}
-                            <Link
-                                to={paths.account.wishlist}
-                                className="hidden lg:block p-2 hover:bg-custom-light rounded-full transition-colors"
-                                aria-label={t("account.menu.wishlist") || "Wishlist"}
-                            >
-                                <HiHeart className="w-6 h-6 text-primary-light" />
-                            </Link>
-                            {/* Orders - Shown when nav visible (lg+) */}
-                            <Link
-                                to={paths.account.orders}
-                                className="hidden lg:block p-2 hover:bg-custom-light rounded-full transition-colors"
-                                aria-label={t("account.menu.myOrders") || "My orders"}
-                            >
-                                <HiShoppingBag className="w-6 h-6 text-primary-light" />
-                            </Link>
-                            {/* Cart - Always visible */}
+                            <div className="hidden lg:flex items-center gap-3 xl:gap-5 2xl:gap-6">
+                                {desktopShortcutItems.map((item) => {
+                                    const Icon = item.icon;
+                                    const isCart = item.path === paths.client.cart;
+                                    return (
+                                        <Link
+                                            key={item.label}
+                                            to={item.path}
+                                            className="group flex min-w-[52px] xl:min-w-[60px] flex-col items-center gap-1 text-center text-custom-primary transition-colors hover:text-black"
+                                            aria-label={item.label}
+                                        >
+                                            <span className="relative flex h-7 xl:h-8 items-center justify-center">
+                                                <Icon className="h-5 w-5 xl:h-6 xl:w-6 text-[#2B2B2B] transition-colors group-hover:text-black" />
+                                                {isCart && cartCount > 0 && (
+                                                    <span className="absolute -top-2.5 -right-3 bg-[#FFD426] text-custom-primary text-[10px] xl:text-xs font-bold rounded-full min-w-[24px] h-[24px] xl:min-w-[28px] xl:h-[28px] flex items-center justify-center px-1 border-2 border-white">
+                                                        {cartCount > 99 ? "99+" : cartCount}
+                                                    </span>
+                                                )}
+                                            </span>
+                                            <span className="text-[11px] xl:text-[13px] font-medium leading-none text-[#2B2B2B] whitespace-nowrap">
+                                                {item.label}
+                                            </span>
+                                        </Link>
+                                    );
+                                })}
+                            </div>
+                            {/* Cart - Always visible on smaller screens */}
                             <Link
                                 to={paths.client.cart}
-                                className="relative p-2 hover:bg-custom-light rounded-full transition-colors"
+                                className="relative lg:hidden p-2 hover:bg-custom-light rounded-full transition-colors"
                             >
                                 <HiShoppingCart className="w-6 h-6 text-primary-light" />
                                 {cartCount > 0 && (
@@ -366,7 +384,7 @@ export default function Navbar() {
                                 >
                                     <HiLogin className="w-5 h-5 shrink-0" />
                                     <span className="hidden xl:inline">
-                                        {t("auth.login") || "Login"}
+                                        {t("common.login") || "Login"}
                                     </span>
                                 </Link>
                             )}
@@ -397,7 +415,7 @@ export default function Navbar() {
                                             e.stopPropagation();
                                             setShowAccountDropdown((prev) => !prev);
                                         }}
-                                        className={`flex items-center rounded-full focus:outline-none focus:ring-2 focus:ring-primary-light focus:ring-offset-2 dark:focus:ring-offset-gray-900 transition-all ${showAccountDropdown ? "ring-2 ring-primary-light ring-offset-2 dark:ring-offset-gray-900" : ""
+                                        className={`flex items-center gap-2 rounded-full focus:outline-none focus:ring-2 focus:ring-primary-light focus:ring-offset-2 dark:focus:ring-offset-gray-900 transition-all ${showAccountDropdown ? "ring-2 ring-primary-light ring-offset-2 dark:ring-offset-gray-900" : ""
                                             }`}
                                     >
                                         {/* {profile?.image?.trim() ? (
@@ -407,10 +425,11 @@ export default function Navbar() {
                                                 className="w-9 h-9 rounded-full object-cover border-2 border-custom-primary hover:border-primary-light transition-colors"
                                             />
                                         ) : ( */}
-                                            <div className="w-9 h-9 rounded-full bg-primary-light/20 flex items-center justify-center text-primary-light font-semibold text-sm border-2 border-primary-light/30">
+                                            <div className="w-10 h-10 xl:w-11 xl:h-11 rounded-full bg-primary-light/20 flex items-center justify-center text-primary-light font-semibold text-sm border-2 border-primary-light/30 overflow-hidden">
                                                 {profileInitial}
                                             </div>
                                         {/* )} */}
+                                        <HiChevronDown className="w-5 h-5 text-[#2B2B2B]" />
                                     </button>
                                     {showAccountDropdown && dropdownPosition && createPortal(
                                         <div
@@ -694,7 +713,7 @@ export default function Navbar() {
                                                 {t("navbar.deliveringTo")}
                                             </span>
                                             <span className="text-sm font-medium text-custom-primary truncate w-full">
-                                                {t("auth.login") || "Login"}
+                                                {t("common.login") || "Login"}
                                             </span>
                                         </div>
                                     </Link>
@@ -793,7 +812,7 @@ export default function Navbar() {
                                             className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-primary-light text-white rounded-lg font-medium hover:bg-primary transition-colors"
                                         >
                                             <HiLogin className="w-5 h-5" />
-                                            <span>{t("auth.login") || "Login"}</span>
+                                            <span>{t("common.login") || "Login"}</span>
                                         </Link>
                                     </div>
                                 )}

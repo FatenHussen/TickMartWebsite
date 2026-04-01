@@ -5,6 +5,7 @@ import { Button } from "@/shared/ui";
 import { HiExclamationCircle } from "react-icons/hi";
 import { cn } from "@/shared/lib/utils";
 import { toast } from "sonner";
+import { getApiErrorMessage, getApiSuccessMessage } from "@/shared/lib/apiMessage";
 import {
     usePointsSummary,
     usePointsTransactions,
@@ -80,10 +81,10 @@ export default function PointsRewards() {
         const minPoints = exchangeOptions?.options?.coupon?.min_points ?? 100;
         exchangeCouponMutation.mutate(minPoints, {
             onSuccess: (res) => {
-                toast.success(res.message ?? t("account.pointsRewards.redeem.success", "Exchange successful!"));
+                toast.success(getApiSuccessMessage(res as unknown, t("account.pointsRewards.redeem.success", "Exchange successful!")));
             },
-            onError: () => {
-                toast.error(t("account.pointsRewards.redeem.error", "Exchange failed. Please try again."));
+            onError: (err) => {
+                toast.error(getApiErrorMessage(err, t("account.pointsRewards.redeem.error", "Exchange failed. Please try again.")));
             },
         });
     };
@@ -91,13 +92,13 @@ export default function PointsRewards() {
     const handleExchangeGift = (gift: PointsExchangeGift) => {
         exchangeGiftMutation.mutate({ points: gift.points_required, gift_id: gift.id }, {
             onSuccess: (res) => {
-                toast.success(res.message ?? t("account.pointsRewards.redeem.success", "Exchange successful!"));
+                toast.success(getApiSuccessMessage(res as unknown, t("account.pointsRewards.redeem.success", "Exchange successful!")));
                 // Open address selection modal
                 setPendingGiftId(res.data?.gift_id ?? null);
                 setSelectedAddressId(addresses.find((a) => a.is_default)?.id ?? addresses[0]?.id ?? null);
             },
-            onError: () => {
-                toast.error(t("account.pointsRewards.redeem.error", "Exchange failed. Please try again."));
+            onError: (err) => {
+                toast.error(getApiErrorMessage(err, t("account.pointsRewards.redeem.error", "Exchange failed. Please try again.")));
             },
         });
     };
@@ -110,8 +111,8 @@ export default function PointsRewards() {
                 setPendingGiftId(null);
                 setSelectedAddressId(null);
             },
-            onError: () => {
-                toast.error(t("account.pointsRewards.giftAddress.error", "Failed to set address. Please try again."));
+            onError: (err) => {
+                toast.error(getApiErrorMessage(err, t("account.pointsRewards.giftAddress.error", "Failed to set address. Please try again.")));
             },
         });
     };

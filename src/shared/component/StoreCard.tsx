@@ -1,4 +1,5 @@
 import Rating from"./Rating";
+import LazyImage from"./LazyImage";
 import { cn } from"../lib/utils";
 import FavoriteButton from"./FavoriteButton";
 
@@ -67,11 +68,11 @@ export default function StoreCard({
  >
  {/* Image */}
  <div className="relative h-52 w-full">
- <img
+ <LazyImage
  src={image}
  alt={name}
  className="h-full w-full object-cover"
- loading="lazy"
+ wrapperClassName="h-full w-full"
  />
 
  {/* Status pill (top-left) - Green oval */}

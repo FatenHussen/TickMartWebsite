@@ -1,5 +1,6 @@
 import { HiLocationMarker } from"react-icons/hi";
 import Rating from"@/shared/component/Rating";
+import FavoriteButton from"@/shared/component/FavoriteButton";
 
 type StoreHeaderProps = {
  logo: string;
@@ -8,6 +9,7 @@ type StoreHeaderProps = {
  rating: number;
  city: string;
  address: string;
+  isFavorite?: boolean;
  onFavoriteClick?: () => void;
 };
 
@@ -18,6 +20,7 @@ export default function StoreHeader({
  rating,
  city,
  address,
+  isFavorite = false,
  onFavoriteClick,
 }: StoreHeaderProps) {
  return (
@@ -48,15 +51,16 @@ export default function StoreHeader({
  </div>
 
  <div className="flex items-center gap-3">
- <button
- aria-label="Favorite"
- onClick={onFavoriteClick}
- className="p-3 rounded-full border border-custom-primary hover:bg-custom-primary transition-colors"
- >
- <span role="img"aria-hidden>
- 💙
- </span>
- </button>
+        <FavoriteButton
+          isFavorite={isFavorite}
+          onToggle={(e) => {
+            e.stopPropagation();
+            onFavoriteClick?.();
+          }}
+          size="md"
+          ariaLabel="Toggle store favorite"
+          className="shrink-0"
+        />
  </div>
  </div>
  );

@@ -3,6 +3,13 @@ import { cn } from "@/shared/lib/utils";
 import Rating from "@/shared/component/Rating";
 import Badge from "@/shared/component/Badge";
 
+export type ProductInfoBadge = {
+    label: string;
+    className?: string;
+    type?: "image" | "text" | string;
+    image?: string;
+};
+
 export type ProductInfoProps = {
     category?: string;
     brand?: string;
@@ -14,7 +21,7 @@ export type ProductInfoProps = {
     savings?: string;
     sold?: number;
     rating?: number;
-    badges?: Array<{ label: string; className?: string }>;
+    badges?: ProductInfoBadge[];
     topRightSlot?: ReactNode;
     className?: string;
 };
@@ -34,10 +41,8 @@ export default function ProductInfo({
     topRightSlot,
     className,
 }: ProductInfoProps) {
-
-    console.log(price);
     return (
-        <div className={cn("flex flex-col gap-3", className)}>
+        <div className={cn("flex flex-col gap-4", className)}>
             {/* Top badges row */}
             {badges.length > 0 && (
                 <div className="flex flex-wrap items-center gap-2">
@@ -45,6 +50,9 @@ export default function ProductInfo({
                         <Badge
                             key={idx}
                             label={badge.label}
+                            type={badge.type}
+                            imageSrc={badge.image}
+                            imageAlt={badge.label}
                             className={cn(
                                 "rounded-full px-3 py-1 text-xs font-semibold",
                                 badge.className,
@@ -56,8 +64,8 @@ export default function ProductInfo({
 
             {/* Category / Brand row with optional top-right slot (e.g. ShopSelector) */}
             {(category || brand || topRightSlot) && (
-                <div className="flex items-start justify-between gap-2">
-                    <div className="flex flex-col gap-0.5 text-sm text-gray">
+                <div className="flex items-start justify-between gap-4">
+                    <div className="flex flex-col gap-1 text-sm text-gray">
                         {category && <span>{category}</span>}
                         {brand && <span>{brand}</span>}
                     </div>
@@ -66,41 +74,43 @@ export default function ProductInfo({
             )}
 
             {/* Product Name */}
-            <h1 className="text-2xl font-bold tracking-tight text-text-primary lg:text-3xl">
+            <h1 className="text-3xl font-bold tracking-tight text-text-primary lg:text-[2.1rem]">
                 {name}
             </h1>
 
             {/* SKU & Origin */}
             {(sku || origin) && (
-                <div className="flex flex-col gap-1 text-sm">
+                <div className="flex flex-col gap-1.5 text-sm">
                     {sku && (
                         <div className="flex items-center gap-1">
                             <span className="text-gray">SKU:</span>
-                            <span className="font-medium text-primary-light">{sku}</span>
+                            <span className="font-semibold text-primary-light underline underline-offset-2 decoration-1">
+                                {sku}
+                            </span>
                         </div>
                     )}
                     {origin && (
                         <div className="flex items-center gap-1">
                             <span className="text-gray">Origin:</span>
-                            <span className="font-medium text-primary-light">{origin}</span>
+                            <span className="font-semibold text-primary-light">{origin}</span>
                         </div>
                     )}
                 </div>
             )}
 
             {/* Pricing Row */}
-            <div className="flex items-center justify-between">
-                <div className="flex flex-col gap-1">
-                    <span className="text-2xl font-bold text-text-primary">{price}</span>
+            <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
+                <div className="flex flex-col gap-2">
+                    <span className="text-[2rem] font-bold leading-none text-text-primary">{price}</span>
                     {(originalPrice || savings) && (
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-3">
                             {originalPrice && (
-                                <span className="text-sm text-gray line-through">
+                                <span className="text-base text-gray line-through">
                                     {originalPrice}
                                 </span>
                             )}
                             {savings && (
-                                <span className="text-sm font-semibold text-green">{savings}</span>
+                                <span className="text-base font-semibold text-green">{savings}</span>
                             )}
                         </div>
                     )}
@@ -108,25 +118,28 @@ export default function ProductInfo({
 
                 {/* Sold + Rating */}
                 {(sold !== undefined || rating !== undefined) && (
-                    <div className="flex items-center gap-2 text-sm">
+                    <div className="flex items-center gap-3 text-base">
                         {sold !== undefined && (
                             <span className="text-gray">{sold.toLocaleString()} Sold</span>
                         )}
                         {sold !== undefined && rating !== undefined && (
-                            <span className="text-gray">•</span>
+                            <span className="text-[#D7A800]">|</span>
                         )}
-                        {rating !== undefined && <Rating rating={rating} size="sm" />}
+                        {rating !== undefined && <Rating rating={rating} size="md" />}
                     </div>
                 )}
             </div>
 
-            {/* Secondary badges below price */}
+            {/* Discount / offer badges below price */}
             {badges.length > 0 && (
                 <div className="flex flex-wrap items-center gap-2">
                     {badges.map((badge, idx) => (
                         <Badge
                             key={idx}
                             label={badge.label}
+                            type={badge.type}
+                            imageSrc={badge.image}
+                            imageAlt={badge.label}
                             className={cn(
                                 "rounded-full px-3 py-1 text-xs font-semibold",
                                 badge.className,

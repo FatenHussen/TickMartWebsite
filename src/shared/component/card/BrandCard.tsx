@@ -1,7 +1,12 @@
 import Rating from"../Rating";
 import Badge from"../Badge";
+import LazyImage from"../LazyImage";
+import AnimatedButton from"@/shared/ui/AnimatedButton";
 import { cn } from"../../lib/utils";
-import type { ProductCardBadge } from"./ProductCard";
+import {
+ type ProductCardBadge,
+ resolveProductCardBadgeLabel,
+} from"./ProductCard";
 
 type BrandCardProps = {
  name: string;
@@ -9,6 +14,8 @@ type BrandCardProps = {
  rating: number;
  /** Optional top badges (same layout as ProductCard) */
  badge?: ProductCardBadge | ProductCardBadge[];
+ /** Bottom animated rows (API `bottom_badges`) */
+ bottomBadges?: ProductCardBadge[];
  onClick?: () => void;
  className?: string;
 };
@@ -18,6 +25,7 @@ export default function BrandCard({
  image,
  rating,
  badge,
+ bottomBadges,
  onClick,
  className,
 }: BrandCardProps) {
@@ -39,7 +47,7 @@ export default function BrandCard({
  if (e.key ==="Enter"|| e.key ==="") onClick();
  }}
  className={cn(
-"relative bg-[#E4F0FB] rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow flex flex-col items-center justify-center h-full",
+"relative rounded-xl border border-custom-primary bg-custom-secondary p-6 shadow-sm transition-shadow hover:shadow-md flex flex-col items-center h-full dark:ring-1 dark:ring-white/5",
  onClick &&"cursor-pointer",
  className
  )}
@@ -49,7 +57,10 @@ export default function BrandCard({
  {leftBadges.map((b, idx) => (
  <Badge
  key={idx}
- label={b.label}
+ label={resolveProductCardBadgeLabel(b)}
+ type={b.type}
+ imageSrc={b.image}
+ imageAlt={resolveProductCardBadgeLabel(b)}
  className={cn(b.className ||"bg-blue-500 text-white")}
  />
  ))}
@@ -60,24 +71,28 @@ export default function BrandCard({
  {rightBadges.map((b, idx) => (
  <Badge
  key={idx}
- label={b.label}
+ label={resolveProductCardBadgeLabel(b)}
+ type={b.type}
+ imageSrc={b.image}
+ imageAlt={resolveProductCardBadgeLabel(b)}
  className={cn(b.className ||"bg-yellow-400 text-black")}
  />
  ))}
  </div>
  )}
+ <div className="flex flex-1 flex-col items-center justify-center w-full min-h-0">
  {/* White circular logo area */}
- <div className="w-24 h-24 rounded-full bg-custom-card flex items-center justify-center mb-4 shadow-sm">
- <img
+ <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full bg-custom-card p-2 mb-4 shadow-sm overflow-hidden">
+ <LazyImage
  src={image}
  alt={name}
- className="max-w-[80%] max-h-[80%] object-contain"
- loading="lazy"
+ effect=""
+ className="max-h-full max-w-full h-auto w-auto object-contain object-center"
  />
  </div>
 
  {/* Brand name - medium weight, centered */}
- <h3 className="font-medium text-slate-900 dark:text-slate-100 mb-2 text-center text-base">
+ <h3 className="mb-2 text-center text-base font-medium text-custom-primary">
  {name}
  </h3>
 
@@ -86,9 +101,32 @@ export default function BrandCard({
  <Rating
  rating={rating}
  size="sm"
- className="[&>span:first-child]:text-yellow-500 [&>span:last-child]:text-slate-800 [&>span:last-child]:font-medium gap-1"
+ className="gap-1 [&>span:first-child]:text-yellow-500 [&>span:last-child]:font-medium [&>span:last-child]:text-custom-primary"
  />
  </div>
+ </div>
+
+ {bottomBadges && bottomBadges.length > 0 && (
+ <div className="mt-auto flex w-full flex-col gap-2 pt-3">
+ {bottomBadges.slice(0, 1).map((b, idx) => {
+ const text = resolveProductCardBadgeLabel(b);
+ return (
+ <AnimatedButton
+ key={idx}
+ variant="primary"
+ size="sm"
+ type="button"
+ onClick={(e) => e.stopPropagation()}
+ className={cn(
+"w-full justify-center text-xs font-semibold",
+ b.className
+ )}
+ note={{ primary: text, secondary: text }}
+ />
+ );
+ })}
+ </div>
+ )}
  </div>
  );
 }

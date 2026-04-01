@@ -24,6 +24,10 @@ type CustomerSignUpProps = {
 export default function CustomerSignUp({ role, setRole }: CustomerSignUpProps) {
     const { t } = useTranslation();
     const { mutate: registerUser, isPending } = useRegister();
+    const selectClasses =
+        "w-full appearance-none rounded-lg border border-[#E4F0FB] bg-[linear-gradient(180deg,#E4F0FB_0%,#E5F3FF_100%)] px-4 py-2.5 pe-10 text-sm text-custom-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors";
+    const disabledSelectClasses =
+        `${selectClasses} disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-custom-light`;
 
     const {
         register,
@@ -135,7 +139,9 @@ export default function CustomerSignUp({ role, setRole }: CustomerSignUpProps) {
             ]}
             ctaLabel={t("auth.getDiscount")}
             helper={t("auth.onFirstOrder")}
-            maxWidth="lg"
+            useFormCard
+            formCardClassName="border-white"
+            maxWidth="576"
         >
             <div className="space-y-6">
                 <div className="flex justify-center">
@@ -205,7 +211,7 @@ export default function CustomerSignUp({ role, setRole }: CustomerSignUpProps) {
                             </Label>
                             <div className="relative">
                                 <select
-                                    className="w-full appearance-none rounded-lg border border-custom-primary bg-custom-card px-4 py-2.5 pe-10 text-sm text-custom-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
+                                    className={selectClasses}
                                     onScroll={handleGovScroll}
                                     {...register("governorate", {
                                         required: t("validation.selectGovernorate"),
@@ -253,7 +259,7 @@ export default function CustomerSignUp({ role, setRole }: CustomerSignUpProps) {
                             </Label>
                             <div className="relative">
                                 <select
-                                    className="w-full appearance-none rounded-lg border border-custom-primary bg-custom-card px-4 py-2.5 pe-10 text-sm text-custom-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-custom-light"
+                                    className={disabledSelectClasses}
                                     disabled={
                                         !selectedGovernorateId ||
                                         selectedGovernorateId === "" ||
@@ -344,7 +350,7 @@ export default function CustomerSignUp({ role, setRole }: CustomerSignUpProps) {
 
                     <div className="text-center space-y-1 pt-1">
                         <p className="text-sm text-custom-secondary">
-                            {t("common.alreadyHaveAccount")}{""}
+                            {t("common.alreadyHaveAccount")}{" "}
                             <Link
                                 to={paths.auth.jwt.signIn}
                                 className="text-primary dark:text-cyan-400 font-medium hover:underline"
@@ -353,7 +359,7 @@ export default function CustomerSignUp({ role, setRole }: CustomerSignUpProps) {
                             </Link>
                         </p>
                         <p className="text-sm text-custom-secondary">
-                            {t("common.or")}{""}
+                            {t("common.or")}{" "}
                             <Link
                                 to={paths.client.home}
                                 className="text-primary dark:text-cyan-400 font-medium hover:underline"

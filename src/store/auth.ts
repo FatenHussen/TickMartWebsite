@@ -1,5 +1,6 @@
 import { create } from"zustand";
 import { persist } from"zustand/middleware";
+import { useCartStore } from"@/store/cart";
 
 export interface AffiliateInfo {
  is_affiliate: boolean;
@@ -41,7 +42,29 @@ export const useAuthStore = create<AuthStore>()(
  setToken: (token: string | null) => set({ token }),
  setAuth: (user: User, token: string) =>
  set({ user, token, authenticated: true }),
- logoutLocal: () => set({ authenticated: false, user: null, token: null }),
+ logoutLocal: () => {
+ useCartStore.getState().clearCart();
+ try {
+ useCartStore.persist.clearStorage();
+ } catch {
+ /* ignore */
+ }
+ set({ authenticated: false, user: null, token: null });
+ if (typeof window ==="undefined") return;
+ try {
+ sessionStorage.clear();
+ } catch {
+ /* ignore */
+ }
+ window.setTimeout(() => {
+ try {
+ localStorage.removeItem("auth-storage");
+ localStorage.removeItem("tikmool_payment_method_id");
+ } catch {
+ /* ignore */
+ }
+ }, 0);
+ },
  isAuthenticated: () => get().authenticated && !!get().user,
  getToken: () => get().token,
  }),

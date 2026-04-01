@@ -36,8 +36,11 @@ export type TrackOrderData = {
  status: TrackOrderStatus;
  store: string;
  items: OrderItem[];
+  totalQuantity: number;
  paymentMethod: string;
  itemsSubtotal: string;
+  basketDiscount?: string;
+  couponDiscount?: string;
  deliveryFee: string;
  deliveryIsFree: boolean;
  totalAmount: string;

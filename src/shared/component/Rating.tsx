@@ -31,7 +31,7 @@ export default function Rating({
  {showStar && (
  <span className={`text-yellow-500 ${starSizeClasses[size]}`}>★</span>
  )}
- <span className={`${sizeClasses[size]} text-slate-600 font-medium`}>
+ <span className={`${sizeClasses[size]} font-medium text-custom-secondary`}>
  {displayValue}
  </span>
  </div>

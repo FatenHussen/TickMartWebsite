@@ -55,7 +55,7 @@ export default function FavoriteItemCard({
  item.price_after_discount != null && item.price != null
  ? String(item.price)
  : undefined;
- const topBadge = item.budges?.[0];
+ const topBadge = item.top_badges?.[0] ?? item.budges?.[0];
 
  return (
  <div className="bg-custom-card rounded-2xl overflow-hidden border border-custom-primary hover:shadow-lg transition-shadow group">
@@ -70,6 +70,9 @@ export default function FavoriteItemCard({
  <div className="absolute left-3 top-3 z-10">
  <Badge
  label={topBadge.name}
+ type={(topBadge as { type?: string }).type}
+ imageSrc={(topBadge as { image?: string }).image}
+ imageAlt={topBadge.name}
  className={
  badgeColorMap[topBadge.color] ||"bg-blue-500 text-white"
  }

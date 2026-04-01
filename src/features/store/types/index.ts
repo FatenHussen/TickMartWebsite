@@ -18,4 +18,5 @@ export type StoreContactItem = {
  type: ContactType;
  label: string;
  value?: string;
+  onClick?: () => void;
 };

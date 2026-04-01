@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from"@tanstack/react-query";
 import { toast } from"sonner";
 import { _MarketerApi } from"../api/marketerApi";
 import { queryKeys } from"@/utils/queryKeys";
+import { getApiErrorMessage, getApiSuccessMessage } from"@/shared/lib/apiMessage";
 
 export function useMarketerStatistics() {
  return useQuery({
@@ -72,12 +73,11 @@ export function useCreateWithdrawRequest() {
  return useMutation({
  mutationFn: (amount: number) => _MarketerApi.createWithdrawRequest(amount),
  onSuccess: (res) => {
- toast.success(res.message ||"Withdraw request submitted");
+ toast.success(getApiSuccessMessage(res, "Withdraw request submitted"));
  qc.invalidateQueries({ queryKey: queryKeys.marketer.all() });
  },
  onError: (err: any) => {
- const msg =
- err?.response?.data?.message || err?.message ||"Request failed";
+ const msg = getApiErrorMessage(err, "Request failed");
  toast.error(msg);
  },
  });

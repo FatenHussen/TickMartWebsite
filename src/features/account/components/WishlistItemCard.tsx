@@ -53,7 +53,7 @@ export default function WishlistItemCard({
  {(item.topBadges ?? [])
  .filter((b) => !(item.showNew && (b.name.toLowerCase() ==="new"|| b.name ==="جديد")))
  .map((badge) =>
- badge.image ? (
+ badge.type === "image" && badge.image ? (
  <img
  key={badge.id}
  src={badge.image}

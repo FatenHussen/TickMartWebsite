@@ -16,7 +16,7 @@ export default function ProductActions({
     if (!icons.length) return null;
 
     return (
-        <div className={cn("flex flex-col gap-4", className)}>
+        <div className={cn("flex flex-col gap-4 ", className)}>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                 {icons.map((icon) => {
                     const sharedClassName =

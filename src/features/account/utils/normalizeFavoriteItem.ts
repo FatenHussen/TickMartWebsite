@@ -85,15 +85,17 @@ export function normalizeFavoriteItem(
  id: number;
  name: string;
  color: string;
+ type?: string;
  image?: string;
  }
  const itemWithVendor = item as { vendor?: { top_badges?: BadgeRaw[] } };
  const topBadgesRaw = item.top_badges ?? item.budges ?? itemWithVendor.vendor?.top_badges ?? [];
- const topBadges: { id: number; name: string; color: string; image?: string }[] =
+ const topBadges: { id: number; name: string; color: string; type?: string; image?: string }[] =
  topBadgesRaw.map((b: BadgeRaw) => ({
  id: b.id,
  name: b.name,
  color: b.color,
+ type: b.type,
  image: b.image,
  }));
 
@@ -103,11 +105,12 @@ export function normalizeFavoriteItem(
 
  const itemVendor = item as { vendor?: { bottom_badges?: BadgeRaw[] } };
  const bottomBadgesRaw = item.bottom_badges ?? itemVendor.vendor?.bottom_badges ?? [];
- const bottomBadges: { id: number; name: string; color: string; image?: string }[] =
+ const bottomBadges: { id: number; name: string; color: string; type?: string; image?: string }[] =
  bottomBadgesRaw.map((b: BadgeRaw) => ({
  id: b.id,
  name: b.name,
  color: b.color,
+ type: b.type,
  image: b.image,
  }));
 

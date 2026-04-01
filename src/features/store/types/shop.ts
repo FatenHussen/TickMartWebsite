@@ -23,6 +23,7 @@ export interface ShopDetailsData {
  average_rating: number;
  ratings_count: number;
  is_open_now: boolean;
+  is_favorite?: boolean;
  area: string;
  services: unknown[];
  created_at: string;

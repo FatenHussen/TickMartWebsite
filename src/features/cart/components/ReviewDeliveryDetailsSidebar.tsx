@@ -1,145 +1,168 @@
-import { Link } from"react-router-dom";
-import { HiOutlineClock } from"react-icons/hi";
-import { FaStar } from"react-icons/fa";
-import Button from"@/shared/ui/Button";
-import ReviewPointsSummary from"./ReviewPointsSummary";
-import type { ReviewOrderSummary } from"../types";
+import { Link } from "react-router-dom";
+import { HiOutlineClock } from "react-icons/hi";
+import { FaStar } from "react-icons/fa";
+import { useLanguage } from "@/context/LanguageContext";
+import { cn } from "@/shared/lib/utils";
+import Button from "@/shared/ui/Button";
+// import ReviewPointsSummary from "./ReviewPointsSummary";
+import PeanutButton from "./PeanutButton";
+import type { ReviewOrderSummary } from "../types";
 
 type ReviewDeliveryDetailsSidebarProps = {
- summary: ReviewOrderSummary;
- onConfirmOrder: () => void;
- isLoading?: boolean;
+    summary: ReviewOrderSummary;
+    onConfirmOrder: () => void;
+    isLoading?: boolean;
 };
 
 export default function ReviewDeliveryDetailsSidebar({
- summary,
- onConfirmOrder,
- isLoading = false,
+    summary,
+    onConfirmOrder,
+    isLoading = false,
 }: ReviewDeliveryDetailsSidebarProps) {
- return (
- <div
- className="rounded-3xl shadow-md sticky top-4 overflow-hidden bg-gradient-to-b from-secondary/15 to-secondary/35 dark:from-secondary/10 dark:to-secondary/20"
- >
- {/* Header - Yellow pill */}
- <div className="flex justify-center pt-6 pb-2 relative">
- <div
- className="px-4 py-2 rounded-full bg-cover bg-center bg-no-repeat absolute left-1/2 top-0 -translate-x-1/2"
- style={{ backgroundImage:"url('/images/backOrder.png')"}}
- >
- <h2 className="text-custom-primary text-sm font-bold whitespace-nowrap">
- Delivery Details
- </h2>
- </div>
- </div>
+    const { isRTL } = useLanguage();
 
- {/* Content */}
- <div className="px-5 pb-4 pt-6">
- {/* Summary rows */}
- <div className="space-y-3 text-sm">
- <SummaryRow label="Num of Items"value={summary.numOfItems} />
- <SummaryRow label="Subtotal"value={summary.subtotal} />
- <SummaryRow label="Discounts"value={summary.discounts} color="cyan"/>
- <SummaryRow label="Coupon discount"value={summary.couponDiscount} />
- {summary.subscriptionDiscount != null && (
- <SummaryRow label="Subscription discount"value={summary.subscriptionDiscount} color="cyan"/>
- )}
- {summary.promotionDiscount != null && (
- <SummaryRow label="Promotion discount"value={summary.promotionDiscount} color="cyan"/>
- )}
- <SummaryRow
- label={`Points redeemed (${summary.pointsRedeemed} pts)`}
- value={`- ${summary.pointsValue}`}
- color="cyan"
- />
- </div>
+    return (
+        <div className="sticky top-4" dir={isRTL ? "rtl" : "ltr"}>
+            <div className="overflow-visible rounded-[24px] border border-[#F5F1B8] bg-[linear-gradient(180deg,#FBFBE4_0%,#FFFAB6_100%)] px-6 pb-8 pt-0 shadow-[0_0_22px_rgba(255,231,94,0.22)]">
+                <div className="relative h-[38px]">
+                    <div className="absolute left-1/2 top-0 z-10 w-[min(100%,200px)] -translate-x-1/2 -translate-y-1/2">
+                        <PeanutButton className="mx-auto min-h-[56px] max-w-[174px]">
+                            <h2 className="whitespace-nowrap text-[17px] font-black leading-none text-black">
+                                Delivery Details
+                            </h2>
+                        </PeanutButton>
+                    </div>
+                </div>
 
- {/* Total */}
- <div className="flex items-center justify-between mt-4 pt-4 border-t border-dashed border-custom-secondary">
- <span className="text-base font-bold text-custom-primary">
- Total to pay
- </span>
- <span className="text-2xl font-bold"style={{ color:"#22C55E"}}>
- {summary.total}
- </span>
- </div>
+                <div className="space-y-6 pt-5">
+                    <div className="space-y-5">
+                        <SummaryRow label="Num of Items" value={summary.numOfItems} />
+                        <SummaryRow label="Subtotal" value={summary.subtotal} />
+                        <SummaryRow label="Shipping" value={summary.shipping} color="green" />
+                        <SummaryRow label="Discounts" value={summary.discounts} color="green" />
+                        <SummaryRow label="Tax" value={summary.tax} color="green" />
+                        <SummaryRow
+                            label="Coupon discount"
+                            value={summary.couponDiscount}
+                            color={summary.couponDiscount.trim().startsWith("-") ? "green" : "muted"}
+                        />
+                        {summary.subscriptionDiscount != null && (
+                            <SummaryRow
+                                label="Subscription discount"
+                                value={summary.subscriptionDiscount}
+                                color="green"
+                            />
+                        )}
+                        {summary.promotionDiscount != null && (
+                            <SummaryRow
+                                label="Promotion discount"
+                                value={summary.promotionDiscount}
+                                color="green"
+                            />
+                        )}
+                        <SummaryRow
+                            label={`Points redeemed (${summary.pointsRedeemed} pts)`}
+                            value={`- ${summary.pointsValue}`}
+                            color="green"
+                            labelClassName="text-[15px]"
+                        />
+                    </div>
 
- {/* Estimated Delivery */}
- <div className="flex items-center gap-2 mt-4 text-custom-secondary text-sm">
- <HiOutlineClock className="w-4 h-4"style={{ color:"#2C8090"}} />
- <span>Estimated delivery: {summary.estimatedDelivery}</span>
- </div>
+                    <div className="border-t border-[#E8D748] pt-6">
+                        <div className="flex items-center justify-between gap-4">
+                            <span className="text-[18px] font-bold leading-none text-[#1F2937]">
+                                Total to pay
+                            </span>
+                            <span className="text-[24px] font-bold leading-none text-[#1DB5E8]">
+                                {summary.total}
+                            </span>
+                        </div>
+                    </div>
 
- {/* Points earned */}
- <div className="flex items-center gap-2 mt-2">
- <FaStar className="w-4 h-4"style={{ color:"#FBBF24"}} />
- <span className="text-sm text-custom-secondary">
- You'll earn{""}
- <span className="font-semibold"style={{ color:"#22C55E"}}>
- {summary.pointsEarned} points
- </span>
- </span>
- </div>
- </div>
+                    <div className="rounded-[14px] bg-[#EEF1F2] px-4 py-3">
+                        <div className="flex items-center gap-2 text-[13px] font-medium text-[#6B7280]">
+                            <HiOutlineClock className="h-4 w-4 shrink-0 text-[#617BFF]" />
+                            <span>Estimated delivery: {summary.estimatedDelivery}</span>
+                        </div>
+                        <div className="mt-2 flex items-center gap-2 text-[14px] font-medium text-[#27AE60]">
+                            <FaStar className="h-4 w-4 shrink-0 text-[#27AE60]" />
+                            <span>You'll earn {summary.pointsEarned} points</span>
+                        </div>
+                    </div>
 
- {/* Actions */}
- <div className="px-5">
- <Button
- type="button"
- variant="primary"
- size="lg"
- fullWidth
- disabled={isLoading}
- onClick={onConfirmOrder}
- className="text-white rounded-2xl py-4 text-base font-semibold mb-3"
- style={{
- background:"linear-gradient(90deg, #4CDAF6 0%, #2C8090 100%)",
- minHeight:"60px",
- }}
- >
- Confirm Order
- </Button>
+                    <div className="space-y-4 pt-1">
+                        <Button
+                            type="button"
+                            variant="primary"
+                            size="lg"
+                            fullWidth
+                            disabled={isLoading}
+                            onClick={onConfirmOrder}
+                            className="min-h-[58px] rounded-[18px] border-0 px-6 py-4 text-[17px] font-semibold text-white shadow-[0_10px_24px_rgba(44,128,144,0.25)]"
+                            style={{
+                                background:
+                                    "linear-gradient(180deg, #4CDAF6 0%, #2C8090 100%)",
+                            }}
+                        >
+                            Confirm Order
+                        </Button>
 
- <Link
- to="/cart/checkout"
- className="block text-center text-sm text-custom-secondary hover:text-custom-primary hover:underline py-2"
- >
- Back to checkout
- </Link>
- </div>
+                        <Link
+                            to="/cart/checkout"
+                            className="block text-center text-[17px] font-medium text-[#1F1F1F] underline underline-offset-2"
+                        >
+                            Back to checkout
+                        </Link>
+                    </div>
+                </div>
+            </div>
 
- {/* Points Summary */}
- <div className="pt-4">
- <ReviewPointsSummary
- pointsBefore={summary.pointsBefore}
- pointsUsed={summary.pointsRedeemed}
- pointsEarned={summary.pointsEarned}
- pointsNewBalance={summary.pointsNewBalance}
- pointsSavings={summary.pointsSavings}
- />
- </div>
- </div>
- );
+            <div className="pt-4">
+                {/* <ReviewPointsSummary
+                    pointsBefore={summary.pointsBefore}
+                    pointsUsed={summary.pointsRedeemed}
+                    pointsEarned={summary.pointsEarned}
+                    pointsNewBalance={summary.pointsNewBalance}
+                    pointsSavings={summary.pointsSavings}
+                /> */}
+            </div>
+        </div>
+    );
 }
 
 type SummaryRowProps = {
- label: string;
- value: string | number;
- color?:"green"|"cyan";
+    label: string;
+    value: string | number;
+    color?: "green" | "default" | "muted";
+    labelClassName?: string;
 };
 
-function SummaryRow({ label, value, color }: SummaryRowProps) {
- const colorStyle = color ==="green"
- ? { color:"#22C55E"} 
- : color ==="cyan"
- ? { color:"#4CDAF6"} 
- : undefined;
-
- return (
- <div className="flex items-center justify-between">
- <span className="text-custom-secondary">{label}</span>
- <span className="font-medium"style={colorStyle}>
- {value}
- </span>
- </div>
- );
+function SummaryRow({
+    label,
+    value,
+    color = "default",
+    labelClassName,
+}: SummaryRowProps) {
+    return (
+        <div className="flex items-center justify-between gap-4">
+            <span
+                className={cn(
+                    "text-[16px] font-normal leading-none text-[#2F2F2F]",
+                    labelClassName,
+                )}
+            >
+                {label}
+            </span>
+            <span
+                className={cn(
+                    "text-right text-[16px] font-medium leading-none",
+                    color === "green" && "text-[#27AE60]",
+                    color === "muted" && "text-[#9CA3AF]",
+                    color === "default" && "text-[#2F2F2F]",
+                )}
+            >
+                {value}
+            </span>
+        </div>
+    );
 }

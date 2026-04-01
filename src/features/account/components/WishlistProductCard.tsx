@@ -2,6 +2,7 @@ import { Link } from"react-router-dom";
 import { useTranslation } from"react-i18next";
 import Rating from"@/shared/component/Rating";
 import FavoriteButton from"@/shared/component/FavoriteButton";
+import Badge from "@/shared/component/Badge";
 import { paths } from"@/app/routes/path/paths";
 import type { FavoriteItem, FavoriteType } from"../types";
 
@@ -86,13 +87,13 @@ export default function WishlistProductCard({
 
  {topBadge && (
  <div className="absolute left-3 top-3 z-10">
- <span
- className={`px-2.5 py-1 rounded text-xs font-semibold ${
- badgeColorMap[topBadge.color] ??"bg-primary text-white"
- }`}
- >
- {topBadge.name}
- </span>
+ <Badge
+ label={topBadge.name}
+ type={(topBadge as { type?: string }).type}
+ imageSrc={topBadge.image}
+ imageAlt={topBadge.name}
+ className={badgeColorMap[topBadge.color] ??"bg-primary text-white"}
+ />
  </div>
  )}
 

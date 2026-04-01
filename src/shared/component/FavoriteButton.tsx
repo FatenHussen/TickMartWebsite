@@ -1,4 +1,4 @@
-import { HiHeart } from"react-icons/hi2";
+import { HiHeart, HiOutlineHeart } from"react-icons/hi2";
 import { cn } from"../lib/utils";
 
 export type FavoriteButtonProps = {
@@ -36,21 +36,28 @@ export default function FavoriteButton({
  className={cn(
 "relative rounded-full p-0 transition-all duration-200",
 "flex items-center justify-center",
-"bg-custom-card/95 border-2 border-blue-400/80",
-"hover:bg-blue-400/10 hover:scale-110 active:scale-95 shadow-sm",
+"bg-white border-2 border-[#22BDE9]",
+"shadow-[0_4px_14px_rgba(34,189,233,0.18)]",
+"hover:shadow-[0_6px_18px_rgba(34,189,233,0.24)] hover:scale-105 active:scale-95",
  sizeClasses[size],
  className
  )}
  >
+ {isFavorite ? (
  <HiHeart
  className={cn(
  iconSizes[size],
-"transition-all duration-200",
- isFavorite
- ?"fill-blue-400 text-blue-400"
- :"fill-none stroke-2 stroke-blue-400 text-blue-400"
+"text-[#22BDE9] transition-all duration-200"
  )}
  />
+ ) : (
+ <HiOutlineHeart
+ className={cn(
+ iconSizes[size],
+"text-[#22BDE9] transition-all duration-200"
+ )}
+ />
+ )}
  </button>
  );
 }

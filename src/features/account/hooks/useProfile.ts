@@ -1,8 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from"@tanstack/react-query";
 import { toast } from"sonner";
 import { useTranslation } from"react-i18next";
+import { useNavigate } from"react-router-dom";
 import { _ProfileApi } from"../api/profile.service";
 import { queryKeys } from"@/utils/queryKeys";
+import { useAuthStore } from"@/store/auth";
+import { getApiErrorMessage } from"@/shared/lib/apiMessage";
 import type {
  UpdateProfilePayload,
  UpdatePasswordPayload,
@@ -40,10 +43,7 @@ export function useUpdateProfile() {
  },
  onError: (err: any) => {
  console.error("[update-profile] error:", err);
- const errorMessage =
- err?.response?.data?.message ||
- err?.message ||
- t("account.profile.updateError","فشل التحديث");
+ const errorMessage = getApiErrorMessage(err, t("account.profile.updateError","فشل التحديث"));
  toast.error(errorMessage);
  },
  });
@@ -68,10 +68,7 @@ export function useUpdatePassword() {
  },
  onError: (err: any) => {
  console.error("[update-password] error:", err);
- const errorMessage =
- err?.response?.data?.message ||
- err?.message ||
- t("account.profile.passwordUpdateError","فشل تغيير كلمة المرور");
+ const errorMessage = getApiErrorMessage(err, t("account.profile.passwordUpdateError","فشل تغيير كلمة المرور"));
  toast.error(errorMessage);
  },
  });
@@ -96,10 +93,7 @@ export function useUpdateEmail() {
  },
  onError: (err: any) => {
  console.error("[update-email] error:", err);
- const errorMessage =
- err?.response?.data?.message ||
- err?.message ||
- t("account.profile.emailUpdateError","فشل تحديث البريد الإلكتروني");
+ const errorMessage = getApiErrorMessage(err, t("account.profile.emailUpdateError","فشل تحديث البريد الإلكتروني"));
  toast.error(errorMessage);
  },
  });
@@ -124,10 +118,7 @@ export function useUpdatePhone() {
  },
  onError: (err: any) => {
  console.error("[update-phone] error:", err);
- const errorMessage =
- err?.response?.data?.message ||
- err?.message ||
- t("account.profile.phoneUpdateError","فشل تحديث رقم الهاتف");
+ const errorMessage = getApiErrorMessage(err, t("account.profile.phoneUpdateError","فشل تحديث رقم الهاتف"));
  toast.error(errorMessage);
  },
  });
@@ -150,10 +141,32 @@ export function useVerifyProfile() {
  },
  onError: (err: any) => {
  console.error("[verify-profile] error:", err);
- const errorMessage =
- err?.response?.data?.message ||
- err?.message ||
- t("account.profile.verifyError","فشل التحقق");
+ const errorMessage = getApiErrorMessage(err, t("account.profile.verifyError","فشل التحقق"));
+ toast.error(errorMessage);
+ },
+ });
+}
+
+/**
+ * Hook to delete/deactivate user account
+ */
+export function useDeleteAccount() {
+ const { t } = useTranslation();
+ const logoutLocal = useAuthStore((s) => s.logoutLocal);
+ const navigate = useNavigate();
+ const qc = useQueryClient();
+
+ return useMutation({
+ mutationFn: () => _ProfileApi.deleteAccount(),
+ onSuccess: () => {
+ toast.success(t("account.deleteAccount.success", "تم حذف الحساب بنجاح"));
+ qc.clear();
+ logoutLocal();
+ navigate("/");
+ },
+ onError: (err: any) => {
+ console.error("[delete-account] error:", err);
+ const errorMessage = getApiErrorMessage(err, t("account.deleteAccount.error", "فشل حذف الحساب"));
  toast.error(errorMessage);
  },
  });

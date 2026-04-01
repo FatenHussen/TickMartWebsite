@@ -240,8 +240,8 @@ export type SellerSignUpFormValues = {
  storeAddress: string;
  commercialRegisterNumber: string;
  commercialRegisterDate: string;
- gender: string;
  country: string;
+ governorate: string;
  storeCity: string;
 };
 
@@ -254,6 +254,5 @@ export interface SellerRegisterPayload {
  address: string;
  commercial_register_number: string;
  commercial_register_date: string;
- gender: string;
  country: string;
 }

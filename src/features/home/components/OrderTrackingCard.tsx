@@ -66,11 +66,6 @@ function getStatusSubtitleKey(status: ActiveOrderStatus): string {
   }
 }
 
-function getConfirmationCode(order: ActiveOrder): string {
-  const code = order.order_code ?? String(order.id);
-  return code.length >= 5 ? code.slice(-5) : code.padStart(5, "0");
-}
-
 interface OrderTrackingCardProps {
   order: ActiveOrder;
 }
@@ -94,9 +89,14 @@ export default function OrderTrackingCard({ order }: OrderTrackingCardProps) {
       stage === "out_for_delivery"
         ? { backgroundColor: "#fbbf24", borderColor: "#ffffff", borderWidth: 2 }
         : completedStyle;
-    const upcomingStyle = { backgroundColor: "#e5e7eb" };
 
-    const bgStyle = isCompleted ? completedStyle : isActive ? activeStyle : upcomingStyle;
+    const circleStyle =
+      !isUpcoming
+        ? {
+            ...(isCompleted ? completedStyle : activeStyle),
+            ...(stage === "out_for_delivery" && isActive ? { border: "2px solid #ffffff" } : {}),
+          }
+        : undefined;
 
     return (
       <div
@@ -105,11 +105,11 @@ export default function OrderTrackingCard({ order }: OrderTrackingCardProps) {
       >
         <div className="flex flex-col items-center w-full">
           <div
-            className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center mb-2 relative z-10"
-            style={{
-              ...bgStyle,
-              ...(stage === "out_for_delivery" && isActive ? { border: "2px solid #ffffff" } : {}),
-            }}
+            className={cn(
+              "mb-2 relative z-10 flex h-10 w-10 items-center justify-center rounded-full sm:h-12 sm:w-12",
+              isUpcoming && "bg-slate-200 dark:bg-slate-600"
+            )}
+            style={circleStyle}
           >
             {stage === "out_for_delivery" && isActive ? (
               <HiTruck className="text-lg sm:text-xl text-white" />
@@ -117,18 +117,16 @@ export default function OrderTrackingCard({ order }: OrderTrackingCardProps) {
               <HiCheck className="text-lg sm:text-xl text-white" />
             ) : (
               <div className="relative flex items-center justify-center">
-                <BsBoxSeam className="text-sm sm:text-base" style={{ color: "#6b7280" }} />
-                <HiCheck
-                  className="absolute -bottom-0.5 -right-0.5 text-[8px] sm:text-[10px] bg-custom-card rounded-full p-0.5"
-                  style={{ color: "#6b7280" }}
-                />
+                <BsBoxSeam className="text-sm text-custom-tertiary sm:text-base" />
+                <HiCheck className="absolute -bottom-0.5 -right-0.5 rounded-full bg-custom-card p-0.5 text-[8px] text-custom-tertiary sm:text-[10px]" />
               </div>
             )}
           </div>
           <p
-            className={`text-[10px] sm:text-xs font-bold mb-1 text-center ${
-              isUpcoming ? "text-slate-500" : "text-slate-900"
-            }`}
+            className={cn(
+              "mb-1 text-center text-[10px] font-bold sm:text-xs",
+              isUpcoming ? "text-custom-tertiary" : "text-custom-primary"
+            )}
           >
             {stage === "pending" && t("home.pending")}
             {stage === "preparing" && t("home.preparing")}
@@ -136,9 +134,10 @@ export default function OrderTrackingCard({ order }: OrderTrackingCardProps) {
             {stage === "delivered" && t("home.delivered")}
           </p>
           <p
-            className={`text-[9px] sm:text-xs text-center px-1 leading-tight ${
-              isUpcoming ? "text-slate-400" : "text-slate-600"
-            }`}
+            className={cn(
+              "px-1 text-center text-[9px] leading-tight sm:text-xs",
+              isUpcoming ? "text-custom-tertiary" : "text-custom-secondary"
+            )}
           >
             {stage === "pending" && t("home.orderReceived")}
             {stage === "preparing" && t("home.storePreparing")}
@@ -149,34 +148,32 @@ export default function OrderTrackingCard({ order }: OrderTrackingCardProps) {
         {stage !== "delivered" && (
           <div
             className={cn(
-              "hidden sm:block absolute top-5 sm:top-6 w-full h-0.5 z-0",
-              isRTL ? "right-full translate-x-1/2" : "left-full -translate-x-1/2"
+              "absolute top-5 z-0 hidden h-0.5 w-full sm:top-6 sm:block",
+              isRTL ? "right-full translate-x-1/2" : "left-full -translate-x-1/2",
+              isCompleted && "bg-[#60a5fa]",
+              !isCompleted && isActive && "bg-[#fbbf24]",
+              !isCompleted && !isActive && "bg-slate-300 dark:bg-slate-600"
             )}
-            style={{
-              backgroundColor: isCompleted ? "#60a5fa" : isActive ? "#fbbf24" : "#d1d5db",
-              width: "calc(100% + 1rem)",
-            }}
+            style={{ width: "calc(100% + 1rem)" }}
           />
         )}
       </div>
     );
   };
 
-  const confirmationCode = getConfirmationCode(order);
   const statusSubtitleKey = getStatusSubtitleKey(currentStatus);
 
   return (
     <div
-      className="rounded-xl p-4 sm:p-6 shadow-sm"
-      style={{ backgroundColor: "#ecfdf5" }}
+      className="rounded-xl border border-emerald-200/90 bg-emerald-50 p-4 shadow-sm dark:border-emerald-900/40 dark:bg-emerald-950/40 sm:p-6"
       dir={isRTL ? "rtl" : "ltr"}
     >
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
-        <div className="flex-1 min-w-0">
-          <p className="text-base sm:text-lg font-bold text-slate-900 mb-1">
+      <div className="mb-4 flex flex-col items-start justify-between gap-3 sm:mb-6 sm:flex-row sm:items-center sm:gap-4">
+        <div className="min-w-0 flex-1">
+          <p className="mb-1 text-base font-bold text-custom-primary sm:text-lg">
             {t("orders.order")} #{orderDisplay}
           </p>
-          <p className="text-xs text-slate-600 break-words">
+          <p className="break-words text-xs text-custom-secondary">
             {t(statusSubtitleKey)}
           </p>
         </div>
@@ -196,7 +193,7 @@ export default function OrderTrackingCard({ order }: OrderTrackingCardProps) {
           {STAGES.map(renderStage)}
         </div>
       </div>
-
+{/* 
       <div className="flex items-center gap-3 mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-green-200/60">
         <p className="text-sm font-bold text-slate-900">
           {t("home.confirmationCode")}:
@@ -207,7 +204,7 @@ export default function OrderTrackingCard({ order }: OrderTrackingCardProps) {
         >
           {confirmationCode}
         </span>
-      </div>
+      </div> */}
     </div>
   );
 }

@@ -18,6 +18,7 @@ import { queryKeys } from"@/utils/queryKeys";
 import { useOtpStore } from"@/store/otp";
 import { useAuthStore } from"@/store/auth";
 import { paths } from"@/app/routes/path/paths";
+import { getApiErrorMessage, isApiToastHandled } from"@/shared/lib/apiMessage";
 
 export function useLogin() {
  const qc = useQueryClient();
@@ -38,8 +39,10 @@ export function useLogin() {
  },
  onError: (err: any) => {
  console.error("[login] error:", err);
- const errorMessage = err?.response?.data?.message || err?.message || t("auth.loginError","فشل تسجيل الدخول");
+ if (!isApiToastHandled(err)) {
+ const errorMessage = getApiErrorMessage(err, t("auth.loginError","فشل تسجيل الدخول"));
  toast.error(errorMessage);
+ }
  logoutLocal();
  },
  });
@@ -67,8 +70,10 @@ export function useRegister() {
  },
  onError: (err: any) => {
  console.error("[register] error:", err);
- const errorMessage = err?.response?.data?.message || err?.message || t("auth.registerError","فشل إنشاء الحساب");
+ if (!isApiToastHandled(err)) {
+ const errorMessage = getApiErrorMessage(err, t("auth.registerError","فشل إنشاء الحساب"));
  toast.error(errorMessage);
+ }
  },
  });
 }
@@ -88,11 +93,10 @@ export function useSellerRegister() {
  },
  onError: (err: any) => {
  console.error("[seller-register] error:", err);
- const errorMessage =
- err?.response?.data?.message ||
- err?.message ||
- t("auth.sellerRegisterError");
+ if (!isApiToastHandled(err)) {
+ const errorMessage = getApiErrorMessage(err, t("auth.sellerRegisterError"));
  toast.error(errorMessage);
+ }
  },
  });
 }
@@ -121,8 +125,10 @@ export function useSendOtp() {
  },
  onError: (err: any) => {
  console.error("[send-otp] error:", err);
- const errorMessage = err?.response?.data?.message || err?.message || t("auth.otpSentError","فشل إرسال رمز التحقق");
+ if (!isApiToastHandled(err)) {
+ const errorMessage = getApiErrorMessage(err, t("auth.otpSentError","فشل إرسال رمز التحقق"));
  toast.error(errorMessage);
+ }
  },
  });
 }
@@ -161,8 +167,10 @@ export function useVerifyOtp() {
  },
  onError: (err: any) => {
  console.error("[verify-otp] error:", err);
- const errorMessage = err?.response?.data?.message || err?.message || t("auth.otpVerifiedError","رمز التحقق غير صحيح");
+ if (!isApiToastHandled(err)) {
+ const errorMessage = getApiErrorMessage(err, t("auth.otpVerifiedError","رمز التحقق غير صحيح"));
  toast.error(errorMessage);
+ }
  logoutLocal();
  },
  });
@@ -193,8 +201,10 @@ export function useForgotPassword() {
  },
  onError: (err: any) => {
  console.error("[send-password] error:", err);
- const errorMessage = err?.response?.data?.message || err?.message || t("auth.passwordResetCodeError","فشل إرسال رمز إعادة التعيين");
+ if (!isApiToastHandled(err)) {
+ const errorMessage = getApiErrorMessage(err, t("auth.passwordResetCodeError","فشل إرسال رمز إعادة التعيين"));
  toast.error(errorMessage);
+ }
  },
  });
 }
@@ -227,8 +237,10 @@ export function useVerifyPassword() {
  },
  onError: (err: any) => {
  console.error("[verify-password] error:", err);
- const errorMessage = err?.response?.data?.message || err?.message || t("auth.passwordResetVerifiedError","رمز التحقق غير صحيح");
+ if (!isApiToastHandled(err)) {
+ const errorMessage = getApiErrorMessage(err, t("auth.passwordResetVerifiedError","رمز التحقق غير صحيح"));
  toast.error(errorMessage);
+ }
  },
  });
 }
@@ -248,8 +260,10 @@ export function useResetPassword() {
  },
  onError: (err: any) => {
  console.error("[reset-password] error:", err);
- const errorMessage = err?.response?.data?.message || err?.message || t("auth.passwordResetError","فشل إعادة تعيين كلمة المرور");
+ if (!isApiToastHandled(err)) {
+ const errorMessage = getApiErrorMessage(err, t("auth.passwordResetError","فشل إعادة تعيين كلمة المرور"));
  toast.error(errorMessage);
+ }
  },
  });
 }
@@ -296,15 +310,10 @@ export function useLogout() {
  const logoutLocal = useAuthStore((state) => state.logoutLocal);
 
  return useMutation({
- mutationFn: () => _AuthApi.logout(),
- onSuccess: () => {
+ mutationFn: async () => {
  logoutLocal();
- qc.clear();
- navigate(paths.auth.jwt.signIn);
  },
- onError: (err) => {
- console.error("[logout] error:", err);
- logoutLocal();
+ onSuccess: () => {
  qc.clear();
  navigate(paths.auth.jwt.signIn);
  },

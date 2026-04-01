@@ -12,6 +12,7 @@ import ScheduleDelivery, {
     type ScheduleDeliveryData,
 } from "../components/ScheduleDelivery";
 import CheckoutProgressIndicator from "@/shared/component/CheckoutProgressIndicator";
+import OrderFlowHeader from "@/shared/component/OrderFlowHeader";
 import BasePopup from "@/shared/component/BasePopup";
 import Button from "@/shared/ui/Button";
 import { HiArrowLeft, HiTrash } from "react-icons/hi";
@@ -23,12 +24,14 @@ import { useActiveBenefits } from "../hooks/useActiveBenefits";
 import ActiveBenefitsSelector from "../components/ActiveBenefitsSelector";
 import AvailablePromotionsSelector from "../components/AvailablePromotionsSelector";
 import NonDiscountPromotionBanner from "../components/NonDiscountPromotionBanner";
+import { useCurrency } from "@/context/CurrencyContext";
 import type { NonDiscountPromotion } from "../types";
 import { _ScheduledBasketApi } from "@/features/account/api/scheduledBasketApi";
 import { queryKeys } from "@/utils/queryKeys";
 import type { OrderSummary, OrderPreviewItemPrice, OrderPreviewOrderItem } from "../types";
 import { toNum } from "../utils";
 import { matchPreviewOrderItem } from "../utils/enrichCartItems";
+import { mapPreviewToCartSummary } from "../utils/orderSummary";
 
 function parseSubtotal(s: string): number {
     return parseFloat(String(s).replace(/[^0-9.]/g, "")) || 0;
@@ -37,6 +40,7 @@ function parseSubtotal(s: string): number {
 export default function Cart() {
     const { t } = useTranslation();
     const { isRTL } = useLanguage();
+    const { formatPrice } = useCurrency();
     const navigate = useNavigate();
     const checkoutCoupon = useCheckoutStore((s) => s.coupon);
     const [coupon, setCoupon] = useState(checkoutCoupon);
@@ -105,65 +109,18 @@ export default function Cart() {
 
     const summary = useMemo<OrderSummary>(() => {
         if (preview) {
-            const couponDiscount = preview.coupon?.applied
-                ? toNum(preview.coupon.discount)
-                : 0;
-            const subBefore = toNum(preview.subtotal_before_discount);
-            const subAfter = toNum(preview.subtotal_after_product_discount);
-            const productDiscount = subBefore - subAfter;
-            const hasProductDiscount = productDiscount > 0;
-            const basketDiscountAmt = toNum(preview.basket_discount_amount);
-            const hasBasketDiscount = basketDiscountAmt > 0;
-
-            return {
-                numOfItems: toNum(preview.total_quantity),
-                subtotal: `£${toNum(preview.subtotal).toFixed(2)}`,
-                ...(hasProductDiscount && {
-                    subtotalBeforeDiscount: `£${subBefore.toFixed(2)}`,
-                    productDiscount: `-£${productDiscount.toFixed(2)}`,
-                }),
-                shipping:
-                    toNum(preview.delivery_price) === 0
-                        ? "Free"
-                        : `£${toNum(preview.delivery_price).toFixed(2)}`,
-                shippingIsFree: toNum(preview.delivery_price) === 0,
-                storeDiscounts: hasBasketDiscount
-                    ? `-£${basketDiscountAmt.toFixed(2)}`
-                    : "£0.00",
-                basketDiscount: hasBasketDiscount
-                    ? `-£${basketDiscountAmt.toFixed(2)}`
-                    : undefined,
-                tax: "0%",
-                couponDiscount: `-£${couponDiscount.toFixed(2)}`,
-                ...(toNum(preview.subscription_discount) > 0 && {
-                    subscriptionDiscount: `-£${toNum(preview.subscription_discount).toFixed(2)}`,
-                }),
-                ...(toNum(preview.promotion_discount) > 0 && {
-                    promotionDiscount: `-£${toNum(preview.promotion_discount).toFixed(2)}`,
-                }),
-                ...((preview.coupon?.excluded_items?.length ?? 0) > 0 && {
-                    excludedItemsCount: preview.coupon!.excluded_items.length,
-                }),
-                total: `£${toNum(preview.total).toFixed(2)}`,
-                ...(preview.coupon && {
-                    couponFeedback: {
-                        valid: preview.coupon.valid,
-                        applied: preview.coupon.applied,
-                        fail_reasons: preview.coupon.fail_reasons ?? [],
-                    },
-                }),
-            };
+            return mapPreviewToCartSummary(preview, formatPrice);
         }
         if (items.length > 0) {
             return {
                 numOfItems: 0,
-                subtotal: "£0.00",
+                subtotal: formatPrice(0),
                 shipping: "-",
                 shippingIsFree: false,
-                storeDiscounts: "£0.00",
+                storeDiscounts: formatPrice(0),
                 tax: "0%",
-                couponDiscount: "£0.00",
-                total: "£0.00",
+                couponDiscount: formatPrice(0),
+                total: formatPrice(0),
             };
         }
         const numOfItems = items.reduce((sum, i) => sum + i.quantity, 0);
@@ -171,18 +128,18 @@ export default function Cart() {
             (sum, i) => sum + parseSubtotal(i.subtotal),
             0
         );
-        const subtotal = `£${subtotalNum.toFixed(2)}`;
+        const subtotal = formatPrice(subtotalNum);
         return {
             numOfItems,
             subtotal,
             shipping: "Free",
             shippingIsFree: true,
-            storeDiscounts: "£0.00",
+            storeDiscounts: formatPrice(0),
             tax: "0%",
-            couponDiscount: "£0.00",
+            couponDiscount: formatPrice(0),
             total: subtotal,
         };
-    }, [items, preview]);
+    }, [formatPrice, items, preview]);
 
     const previewPricesMap = useMemo(() => {
         const map = new Map<number, { price: number; priceBeforeDiscount?: number }>();
@@ -230,6 +187,27 @@ export default function Cart() {
         });
         return m;
     }, [preview?.non_discount_promotions]);
+
+    const promotionBadges = useMemo(() => {
+        const badges: string[] = [];
+
+        if (preview?.available_promotions?.length) {
+            preview.available_promotions.forEach((promotion) => {
+                if (promotion?.name) badges.push(promotion.name);
+            });
+        }
+
+        const nonDiscountPromotion = preview?.non_discount_promotions as
+            | { promotion_title?: string }
+            | null
+            | undefined;
+
+        if (nonDiscountPromotion?.promotion_title) {
+            badges.push(nonDiscountPromotion.promotion_title);
+        }
+
+        return Array.from(new Set(badges)).filter(Boolean);
+    }, [preview?.available_promotions, preview?.non_discount_promotions]);
 
     const orderItemsByVariant = useMemo(() => {
         const arr = preview?.orderItems as OrderPreviewOrderItem[] | undefined;
@@ -357,7 +335,10 @@ export default function Cart() {
 
     return (
         <div className="min-h-screen bg-custom-primary">
+             <OrderFlowHeader />
             <div className="page-container py-6" dir={isRTL ? "rtl" : "ltr"}>
+               
+
                 {/* Progress Indicator - only when cart has items */}
                 {!isCartEmpty && (
                     <div className="mb-8">
@@ -366,11 +347,11 @@ export default function Cart() {
                 )}
 
                 {/* Header */}
-                <div className="mb-6">
+                {/* <div className="mb-6">
                     <h1 className="text-2xl sm:text-3xl font-bold text-custom-primary mb-2">
                         {t("cart.myShoppingCart")}
                     </h1>
-                </div>
+                </div> */}
 
                 {isCartEmpty ? (
                     /* Creative empty cart box - no sidebar */
@@ -458,7 +439,7 @@ export default function Cart() {
                     >
                         <div className="space-y-6">
                             {/* Cart Items */}
-                            <div className="space-y-4 bg-cart-items rounded-2xl p-4">
+                            <div className="bg-cart-items space-y-5 rounded-[24px] p-6">
                                 {items.map((item) => {
                                     const orderItem = matchPreviewOrderItem(
                                         item,
@@ -488,6 +469,7 @@ export default function Cart() {
                                             freeQuantity={item.shop_product_variant_id != null ? freeItemsByVariant.get(item.shop_product_variant_id) : undefined}
                                             isExcludedFromCoupon={item.shop_product_variant_id != null ? excludedFromCouponSet.has(item.shop_product_variant_id) : false}
                                             canEditQuantity={cart_type === "default"}
+                                            promotionBadges={promotionBadges}
                                             onQuantityChange={handleQuantityChange}
                                             onRemove={handleRemoveItem}
                                             onMoveToWishlist={handleMoveToWishlist}
@@ -508,29 +490,29 @@ export default function Cart() {
                                 )}
 
                             {/* Action Buttons */}
-                            <div className="flex flex-wrap items-center justify-between gap-3">
-                                <Link to="/home">
+                            <div className="flex flex-wrap items-center justify-between gap-3 rounded-[20px] bg-[#E1F0FF] px-6 py-4">
+                                <Link to="/home" className="shrink-0">
                                     <Button
                                         variant="primary"
-                                        className="bg-primary-light hover:opacity-90 text-white flex items-center gap-2"
+                                        className="h-12 min-w-[252px] rounded-xl bg-primary-light px-6 text-sm font-semibold text-white hover:opacity-90"
                                     >
                                         <HiArrowLeft className="w-5 h-5" />
                                         {t("cart.returnToShop")}
                                     </Button>
                                 </Link>
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-3">
                                     <Button
                                         variant="outline"
                                         onClick={handleClearCartClick}
-                                        className="text-rose-500 border-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 flex items-center gap-2"
+                                        className="h-12 min-w-[150px] rounded-xl border border-rose-300 bg-white px-6 text-sm font-medium text-rose-500 hover:bg-rose-50"
                                     >
-                                        <HiTrash className="w-5 h-5" />
+                                        <HiTrash className="h-5 w-5" />
                                         {t("cart.clearCart", "Delete all")}
                                     </Button>
                                     <Button
                                         variant="outline"
                                         onClick={handleUpdateCart}
-                                        className="bg-custom-muted dark:bg-custom-hover hover:bg-custom-hover"
+                                        className="h-12 min-w-[150px] rounded-xl border border-primary-light bg-white px-6 text-sm font-medium text-custom-primary hover:bg-[#F4F9FF]"
                                     >
                                         {t("cart.updateCart")}
                                     </Button>

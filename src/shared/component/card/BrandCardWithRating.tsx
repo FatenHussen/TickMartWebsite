@@ -1,5 +1,10 @@
 import BrandCard from "./BrandCard";
 import { useBrandRatings } from "@/features/product/hooks/useBrands";
+import type { SectionItemBadge } from "@/features/home/types";
+import {
+    mapApiBottomBadgesToProductCard,
+    mapApiTopBadgesToProductCard,
+} from "@/shared/lib/mapProductBadges";
 
 type BrandItemWithOptionalRating = {
     id: number;
@@ -7,6 +12,9 @@ type BrandItemWithOptionalRating = {
     image: string;
     rating?: number;
     average_rating?: number;
+    top_badges?: SectionItemBadge[];
+    bottom_badges?: SectionItemBadge[];
+    budges?: SectionItemBadge[];
 };
 
 type BrandCardWithRatingProps = {
@@ -23,11 +31,18 @@ export default function BrandCardWithRating({
     const { averageRating } = useBrandRatings(shouldFetch ? item.id : 0);
     const displayRating = shouldFetch ? (averageRating ?? 0) : ratingFromItem;
 
+    const topSource =
+        item.top_badges?.length ? item.top_badges : item.budges;
+    const badge = mapApiTopBadgesToProductCard(topSource);
+    const bottomBadges = mapApiBottomBadgesToProductCard(item.bottom_badges);
+
     return (
         <BrandCard
             name={item.name}
             image={item.image}
             rating={displayRating}
+            badge={badge}
+            bottomBadges={bottomBadges}
             onClick={onClick}
         />
     );
