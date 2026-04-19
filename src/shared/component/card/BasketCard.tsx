@@ -1,3 +1,5 @@
+import { useMemo } from "react";
+
 import Button from "@/shared/ui/Button";
 import AnimatedButton from "@/shared/ui/AnimatedButton";
 import FavoriteButton from "@/shared/component/FavoriteButton";
@@ -59,7 +61,7 @@ export default function BasketCard({
             {
                 label: saveAmount,
                 className:
-                    "bg-yellow-400 text-slate-900 shadow-sm text-xs font-semibold",
+                    "bg-[#FFD700] text-slate-900 shadow-sm text-xs font-semibold",
                 align: "left",
                 rawLabel: true,
             },
@@ -75,10 +77,19 @@ export default function BasketCard({
     const leftBadges = allTopBadges.filter((b) => (b.align ?? "left") === "left");
     const rightBadges = allTopBadges.filter((b) => b.align === "right");
 
+    const bottomBadgeItems = useMemo(
+        () =>
+            (bottomBadges ?? []).map((b) => ({
+                label: resolveProductCardBadgeLabel(b, t),
+                className: b.className,
+            })),
+        [bottomBadges, t],
+    );
+
     return (
         <div
             className={cn(
-                "relative flex h-full flex-col overflow-hidden rounded-2xl bg-white shadow-sm transition hover:shadow-md",
+                "relative flex h-full flex-col overflow-hidden rounded-xl bg-white shadow-[0_1px_2px_0_rgba(0,0,0,0.05)] transition hover:shadow-md",
                 onClick && "cursor-pointer",
                 className
             )}
@@ -91,7 +102,7 @@ export default function BasketCard({
             }}
         >
             {/* Image */}
-            <div className="relative h-56 w-full">
+            <div className="relative h-56 w-full shrink-0 overflow-hidden rounded-t-xl">
                 <LazyImage
                     src={image}
                     alt={name}
@@ -111,7 +122,7 @@ export default function BasketCard({
                                 imageAlt={resolveProductCardBadgeLabel(b, t)}
                                 className={cn(
                                     "rounded-lg px-2.5 py-1 text-xs font-semibold leading-none shadow-none",
-                                    b.className || "bg-yellow-400 text-slate-900"
+                                    b.className || "bg-[#FFD700] text-slate-900"
                                 )}
                             />
                         ))}
@@ -142,15 +153,15 @@ export default function BasketCard({
                 </div>
             </div>
 
-            {/* Body - Light green background */}
-            <div className="flex flex-1 flex-col bg-[#EEF8F0] px-5 pb-5 pt-5">
+            {/* Body — light mint (brand green @ 10%) */}
+            <div className="flex flex-1 flex-col bg-[rgb(22_163_74/0.1)] px-4 pb-5 pt-4">
                 {/* Title */}
-                <h3 className="line-clamp-1 text-xl font-bold leading-snug text-slate-900">
+                <h3 className="line-clamp-1 text-lg font-bold leading-snug text-slate-900">
                     {name}
                 </h3>
 
                 {/* Description */}
-                <p className="mt-2 line-clamp-1 text-base font-normal leading-snug text-slate-700">
+                <p className="mt-1.5 line-clamp-2 text-sm font-normal leading-relaxed text-slate-600">
                     {description}
                 </p>
 
@@ -162,18 +173,18 @@ export default function BasketCard({
                 )}
 
                 {/* Price Section */}
-                <div className="mt-4">
+                <div className="mt-3">
                     <div className="flex items-baseline gap-2">
                         <span className="text-2xl font-bold leading-none text-slate-900">{price}</span>
                     </div>
 
                     {/* Original Price and Savings */}
                     {originalPrice && savings && (
-                        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-base leading-none">
-                            <span className="font-normal text-slate-400 line-through decoration-2">
+                        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm leading-snug">
+                            <span className="text-slate-400 line-through decoration-1">
                                 {originalPrice}
                             </span>
-                            <span className="font-normal text-green-600 line-through decoration-2">
+                            <span className="font-medium text-green-600">
                                 {savings}
                             </span>
                         </div>
@@ -182,9 +193,9 @@ export default function BasketCard({
 
                 {/* Offer Ending Date */}
                 {offerEndingDate && (
-                    <p className="mt-4 text-sm font-normal leading-snug text-slate-900">
-                        <span>Offer ending date:</span>{" "}
-                        <span className="text-red-500">{offerEndingDate}</span>
+                    <p className="mt-3 text-sm font-normal leading-snug">
+                        <span className="text-slate-500">Offer ending date:</span>{" "}
+                        <span className="text-red-600">{offerEndingDate}</span>
                     </p>
                 )}
 
@@ -199,7 +210,7 @@ export default function BasketCard({
                         variant="primary"
                         size="md"
                         fullWidth
-                        className="min-h-[56px] rounded-xl bg-yellow-400 px-5 text-xl font-bold text-slate-900 hover:bg-yellow-500"
+                        className="h-11 min-h-[44px] rounded-lg border-0 bg-[#FFD700] px-4 pb-2 pt-3 text-base font-bold text-slate-900 shadow-none hover:bg-[#e6cc00] focus-visible:ring-2 focus-visible:ring-yellow-500/60"
                         onClick={(e) => {
                             e.stopPropagation();
                             onAddToCart?.(id);
@@ -209,27 +220,15 @@ export default function BasketCard({
                     </Button>
 
                     {bottomBadges != null &&
-                        bottomBadges.length > 0 &&
-                        bottomBadges.slice(0, 1).map((b, idx) => {
-                            const text = resolveProductCardBadgeLabel(b, t);
-                            return (
-                                <AnimatedButton
-                                    key={idx}
-                                    variant="primary"
-                                    size="sm"
-                                    type="button"
-                                    onClick={(e) => e.stopPropagation()}
-                                    className={cn(
-                                        "min-h-0 w-auto min-w-0 rounded-lg px-4 py-1.5 text-xs font-medium leading-none shadow-none",
-                                        b.className
-                                    )}
-                                    note={{
-                                        primary: text,
-                                        secondary: text,
-                                    }}
-                                />
-                            );
-                        })}
+                        bottomBadges.length > 0 && (
+                            <AnimatedButton
+                                items={bottomBadgeItems}
+                                heightClassName="h-9"
+                                type="button"
+                                onClick={(e) => e.stopPropagation()}
+                                className="justify-center text-xs font-semibold"
+                            />
+                        )}
                 </div>
             </div>
         </div>

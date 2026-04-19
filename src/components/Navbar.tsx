@@ -35,6 +35,8 @@ import { useCartStore } from "@/store/cart";
 import { useProfile } from "@/features/account/hooks/useProfile";
 import { useTheme } from "@/context/ThemeContext";
 import { NavbarSearch } from "@/features/search";
+import AffiliatePackagesPopup from "@/components/AffiliatePackagesPopup";
+import { usePackages } from "@/features/account/hooks/usePackages";
 
 export default function Navbar() {
     const { isRTL, language, toggleLanguage } = useLanguage();
@@ -58,6 +60,9 @@ export default function Navbar() {
     const closeDropdownTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const profileButtonRef = useRef<HTMLButtonElement>(null);
     const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left?: number; right?: number } | null>(null);
+    const [packagesPopupOpen, setPackagesPopupOpen] = useState(false);
+
+    const { data: packages = [], isLoading: packagesLoading } = usePackages(authenticated);
 
     const { data: addresses = [], isLoading: addressesLoading } =
         useAddresses(authenticated);
@@ -221,9 +226,9 @@ export default function Navbar() {
                         >
                             {!logoError ? (
                                 <img
-                                    src="/images/shared/logo.jpg"
+                                    src="/images/shared/logo.png"
                                     alt="Tikmart"
-                                    className="h-9 md:h-10 w-auto max-w-[min(160px,40vw)] object-contain"
+                                    className="h-9 md:h-22 w-auto max-w-[min(260px,90vw)] object-contain"
                                     onError={() => setLogoError(true)}
                                 />
                             ) : (
@@ -543,6 +548,13 @@ export default function Navbar() {
                                     {item.label}
                                 </Link>
                             ))}
+                            <button
+                                type="button"
+                                onClick={() => setPackagesPopupOpen(true)}
+                                className="px-2 lg:px-3 py-2 rounded-lg font-medium transition-colors text-sm xl:text-base whitespace-nowrap shrink-0 text-custom-primary hover:text-primary-light"
+                            >
+                                {t("packagesPopup.navTab", "Subscription packages")}
+                            </button>
                         </div>
                         {(showBecomeMarketer || isApprovedMarketer) && (
                             <div className="flex items-center gap-2 xl:gap-3 shrink-0">
@@ -745,6 +757,16 @@ export default function Navbar() {
                                             {item.label}
                                         </Link>
                                     ))}
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setIsMobileMenuOpen(false);
+                                            setPackagesPopupOpen(true);
+                                        }}
+                                        className="block w-full text-left px-4 py-3 rounded-lg font-medium transition-colors text-custom-primary hover:bg-blue-off"
+                                    >
+                                        {t("packagesPopup.navTab", "Subscription packages")}
+                                    </button>
                                 </div>
 
                                 {/* Account Section - Mobile (creative style with icons) */}
@@ -821,6 +843,13 @@ export default function Navbar() {
                     </div>
                 </>
             )}
+
+            <AffiliatePackagesPopup
+                isOpen={packagesPopupOpen}
+                onClose={() => setPackagesPopupOpen(false)}
+                packages={packages}
+                isLoading={packagesLoading}
+            />
         </div>
     );
 }

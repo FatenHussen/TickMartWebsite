@@ -133,16 +133,25 @@ export default function AllProductsSection() {
         <section className="py-8 bg-custom-card">
             <div className="page-container">
                 {/* Header */}
-                <div className="mb-6">
-                    <h2 className="text-2xl font-bold text-custom-primary mb-2">
-                        {t("home.allProducts", "All Products")}
-                    </h2>
-                    <p className="text-sm text-custom-secondary">
-                        {t(
-                            "home.allProductsDescription",
-                            "Browse all products from different stores and brands in one place."
-                        )}
-                    </p>
+                <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                        <h2 className="text-2xl font-bold text-custom-primary mb-2">
+                            {t("home.allProducts", "All Products")}
+                        </h2>
+                        <p className="text-sm text-custom-secondary">
+                            {t(
+                                "home.allProductsDescription",
+                                "Browse all products from different stores and brands in one place."
+                            )}
+                        </p>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => navigate(paths.client.products)}
+                        className="shrink-0 text-sm font-semibold text-primary-light hover:underline self-start sm:self-center"
+                    >
+                        {t("home.viewAll", "View all")}
+                    </button>
                 </div>
 
                 {/* Filters */}

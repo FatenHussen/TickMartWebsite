@@ -33,6 +33,7 @@ export default function Categories() {
  title={t("home.categories")}
  viewAllLabel={t("home.viewAll")}
  onViewAllClick={handleViewAll}
+ slidesPerView={3.5}
  items={categories}
  renderItem={(category) => (
  <button

@@ -31,6 +31,11 @@ export interface MyBasketBase {
     discount_amount: number;
     final_price: number;
     schedules: MyBasketSchedule[];
+    /** Present when API returns pre-formatted money strings */
+    currency_symbol?: string;
+    original_price_formatted?: string;
+    final_price_formatted?: string;
+    discount_amount_formatted?: string;
 }
 
 /** User-schedule basket (from scheduled-baskets) */

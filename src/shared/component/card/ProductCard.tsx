@@ -1,3 +1,5 @@
+import { useMemo } from "react";
+
 import { cn } from "../../lib/utils";
 import Rating from "@/shared/component/Rating";
 import AnimatedButton from "../../ui/AnimatedButton";
@@ -42,7 +44,7 @@ export type ProductCardProps = {
     savings?: string;
     discountLabel?: string;
     deliveryInfo?: string;
-    /** Bottom-row badges (e.g. API `bottom_badges`) — each rendered as an animated label button */
+    /** Bottom-row badges (e.g. API `bottom_badges`) — cycled in one animated button */
     bottomBadges?: ProductCardBadge[];
 
     onToggleFavorite?: (id: number) => void;
@@ -83,12 +85,21 @@ export default function ProductCard({
     const allBadges = badge ? (Array.isArray(badge) ? badge : [badge]) : [];
     const leftBadges = allBadges.filter((b) => (b.align ?? "left") === "left");
     const rightBadges = allBadges.filter((b) => b.align === "right");
-    const bottomBadgesShown = bottomBadges?? [];
+    const bottomBadgesShown = bottomBadges ?? [];
+
+    const bottomBadgeItems = useMemo(
+        () =>
+            bottomBadgesShown.map((b) => ({
+                label: resolveProductCardBadgeLabel(b, t),
+                className: b.className,
+            })),
+        [bottomBadgesShown, t],
+    );
 
     return (
         <div
             className={cn(
-                "relative overflow-hidden rounded-2xl bg-custom-primary shadow-sm transition hover:shadow-md flex flex-col h-full",
+                "relative flex h-full flex-col overflow-hidden rounded-xl bg-custom-primary shadow-[0_1px_2px_0_rgba(0,0,0,0.05)] transition hover:shadow-md",
                 onClick && "cursor-pointer",
                 className,
             )}
@@ -97,11 +108,11 @@ export default function ProductCard({
             tabIndex={onClick ? 0 : undefined}
             onKeyDown={(e) => {
                 if (!onClick) return;
-                if (e.key === "Enter" || e.key === "") onClick(id);
+                if (e.key === "Enter" || e.key === " ") onClick(id);
             }}
         >
             {/* Image Section */}
-            <div className="relative h-48 w-full">
+            <div className="relative h-[200px] w-full shrink-0">
                 <LazyImage
                     src={image}
                     alt={name}
@@ -155,38 +166,37 @@ export default function ProductCard({
                 </div>
 
                 {/* Rating (bottom-left) */}
-                <div className="absolute bottom-3 left-3 z-10 rounded-sm bg-blue-off">
-                    <Rating rating={rating} size="sm" className="px-2 py-1" />
+                <div className="absolute bottom-3 left-3 z-10 rounded-full bg-white/95 px-2.5 py-1 shadow-sm backdrop-blur-[1px]">
+                    <Rating
+                        rating={rating}
+                        size="sm"
+                        className="px-0 py-0 [&_span:last-child]:font-semibold [&_span:last-child]:text-custom-primary"
+                    />
                 </div>
             </div>
 
             {/* Info Section */}
-            <div className="bg-custom-secondary px-4 pb-4 pt-4 flex flex-col flex-1">
+            <div className="flex flex-1 flex-col bg-custom-secondary px-4 pb-4 pt-3">
                 {/* Product Name - 2 lines */}
-                <h3 className="line-clamp-2 text-base font-bold text-custom-primary">
+                <h3 className="line-clamp-2 text-base font-bold leading-snug text-custom-primary">
                     {name}
                 </h3>
 
                 {/* Description or category */}
                 {(description || category) && (
-                    <p className="mt-1 line-clamp-1 text-xs text-custom-secondary">
+                    <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-custom-secondary">
                         {description || category}
                     </p>
                 )}
 
                 {/* Price Section */}
-                <div className="mt-3">
+                <div className="mt-2">
                     {/* Main (discounted) price */}
                     <span className="text-lg font-bold text-custom-primary">{price}</span>
 
-                    {/* Original price + savings + sold — all on the same row */}
-                    {(originalPrice || savings || sold != null || discountLabel) && (
+                    {/* Original price + savings + sold (same row — Figma) */}
+                    {(originalPrice || savings || sold != null) && (
                         <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5">
-                            {discountLabel && (
-                                <span className="text-sm font-semibold text-red-500">
-                                    {discountLabel}
-                                </span>
-                            )}
                             {originalPrice && (
                                 <span className="text-sm text-custom-tertiary line-through">
                                     {originalPrice}
@@ -202,23 +212,27 @@ export default function ProductCard({
                             )}
                             {sold != null && (
                                 <span className="ml-auto text-sm font-medium text-custom-secondary">
-                                    {sold.toLocaleString()} {t?.("product.sold") || "Sold"}
+                                    {sold.toLocaleString()}{" "}
+                                    {t?.("product.sold") || "Sold"}
                                 </span>
                             )}
                         </div>
                     )}
                 </div>
 
-                {/* View details + bottom badges + delivery */}
-                {(onViewDetails || bottomBadgesShown.length > 0 || deliveryInfo) && (
-                    <div className="mt-auto flex w-full flex-col gap-2 pt-3">
+                {/* View details + discount label + bottom badges + delivery */}
+                {(onViewDetails ||
+                    bottomBadgesShown.length > 0 ||
+                    deliveryInfo ||
+                    discountLabel) && (
+                    <div className="mt-auto flex w-full flex-col items-center gap-2 pt-4">
                         {onViewDetails && (
                             <Button
                                 type="button"
-                                variant="outline"
+                                variant="primary"
                                 size="sm"
-                                fullWidth
-                                className="text-xs font-semibold"
+                                fullWidth={false}
+                                className="h-9 min-h-9 w-[185px] max-w-full rounded-md px-4 py-2 text-sm font-semibold shadow-none"
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     onViewDetails(id);
@@ -227,26 +241,20 @@ export default function ProductCard({
                                 {viewDetailsLabel ?? "View details"}
                             </Button>
                         )}
-                        {bottomBadgesShown.map((b, idx) => {
-                            const text = resolveProductCardBadgeLabel(b, t);
-                            return (
-                                <AnimatedButton
-                                    key={idx}
-                                    variant="primary"
-                                    size="sm"
-                                    type="button"
-                                    onClick={(e) => e.stopPropagation()}
-                                    className={cn(
-                                        "w-full justify-center text-xs font-semibold",
-                                        b.className
-                                    )}
-                                    note={{
-                                        primary: text,
-                                        secondary: text,
-                                    }}
-                                />
-                            );
-                        })}
+                        {discountLabel && (
+                            <span className="rounded bg-red-400 px-2 py-1 text-center text-[10px] font-semibold uppercase tracking-wide text-white">
+                                {discountLabel}
+                            </span>
+                        )}
+                        {bottomBadgesShown.length > 0 && (
+                            <AnimatedButton
+                                items={bottomBadgeItems}
+                                heightClassName="h-[18px]"
+                                type="button"
+                                onClick={(e) => e.stopPropagation()}
+                                className="self-center justify-center text-xs font-semibold"
+                            />
+                        )}
                         {/* {deliveryInfo && (
                             <AnimatedButton
                                 variant="primary"

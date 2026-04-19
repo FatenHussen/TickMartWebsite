@@ -343,6 +343,14 @@ export const queryKeys = {
  },
 
  /**
+ * Affiliate welcome page
+ */
+ affiliate: {
+ all: () => ["affiliate"] as const,
+ quickActions: () => ["affiliate","quickActions"] as const,
+ },
+
+ /**
  * Marketer / Affiliate query keys
  */
  marketer: {

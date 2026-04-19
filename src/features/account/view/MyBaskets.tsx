@@ -25,7 +25,45 @@ import {
     HiPause,
     HiPlay,
 } from "react-icons/hi";
+import { HiOutlineShoppingBag } from "react-icons/hi2";
 import Button from "@/shared/ui/Button";
+
+const CARD_BORDER = "border-[#E0F2F7]";
+const SECONDARY_BTN =
+    "flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border border-[#E0E0E0] bg-white text-custom-primary hover:bg-gray-50 dark:bg-transparent dark:border-custom-primary dark:hover:bg-custom-card";
+
+function formatBasketListDate(iso: string): string {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return iso;
+    return d.toLocaleDateString(undefined, {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+    });
+}
+
+function getBasketPriceDisplay(basket: MyBasketListItem) {
+    const sym = basket.currency_symbol ?? "$";
+    const original =
+        basket.original_price_formatted ??
+        `${sym}${Number(basket.original_price).toFixed(2)}`;
+    const final =
+        basket.final_price_formatted ??
+        `${sym}${Number(basket.final_price).toFixed(2)}`;
+    const save =
+        basket.discount_amount_formatted ??
+        `${sym}${Number(basket.discount_amount).toFixed(2)}`;
+    return { original, final, save };
+}
+
+function getDiscountBadgeText(basket: MyBasketListItem): string {
+    if (basket.discount_type === "percentage") {
+        const n = Number.parseFloat(basket.discount_value);
+        const pct = Number.isFinite(n) ? Math.round(n) : basket.discount_value;
+        return `${pct}% OFF`;
+    }
+    return `${basket.discount_value} OFF`;
+}
 
 const TYPE_FILTER_OPTIONS: { value: MyBasketFilterType; labelKey: string }[] = [
     { value: "all", labelKey: "baskets.filters.all" },
@@ -62,11 +100,13 @@ export default function MyBaskets() {
         return cat.name;
     };
 
-    // Helper: get schedule text from schedules array
-    const getScheduleText = (basket: MyBasketListItem): string => {
+    // Helper: schedule line (title + frequency when API provides schedules)
+    const getScheduleSubtitle = (basket: MyBasketListItem): string => {
         const s = basket.schedules?.[0];
         if (!s) return "";
-        return `${t("baskets.every")} ${s.number_of_days} ${t("baskets.days")}`;
+        const freq = `${t("baskets.every")} ${s.number_of_days} ${t("baskets.days")}`;
+        if (s.title?.trim()) return `${s.title.trim()} • ${freq}`;
+        return freq;
     };
 
     // Helper: get next run date
@@ -169,110 +209,129 @@ export default function MyBaskets() {
     const renderBasketCard = (basket: MyBasketListItem) => {
         const isPaused = basket.is_paused ?? !basket.is_active;
         const categoryName = getCategoryName(basket);
-        const scheduleText = getScheduleText(basket);
+        const scheduleSubtitle = getScheduleSubtitle(basket);
         const nextRunDate = getNextRunDate(basket);
+        const prices = getBasketPriceDisplay(basket);
+        const createdRaw =
+            ("start_date" in basket && basket.start_date) || basket.created_at || "";
+        const createdLabel = createdRaw ? formatBasketListDate(createdRaw) : "";
 
         const badgeLabel =
             basket.basket_type === "user-schedule"
                 ? t("baskets.scheduled")
                 : basket.basket_type === "subscription"
-                    ? t("baskets.subscription")
-                    : t("baskets.filters.custom");
+                  ? t("baskets.subscription")
+                  : t("baskets.filters.custom");
+
+        const itemsCategoryLine = [
+            `${basket.num_varieties} ${t("checkout.items")}`,
+            categoryName,
+        ]
+            .filter(Boolean)
+            .join(" • ");
+
+        const nextDeliveryLine = (() => {
+            if (isPaused && (basket.paused_at || nextRunDate)) {
+                const raw = basket.paused_at ?? nextRunDate ?? "";
+                return `${t("baskets.pausedSince")} ${raw ? formatBasketListDate(raw) : raw}`;
+            }
+            if (!isPaused && nextRunDate) {
+                return `${t("baskets.nextDelivery")}: ${formatBasketListDate(nextRunDate)}`;
+            }
+            return "";
+        })();
 
         return (
             <div
                 key={`${basket.basket_type}-${basket.id}`}
-                className="bg-blue-50 rounded-2xl border border-blue-100 p-6 shadow-sm hover:shadow-md transition-shadow"
+                className={`bg-white dark:bg-custom-card rounded-xl ${CARD_BORDER} border p-5 md:p-6 shadow-sm hover:shadow-md transition-shadow`}
             >
-                {/* Header: Title + Badges */}
-                <div className="flex items-start justify-between gap-4 mb-4">
-                    <div>
-                        <h3 className="font-semibold text-lg text-custom-primary">
+                {/* Header: icon, title, status + discount badges | type pill */}
+                <div className="flex items-start justify-between gap-3 mb-5">
+                    <div className="flex items-center gap-3 min-w-0 flex-wrap">
+                        {basket.image ? (
+                            <img
+                                src={basket.image}
+                                alt=""
+                                className="w-11 h-11 rounded-xl object-cover shrink-0 border border-[#E0E0E0] dark:border-custom-primary"
+                            />
+                        ) : (
+                            <div
+                                className="w-11 h-11 rounded-xl shrink-0 flex items-center justify-center bg-amber-50 dark:bg-amber-900/20 border border-[#E0E0E0] dark:border-custom-primary"
+                                aria-hidden
+                            >
+                                <HiOutlineShoppingBag className="w-6 h-6 text-amber-800/80 dark:text-amber-200/90" />
+                            </div>
+                        )}
+                        <h3 className="font-semibold text-lg text-custom-primary shrink-0">
                             {basket.name}
                         </h3>
-                        <p className="text-sm text-custom-secondary mt-0.5">
-                            {basket.num_varieties} {t("checkout.items")}
-                            {categoryName && ` • ${categoryName}`}
-                        </p>
-                    </div>
-                    <div className="flex flex-wrap gap-2 shrink-0">
                         <span
-                            className={`px-2.5 py-1 rounded-full text-xs font-medium ${isPaused
-                                    ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
-                                    : "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                                }`}
+                            className={`px-2.5 py-1 rounded-full text-xs font-medium ${
+                                isPaused
+                                    ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400"
+                                    : "bg-green-100 text-[#2E7D32] dark:bg-green-900/30 dark:text-green-400"
+                            }`}
                         >
                             {isPaused ? t("baskets.paused") : t("baskets.active")}
                         </span>
                         {basket.discount_amount > 0 && (
-                            <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400">
-                                {basket.discount_value}
-                                {basket.discount_type === "percentage" ? "%" : ""} OFF
+                            <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-sky-100 text-sky-800 dark:bg-sky-900/30 dark:text-sky-300">
+                                {getDiscountBadgeText(basket)}
                             </span>
                         )}
-                        <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-custom-tertiary text-custom-primary">
-                            {badgeLabel}
-                        </span>
                     </div>
+                    <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 shrink-0">
+                        {badgeLabel}
+                    </span>
                 </div>
 
-                {/* Schedule & Next delivery */}
-                {(scheduleText || nextRunDate || (isPaused && basket.paused_at)) && (
-                    <div className="space-y-1.5 text-sm text-custom-secondary mb-4">
-                        {scheduleText && (
-                            <div className="flex items-center gap-1.5">
-                                <HiCalendar className="w-4 h-4 text-cyan-500 shrink-0" />
-                                <span>{scheduleText}</span>
-                            </div>
-                        )}
-                        {(nextRunDate || (isPaused && basket.paused_at)) && (
-                            <div className="flex items-center gap-1.5">
-                                <span className="font-medium text-custom-primary">
-                                    {isPaused
-                                        ? `${t("baskets.pausedSince")} ${basket.paused_at ?? nextRunDate}`
-                                        : `${t("baskets.nextDelivery")}: ${nextRunDate}`}
-                                </span>
-                            </div>
-                        )}
+                {/* Two columns: details (left) + pricing (right) */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 mb-5">
+                    <div className="space-y-1.5 text-sm text-[#666666] dark:text-custom-secondary">
+                        <p>{itemsCategoryLine}</p>
+                        {scheduleSubtitle ? <p>{scheduleSubtitle}</p> : null}
+                        {nextDeliveryLine ? <p>{nextDeliveryLine}</p> : null}
                     </div>
-                )}
-
-                {/* Summary */}
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-custom-secondary mb-4">
-                    <span>
-                        {t("checkout.items")}: {basket.num_varieties}
-                    </span>
-                    {basket.discount_amount > 0 ? (
-                        <>
-                            <span className="line-through">{basket.original_price}</span>
-                            <span className="font-semibold text-custom-primary">
-                                {basket.final_price}
-                            </span>
-                            <span className="text-green-600 dark:text-green-400 font-medium">
-                                {t("baskets.youSave")} {basket.discount_amount}
-                            </span>
-                        </>
-                    ) : (
-                        <span className="font-semibold text-custom-primary">
-                            {basket.final_price}
-                        </span>
-                    )}
-                    {(("start_date" in basket && basket.start_date) || basket.created_at) ? (
-                        <span className="text-custom-secondary">
-                            {t("baskets.createdOn")}{" "}
-                            {("start_date" in basket && basket.start_date) || basket.created_at}
-                        </span>
-                    ) : null}
+                    <div className="space-y-1.5 text-sm md:text-end text-[#666666] dark:text-custom-secondary">
+                        <p>
+                            {t("trackOrder.items")}: {basket.num_varieties}
+                        </p>
+                        {basket.discount_amount > 0 ? (
+                            <>
+                                <p>
+                                    <span className="line-through text-gray-400 dark:text-gray-500">
+                                        {prices.original}
+                                    </span>{" "}
+                                    <span className="font-semibold text-custom-primary">
+                                        {prices.final}
+                                    </span>
+                                </p>
+                                <p className="text-[#2E7D32] dark:text-green-400 font-medium">
+                                    {t("baskets.youSave")} {prices.save}
+                                </p>
+                            </>
+                        ) : (
+                            <p className="font-semibold text-custom-primary">{prices.final}</p>
+                        )}
+                        {createdLabel ? (
+                            <p className="text-xs text-gray-500 dark:text-gray-400 pt-0.5">
+                                {t("baskets.createdOn")}: {createdLabel}
+                            </p>
+                        ) : null}
+                    </div>
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex flex-wrap items-center gap-2 pt-4 border-t border-blue-100">
+                <div
+                    className={`flex flex-wrap items-center gap-3 pt-4 border-t ${CARD_BORDER} dark:border-custom-primary`}
+                >
                     <Button
                         type="button"
                         variant="primary"
                         size="sm"
                         onClick={() => handleViewDetails(basket.id, basket.basket_type)}
-                        className="bg-primary hover:bg-teal-600 text-white px-3 py-2 rounded-lg text-sm font-medium"
+                        className="!bg-[#00ACC1] hover:!bg-[#0097A7] text-white px-4 py-2.5 rounded-lg text-sm font-semibold border-0 shadow-none focus:ring-[#00ACC1]"
                     >
                         {t("baskets.viewBasketDetails")}
                     </Button>
@@ -281,9 +340,9 @@ export default function MyBaskets() {
                         variant="outline"
                         size="sm"
                         onClick={() => handleEditItems(basket.id, basket.basket_type)}
-                        className="flex items-center gap-1.5 px-3 py-2 border border-custom-secondary text-custom-primary hover:bg-custom-light rounded-lg text-sm font-medium"
+                        className={SECONDARY_BTN}
                     >
-                        <HiPencil className="w-4 h-4" />
+                        <HiPencil className="w-4 h-4 shrink-0" />
                         {t("baskets.editItems")}
                     </Button>
                     {basket.basket_type === "user-schedule" && (
@@ -292,24 +351,21 @@ export default function MyBaskets() {
                             variant="outline"
                             size="sm"
                             onClick={() => handleViewDetails(basket.id, basket.basket_type)}
-                            className="flex items-center gap-1.5 px-3 py-2 border border-custom-secondary text-custom-primary hover:bg-custom-light rounded-lg text-sm font-medium"
+                            className={SECONDARY_BTN}
                         >
-                            <HiCalendar className="w-4 h-4" />
+                            <HiCalendar className="w-4 h-4 shrink-0" />
                             {isPaused ? t("baskets.reschedule") : t("baskets.editSchedule")}
                         </Button>
                     )}
-                    {(basket.basket_type === "user-schedule" || basket.basket_type === "subscription") && (
+                    {(basket.basket_type === "user-schedule" ||
+                        basket.basket_type === "subscription") && (
                         <Button
                             type="button"
                             variant="outline"
                             size="sm"
                             disabled={isPauseResumePending(basket)}
                             onClick={() => handlePauseResume(basket)}
-                            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium ${
-                                isPaused
-                                    ? "border border-green-500 text-green-600 hover:bg-green-50 dark:text-green-400 dark:hover:bg-green-900/20"
-                                    : "border border-amber-500 text-amber-600 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-900/20"
-                            }`}
+                            className={SECONDARY_BTN}
                         >
                             {isPaused ? (
                                 <HiPlay className="w-4 h-4 shrink-0" />
@@ -323,9 +379,9 @@ export default function MyBaskets() {
                         <button
                             type="button"
                             onClick={() => handleDeleteClick(basket)}
-                            className="flex items-center gap-1.5 ml-auto text-sm text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300"
+                            className="flex items-center gap-1.5 ms-auto text-sm text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300"
                         >
-                            <HiTrash className="w-4 h-4" />
+                            <HiTrash className="w-4 h-4 shrink-0" />
                             {t("baskets.deleteBasket")}
                         </button>
                     )}

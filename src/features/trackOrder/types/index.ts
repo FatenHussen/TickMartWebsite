@@ -75,7 +75,7 @@ export interface TrackOrderApiShopGroup {
  shop: string;
  lat: string;
  lng: string;
- items: TrackOrderApiItem[];
+ items?: TrackOrderApiItem[];
 }
 
 export interface TrackOrderApiDriver {
@@ -131,7 +131,7 @@ export interface TrackOrderApiData {
  id: number;
  name: string;
  } | null;
- items: Record<string, TrackOrderApiShopGroup>;
+ items?: Record<string, TrackOrderApiShopGroup> | null;
 }
 
 export interface TrackOrderApiResponse {

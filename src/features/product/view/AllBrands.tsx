@@ -152,6 +152,7 @@ export default function AllBrands() {
                                     name={brand.name}
                                     image={brand.image}
                                     rating={brand.rating ?? 0}
+                                    ordersCount={brand.orders_count}
                                     onClick={() => handleBrandClick(brand.id)}
                                 />
                             ))}

@@ -3,7 +3,7 @@ import type { Brand, Product } from"../types";
 export const mockBrand: Brand = {
  id: 1,
  name:"Nike",
- logo:"https://logos-world.net/wp-content/uploads/2020/04/Nike-logo.jpg",
+ logo:"https://logos-world.net/wp-content/uploads/2020/04/Nike-logo.png",
  rating: 4.6,
  storeCount: 24,
  productCount: 1347,

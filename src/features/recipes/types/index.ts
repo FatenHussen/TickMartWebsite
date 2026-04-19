@@ -4,10 +4,12 @@ import type { PaginationData } from"@/shared/types/pagination";
 export interface RecipeBadge {
  id: number;
  name: string;
- color:"success"|"warning"|"danger"| string;
+ color:"success"|"warning"|"danger"| string | null;
  type?: string;
- image?: string;
- postion:"top"|"bottom"| null;
+ image?: string | null;
+ /** API may use `position`; legacy typo `postion` kept for compatibility */
+ postion?: "top"|"bottom"| null;
+ position?: "top"|"bottom"| null;
 }
 
 // ============ Recipe List Item Types ============
@@ -33,6 +35,11 @@ export interface RecipeTotals {
  total_before_discount: number;
  total_after_discount: number;
  discount_value: number;
+ currency?: string;
+ currency_symbol?: string;
+ total_before_discount_formatted?: string;
+ total_after_discount_formatted?: string;
+ discount_value_formatted?: string;
 }
 
 export interface RecipeStep {
@@ -47,7 +54,11 @@ export interface RecipeItemMain {
  shop_product_variant_id: number;
  image_url: string | null;
  name: string;
+ variant?: string[];
  price: number;
+ currency?: string;
+ currency_symbol?: string;
+ price_formatted?: string;
 }
 
 export interface RecipeItemAlternative {
@@ -56,10 +67,14 @@ export interface RecipeItemAlternative {
  name: string;
  image_url: string | null;
  price: number;
+ currency?: string;
+ currency_symbol?: string;
+ price_formatted?: string;
+ variant?: string[];
 }
 
 export interface RecipeItemTerms {
- is_required: number;
+ is_required: boolean | number;
  default_quantity: number;
  min_quantity: number;
  max_quantity: number;
@@ -78,6 +93,10 @@ export interface RecipeDetails {
  description: string;
  image: string;
  video_url: string | null;
+ /** Optional title for the cooking video (from API). */
+ video_title?: string | null;
+ /** Optional short description for the cooking video (from API). */
+ video_desc?: string | null;
  rating: number;
  orders_count: number;
  discount: string;
@@ -86,6 +105,8 @@ export interface RecipeDetails {
  is_favorite?: boolean;
  badges?: RecipeBadge[];
  budges?: RecipeBadge[];
+ top_badges?: RecipeBadge[];
+ bottom_badges?: RecipeBadge[];
  totals?: RecipeTotals;
  steps: RecipeStep[];
  items: RecipeItem[];

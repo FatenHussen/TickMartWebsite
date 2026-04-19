@@ -5,9 +5,7 @@ import RecipeDetails from"@/features/recipes/view/RecipeDetails";
 import AllBrands from"@/features/product/view/AllBrands";
 import AllBaskets from"@/features/basket/view/AllBaskets";
 import BasketDetailsPage from"@/features/basket/view/BasketDetailsPage";
-
-// Temporary simple pages for testing - replace with actual components later
-const ProductsPage = () => <h1>Products Page</h1>;
+import ProductsPage from"@/features/product/view/ProductsPage";
 
 export const SectionsRoutes: any[] = [
  // Brands page

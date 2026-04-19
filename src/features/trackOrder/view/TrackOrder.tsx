@@ -12,15 +12,25 @@ export default function TrackOrder() {
     const { orderId } = useParams<{ orderId: string }>();
     const { t } = useTranslation();
     const { isRTL } = useLanguage();
-    const liveLocation = useOrderLocation(orderId ?? null);
     const { data: orderData, isLoading, error } = useTrackOrder(orderId ?? null);
 
+    const normalizedTrackStatus = orderData?.status
+        ? String(orderData.status).toLowerCase().replace(/-/g, "_")
+        : "";
+    const showMap =
+        normalizedTrackStatus === "out_for_delivery" ||
+        normalizedTrackStatus === "out_delivery";
+
+    const liveLocation = useOrderLocation(
+        showMap && orderId ? orderId : null
+    );
+
     useEffect(() => {
-        if (!orderId) return;
+        if (!orderId || !orderData || !showMap) return;
         getSocket().then(() => {
             joinOrderRoom(Number(orderId));
         });
-    }, [orderId]);
+    }, [orderId, orderData, showMap]);
 
     const handleCallDriver = () => {
         if (orderData?.driver?.phoneNumber) {
@@ -87,20 +97,30 @@ export default function TrackOrder() {
                     </div>
                 </div>
 
-                <SideContentLayout
-                    sidebar={
+                {showMap ? (
+                    <SideContentLayout
+                        sidebar={
+                            <TrackOrderSidebar
+                                order={orderData}
+                                onCallDriver={handleCallDriver}
+                                onNeedHelp={handleNeedHelp}
+                            />
+                        }
+                        sidebarPosition="right"
+                        gapClassName="gap-6"
+                        columnTemplate="1fr 400px"
+                    >
+                        <TrackOrderMap order={orderData} liveLocation={liveLocation} />
+                    </SideContentLayout>
+                ) : (
+                    <div className="max-w-lg mx-auto w-full">
                         <TrackOrderSidebar
                             order={orderData}
                             onCallDriver={handleCallDriver}
                             onNeedHelp={handleNeedHelp}
                         />
-                    }
-                    sidebarPosition="right"
-                    gapClassName="gap-6"
-                    columnTemplate="1fr 400px"
-                >
-                    <TrackOrderMap order={orderData} liveLocation={liveLocation} />
-                </SideContentLayout>
+                    </div>
+                )}
             </div>
         </div>
     );

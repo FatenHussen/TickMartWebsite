@@ -12,6 +12,7 @@ type BrandItemWithOptionalRating = {
     image: string;
     rating?: number;
     average_rating?: number;
+    orders_count?: number;
     top_badges?: SectionItemBadge[];
     bottom_badges?: SectionItemBadge[];
     budges?: SectionItemBadge[];
@@ -41,6 +42,7 @@ export default function BrandCardWithRating({
             name={item.name}
             image={item.image}
             rating={displayRating}
+            ordersCount={item.orders_count}
             badge={badge}
             bottomBadges={bottomBadges}
             onClick={onClick}

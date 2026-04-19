@@ -29,3 +29,29 @@ export function formatPackageDuration(days: number, t: TFunction): string {
  const key = years === 1 ?"packages.duration.year":"packages.duration.years";
  return t(key, { count: years });
 }
+
+/**
+ * Short billing-period label for the price line (e.g. " /month"), derived from
+ * {@link formatPackageDuration} rules so it stays aligned with `duration_days` from the API.
+ */
+export function formatPriceBillingSuffix(days: number, t: TFunction): string {
+ if (days < 30) {
+ const key =
+ days === 1 ?"packages.pricePeriod.perDay":"packages.pricePeriod.perDays";
+ return t(key, { count: days });
+ }
+ if (days < 360) {
+ const months = Math.round(days / 30);
+ const key =
+ months === 1
+ ?"packages.pricePeriod.perMonth"
+ :"packages.pricePeriod.perMonths";
+ return t(key, { count: months });
+ }
+ const years = Math.round(days / 360);
+ const key =
+ years === 1
+ ?"packages.pricePeriod.perYear"
+ :"packages.pricePeriod.perYears";
+ return t(key, { count: years });
+}

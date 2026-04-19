@@ -8,6 +8,7 @@ export default function TermsConditionsPage() {
 
  return (
  <LegalDocumentPage
+ variant="terms"
  data={data ?? null}
  isLoading={isLoading}
  error={error ?? null}

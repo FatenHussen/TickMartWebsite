@@ -8,6 +8,7 @@ export default function PrivacyPolicyPage() {
 
  return (
  <LegalDocumentPage
+ variant="privacy"
  data={data ?? null}
  isLoading={isLoading}
  error={error ?? null}

@@ -1,9 +1,11 @@
 import { useMemo } from "react";
+import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContext";
 import { HiCheck, HiTruck } from "react-icons/hi2";
 import { BsBoxSeam } from "react-icons/bs";
 import { cn } from "@/shared/lib/utils";
+import { paths } from "@/app/routes/path/paths";
 import type { ActiveOrder, ActiveOrderItem, ActiveOrderShopGroup, ActiveOrderStatus } from "@/features/cart/types";
 
 const STATUS_PRIORITY: Record<string, number> = {
@@ -75,6 +77,8 @@ export default function OrderTrackingCard({ order }: OrderTrackingCardProps) {
   const { isRTL } = useLanguage();
   const currentStatus = useMemo(() => getStatusFromItems(order), [order]);
   const orderDisplay = order.order_code ?? order.id;
+  const trackOrderUrl = paths.client.trackOrder.replace(":orderId", String(order.id));
+  const showTrackOrderButton = currentStatus !== "delivered";
 
   const renderStage = (stage: ActiveOrderStatus) => {
     const state = getStepState(stage, currentStatus);
@@ -177,15 +181,17 @@ export default function OrderTrackingCard({ order }: OrderTrackingCardProps) {
             {t(statusSubtitleKey)}
           </p>
         </div>
-        {/* <Link
-          to={trackOrderUrl}
-          className="inline-flex items-center justify-center gap-2 font-semibold rounded-lg px-5 py-2 text-sm w-full sm:w-auto text-white whitespace-nowrap shrink-0 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-          style={{
-            backgroundColor: "#22c55e",
-          }}
-        >
-          {t("home.trackOrder")}
-        </Link> */}
+        {showTrackOrderButton && (
+          <Link
+            to={trackOrderUrl}
+            className="inline-flex items-center justify-center gap-2 font-semibold rounded-lg px-5 py-2 text-sm w-full sm:w-auto text-white whitespace-nowrap shrink-0 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+            style={{
+              backgroundColor: "#22c55e",
+            }}
+          >
+            {t("home.trackOrder")}
+          </Link>
+        )}
       </div>
 
       <div className="relative w-full">

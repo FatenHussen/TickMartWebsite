@@ -71,6 +71,7 @@ export default function SoldWithThisProductVariant({
                 title={title}
                 viewAllLabel={viewAllLabel}
                 items={limitedItems}
+                slidesPerView={1.2}
                 breakpoints={
                     ui?.breakpoints || {
                         640: { slidesPerView: 1.2 },

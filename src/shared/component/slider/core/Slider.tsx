@@ -26,7 +26,8 @@ export default function Slider({
  viewAllLabel,
  onViewAll,
  children,
- slidesPerView ="auto",
+ // Below the first breakpoint, a number shows multiple slides; `"auto"` tends to fill the viewport with one slide.
+ slidesPerView = 2.2,
  spaceBetween = 16,
  breakpoints,
  className ="",

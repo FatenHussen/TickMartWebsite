@@ -1,7 +1,19 @@
+import type { CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContext";
-import { HiMinus, HiPlus, HiXMark } from "react-icons/hi2";
+import { HiMinus, HiPlus, HiTrash } from "react-icons/hi2";
 import { cn } from "@/shared/lib/utils";
+
+/** Figma: QTY stepper — 32px circle, 1px border as cyan→teal gradient */
+const QTY_STEPPER_BUTTON_STYLE: CSSProperties = {
+    backgroundImage:
+        "linear-gradient(#ffffff, #ffffff), linear-gradient(180deg, #4cdaf6 0%, #2c8090 100%)",
+    backgroundOrigin: "border-box",
+    backgroundClip: "padding-box, border-box",
+};
+
+const selectInputClassName =
+    "w-full min-w-[10rem] max-w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-custom-primary shadow-sm focus:outline-none focus:ring-2 focus:ring-[#00AED1]/40 dark:border-slate-600 dark:bg-custom-primary";
 
 export interface ProductItemCompany {
     id: number;
@@ -97,35 +109,36 @@ export default function ProductItemsTable({
 
 
 
+    const headerCell = (align: "left" | "center" | "right") =>
+        cn(
+            "py-3 px-6 text-xs font-bold uppercase tracking-wide text-white",
+            align === "left" && (isRTL ? "text-right" : "text-left"),
+            align === "right" && (isRTL ? "text-left" : "text-right"),
+            align === "center" && "text-center"
+        );
+
     return (
-        <div className={cn("bg-custom-secondary rounded-2xl shadow-sm border border-custom-primary overflow-hidden", className)}>
+        <div
+            className={cn(
+                "overflow-hidden   bg-custom-primary ",
+                className
+            )}
+        >
             <div className="overflow-x-auto">
-                <table className="w-full">
+                <table className="w-full min-w-[640px] border-collapse">
                     <thead>
-                        <tr className="bg-custom-tertiary text-custom-primary text-sm">
-                            <th className={cn(isRTL ? "text-right" : "text-left", "py-4 px-6 font-semibold")}>
-                                {t("recipes.product")}
-                            </th>
+                        <tr className="bg-gradient-to-r from-[#4CDAF6] to-[#2C8090]">
+                            <th className={headerCell("left")}>{t("recipes.product")}</th>
                             {showCompanyColumn && (
-                                <th className={cn(isRTL ? "text-right" : "text-left", "py-4 px-6 font-semibold")}>
-                                    {t("recipes.companyBrand")}
-                                </th>
+                                <th className={headerCell("left")}>{t("recipes.companyBrand")}</th>
                             )}
                             {showVariantColumn && (
-                                <th className={cn(isRTL ? "text-right" : "text-left", "py-4 px-6 font-semibold")}>
-                                    {t("recipes.variantOption")}
-                                </th>
+                                <th className={headerCell("left")}>{t("recipes.variantOption")}</th>
                             )}
-                            <th className="text-center py-4 px-6 font-semibold">
-                                {t("recipes.quantity")}
-                            </th>
-                            <th className={cn(isRTL ? "text-left" : "text-right", "py-4 px-6 font-semibold")}>
-                                {t("recipes.price")}
-                            </th>
+                            <th className={headerCell("center")}>{t("recipes.quantity")}</th>
+                            <th className={headerCell("right")}>{t("recipes.price")}</th>
                             {showActionColumn && !readonly && (
-                                <th className="text-center py-4 px-6 font-semibold">
-                                    {t("recipes.action")}
-                                </th>
+                                <th className={headerCell("center")}>{t("recipes.action")}</th>
                             )}
                         </tr>
                     </thead>
@@ -137,27 +150,27 @@ export default function ProductItemsTable({
                             return (
                                 <tr
                                     key={item.id}
-                                    className="border-b border-custom-primary hover:bg-custom-primary/50 transition"
+                                    className="border-b border-slate-200 bg-custom-primary transition last:border-b-0 hover:bg-slate-50/70 dark:border-slate-700 dark:hover:bg-white/[0.04]"
                                 >
                                     {/* Product */}
-                                    <td className="py-4 px-6">
+                                    <td className="align-middle px-6 py-5">
                                         <div className="flex items-center gap-3">
                                             {item.image && (
                                                 <img
                                                     src={item.image}
                                                     alt={item.name}
-                                                    className="w-12 h-12 rounded-lg object-cover"
+                                                    className="h-12 w-12 shrink-0 rounded-lg object-cover"
                                                 />
                                             )}
-                                            <div className="flex flex-col">
-                                                <span className="font-medium text-custom-primary">
+                                            <div className="flex min-w-0 flex-col">
+                                                <span className="font-bold text-custom-primary">
                                                     {item.name}
                                                     {item.is_required && (
-                                                        <span className="text-red-500 ml-1">*</span>
+                                                        <span className="ml-1 text-red-500">*</span>
                                                     )}
                                                 </span>
                                                 {item.variantLabel && (
-                                                    <span className="text-xs text-custom-secondary mt-0.5">
+                                                    <span className="mt-0.5 text-xs text-custom-secondary">
                                                         {item.variantLabel}
                                                     </span>
                                                 )}
@@ -167,15 +180,15 @@ export default function ProductItemsTable({
 
                                     {/* Company/Brand */}
                                     {showCompanyColumn && (
-                                        <td className="py-4 px-6">
+                                        <td className="align-middle px-6 py-5">
                                             {item.companies && item.companies.length > 0 ? (
                                                 <select
                                                     value={item.selectedCompanyId ?? item.companies.find((c) => c.is_default)?.id}
                                                     onChange={(e) => handleCompanySelect(item.id, Number(e.target.value))}
                                                     disabled={readonly}
                                                     className={cn(
-                                                        "border border-custom-primary rounded-lg px-3 py-2 text-sm bg-custom-primary text-custom-primary focus:outline-none focus:ring-2 focus:ring-cyan-500",
-                                                        readonly && "opacity-50 cursor-not-allowed"
+                                                        selectInputClassName,
+                                                        readonly && "cursor-not-allowed opacity-50"
                                                     )}
                                                 >
                                                     {item.companies.map((company) => (
@@ -193,15 +206,15 @@ export default function ProductItemsTable({
 
                                     {/* Variant/Option */}
                                     {showVariantColumn && (
-                                        <td className="py-4 px-6">
+                                        <td className="align-middle px-6 py-5">
                                             {item.variants && item.variants.length > 0 ? (
                                                 <select
                                                     value={item.selectedVariantId ?? item.variants[0]?.id}
                                                     onChange={(e) => handleVariantSelect(item.id, e.target.value)}
                                                     disabled={readonly}
                                                     className={cn(
-                                                        "border border-custom-primary rounded-lg px-3 py-2 text-sm bg-custom-primary text-custom-primary focus:outline-none focus:ring-2 focus:ring-cyan-500",
-                                                        readonly && "opacity-50 cursor-not-allowed"
+                                                        selectInputClassName,
+                                                        readonly && "cursor-not-allowed opacity-50"
                                                     )}
                                                 >
                                                     {item.variants.map((variant) => (
@@ -211,7 +224,7 @@ export default function ProductItemsTable({
                                                     ))}
                                                 </select>
                                             ) : item.variant && item.variant.length > 0 ? (
-                                                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-custom-primary">
+                                                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-normal text-custom-secondary">
                                                     {item.variant.map((val, idx) => {
                                                         const strVal = String(val);
                                                         const isHex = /^#[0-9A-Fa-f]{3,8}$/.test(strVal);
@@ -241,22 +254,23 @@ export default function ProductItemsTable({
                                     )}
 
                                     {/* Quantity */}
-                                    <td className="py-4 px-6">
+                                    <td className="align-middle px-6 py-5">
                                         {!readonly && item.can_adjust !== false ? (
-                                            <div className="flex items-center justify-center gap-2">
+                                            <div className="flex items-center justify-center gap-4">
                                                 <button
                                                     type="button"
                                                     onClick={() => handleQuantityDecrease(item)}
                                                     disabled={item.quantity <= minQty}
                                                     className={cn(
-                                                        "w-8 h-8 rounded-full border border-custom-primary flex items-center justify-center hover:bg-custom-primary transition text-custom-primary",
+                                                        "flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-transparent p-0 text-neutral-900 transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 dark:text-neutral-100",
                                                         item.quantity <= minQty && "opacity-50 cursor-not-allowed"
                                                     )}
+                                                    style={QTY_STEPPER_BUTTON_STYLE}
                                                     aria-label={t("cart.decreaseQuantity")}
                                                 >
                                                     <HiMinus className="h-4 w-4" />
                                                 </button>
-                                                <span className="w-8 text-center font-medium text-custom-primary">
+                                                <span className="min-w-[2rem] text-center text-lg font-bold text-custom-primary tabular-nums">
                                                     {item.quantity}
                                                 </span>
                                                 <button
@@ -264,37 +278,43 @@ export default function ProductItemsTable({
                                                     onClick={() => handleQuantityIncrease(item)}
                                                     disabled={item.quantity >= maxQty}
                                                     className={cn(
-                                                        "w-8 h-8 rounded-full border border-custom-primary flex items-center justify-center hover:bg-custom-primary transition text-custom-primary",
+                                                        "flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-transparent p-0 text-neutral-900 transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 dark:text-neutral-100",
                                                         item.quantity >= maxQty && "opacity-50 cursor-not-allowed"
                                                     )}
+                                                    style={QTY_STEPPER_BUTTON_STYLE}
                                                     aria-label={t("cart.increaseQuantity")}
                                                 >
                                                     <HiPlus className="h-4 w-4" />
                                                 </button>
                                             </div>
                                         ) : (
-                                            <div className="text-center font-medium text-custom-primary">
+                                            <div className="text-center text-lg font-bold text-custom-primary tabular-nums">
                                                 {item.quantity}
                                             </div>
                                         )}
                                     </td>
 
                                     {/* Price */}
-                                    <td className={cn("py-4 px-6 font-semibold text-custom-primary", isRTL ? "text-left" : "text-right")}>
+                                    <td
+                                        className={cn(
+                                            "align-middle px-6 py-5 text-lg font-bold text-custom-primary tabular-nums",
+                                            isRTL ? "text-left" : "text-right"
+                                        )}
+                                    >
                                         {item.priceLineFormatted ??
                                             `${currencySymbol}${Number.isFinite(item.subtotal) ? item.subtotal.toFixed(2) : "0.00"}`}
                                     </td>
 
                                     {/* Action */}
                                     {showActionColumn && !readonly && (
-                                        <td className="py-4 px-6 text-center">
+                                        <td className="px-6 py-5 text-center align-middle">
                                             <button
                                                 type="button"
                                                 onClick={() => onRemoveItem?.(item.id)}
-                                                className="text-red-500 hover:text-red-700 transition"
+                                                className="inline-flex text-[#EF4444] transition hover:text-red-700"
                                                 aria-label={t("cart.removeItem")}
                                             >
-                                                <HiXMark className="h-5 w-5" />
+                                                <HiTrash className="h-5 w-5" />
                                             </button>
                                         </td>
                                     )}

@@ -280,6 +280,61 @@ body {
       0 4px 6px -4px rgba(0, 174, 209, 0.1),
       0 10px 15px -3px rgba(0, 174, 209, 0.1);
   }
+
+  /* Legal: one sentence per block after enhanceLegalDocumentHtml */
+  .legal-doc-sentence {
+    margin-bottom: 0.875rem;
+    line-height: 1.75;
+    text-wrap: pretty;
+  }
+
+  .legal-doc-sentence:last-child {
+    margin-bottom: 0;
+  }
+
+  /* Legal: Terms & Conditions — thick blue rule under each text line */
+  .legal-document-terms-body :where(p, h1, h2, h3, h4, h5, h6, li) {
+    line-height: 2;
+    color: #444444;
+    background-image: repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent calc(2em - 4px),
+      #2563eb calc(2em - 4px),
+      #2563eb calc(2em - 1px),
+      transparent calc(2em - 1px),
+      transparent 2em
+    );
+  }
+
+  .legal-document-terms-body :where(ul, ol) {
+    margin: 0.5em 0 1em;
+    padding-inline-start: 1.25em;
+  }
+
+  .legal-document-terms-body :where(a) {
+    color: #2563eb;
+    text-decoration: none;
+  }
+
+  @variant dark {
+    .legal-document-terms-body :where(p, h1, h2, h3, h4, h5, h6, li) {
+      color: var(--color-text-primary);
+      background-image: repeating-linear-gradient(
+        to bottom,
+        transparent 0,
+        transparent calc(2em - 4px),
+        #60a5fa calc(2em - 4px),
+        #60a5fa calc(2em - 1px),
+        transparent calc(2em - 1px),
+        transparent 2em
+      );
+    }
+
+    .legal-document-terms-body :where(a) {
+      color: #93c5fd;
+    }
+  }
 }
 
 /* AnimatedButton - Creative Animation */

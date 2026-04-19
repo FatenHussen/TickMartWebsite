@@ -219,11 +219,11 @@ export default function PointsRewards() {
                         </div>
                     ) : (
                         <>
-                            <div className="mb-2">
-                                <span className="text-5xl font-bold text-blue-500 dark:text-blue-400">
+                            <div className="mb-2 inline-flex items-baseline gap-2 rounded-xl bg-primary-light px-4 py-2 text-white">
+                                <span className="text-5xl font-bold">
                                     {points.toLocaleString()}
                                 </span>
-                                <span className="text-3xl font-bold text-blue-500 dark:text-blue-400 ml-1">
+                                <span className="text-3xl font-bold">
                                     {t("account.pointsRewards.points")}
                                 </span>
                             </div>
@@ -240,7 +240,7 @@ export default function PointsRewards() {
                                 <div className="mt-4">
                                     <div className="w-full h-3 bg-custom-muted rounded-full overflow-hidden">
                                         <div
-                                            className="h-full bg-blue-500 dark:bg-blue-400 transition-all duration-300 rounded-full"
+                                            className="h-full bg-primary-light transition-all duration-300 rounded-full"
                                             style={{ width: `${Math.min(progressPercentage, 100)}%` }}
                                         />
                                     </div>
@@ -268,22 +268,22 @@ export default function PointsRewards() {
                         {earningRules.length > 0 ? (
                             earningRules.map((rule, idx) => (
                                 <li key={idx} className="flex items-center gap-2">
-                                    <span className="w-2 h-2 rounded-full bg-blue-500 shrink-0" />
+                                    <span className="w-2 h-2 rounded-full bg-primary-light shrink-0" />
                                     <span>{rule}</span>
                                 </li>
                             ))
                         ) : (
                             <>
                                 <li className="flex items-center gap-2">
-                                    <span className="w-2 h-2 rounded-full bg-blue-500 shrink-0" />
+                                    <span className="w-2 h-2 rounded-full bg-primary-light shrink-0" />
                                     <span>{t("account.pointsRewards.howToEarn.placeOrders")}</span>
                                 </li>
                                 <li className="flex items-center gap-2">
-                                    <span className="w-2 h-2 rounded-full bg-blue-500 shrink-0" />
+                                    <span className="w-2 h-2 rounded-full bg-primary-light shrink-0" />
                                     <span>{t("account.pointsRewards.howToEarn.joinCampaigns")}</span>
                                 </li>
                                 <li className="flex items-center gap-2">
-                                    <span className="w-2 h-2 rounded-full bg-blue-500 shrink-0" />
+                                    <span className="w-2 h-2 rounded-full bg-primary-light shrink-0" />
                                     <span>{t("account.pointsRewards.howToEarn.usePackages")}</span>
                                 </li>
                             </>
@@ -306,27 +306,27 @@ export default function PointsRewards() {
                         {[1, 2, 3].map((i) => (
                             <div
                                 key={i}
-                                className="border border-custom-primary rounded-lg p-5 animate-pulse h-44 bg-blue-50/50"
+                                className="border border-custom-primary rounded-lg p-5 animate-pulse h-44 bg-primary-light/10"
                             />
                         ))}
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-stretch">
                         {exchangeOptions?.options?.coupon?.enabled && (
-                            <div className="bg-blue-50 dark:bg-blue-900/10 border border-custom-primary rounded-lg p-5 hover:shadow-md transition-shadow">
+                            <div className="flex flex-col bg-primary-light/10 border border-primary-light/30 rounded-lg p-5 hover:shadow-md transition-shadow">
                                 <h3 className="text-lg font-medium text-custom-primary mb-2">
                                     {t("account.pointsRewards.redeem.options.orderDiscount.title")}
                                 </h3>
-                                <div className="text-xl font-bold text-blue-500 dark:text-blue-400 mb-2">
+                                <div className="text-xl font-bold text-primary-light mb-2">
                                     {exchangeOptions.options.coupon.min_points}–
-                                    {exchangeOptions.options.coupon.max_points}{""}
+                                    {exchangeOptions.options.coupon.max_points}
                                     {t("account.pointsRewards.points")} ={""}
-                                    {exchangeOptions.options.coupon.discount_rate}%{""}
+                                    {exchangeOptions.options.coupon.discount_rate}%
                                     {t("account.pointsRewards.redeem.options.discount")}
                                 </div>
                                 <div className="text-sm text-custom-primary mb-2">
-                                    {t("account.pointsRewards.redeem.options.minPoints")}{""}
-                                    {exchangeOptions.options.coupon.min_points}{""}
+                                    {t("account.pointsRewards.redeem.options.minPoints")}
+                                    {exchangeOptions.options.coupon.min_points}
                                     {t("account.pointsRewards.points")}
                                 </div>
                                 {exchangeOptions.options.coupon.description && (
@@ -334,32 +334,35 @@ export default function PointsRewards() {
                                         {exchangeOptions.options.coupon.description}
                                     </span>
                                 )}
-                                <Button
-                                    variant="primary"
-                                    size="sm"
-                                    fullWidth
-                                    disabled={!exchangeOptions.available || exchangeCouponMutation.isPending}
-                                    onClick={handleExchangeCoupon}
-                                    className="bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md"
-                                >
-                                    {exchangeCouponMutation.isPending
-                                        ? "..."
-                                        : t("account.pointsRewards.redeem.options.redeemPoints")}
-                                </Button>
+                                <div className="mt-auto pt-3">
+                                    <Button
+                                        variant="primary"
+                                        size="sm"
+                                        fullWidth
+                                        disabled={
+                                            !exchangeOptions.available ||
+                                            exchangeCouponMutation.isPending
+                                        }
+                                        onClick={handleExchangeCoupon}
+                                        className="bg-primary-light hover:bg-primary text-white font-semibold rounded-md"
+                                    >
+                                        {exchangeCouponMutation.isPending
+                                            ? "..."
+                                            : t("account.pointsRewards.redeem.options.redeemPoints")}
+                                    </Button>
+                                </div>
                             </div>
                         )}
                         {exchangeOptions?.options?.free_delivery?.enabled && (
-                            <div className="bg-blue-50 dark:bg-blue-900/10 border border-custom-primary rounded-lg p-5 hover:shadow-md transition-shadow">
+                            <div className="flex flex-col bg-primary-light/10 border border-primary-light/30 rounded-lg p-5 hover:shadow-md transition-shadow">
                                 <h3 className="text-lg font-medium text-custom-primary mb-2">
-                                    {
-                                        t(
-                                            "account.pointsRewards.redeem.options.freeDelivery.title",
-                                        )
-                                    }
+                                    {t(
+                                        "account.pointsRewards.redeem.options.freeDelivery.title",
+                                    )}
                                 </h3>
-                                <div className="text-xl font-bold text-blue-500 dark:text-blue-400 mb-2">
-                                    {exchangeOptions.options.free_delivery.points_cost}{""}
-                                    {t("account.pointsRewards.points")} → 1{""}
+                                <div className="text-xl font-bold text-primary-light mb-2">
+                                    {exchangeOptions.options.free_delivery.points_cost}
+                                    {t("account.pointsRewards.points")} → 1
                                     {t("account.pointsRewards.redeem.options.freeDelivery.coupon")}
                                 </div>
                                 {exchangeOptions.options.free_delivery.description && (
@@ -367,52 +370,65 @@ export default function PointsRewards() {
                                         {exchangeOptions.options.free_delivery.description}
                                     </div>
                                 )}
-                                <Button
-                                    variant="primary"
-                                    size="sm"
-                                    fullWidth
-                                    disabled={!exchangeOptions.available}
-                                    className="bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md"
-                                >
-                                    {
-                                        t(
+                                <div className="mt-auto pt-3">
+                                    <Button
+                                        variant="primary"
+                                        size="sm"
+                                        fullWidth
+                                        disabled={!exchangeOptions.available}
+                                        className="bg-primary-light hover:bg-primary text-white font-semibold rounded-md"
+                                    >
+                                        {t(
                                             "account.pointsRewards.redeem.options.redeemForFreeDelivery",
-                                        )
-                                    }
-                                </Button>
+                                        )}
+                                    </Button>
+                                </div>
                             </div>
                         )}
                         {exchangeOptions?.options?.gifts?.enabled && (
-                            <div className="bg-blue-50 dark:bg-blue-900/10 border border-custom-primary rounded-lg p-5 hover:shadow-md transition-shadow">
+                            <div className="flex flex-col bg-primary-light/10 border border-primary-light/30 rounded-lg p-5 hover:shadow-md transition-shadow">
                                 <h3 className="text-lg font-medium text-custom-primary mb-2">
-                                    {
-                                        t(
-                                            "account.pointsRewards.redeem.options.giftVoucher.title",
-                                        )
-                                    }
+                                    {t(
+                                        "account.pointsRewards.redeem.options.giftVoucher.title",
+                                    )}
                                 </h3>
-                                <div className="text-xl font-bold text-blue-500 dark:text-blue-400 mb-2">
+                                <div className="text-xl font-bold text-primary-light mb-2">
                                     {exchangeOptions.options.gifts.available_gifts?.[0]
                                         ? `${exchangeOptions.options.gifts.available_gifts[0].points_required} ${t("account.pointsRewards.points")} = ${exchangeOptions.options.gifts.available_gifts[0].points_required * getPointValueMultiplier(value)} ${value?.currency_symbol ?? ""} ${t("account.pointsRewards.redeem.options.voucher")}`
                                         : `1,000 ${t("account.pointsRewards.points")} = 10,000 SYP ${t("account.pointsRewards.redeem.options.voucher")}`}
                                 </div>
-                                <div className="text-sm text-custom-primary mb-4">
+                                <div className="text-sm text-custom-primary mb-4 flex-1 min-h-0">
                                     {exchangeOptions.options.gifts.available_gifts?.length ? (
                                         <div className="space-y-2">
-                                            {exchangeOptions.options.gifts.available_gifts.map((gift) => (
-                                                <div key={gift.id} className="flex items-center justify-between">
-                                                    <span>{gift.name} ({gift.points_required} pts)</span>
-                                                    <Button
-                                                        variant="primary"
-                                                        size="sm"
-                                                        disabled={!exchangeOptions.available || exchangeGiftMutation.isPending}
-                                                        onClick={() => handleExchangeGift(gift)}
-                                                        className="bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md ml-2 shrink-0"
+                                            {exchangeOptions.options.gifts.available_gifts.map(
+                                                (gift) => (
+                                                    <div
+                                                        key={gift.id}
+                                                        className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3 border-b border-primary-light/20 pb-2 last:border-0 last:pb-0"
                                                     >
-                                                        {exchangeGiftMutation.isPending ? "..." : t("account.pointsRewards.redeem.options.generateVoucher")}
-                                                    </Button>
-                                                </div>
-                                            ))}
+                                                        <span className="min-w-0 break-words">
+                                                            {gift.name} ({gift.points_required}{" "}
+                                                            pts)
+                                                        </span>
+                                                        <Button
+                                                            variant="primary"
+                                                            size="sm"
+                                                            disabled={
+                                                                !exchangeOptions.available ||
+                                                                exchangeGiftMutation.isPending
+                                                            }
+                                                            onClick={() => handleExchangeGift(gift)}
+                                                            className="bg-primary-light hover:bg-primary text-white font-semibold rounded-md shrink-0 w-full sm:w-auto"
+                                                        >
+                                                            {exchangeGiftMutation.isPending
+                                                                ? "..."
+                                                                : t(
+                                                                    "account.pointsRewards.redeem.options.generateVoucher",
+                                                                )}
+                                                        </Button>
+                                                    </div>
+                                                ),
+                                            )}
                                         </div>
                                     ) : (
                                         t("account.pointsRewards.redeem.options.giftVoucher.singleUse")
@@ -445,7 +461,7 @@ export default function PointsRewards() {
                     <Button
                         variant="primary"
                         size="sm"
-                        className="bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md"
+                        className="bg-primary-light hover:bg-primary text-white font-semibold rounded-md"
                     >
                         {t("account.pointsRewards.vendorOffers.viewOffers")}
                     </Button>
@@ -654,7 +670,7 @@ export default function PointsRewards() {
                                                 {item.exchange_type.replace("_", "")}
                                             </td>
                                             <td className="py-3 px-4">
-                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-light/20 text-primary-light">
                                                     {item.status}
                                                 </span>
                                             </td>
@@ -707,8 +723,8 @@ export default function PointsRewards() {
                                     type="button"
                                     onClick={() => setSelectedAddressId(addr.id)}
                                     className={`w-full text-left px-4 py-3 rounded-lg border text-sm transition-colors ${selectedAddressId === addr.id
-                                        ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300"
-                                        : "border-custom-primary text-custom-primary hover:border-blue-300"
+                                        ? "border-primary-light bg-primary-light/15 text-primary-light"
+                                        : "border-custom-primary text-custom-primary hover:border-primary-light/50"
                                         }`}
                                 >
                                     <span className="font-medium">{addr.label}</span>
@@ -735,7 +751,7 @@ export default function PointsRewards() {
                                 fullWidth
                                 disabled={selectedAddressId == null || setGiftAddressMutation.isPending}
                                 onClick={handleConfirmGiftAddress}
-                                className="bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md"
+                                className="bg-primary-light hover:bg-primary text-white font-semibold rounded-md"
                             >
                                 {setGiftAddressMutation.isPending ? "..." : t("common.confirm", "Confirm")}
                             </Button>

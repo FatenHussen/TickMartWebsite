@@ -30,9 +30,9 @@ function mapApiToOrderDetails(
  raw: TrackOrderApiData,
  formatPrice: (amount: number) => string
 ): OrderDetails {
- const shopEntries = Object.values(raw.items);
+ const shopEntries = Object.values(raw.items ?? {});
  const cartItems: CartItem[] = shopEntries.flatMap((shop) =>
- shop.items.map((item) => ({
+ (shop?.items ?? []).map((item) => ({
  id: item.id,
  name: item.product_name,
  category: shop.shop,

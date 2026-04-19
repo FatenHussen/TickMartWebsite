@@ -29,7 +29,7 @@ export default function AuthPromoPanel() {
  <div className="w-full max-w-sm">
  <div className="bg-custom-card rounded-2xl border border-cyan-100 dark:border-cyan-800 shadow-sm overflow-hidden flex items-center justify-center p-8">
  <img
- src="/images/shared/logo.jpg"
+ src="/images/shared/logo.png"
  alt="Logo"
  className="w-full h-auto max-h-64 object-contain"
  />

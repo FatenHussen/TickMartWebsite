@@ -9,6 +9,8 @@ export interface BrandListItem {
  name: string;
  image: string;
  rating: number;
+ /** Total completed orders for this brand (brands list API). */
+ orders_count?: number;
 }
 
 export interface BrandListResponse {

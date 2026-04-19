@@ -14,11 +14,11 @@ function mapApiToTrackOrder(
  raw: TrackOrderApiData,
  formatPrice: (amount: number) => string
 ): TrackOrderData {
- const shopEntries = Object.values(raw.items);
- const storeName = shopEntries.map((s) => s.shop).join(",");
+ const shopEntries = Object.values(raw.items ?? {});
+ const storeName = shopEntries.map((s) => s?.shop).filter(Boolean).join(",");
 
  const items: OrderItem[] = shopEntries.flatMap((shop) =>
- shop.items.map((item) => ({
+ (shop?.items ?? []).map((item) => ({
  id: item.id,
  name: item.product_name,
  quantity: item.quantity,

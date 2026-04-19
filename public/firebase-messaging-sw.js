@@ -24,7 +24,7 @@ messaging.onBackgroundMessage((payload) => {
   const title = payload.notification?.title ?? data.title ?? "Tikmool";
   const options = {
     body: payload.notification?.body ?? data.body ?? "",
-    icon: "/images/shared/logo.jpg",
+    icon: "/images/shared/logo.png",
     image:
       mediaType === "image" || looksLikeImageUrl(mediaUrl)
         ? mediaUrl

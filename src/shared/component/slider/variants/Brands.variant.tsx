@@ -7,45 +7,46 @@ type Brand = {
  name: string;
  image: string;
  rating: number;
+ orders_count?: number;
 };
 
 const defaultBrands: Brand[] = [
  {
  id: 1,
  name:"Nike",
- image:"https://logos-world.net/wp-content/uploads/2020/04/Nike-logo.jpg",
+ image:"https://logos-world.net/wp-content/uploads/2020/04/Nike-logo.png",
  rating: 4.8,
  },
  {
  id: 2,
  name:"Adidas",
- image:"https://logos-world.net/wp-content/uploads/2020/04/Adidas-logo.jpg",
+ image:"https://logos-world.net/wp-content/uploads/2020/04/Adidas-logo.png",
  rating: 4.7,
  },
  {
  id: 3,
  name:"Apple",
- image:"https://logos-world.net/wp-content/uploads/2020/04/Apple-logo.jpg",
+ image:"https://logos-world.net/wp-content/uploads/2020/04/Apple-logo.png",
  rating: 4.9,
  },
  {
  id: 4,
  name:"Samsung",
  image:
-"https://logos-world.net/wp-content/uploads/2020/06/Samsung-logo.jpg",
+"https://logos-world.net/wp-content/uploads/2020/06/Samsung-logo.png",
  rating: 4.8,
  },
  {
  id: 5,
  name:"Zara",
- image:"https://logos-world.net/wp-content/uploads/2020/04/Zara-logo.jpg",
+ image:"https://logos-world.net/wp-content/uploads/2020/04/Zara-logo.png",
  rating: 4.4,
  },
  {
  id: 6,
  name:"L'Oréal",
  image:
-"https://logos-world.net/wp-content/uploads/2020/05/LOr%C3%A9al-logo.jpg",
+"https://logos-world.net/wp-content/uploads/2020/05/LOr%C3%A9al-logo.png",
  rating: 4.7,
  },
 ];
@@ -65,6 +66,7 @@ export default function BrandsVariant({
  title={title}
  viewAllLabel={viewAllLabel}
  items={limitedItems}
+ slidesPerView={2.5}
  breakpoints={
  ui?.breakpoints || {
  640: { slidesPerView: 2.5 },
@@ -78,6 +80,7 @@ export default function BrandsVariant({
  name={brand.name}
  image={brand.image}
  rating={brand.rating}
+ ordersCount={brand.orders_count}
  onClick={() => console.log("Brand clicked:", brand.name)}
  />
  )}

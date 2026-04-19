@@ -28,6 +28,8 @@ export interface BrandItem {
  created_at: string;
  updated_at: string;
  is_favorite?: boolean;
+ /** When present (e.g. some APIs), shown on brand cards. */
+ orders_count?: number;
  top_badges?: SectionItemBadge[];
  bottom_badges?: SectionItemBadge[];
  budges?: SectionItemBadge[];

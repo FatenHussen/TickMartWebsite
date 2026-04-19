@@ -32,6 +32,8 @@ export interface OrderListItem {
  affiliate_source: string | null;
  affiliate_commission: number;
  user: OrderListUser;
+ /** Present when the list endpoint includes payment info */
+ payment_method?: OrderDetailPaymentMethod | null;
 }
 
 export interface OrdersListPagination {

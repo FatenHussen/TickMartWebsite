@@ -15,7 +15,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 const SERVICE_WORKER_PATH = "/firebase-messaging-sw.js";
-const DEFAULT_NOTIFICATION_ICON = "/images/shared/logo.jpg";
+const DEFAULT_NOTIFICATION_ICON = "/images/shared/logo.png";
 
 function looksLikeImageUrl(url) {
   return /\.(png|jpe?g|gif|webp|svg)(\?.*)?$/i.test(url);
