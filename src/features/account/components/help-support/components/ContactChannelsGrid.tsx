@@ -1,4 +1,4 @@
-import { HiChat, HiMail, HiPhone } from "react-icons/hi";
+import { MessageCircle, Mail, Phone } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/shared/lib/utils";
 import { HELP_FOCUS_RING } from "../focusRingClasses";
@@ -51,7 +51,7 @@ export function ContactChannelsGrid({ contact, appColor }: ContactChannelsGridPr
                     className={channelCardClass}
                 >
                     <span className={iconWrapClass}>
-                        <HiChat className="h-9 w-9 shrink-0 text-[var(--color-ui-green-500)]" />
+                        <MessageCircle className="h-9 w-9 shrink-0 text-[var(--color-ui-green-500)]" aria-hidden />
                     </span>
                     <span className="text-center text-sm font-semibold" style={labelStyle}>
                         {t("helpCenter.openWhatsApp")}
@@ -61,7 +61,7 @@ export function ContactChannelsGrid({ contact, appColor }: ContactChannelsGridPr
             {contact?.phone && (
                 <a href={`tel:${contact.phone}`} className={channelCardClass}>
                     <span className={iconWrapClass}>
-                        <HiPhone className="h-9 w-9 shrink-0 text-primary-dark" />
+                        <Phone className="h-9 w-9 shrink-0 text-primary-dark" aria-hidden />
                     </span>
                     <span className="text-center text-sm font-semibold" style={labelStyle}>
                         {t("helpCenter.callUs")}
@@ -71,7 +71,7 @@ export function ContactChannelsGrid({ contact, appColor }: ContactChannelsGridPr
             {contact?.email && (
                 <a href={`mailto:${contact.email}`} className={channelCardClass}>
                     <span className={iconWrapClass}>
-                        <HiMail className="h-9 w-9 shrink-0 text-custom-secondary" />
+                        <Mail className="h-9 w-9 shrink-0 text-custom-secondary" aria-hidden />
                     </span>
                     <span className="text-center text-sm font-semibold" style={labelStyle}>
                         {t("helpCenter.sendEmail")}

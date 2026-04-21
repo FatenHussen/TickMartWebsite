@@ -1,4 +1,4 @@
-import { HiQuestionMarkCircle } from "react-icons/hi";
+import { CircleHelp } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContext";
 import type { FaqItem } from "@/features/account/api/faqsApi";
@@ -52,7 +52,7 @@ export function HelpCenterSection({
     return (
         <HelpSupportSectionCard>
             <HelpSupportSectionHeader
-                icon={<HiQuestionMarkCircle className="h-7 w-7 text-primary" aria-hidden />}
+                icon={<CircleHelp className="h-7 w-7 text-primary" aria-hidden />}
                 title={t("helpCenter.title")}
                 subtitle={t("helpCenter.subtitle")}
             />

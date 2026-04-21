@@ -1,4 +1,4 @@
-import { HiChevronDown } from "react-icons/hi";
+import { ChevronDown } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 
 type OverlaySelectButtonProps = {
@@ -30,7 +30,7 @@ export default function OverlaySelectButton({
                 )}
             >
                 {trigger}
-                <HiChevronDown className="h-4 w-4 shrink-0 text-[var(--color-api-second)]" />
+                <ChevronDown className="h-4 w-4 shrink-0 text-[var(--color-api-second)]" aria-hidden />
             </button>
             <select
                 value={value}

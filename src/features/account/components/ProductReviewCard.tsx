@@ -53,10 +53,11 @@ export default function ProductReviewCard({
 
  {/* Row 2: stars +"Product review"badge */}
  <div className="flex items-center gap-2 mt-3">
- <StarRating rating={review.rating} size="sm"/>
- <span className="text-sm font-bold text-custom-primary">
- {review.rating.toFixed(1)}
- </span>
+ <StarRating
+ rating={review.rating}
+ size="sm"
+ variant="brand"
+ />
  <span className="px-3 py-0.5 bg-cyan-500 text-white text-xs font-medium rounded-full">
  {t("account.myReviews.types.product")}
  </span>
@@ -79,7 +80,7 @@ export default function ProductReviewCard({
  >
  <img
  src={image}
- alt={`Review ${index + 1}`}
+ alt={t("account.myReviews.reviewImageAlt", { index: index + 1 })}
  className="w-full h-full object-cover"
  />
  </div>

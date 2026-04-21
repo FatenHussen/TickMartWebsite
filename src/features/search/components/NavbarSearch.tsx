@@ -112,8 +112,8 @@ export default function NavbarSearch({
             <div className="relative">
                 <HiSearch
                     className={cn(
-                        "absolute top-1/2 -translate-y-1/2 text-primary-light w-5 h-5",
-                        isRTL ? "right-4" : "left-4"
+                        "pointer-events-none absolute top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-primary",
+                        isRTL ? "right-[14px]" : "left-[14px]"
                     )}
                 />
                 <input
@@ -126,9 +126,8 @@ export default function NavbarSearch({
                         "Search products and stores..."
                     }
                     className={cn(
-                        "h-12 w-full rounded-2xl border border-[#22BDE9] bg-white text-custom-primary shadow-none transition-colors focus:outline-none focus:ring-2 focus:ring-[#22BDE9]/20 focus:border-[#22BDE9]",
-                        "placeholder:text-[#8E8E93]",
-                        isRTL ? "pr-12 pl-14" : "pl-12 pr-14",
+                        "h-11 w-full rounded-[12px] border border-primary/35 bg-white text-sm leading-none text-custom-primary shadow-none transition-colors dark:bg-custom-card placeholder:text-text-tertiary focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15",
+                        isRTL ? "pr-12 pl-[42px]" : "pl-[42px] pr-12",
                         inputClassName
                     )}
                 />
@@ -136,12 +135,12 @@ export default function NavbarSearch({
                     type="button"
                     onClick={() => setShowTypePicker((p) => !p)}
                     className={cn(
-                        "absolute top-1/2 -translate-y-1/2 p-1 rounded-full text-primary-light hover:bg-[#22BDE9]/10 transition-colors",
-                        isRTL ? "left-3" : "right-3"
+                        "absolute top-1/2 -translate-y-1/2 rounded-full p-1 text-primary transition-colors hover:bg-primary/10",
+                        isRTL ? "left-2" : "right-2"
                     )}
                     aria-label={t("common.filter") || "Filter"}
                 >
-                    <HiFilter className="w-5 h-5" />
+                    <HiFilter className="h-5 w-5" />
                 </button>
             </div>
 

@@ -1,5 +1,5 @@
 import { useTranslation } from"react-i18next";
-import { HiShoppingBag } from"react-icons/hi";
+import { ShoppingBag } from "lucide-react";
 import StarRating from"./StarRating";
 import type { StoreReview } from"../types";
 
@@ -28,7 +28,7 @@ export default function StoreReviewCard({
  className="w-full h-full object-cover rounded-lg"
  />
  ) : (
- <HiShoppingBag className="w-6 h-6 text-cyan-600 dark:text-cyan-400"/>
+ <ShoppingBag className="w-6 h-6 text-cyan-600 dark:text-cyan-400" aria-hidden />
  )}
  </div>
 
@@ -49,11 +49,8 @@ export default function StoreReviewCard({
  </div>
 
  {/* Rating */}
- <div className="flex items-center gap-2 mt-3">
- <StarRating rating={review.rating} size="sm"/>
- <span className="text-sm font-bold text-custom-primary">
- {review.rating.toFixed(1)}
- </span>
+ <div className="mt-3">
+ <StarRating rating={review.rating} size="sm" variant="brand"/>
  </div>
 
  {/* Review Text */}

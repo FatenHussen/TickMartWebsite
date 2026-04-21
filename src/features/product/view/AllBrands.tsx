@@ -16,6 +16,12 @@ import type { BrandListItem } from "../types/brand";
 
 type BrandFilterType = "new" | "top_rated" | "most_popular" | undefined;
 
+/** All-brands page: use theme white instead of `--color-api-second` when API omits colors */
+const brandsPageSectionDefaults = {
+    sectionBackground: "var(--color-bg-primary)",
+    cardSurface: "var(--color-bg-card)",
+} as const;
+
 export default function AllBrands() {
     const { t } = useTranslation();
     const { isRTL } = useLanguage();
@@ -69,17 +75,24 @@ export default function AllBrands() {
         <div className="min-h-screen bg-custom-primary" dir={isRTL ? "rtl" : "ltr"}>
             {bannerSections.length > 0 && (
                 <div className="w-full">
-                    <ApiSectionsRenderer sections={bannerSections} />
+                    <ApiSectionsRenderer
+                        sections={bannerSections}
+                        brandDefaultsWhenApiMissing={brandsPageSectionDefaults}
+                    />
                 </div>
             )}
 
-            <div className="page-container py-6">
-                {otherBeforeSections.length > 0 && (
-                    <FullBleedSection>
-                        <ApiSectionsRenderer sections={otherBeforeSections} />
-                    </FullBleedSection>
-                )}
+            {otherBeforeSections.length > 0 && (
+                <FullBleedSection contain={false}>
+                    <ApiSectionsRenderer
+                        sections={otherBeforeSections}
+                        edgeToEdgeSectionBackgrounds
+                        brandDefaultsWhenApiMissing={brandsPageSectionDefaults}
+                    />
+                </FullBleedSection>
+            )}
 
+            <div className="page-container py-6">
                 {brandsError ? (
                     <div className="mt-8 flex items-center justify-center h-64 bg-custom-secondary rounded-2xl">
                         <p className="text-custom-secondary">{t("brands.failedToLoad")}</p>
@@ -153,6 +166,7 @@ export default function AllBrands() {
                                     image={brand.image}
                                     rating={brand.rating ?? 0}
                                     ordersCount={brand.orders_count}
+                                    surfaceColor={brandsPageSectionDefaults.cardSurface}
                                     onClick={() => handleBrandClick(brand.id)}
                                 />
                             ))}
@@ -176,13 +190,17 @@ export default function AllBrands() {
                         <div ref={observerTarget} className="h-10" />
                     </div>
                 )}
-
-                {afterSections.length > 0 && (
-                    <FullBleedSection>
-                        <ApiSectionsRenderer sections={afterSections} />
-                    </FullBleedSection>
-                )}
             </div>
+
+            {afterSections.length > 0 && (
+                <FullBleedSection contain={false}>
+                    <ApiSectionsRenderer
+                        sections={afterSections}
+                        edgeToEdgeSectionBackgrounds
+                        brandDefaultsWhenApiMissing={brandsPageSectionDefaults}
+                    />
+                </FullBleedSection>
+            )}
         </div>
     );
 }

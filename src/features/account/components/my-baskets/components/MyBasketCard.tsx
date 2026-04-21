@@ -1,17 +1,10 @@
 import { useTranslation } from "react-i18next";
-import {
-    HiTrash,
-    HiCalendar,
-    HiPencil,
-    HiPause,
-    HiPlay,
-} from "react-icons/hi";
-import { HiOutlineShoppingBag } from "react-icons/hi2";
+import { Trash2, Calendar, Pencil, Pause, Play, ShoppingBag } from "lucide-react";
 import Button from "@/shared/ui/Button";
 import type { MyBasketListItem } from "../../../types/myBasket";
 import {
-    API_SECONDARY_PRIMARY_BUTTON_CLASS,
     CARD_BORDER_CLASS,
+    PRIMARY_ACTION_BUTTON_CLASS,
     SECONDARY_BUTTON_CLASS,
 } from "../constants";
 import {
@@ -48,19 +41,17 @@ export default function MyBasketCard({
     const isScheduledBasket = basket.basket_type === "user-schedule";
     const isSubscriptionBasket = basket.basket_type === "subscription";
     const shouldShowPauseResumeButton = isScheduledBasket || isSubscriptionBasket;
-    const shouldShowDeleteButton = isScheduledBasket;
-    const shouldShowScheduleButton = isScheduledBasket;
 
     const categoryName = getBasketCategoryName(basket);
     const scheduleSubtitle = getBasketScheduleSubtitle(basket, t);
     const nextRunDate = getBasketNextRunDate(basket);
     const prices = getBasketPriceDisplay(basket);
+    const hasDiscount = basket.discount_amount > 0;
 
     const createdRawDate = getBasketCreatedRawDate(basket);
     const createdDateLabel = createdRawDate ? formatBasketListDate(createdRawDate) : "";
 
     const basketTypeBadgeLabel = getBasketTypeBadgeLabel(basket.basket_type, t);
-    const hasDiscount = basket.discount_amount > 0;
 
     const itemsCategoryLine = [`${basket.num_varieties} ${t("checkout.items")}`, categoryName]
         .filter(Boolean)
@@ -88,9 +79,9 @@ export default function MyBasketCard({
         : "bg-[var(--color-ui-green-100)] text-success dark:bg-[color-mix(in_srgb,var(--color-ui-green-900)_30%,transparent)] dark:text-[var(--color-ui-green-400)]";
 
     const pauseResumeIcon = isBasketPaused ? (
-        <HiPlay className="w-4 h-4 shrink-0" />
+        <Play className="w-4 h-4 shrink-0" />
     ) : (
-        <HiPause className="w-4 h-4 shrink-0" />
+        <Pause className="w-4 h-4 shrink-0" />
     );
     const pauseResumeLabel = isBasketPaused
         ? t("baskets.resumeBasket")
@@ -101,7 +92,7 @@ export default function MyBasketCard({
 
     return (
         <div
-            className={`bg-bg-primary dark:bg-custom-card rounded-xl ${CARD_BORDER_CLASS} border p-5 md:p-6 shadow-sm hover:shadow-md transition-shadow`}
+            className={`bg-[var(--color-bg-primary)] dark:bg-custom-card rounded-xl ${CARD_BORDER_CLASS} border p-5 md:p-6 shadow-sm hover:shadow-md transition-shadow`}
         >
             <div className="flex items-start justify-between gap-3 mb-5">
                 <div className="flex items-center gap-3 min-w-0 flex-wrap">
@@ -109,14 +100,14 @@ export default function MyBasketCard({
                         <img
                             src={basket.image}
                             alt=""
-                            className="w-11 h-11 rounded-xl object-cover shrink-0 border border-border-light dark:border-custom-primary"
+                            className="w-11 h-11 rounded-xl object-cover shrink-0 border border-border-accent-light dark:border-custom-primary"
                         />
                     ) : (
                         <div
-                            className="w-11 h-11 rounded-xl shrink-0 flex items-center justify-center bg-[var(--color-ui-amber-50)] dark:bg-[color-mix(in_srgb,var(--color-ui-amber-900)_20%,transparent)] border border-border-light dark:border-custom-primary"
+                            className="w-11 h-11 rounded-xl shrink-0 flex items-center justify-center bg-[var(--color-ui-amber-50)] dark:bg-[color-mix(in_srgb,var(--color-ui-amber-900)_20%,transparent)] border border-border-accent-light dark:border-custom-primary"
                             aria-hidden
                         >
-                            <HiOutlineShoppingBag className="w-6 h-6 text-[var(--color-ui-amber-800)]/80 dark:text-[color-mix(in_srgb,var(--color-ui-amber-200)_90%,transparent)]" />
+                            <ShoppingBag className="w-6 h-6 text-[var(--color-ui-amber-800)]/80 dark:text-[color-mix(in_srgb,var(--color-ui-amber-200)_90%,transparent)]" />
                         </div>
                     )}
                     <h3 className="font-semibold text-lg text-custom-primary shrink-0">
@@ -133,7 +124,7 @@ export default function MyBasketCard({
                         </span>
                     ) : null}
                 </div>
-                <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-[var(--color-gray-bold)] text-[var(--color-text-heading)] dark:bg-[var(--color-bg-tertiary)] dark:text-[var(--color-text-secondary)] shrink-0">
+                <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-[var(--color-gray-bold)] text-custom-primary dark:bg-[var(--color-bg-tertiary)] dark:text-custom-secondary shrink-0">
                     {basketTypeBadgeLabel}
                 </span>
             </div>
@@ -181,7 +172,7 @@ export default function MyBasketCard({
                     variant="primary"
                     size="sm"
                     onClick={() => onViewDetails(basket)}
-                    className={`${API_SECONDARY_PRIMARY_BUTTON_CLASS} focus:ring-[var(--color-api-second)]`}
+                    className={PRIMARY_ACTION_BUTTON_CLASS}
                 >
                     {t("baskets.viewBasketDetails")}
                 </Button>
@@ -192,11 +183,11 @@ export default function MyBasketCard({
                     onClick={() => onEditItems(basket)}
                     className={SECONDARY_BUTTON_CLASS}
                 >
-                    <HiPencil className="w-4 h-4 shrink-0" />
+                    <Pencil className="w-4 h-4 shrink-0" />
                     {t("baskets.editItems")}
                 </Button>
 
-                {shouldShowScheduleButton ? (
+                {isScheduledBasket ? (
                     <Button
                         type="button"
                         variant="outline"
@@ -204,7 +195,7 @@ export default function MyBasketCard({
                         onClick={() => onViewDetails(basket)}
                         className={SECONDARY_BUTTON_CLASS}
                     >
-                        <HiCalendar className="w-4 h-4 shrink-0" />
+                        <Calendar className="w-4 h-4 shrink-0" />
                         {scheduleButtonLabel}
                     </Button>
                 ) : null}
@@ -223,13 +214,13 @@ export default function MyBasketCard({
                     </Button>
                 ) : null}
 
-                {shouldShowDeleteButton ? (
+                {isScheduledBasket ? (
                     <button
                         type="button"
                         onClick={() => onDelete(basket)}
                         className="flex items-center gap-1.5 ms-auto text-sm text-[var(--color-ui-red-500)] hover:text-[var(--color-ui-red-600)] dark:text-[var(--color-ui-red-400)] dark:hover:text-[var(--color-ui-red-400)]"
                     >
-                        <HiTrash className="w-4 h-4 shrink-0" />
+                        <Trash2 className="w-4 h-4 shrink-0" />
                         {t("baskets.deleteBasket")}
                     </button>
                 ) : null}

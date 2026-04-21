@@ -31,7 +31,10 @@ export function getBasketPriceDisplay(basket: MyBasketListItem) {
     };
 }
 
-export function getDiscountBadgeText(basket: MyBasketListItem, t: TFunction): string {
+export function getDiscountBadgeText(
+    basket: MyBasketListItem,
+    t: TFunction,
+): string {
     if (basket.discount_type === "percentage") {
         const numericValue = Number.parseFloat(basket.discount_value);
         const roundedPercentage = Number.isFinite(numericValue)

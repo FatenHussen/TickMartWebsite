@@ -33,7 +33,7 @@ export function PointsBalanceCard({
         <SectionShell
             className={cn(
                 historySectionShellClass,
-                "relative min-h-[260px] overflow-hidden sm:min-h-[280px]",
+                "relative min-h-[260px] overflow-hidden border border-[var(--color-ui-orange-300)]/40 sm:min-h-[280px]",
             )}
         >
             <div
@@ -44,8 +44,8 @@ export function PointsBalanceCard({
             <div
                 className={cn(
                     "pointer-events-none absolute inset-0",
-                    "bg-gradient-to-br from-[var(--color-bg-card)]/90 via-[var(--color-bg-card)]/78 to-primary-light/[0.22]",
-                    "dark:from-[var(--color-bg-card)]/92 dark:via-[var(--color-bg-card)]/82 dark:to-primary-light/15",
+                    "bg-gradient-to-br from-[var(--color-ui-orange-50)]/92 via-[var(--color-ui-orange-100)]/88 to-[var(--color-bg-card)]/90",
+                    "dark:from-[color-mix(in_srgb,var(--color-ui-orange-900)_28%,transparent)] dark:via-[color-mix(in_srgb,var(--color-ui-orange-900)_20%,transparent)] dark:to-[var(--color-bg-card)]/92",
                 )}
                 aria-hidden
             />
@@ -101,9 +101,9 @@ export function PointsBalanceCard({
 
                         {nextRewardThreshold != null && (
                             <div className="mt-6 space-y-2">
-                                <div className="h-2.5 w-full overflow-hidden rounded-full bg-custom-muted">
+                                <div className="h-3 w-full overflow-hidden rounded-full bg-[var(--color-ui-orange-200)]/70 dark:bg-[color-mix(in_srgb,var(--color-ui-orange-900)_35%,transparent)]">
                                     <div
-                                        className="h-full rounded-full bg-gradient-to-r from-primary-light to-[var(--color-ui-orange-500)] transition-[width] duration-500 ease-out"
+                                        className="h-full rounded-full bg-gradient-to-r from-[var(--color-ui-orange-500)] to-[var(--color-ui-orange-600)] transition-[width] duration-500 ease-out"
                                         style={{ width: `${Math.min(progressPercentage, 100)}%` }}
                                     />
                                 </div>

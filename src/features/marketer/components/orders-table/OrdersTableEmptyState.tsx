@@ -1,4 +1,4 @@
-import { HiInbox } from "react-icons/hi";
+import { Inbox } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 export function OrdersTableEmptyState() {
@@ -12,7 +12,7 @@ export function OrdersTableEmptyState() {
                         className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-[color-mix(in_srgb,var(--color-api-second)_14%,var(--color-bg-muted))] text-[var(--color-api-second)] shadow-inner ring-4 ring-[color-mix(in_srgb,var(--color-api-second)_10%,transparent)]"
                         aria-hidden
                     >
-                        <HiInbox className="h-8 w-8 opacity-90" />
+                        <Inbox className="h-8 w-8 opacity-90" />
                     </div>
                     <p className="text-base font-semibold text-text-primary">
                         {t("marketer.dashboard.noOrdersTitle", "Nothing here yet")}

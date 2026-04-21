@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { HiStar } from "react-icons/hi";
+import { Star } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 
 export default function MyReviewsPageHeader() {
@@ -30,7 +30,7 @@ export default function MyReviewsPageHeader() {
                             "bg-gradient-to-br from-[var(--color-api-second)] to-[var(--color-api-second-hover)]",
                         )}
                     >
-                        <HiStar className="h-6 w-6 text-white" aria-hidden />
+                        <Star className="h-6 w-6 text-white" aria-hidden />
                     </div>
                     <div className="min-w-0">
                         <h1 className="text-xl font-bold leading-tight tracking-tight text-custom-primary sm:text-2xl">

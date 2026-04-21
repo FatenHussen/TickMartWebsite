@@ -1,5 +1,5 @@
 import { useTranslation } from"react-i18next";
-import { HiInformationCircle } from"react-icons/hi";
+import { Info } from "lucide-react";
 import StarRating from"./StarRating";
 import type { RecipeReview } from"../types";
 
@@ -28,7 +28,7 @@ export default function RecipeReviewCard({
  className="w-full h-full object-cover"
  />
  ) : (
- <HiInformationCircle className="w-6 h-6 text-orange-600 dark:text-orange-400"/>
+ <Info className="w-6 h-6 text-orange-600 dark:text-orange-400" aria-hidden />
  )}
  </div>
 
@@ -49,11 +49,8 @@ export default function RecipeReviewCard({
  </div>
 
  {/* Rating */}
- <div className="flex items-center gap-2 mt-3">
- <StarRating rating={review.rating} size="sm"/>
- <span className="text-sm font-bold text-custom-primary">
- {review.rating.toFixed(1)}
- </span>
+ <div className="mt-3">
+ <StarRating rating={review.rating} size="sm" variant="brand"/>
  </div>
 
  {/* Review Text */}

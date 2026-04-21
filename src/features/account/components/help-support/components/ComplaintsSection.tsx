@@ -1,4 +1,4 @@
-import { HiClipboardList, HiPlus } from "react-icons/hi";
+import { ClipboardList, Plus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { Complaint, ComplaintStatus, ComplaintType } from "@/features/account/types";
 import { HELP_SUPPORT_PRIMARY_ACTION_CLASS } from "../ctaClasses";
@@ -42,7 +42,7 @@ export function ComplaintsSection({
     return (
         <HelpSupportSectionCard>
             <HelpSupportSectionHeader
-                icon={<HiClipboardList className="h-7 w-7 text-[var(--color-api-second)]" aria-hidden />}
+                icon={<ClipboardList className="h-7 w-7 text-[var(--color-api-second)]" aria-hidden />}
                 title={t("complaints.title")}
                 subtitle={t("complaints.trackManage")}
                 action={
@@ -51,7 +51,7 @@ export function ComplaintsSection({
                         onClick={onToggleComplaintForm}
                         className={HELP_SUPPORT_PRIMARY_ACTION_CLASS}
                     >
-                        <HiPlus className="w-5 h-5" />
+                        <Plus className="h-5 w-5" aria-hidden />
                         {t("complaints.newComplaint")}
                     </button>
                 }

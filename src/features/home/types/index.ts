@@ -200,6 +200,9 @@ export interface SectionAction {
  page_slug: string | null;
 }
 
+/** Home section card shape — drives Swiper density + card aspect */
+export type SectionCardVariant = "horizontal" | "vertical" | "square";
+
 export interface Section {
  id: number;
  name: string;
@@ -209,6 +212,10 @@ export interface Section {
  display_type_id: number;
  background_color: string | null;
  background_crad_color: string | null;
+ /** Preferred spelling; falls back to `background_crad_color` in helpers */
+ background_card_color?: string | null;
+ /** API `variant` — card layout for product/brand/etc. sliders */
+ variant?: SectionCardVariant | null;
  see_more: SectionSeeMore | null;
  action: SectionAction;
  items: SectionItem[];

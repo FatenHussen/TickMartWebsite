@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { HiFilter, HiSortDescending } from "react-icons/hi";
+import { ArrowDownWideNarrow, Filter } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import type { MyReviewsRatingFilter, MyReviewsSortBy } from "../constants";
 import OverlaySelectButton from "./OverlaySelectButton";
@@ -67,7 +67,7 @@ export default function MyReviewsToolbar({
                         options={sortOptionsForSelect}
                         trigger={
                             <span className="flex min-w-0 items-center gap-2 text-sm">
-                                <HiSortDescending
+                                <ArrowDownWideNarrow
                                     className="h-4 w-4 shrink-0 text-[var(--color-api-second)]"
                                     aria-hidden
                                 />
@@ -91,7 +91,7 @@ export default function MyReviewsToolbar({
                         options={ratingOptionsForSelect}
                         trigger={
                             <span className="flex min-w-0 items-center gap-2 text-sm">
-                                <HiFilter
+                                <Filter
                                     className="h-4 w-4 shrink-0 text-[var(--color-api-second)]"
                                     aria-hidden
                                 />

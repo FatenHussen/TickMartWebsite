@@ -1,4 +1,4 @@
-import { HiChevronDown, HiChevronUp } from "react-icons/hi";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import type { FaqItem } from "@/features/account/api/faqsApi";
 import { HELP_FOCUS_RING } from "../focusRingClasses";
@@ -70,9 +70,9 @@ export function FaqAccordionList({
                         >
                             <span className="font-semibold text-custom-primary leading-snug">{faq.question}</span>
                             {isOpen ? (
-                                <HiChevronUp className="w-5 h-5 shrink-0 text-primary" />
+                                <ChevronUp className="w-5 h-5 shrink-0 text-primary" aria-hidden />
                             ) : (
-                                <HiChevronDown className="w-5 h-5 shrink-0 text-custom-secondary group-hover:text-primary/80" />
+                                <ChevronDown className="w-5 h-5 shrink-0 text-custom-secondary group-hover:text-primary/80" aria-hidden />
                             )}
                         </button>
                         {isOpen && (

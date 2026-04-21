@@ -1,4 +1,4 @@
-import { HiGift, HiX } from "react-icons/hi";
+import { Gift, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { API_SECOND_CTA_WIDE_CLASS } from "@/features/marketer/constants/apiSecondClasses";
 
@@ -38,12 +38,12 @@ export function BecomeMarketerSuccessModal({
                         onClick={onDismiss}
                         className="absolute end-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-custom-muted text-custom-secondary transition-colors hover:bg-custom-hover"
                     >
-                        <HiX className="h-5 w-5" />
+                        <X className="h-5 w-5" />
                     </button>
 
                     <div className="mb-5 flex justify-center pt-2">
                         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-warning-bg dark:bg-warning-bg/40">
-                            <HiGift className="h-9 w-9 text-warning-dark" />
+                            <Gift className="h-9 w-9 text-warning-dark" />
                         </div>
                     </div>
 

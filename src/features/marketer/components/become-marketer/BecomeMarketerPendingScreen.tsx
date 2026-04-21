@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { HiClock } from "react-icons/hi";
+import { Clock } from "lucide-react";
 import { API_SECOND_CTA_WIDE_CLASS } from "@/features/marketer/constants/apiSecondClasses";
 
 interface BecomeMarketerPendingScreenProps {
@@ -19,7 +19,7 @@ export function BecomeMarketerPendingScreen({ isRTL, homePath }: BecomeMarketerP
             <div className="w-full max-w-md rounded-2xl bg-custom-card p-8 text-center shadow-xl">
                 <div className="mb-6 flex justify-center">
                     <div className="flex h-20 w-20 items-center justify-center rounded-full bg-warning-bg dark:bg-warning-bg/35">
-                        <HiClock className="h-12 w-12 text-warning-dark" />
+                        <Clock className="h-12 w-12 text-warning-dark" />
                     </div>
                 </div>
                 <h2 className="mb-3 text-2xl font-bold text-custom-primary">

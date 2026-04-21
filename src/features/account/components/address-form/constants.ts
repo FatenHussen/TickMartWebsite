@@ -1,12 +1,8 @@
 import type { CSSProperties } from "react";
 
-/** Default map pin (Damascus area) — matches original form defaults */
 export const DEFAULT_ADDRESS_LATITUDE = 33.5138;
 export const DEFAULT_ADDRESS_LONGITUDE = 36.2765;
 
-/**
- * Layered hero background (API theme variables). Kept in one place for reuse / tweaks.
- */
 export const ADDRESS_FORM_HERO_BACKDROP_STYLE: CSSProperties = {
     opacity: 0.97,
     background: `

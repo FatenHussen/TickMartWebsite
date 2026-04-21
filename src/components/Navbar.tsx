@@ -37,6 +37,12 @@ import { useTheme } from "@/context/ThemeContext";
 import { NavbarSearch } from "@/features/search";
 import AffiliatePackagesPopup from "@/components/AffiliatePackagesPopup";
 import { usePackages } from "@/features/account/hooks/usePackages";
+import { cn } from "@/shared/lib/utils";
+
+/** Keep in sync with `.page-container` in `index.css`. */
+const HEADER_MAX = "page-container";
+const ICON_CIRCLE =
+    "flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/90 bg-white text-secondary shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-[background-color,box-shadow] hover:bg-white hover:shadow-[0_2px_6px_rgba(0,0,0,0.1)] dark:text-primary-dark";
 
 export default function Navbar() {
     const { isRTL, language, toggleLanguage } = useLanguage();
@@ -61,6 +67,8 @@ export default function Navbar() {
     const profileButtonRef = useRef<HTMLButtonElement>(null);
     const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left?: number; right?: number } | null>(null);
     const [packagesPopupOpen, setPackagesPopupOpen] = useState(false);
+    const [categoriesNavOpen, setCategoriesNavOpen] = useState(false);
+    const categoriesNavRef = useRef<HTMLDivElement>(null);
 
     const { data: packages = [], isLoading: packagesLoading } = usePackages(authenticated);
 
@@ -112,9 +120,10 @@ export default function Navbar() {
         return parts.join(",") || selectedAddress.label;
     }, [selectedAddress, language]);
 
-    // Close mobile menu when route changes
+    // Close mobile menu and categories nav when route changes
     useEffect(() => {
         setIsMobileMenuOpen(false);
+        setCategoriesNavOpen(false);
     }, [location.pathname]);
 
     // Close account dropdown when clicking outside
@@ -162,6 +171,16 @@ export default function Navbar() {
         if (closeDropdownTimeoutRef.current) clearTimeout(closeDropdownTimeoutRef.current);
     }, []);
 
+    useEffect(() => {
+        if (!categoriesNavOpen) return;
+        const handle = (e: MouseEvent) => {
+            if (categoriesNavRef.current?.contains(e.target as Node)) return;
+            setCategoriesNavOpen(false);
+        };
+        document.addEventListener("click", handle);
+        return () => document.removeEventListener("click", handle);
+    }, [categoriesNavOpen]);
+
     const isActive = (path: string) => {
         if (path === "/" || path === "/home") {
             return location.pathname === "/" || location.pathname === "/home";
@@ -169,7 +188,14 @@ export default function Navbar() {
         return location.pathname.startsWith(path);
     };
 
-    // Main navigation items: Home, Categories (no dropdown), Brands, All shops, My baskets, Points & rewards, Help & support
+    const navLinkClass = (active: boolean) =>
+        cn(
+            "inline-flex items-center border-b-2 pb-0.5 text-sm font-medium transition-colors whitespace-nowrap shrink-0 px-0.5",
+            active
+                ? "border-primary text-primary"
+                : "border-transparent text-text-secondary hover:text-primary",
+        );
+
     const navItems = [
         { path: paths.client.home, label: t("home.home") || "Home" },
         { path: paths.client.categories, label: t("categories.mainCategories") || "Main Categories" },
@@ -179,6 +205,7 @@ export default function Navbar() {
         { path: paths.account.pointsRewards, label: t("account.menu.pointsRewards") || "Points & rewards" },
         { path: paths.account.helpSupport, label: t("account.menu.helpSupport") || "Help & support" },
     ];
+    const navItemsAfterCategories = navItems.slice(2);
 
     // Account dropdown items with icons (main sections for creative dropdown)
     const baseAccountItems = [
@@ -213,47 +240,44 @@ export default function Navbar() {
     ];
 
     return (
-        <div className="bg-custom-card" dir={isRTL ? "rtl" : "ltr"}>
-            {/* Top Header Section */}
-            <div className="bg-custom-card border-b border-custom-primary">
-                <div className="page-container overflow-x-hidden">
-                    <div className="flex items-center justify-between py-3 gap-2 sm:gap-3 lg:gap-4 min-w-0">
-                        {/* Logo */}
-                        <Link
-                            to={paths.client.home}
-                            className="flex items-center gap-2 shrink-0"
-                            aria-label="Tikmart Home"
-                        >
-                            {!logoError ? (
-                                <img
-                                    src="/images/shared/logo.png"
-                                    alt="Tikmart"
-                                    className="h-9 md:h-22 w-auto max-w-[min(260px,90vw)] object-contain"
-                                    onError={() => setLogoError(true)}
-                                />
-                            ) : (
-                                <div className="w-9 h-9 md:w-10 md:h-10 bg-primary-light rounded-lg flex items-center justify-center">
-                                    <span className="text-white text-lg md:text-xl font-bold">
-                                        ∞
-                                    </span>
-                                </div>
-                            )}
-                        </Link>
+        <div className="w-full bg-custom-card" dir={isRTL ? "rtl" : "ltr"}>
+            <div className="w-full bg-gradient-navbar">
+                <div className={`${HEADER_MAX} overflow-x-hidden`}>
+                    <div className="flex min-h-[60px] min-w-0 items-center gap-3 py-3 sm:min-h-[64px] sm:gap-4 md:min-h-[72px] lg:gap-6 xl:gap-8 2xl:gap-10">
+                        <div className="flex min-w-0 shrink-0 items-center gap-5 lg:gap-6 xl:gap-8">
+                            <Link
+                                to={paths.client.home}
+                                className="flex shrink-0 items-center gap-2"
+                                aria-label="Tikmart Home"
+                            >
+                                {!logoError ? (
+                                    <img
+                                        src="/images/shared/logo.png"
+                                        alt="Tikmart"
+                                        className="h-14 w-auto max-w-[min(480px,56vw)] object-contain sm:h-[3.75rem] md:h-20 lg:h-24 xl:h-28 md:max-w-[min(500px,92vw)]"
+                                        onError={() => setLogoError(true)}
+                                    />
+                                ) : (
+                                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-primary-light sm:h-[3.75rem] md:h-20">
+                                        <span className="text-xl font-bold text-white">∞</span>
+                                    </div>
+                                )}
+                            </Link>
 
                         {/* Delivery Address - Hidden on mobile, shown on lg+ */}
-                        <div className="hidden lg:flex flex-1 min-w-0 max-w-[280px] xl:max-w-md relative">
+                        <div className="relative hidden max-w-[260px] min-w-0 shrink-0 lg:flex xl:max-w-[300px] 2xl:max-w-[320px]">
                             {authenticated ? (
                                 <button
                                     type="button"
                                     onClick={() => setShowLocationDropdown(!showLocationDropdown)}
-                                    className="flex items-center gap-2 px-4 py-2 bg-custom-card rounded-lg hover:bg-custom-light transition-colors w-full text-left"
+                                    className="flex w-full items-center gap-2 rounded-lg px-1 py-0.5 text-start transition-colors hover:bg-white/15"
                                 >
-                                    <HiLocationMarker className="text-primary-light w-5 h-5 shrink-0" />
-                                    <div className="flex flex-col items-start flex-1 min-w-0">
-                                        <span className="text-xs text-gray-light">
+                                    <HiLocationMarker className="h-5 w-5 shrink-0 text-black" />
+                                    <div className="flex min-w-0 flex-1 flex-col items-start">
+                                        <span className="text-[11px] font-normal leading-tight text-black/85">
                                             {t("navbar.deliveringTo")}
                                         </span>
-                                        <span className="text-sm font-medium text-custom-primary truncate w-full">
+                                        <span className="w-full truncate text-sm font-semibold text-black">
                                             {addressesLoading
                                                 ? t("common.loading")
                                                 : deliveryAddressDisplay ||
@@ -261,19 +285,19 @@ export default function Navbar() {
                                                 "Add address"}
                                         </span>
                                     </div>
-                                    <HiChevronDown className="text-gray-light w-4 h-4 shrink-0" />
+                                    <HiChevronDown className="h-4 w-4 shrink-0 text-black/60" />
                                 </button>
                             ) : (
                                 <Link
                                     to={paths.auth.jwt.signIn}
-                                    className="flex items-center gap-2 px-4 py-2 bg-custom-card rounded-lg hover:bg-custom-light transition-colors w-full text-left"
+                                    className="flex w-full items-center gap-2 rounded-lg px-1 py-0.5 text-start transition-colors hover:bg-white/15"
                                 >
-                                    <HiLocationMarker className="text-primary-light w-5 h-5 shrink-0" />
-                                    <div className="flex flex-col items-start flex-1 min-w-0">
-                                        <span className="text-xs text-gray-light">
+                                    <HiLocationMarker className="h-5 w-5 shrink-0 text-black" />
+                                    <div className="flex min-w-0 flex-1 flex-col items-start">
+                                        <span className="text-[11px] font-normal leading-tight text-black/85">
                                             {t("navbar.deliveringTo")}
                                         </span>
-                                        <span className="text-sm font-medium text-custom-primary truncate w-full">
+                                        <span className="w-full truncate text-sm font-semibold text-black">
                                             {t("common.login") || "Login"}
                                         </span>
                                     </div>
@@ -325,25 +349,25 @@ export default function Navbar() {
                                 </div>
                             )}
                         </div>
-
-                        {/* Search Bar - Full on lg+, icon only on smaller screens */}
-                        <div className="hidden lg:flex flex-1 min-w-0 max-w-md xl:max-w-2xl">
-                            <NavbarSearch className="flex-1 min-w-0 w-full max-w-full" />
                         </div>
 
-                        {/* Mobile Search Icon */}
+                        <div className="hidden min-w-0 flex-1 items-center justify-center px-2 lg:flex xl:px-5 2xl:px-8">
+                            <div className="relative min-w-0 w-full max-w-[min(820px,100%)]">
+                                <NavbarSearch className="w-full" />
+                            </div>
+                        </div>
+
                         <button
                             type="button"
-                            className="lg:hidden p-2 hover:bg-custom-tertiary rounded-lg transition-colors shrink-0"
+                            className={cn(ICON_CIRCLE, "lg:hidden shrink-0")}
                             aria-label={t("home.searchProducts") || "Search"}
                             onClick={() => setIsMobileMenuOpen(true)}
                         >
-                            <HiSearch className="w-6 h-6 text-custom-primary" />
+                            <HiSearch className="h-6 w-6 text-secondary dark:text-primary-dark" />
                         </button>
 
-                        {/* Right Icons */}
-                        <div className="flex items-center gap-1.5 sm:gap-2 lg:gap-3 shrink-0">
-                            <div className="hidden lg:flex items-center gap-3 xl:gap-5 2xl:gap-6">
+                        <div className="flex shrink-0 items-center gap-3 sm:gap-3 lg:gap-3">
+                            <div className="hidden items-center gap-3 lg:flex">
                                 {desktopShortcutItems.map((item) => {
                                     const Icon = item.icon;
                                     const isCart = item.path === paths.client.cart;
@@ -351,43 +375,36 @@ export default function Navbar() {
                                         <Link
                                             key={item.label}
                                             to={item.path}
-                                            className="group flex min-w-[52px] xl:min-w-[60px] flex-col items-center gap-1 text-center text-custom-primary transition-colors hover:text-black"
+                                            className={cn(ICON_CIRCLE, "relative")}
                                             aria-label={item.label}
                                         >
-                                            <span className="relative flex h-7 xl:h-8 items-center justify-center">
-                                                <Icon className="h-5 w-5 xl:h-6 xl:w-6 text-[#2B2B2B] transition-colors group-hover:text-black" />
-                                                {isCart && cartCount > 0 && (
-                                                    <span className="absolute -top-2.5 -right-3 bg-[#FFD426] text-custom-primary text-[10px] xl:text-xs font-bold rounded-full min-w-[24px] h-[24px] xl:min-w-[28px] xl:h-[28px] flex items-center justify-center px-1 border-2 border-white">
-                                                        {cartCount > 99 ? "99+" : cartCount}
-                                                    </span>
-                                                )}
-                                            </span>
-                                            <span className="text-[11px] xl:text-[13px] font-medium leading-none text-[#2B2B2B] whitespace-nowrap">
-                                                {item.label}
-                                            </span>
+                                            <Icon className="h-5 w-5" />
+                                            {isCart && cartCount > 0 && (
+                                                <span className="absolute -top-1 -right-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-white bg-primary-light px-1 text-[10px] font-bold text-white">
+                                                    {cartCount > 99 ? "99+" : cartCount}
+                                                </span>
+                                            )}
                                         </Link>
                                     );
                                 })}
                             </div>
-                            {/* Cart - Always visible on smaller screens */}
                             <Link
                                 to={paths.client.cart}
-                                className="relative lg:hidden p-2 hover:bg-custom-light rounded-full transition-colors"
+                                className={cn(ICON_CIRCLE, "relative lg:hidden")}
                             >
-                                <HiShoppingCart className="w-6 h-6 text-primary-light" />
+                                <HiShoppingCart className="h-6 w-6 text-secondary dark:text-primary-dark" />
                                 {cartCount > 0 && (
-                                    <span className="absolute -top-0.5 -right-0.5 bg-amber-400 text-custom-primary text-xs font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
+                                    <span className="absolute -top-0.5 -right-0.5 flex min-w-[18px] items-center justify-center rounded-full bg-amber-400 px-1 text-xs font-bold text-custom-primary">
                                         {cartCount > 99 ? "99+" : cartCount}
                                     </span>
                                 )}
                             </Link>
-                            {/* Login - Hidden on mobile if authenticated, shown if not */}
                             {!authenticated && (
                                 <Link
                                     to={paths.auth.jwt.signIn}
-                                    className="hidden sm:flex items-center gap-2 px-3 lg:px-4 py-2 bg-primary-light text-white rounded-lg font-medium hover:bg-primary transition-colors text-sm lg:text-base"
+                                    className="hidden items-center gap-2 rounded-lg bg-white px-3 py-2 text-sm font-semibold text-primary-light shadow-sm transition-colors hover:bg-white/90 sm:flex lg:px-4 lg:text-base"
                                 >
-                                    <HiLogin className="w-5 h-5 shrink-0" />
+                                    <HiLogin className="h-5 w-5 shrink-0" />
                                     <span className="hidden xl:inline">
                                         {t("common.login") || "Login"}
                                     </span>
@@ -420,21 +437,22 @@ export default function Navbar() {
                                             e.stopPropagation();
                                             setShowAccountDropdown((prev) => !prev);
                                         }}
-                                        className={`flex items-center gap-2 rounded-full focus:outline-none focus:ring-2 focus:ring-primary-light focus:ring-offset-2 dark:focus:ring-offset-gray-900 transition-all ${showAccountDropdown ? "ring-2 ring-primary-light ring-offset-2 dark:ring-offset-gray-900" : ""
-                                            }`}
+                                        className={cn(
+                                            "rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-primary-light focus:ring-offset-2 dark:focus:ring-offset-gray-900",
+                                            showAccountDropdown && "ring-2 ring-primary-light ring-offset-2 dark:ring-offset-gray-900",
+                                        )}
                                     >
-                                        {/* {profile?.image?.trim() ? (
+                                        {profile?.image?.trim() ? (
                                             <img
                                                 src={profile.image}
                                                 alt=""
-                                                className="w-9 h-9 rounded-full object-cover border-2 border-custom-primary hover:border-primary-light transition-colors"
+                                                className="h-10 w-10 rounded-full border-2 border-primary-light/40 object-cover xl:h-11 xl:w-11"
                                             />
-                                        ) : ( */}
-                                            <div className="w-10 h-10 xl:w-11 xl:h-11 rounded-full bg-primary-light/20 flex items-center justify-center text-primary-light font-semibold text-sm border-2 border-primary-light/30 overflow-hidden">
+                                        ) : (
+                                            <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border-2 border-primary-light/40 bg-white/90 text-sm font-semibold text-primary-light xl:h-11 xl:w-11">
                                                 {profileInitial}
                                             </div>
-                                        {/* )} */}
-                                        <HiChevronDown className="w-5 h-5 text-[#2B2B2B]" />
+                                        )}
                                     </button>
                                     {showAccountDropdown && dropdownPosition && createPortal(
                                         <div
@@ -486,11 +504,10 @@ export default function Navbar() {
                                     )}
                                 </div>
                             )}
-                            {/* Theme toggle - Dark/Light */}
                             <button
                                 type="button"
                                 onClick={toggleTheme}
-                                className="hidden sm:flex p-2 rounded-lg hover:bg-custom-light transition-colors text-custom-primary"
+                                className={cn(ICON_CIRCLE, "hidden sm:flex")}
                                 aria-label={
                                     theme === "dark"
                                         ? t("navbar.lightMode") || "Light mode"
@@ -498,52 +515,92 @@ export default function Navbar() {
                                 }
                             >
                                 {theme === "dark" ? (
-                                    <HiSun className="w-5 h-5 text-primary-light" />
+                                    <HiSun className="h-5 w-5 text-secondary dark:text-primary-dark" />
                                 ) : (
-                                    <HiMoon className="w-5 h-5 text-primary-light" />
+                                    <HiMoon className="h-5 w-5 text-secondary dark:text-primary-dark" />
                                 )}
                             </button>
                             <button
                                 type="button"
                                 onClick={toggleLanguage}
-                                className="hidden sm:flex items-center gap-1.5 px-2 py-1.5 rounded-lg hover:bg-custom-light transition-colors text-custom-primary"
+                                className={cn(
+                                    ICON_CIRCLE,
+                                    "hidden h-auto min-h-10 w-10 flex-col justify-center gap-0.5 py-1 sm:flex",
+                                )}
                                 aria-label={t("navbar.language") || "Language"}
                             >
-                                <HiGlobe className="w-5 h-5 text-primary-light" />
-                                <span className="text-sm font-medium">
+                                <HiGlobe className="h-[17px] w-[17px] shrink-0 text-secondary dark:text-primary-dark" />
+                                <span className="text-[9px] font-bold leading-tight tracking-tight text-secondary dark:text-primary-dark">
                                     {language === "en" ? "AR" : "EN"}
                                 </span>
                             </button>
-                            {/* Mobile Menu Button (hidden when nav bar is visible) */}
                             <button
+                                type="button"
                                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                                className="lg:hidden p-2 hover:bg-custom-light rounded-lg transition-colors"
+                                className={cn(ICON_CIRCLE, "lg:hidden")}
                                 aria-label={t("navbar.menu") || "Menu"}
                             >
                                 {isMobileMenuOpen ? (
-                                    <HiX className="w-6 h-6 text-custom-primary" />
+                                    <HiX className="h-6 w-6 text-secondary dark:text-primary-dark" />
                                 ) : (
-                                    <HiMenu className="w-6 h-6 text-custom-primary" />
+                                    <HiMenu className="h-6 w-6 text-secondary dark:text-primary-dark" />
                                 )}
                             </button>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            {/* Navigation Bar - Main sections only (lg+), full responsive with horizontal scroll when needed */}
-            <div className="hidden lg:block bg-custom-card border-b-2 border-primary-light/30">
-                <div className="page-container overflow-x-hidden">
-                    <div className="flex items-center justify-between py-3 gap-2 lg:gap-4 min-w-0">
-                        <div className="flex items-center gap-2 xl:gap-4 2xl:gap-6 flex-nowrap overflow-x-auto min-w-0 scrollbar-custom">
-                            {navItems.map((item) => (
+                <hr
+                    className="m-0 hidden w-full border-0 border-t-2 border-primary/45 dark:border-primary/40 lg:block"
+                    aria-hidden
+                />
+
+                <div className={`${HEADER_MAX} overflow-x-hidden`}>
+                    <div className="hidden min-w-0 items-center justify-between gap-4 py-3 lg:flex">
+                        <nav
+                            className="scrollbar-custom flex min-w-0 flex-nowrap items-center gap-3 overflow-x-auto pb-0.5 sm:gap-4 xl:gap-6"
+                            aria-label="Main"
+                        >
+                            <Link
+                                to={paths.client.home}
+                                className={navLinkClass(isActive(paths.client.home))}
+                            >
+                                {t("home.home") || "Home"}
+                            </Link>
+                            <div className="relative shrink-0" ref={categoriesNavRef}>
+                                <button
+                                    type="button"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setCategoriesNavOpen((o) => !o);
+                                    }}
+                                    className={cn(
+                                        navLinkClass(isActive(paths.client.categories)),
+                                        "items-center gap-0.5",
+                                    )}
+                                    aria-expanded={categoriesNavOpen}
+                                    aria-haspopup="true"
+                                >
+                                    {t("categories.mainCategories") || "Categories"}
+                                    <HiChevronDown className="h-4 w-4 shrink-0" />
+                                </button>
+                                {categoriesNavOpen && (
+                                    <div className="absolute start-0 top-full z-50 mt-1 min-w-[200px] rounded-lg border border-gray-bold bg-custom-card py-1 shadow-lg">
+                                        <Link
+                                            to={paths.client.categories}
+                                            className="block px-4 py-2 text-sm text-custom-primary hover:bg-primary-light/10"
+                                            onClick={() => setCategoriesNavOpen(false)}
+                                        >
+                                            {t("categories.mainCategories") || "Categories"}
+                                        </Link>
+                                    </div>
+                                )}
+                            </div>
+                            {navItemsAfterCategories.map((item) => (
                                 <Link
                                     key={item.path}
                                     to={item.path}
-                                    className={`px-2 lg:px-3 py-2 rounded-lg font-medium transition-colors text-sm xl:text-base whitespace-nowrap shrink-0 ${isActive(item.path)
-                                        ? "text-primary-light underline decoration-2 underline-offset-4"
-                                        : "text-custom-primary hover:text-primary-light"
-                                        }`}
+                                    className={navLinkClass(isActive(item.path))}
                                 >
                                     {item.label}
                                 </Link>
@@ -551,17 +608,17 @@ export default function Navbar() {
                             <button
                                 type="button"
                                 onClick={() => setPackagesPopupOpen(true)}
-                                className="px-2 lg:px-3 py-2 rounded-lg font-medium transition-colors text-sm xl:text-base whitespace-nowrap shrink-0 text-custom-primary hover:text-primary-light"
+                                className={navLinkClass(false)}
                             >
                                 {t("packagesPopup.navTab", "Subscription packages")}
                             </button>
-                        </div>
+                        </nav>
                         {(showBecomeMarketer || isApprovedMarketer) && (
-                            <div className="flex items-center gap-2 xl:gap-3 shrink-0">
+                            <div className="flex shrink-0 items-center gap-2 sm:gap-3">
                                 {showBecomeMarketer && (
                                     <Link
                                         to={paths.becomeMarketer}
-                                        className="px-4 lg:px-5 xl:px-6 py-2 lg:py-2.5 bg-primary-light text-white rounded-full font-medium hover:bg-primary-light/90 hover:opacity-95 transition-all text-xs lg:text-sm xl:text-base whitespace-nowrap shadow-sm"
+                                        className="inline-flex items-center justify-center rounded-full bg-primary px-5 py-2 text-sm font-bold text-white shadow-sm transition-opacity hover:opacity-95"
                                     >
                                         {t("navbar.becomeMarketer")}
                                     </Link>
@@ -569,7 +626,7 @@ export default function Navbar() {
                                 {isApprovedMarketer && (
                                     <Link
                                         to={paths.marketerDashboard}
-                                        className="px-4 lg:px-5 xl:px-6 py-2 lg:py-2.5 bg-primary-light text-white rounded-full font-medium hover:bg-primary-light/90 hover:opacity-95 transition-all text-xs lg:text-sm xl:text-base whitespace-nowrap shadow-sm"
+                                        className="inline-flex items-center justify-center rounded-full bg-primary px-5 py-2 text-sm font-bold text-white shadow-sm transition-opacity hover:opacity-95"
                                     >
                                         {t("account.menu.marketerDashboard")}
                                     </Link>
@@ -578,6 +635,11 @@ export default function Navbar() {
                         )}
                     </div>
                 </div>
+
+                <hr
+                    className="m-0 w-full border-0 border-b-2 border-primary/50 dark:border-primary/45"
+                    aria-hidden
+                />
             </div>
 
             {/* Mobile Menu */}

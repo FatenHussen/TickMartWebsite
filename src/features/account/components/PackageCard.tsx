@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { HiCheck } from "react-icons/hi";
+import { Check } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import type { PackageApi } from "../types";
 import {
@@ -46,19 +46,21 @@ export default function PackageCard({
       className={cn(
         "relative flex h-full min-w-0 w-full flex-col overflow-hidden rounded-xl",
         isCurrentPlan
-          ? "shadow-[0_8px_10px_rgba(1,105,194,0.2)]"
-          : "border border-[var(--color-border-primary)] shadow-[0_1px_3px_rgba(0,0,0,0.06)]",
+          ? ""
+          : "border border-border-primary shadow-[var(--shadow-card-neutral)]",
       )}
       style={
         isCurrentPlan
           ? {
               background:
-                "linear-gradient(145deg, #5BA3E5 0%, #3B82C4 35%, #2569A8 65%, #174A7A 100%)",
-              border: "2px solid transparent",
+                "linear-gradient(145deg, color-mix(in srgb, var(--color-main) 22%, white) 0%, color-mix(in srgb, var(--color-main) 12%, var(--color-bg-card)) 52%, color-mix(in srgb, var(--color-main) 28%, white) 100%)",
+              border: "1px solid color-mix(in srgb, var(--color-main) 45%, transparent)",
+              boxShadow:
+                "0 18px 38px -14px color-mix(in srgb, var(--color-main) 48%, transparent), 0 8px 20px -12px color-mix(in srgb, var(--color-main) 36%, transparent)",
             }
           : {
               background:
-                "linear-gradient(180deg, #EEF8FB 0%, #E0F2F7 50%, #D4EBF3 100%)",
+                "linear-gradient(180deg, var(--color-bg-accent-soft) 0%, var(--color-bg-surface) 100%)",
             }
       }
     >
@@ -127,15 +129,15 @@ export default function PackageCard({
         {isCurrentPlan ? (
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0 flex-1 text-start">
-              <h3 className="text-lg font-bold leading-tight text-white">
+              <h3 className="text-lg font-bold leading-tight text-[var(--color-api-second)]">
                 {pkg.name}
               </h3>
-              <p className="mt-1.5 text-sm leading-snug text-white/75">
+              <p className="mt-1.5 text-sm leading-snug text-[var(--color-api-second)]/85">
                 {duration} {t("packages.durationSuffix")}
               </p>
             </div>
             <span
-              className="shrink-0 rounded-lg bg-sky-300/35 px-3.5 py-1.5 text-center text-xs font-semibold leading-none text-white shadow-sm backdrop-blur-sm"
+              className="shrink-0 rounded-lg bg-primary-light/35 px-3.5 py-1.5 text-center text-xs font-semibold leading-none text-[var(--color-api-second)] shadow-sm backdrop-blur-sm"
             >
               {t("packages.currentPlan")}
             </span>
@@ -154,13 +156,13 @@ export default function PackageCard({
         <ul className="flex flex-col gap-2.5">
           {features.map((text, i) => (
             <li key={i} className="flex items-start gap-2.5">
-              <span className="mt-0.5 flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full bg-emerald-500">
-                <HiCheck className="h-3 w-3 text-white" />
+              <span className="mt-0.5 flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full bg-[var(--color-success)]">
+                <Check className="h-3 w-3 text-white" />
               </span>
               <span
                 className={cn(
                   "text-sm leading-snug",
-                  isCurrentPlan ? "text-white" : "text-custom-primary",
+                  isCurrentPlan ? "text-[var(--color-api-second)]" : "text-custom-primary",
                 )}
               >
                 {text}
@@ -173,10 +175,10 @@ export default function PackageCard({
           {isCurrentPlan && onCancel ? (
             <div className="flex flex-col gap-4">
               <div className="min-w-0 text-start">
-                <span className="text-2xl font-bold tabular-nums text-white">
+                <span className="text-2xl font-bold tabular-nums text-[var(--color-api-second)]">
                   {priceDisplay}
                 </span>
-                <span className="text-sm font-medium text-white/80">
+                <span className="text-sm font-medium text-[var(--color-api-second)]/85">
                   {pricePeriodSuffix}
                 </span>
               </div>
@@ -184,8 +186,7 @@ export default function PackageCard({
                 type="button"
                 onClick={() => onCancel(pkg.id)}
                 disabled={isCancelling}
-                className="w-full rounded-lg px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
-                style={{ backgroundColor: "#EF4444" }}
+                className="w-full rounded-lg bg-[var(--color-api-second)] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[var(--color-api-second-hover)] disabled:opacity-60"
               >
                 {isCancelling ? "..." : t("packages.cancelSubscription")}
               </button>
@@ -196,7 +197,7 @@ export default function PackageCard({
                 <span
                   className={cn(
                     "text-2xl font-bold tabular-nums",
-                    isCurrentPlan ? "text-white" : "text-custom-primary",
+                    isCurrentPlan ? "text-[var(--color-api-second)]" : "text-custom-primary",
                   )}
                 >
                   {priceDisplay}
@@ -204,7 +205,7 @@ export default function PackageCard({
                 <span
                   className={cn(
                     "text-sm font-medium",
-                    isCurrentPlan ? "text-white/80" : "text-custom-secondary",
+                    isCurrentPlan ? "text-[var(--color-api-second)]/85" : "text-custom-secondary",
                   )}
                 >
                   {pricePeriodSuffix}
@@ -214,7 +215,7 @@ export default function PackageCard({
                 <button
                   type="button"
                   onClick={() => onSubscribe?.(pkg.id)}
-                  className="w-full shrink-0 rounded-lg bg-[var(--color-accent-primary)] px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[var(--color-accent-primary-hover)] sm:w-auto"
+                  className="w-full shrink-0 rounded-lg bg-[var(--color-api-second)] px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[var(--color-api-second-hover)] sm:w-auto"
                 >
                   {t("packages.subscribe")}
                 </button>

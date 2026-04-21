@@ -1,10 +1,10 @@
 import {
-    HiCheckCircle,
-    HiClock,
-    HiCurrencyDollar,
-    HiDownload,
-    HiShoppingBag,
-    HiTrendingUp,
+    CheckCircle,
+    Clock,
+    DollarSign,
+    Download,
+    ShoppingBag,
+    TrendingUp,
 } from "react-icons/hi";
 import { useTranslation } from "react-i18next";
 import type { MarketerStatistics } from "@/features/marketer/types";
@@ -45,44 +45,44 @@ export function MarketerStatisticsGrid({ stats, isLoading }: MarketerStatisticsG
     return (
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
             <MarketerStatCard
-                icon={HiShoppingBag}
+                icon={ShoppingBag}
                 label={t("marketer.dashboard.totalOrders", "Total Orders")}
                 value={stats.total_orders.toLocaleString()}
                 color="bg-primary"
             />
             <MarketerStatCard
-                icon={HiCheckCircle}
+                icon={CheckCircle}
                 label={t("marketer.dashboard.deliveredOrders", "Delivered")}
                 value={stats.delivered_orders.toLocaleString()}
                 color="bg-success"
             />
             <MarketerStatCard
-                icon={HiTrendingUp}
+                icon={TrendingUp}
                 label={t("marketer.dashboard.totalSales", "Total Sales")}
                 value={stats.total_sales.toLocaleString()}
                 color="bg-primary-dark"
             />
             <MarketerStatCard
-                icon={HiCurrencyDollar}
+                icon={DollarSign}
                 label={t("marketer.dashboard.earnedCommission", "Earned Commission")}
                 value={stats.earned_commission.toLocaleString()}
                 color="bg-primary-light"
             />
             <MarketerStatCard
-                icon={HiClock}
+                icon={Clock}
                 label={t("marketer.dashboard.pendingEarnings", "Pending Earnings")}
                 value={stats.pending_earnings.toLocaleString()}
                 color="bg-warning"
             />
             <MarketerStatCard
-                icon={HiDownload}
+                icon={Download}
                 label={t("marketer.dashboard.withdrawn", "Withdrawn")}
                 value={stats.withdrawn.toLocaleString()}
                 color="bg-custom-hover"
             />
             <div className="col-span-2">
                 <MarketerStatCard
-                    icon={HiCurrencyDollar}
+                    icon={DollarSign}
                     label={t("marketer.dashboard.availableBalance", "Available Balance")}
                     value={stats.available_balance.toLocaleString()}
                     color="bg-[var(--color-api-second)]"

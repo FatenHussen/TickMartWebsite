@@ -1,4 +1,4 @@
-import { HiChevronLeft, HiChevronRight } from "react-icons/hi";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { MarketerTransaction } from "@/features/marketer/types";
 import type { MarketerOrdersPagination } from "@/features/marketer/types";
@@ -152,7 +152,7 @@ export function MarketerTransactionsPanel({
                             onClick={() => onPageChange(currentPage - 1)}
                             className="rounded-lg border border-custom-primary p-2 transition-colors hover:bg-custom-light disabled:opacity-40"
                         >
-                            {isRTL ? <HiChevronRight className="h-4 w-4" /> : <HiChevronLeft className="h-4 w-4" />}
+                            {isRTL ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
                         </button>
                         <button
                             type="button"
@@ -160,7 +160,7 @@ export function MarketerTransactionsPanel({
                             onClick={() => onPageChange(currentPage + 1)}
                             className="rounded-lg border border-custom-primary p-2 transition-colors hover:bg-custom-light disabled:opacity-40"
                         >
-                            {isRTL ? <HiChevronLeft className="h-4 w-4" /> : <HiChevronRight className="h-4 w-4" />}
+                            {isRTL ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                         </button>
                     </div>
                 </div>

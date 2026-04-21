@@ -38,7 +38,15 @@
     "complaintSubmitted": "تم إرسال الشكوى",
     "toggleTheme": "تبديل الوضع",
     "failedToSubmitComplaint": "فشل إرسال الشكوى",
-    "previous": "السابق"
+    "previous": "السابق",
+    "loadingShort": "...",
+    "expandSidebar": "توسيع الشريط الجانبي",
+    "collapseSidebar": "طي الشريط الجانبي",
+    "ratingOutOfFive": "{{value}} من 5",
+    "removeImage": "إزالة الصورة",
+    "confirm": "تأكيد",
+    "decorativeBackground": "خلفية زخرفية",
+    "each": "للقطعة"
   },
   "search": {
     "allTypes": "الكل",
@@ -212,6 +220,10 @@
     "activeSubscription": "الاشتراك النشط",
     "available": "متاح",
     "viewDetails": "عرض التفاصيل",
+    "earnWhileYouShop": "اكسب أثناء التسوق",
+    "redeemExclusiveOffers": "استبدل عروضاً حصرية",
+    "enjoyPremiumBenefits": "استمتع بمزايا مميزة",
+    "noActiveSubscription": "لا يوجد اشتراك نشط",
     "orderNumber": "الطلب #12345",
     "outForDelivery": "قيد التوصيل · متوقع: 15-20 دقيقة · السوق الطازج",
     "outForDeliveryTitle": "قيد التوصيل",
@@ -223,6 +235,7 @@
     "driverOnWay": "السائق في الطريق",
     "delivered": "تم التوصيل",
     "orderDelivered": "تم توصيل الطلب",
+    "estimatedDeliveryShort": "الوقت المتوقع: 20–25 دقيقة",
     "confirmationCode": "رمز التأكيد",
     "nearbyStores": "المتاجر القريبة",
     "suggestedForYou": "مقترح لك",
@@ -567,7 +580,6 @@
     "visaEnding": "Visa تنتهي",
     "viewDetails": "عرض التفاصيل",
     "reorder": "إعادة الطلب",
-    "trackOrder": "تتبع الطلب",
     "addComplaint": "إضافة شكوى",
     "deliveredTo": "تم التوصيل إلى",
     "moreItemsFromStore": "+{{count}} عنصر إضافي من {{storeCount}} متجر",
@@ -597,6 +609,19 @@
     "instantDelivery": "توصيل فوري",
     "noOrderFound": "لم يتم العثور على الطلب",
     "cancelOrder": "إلغاء الطلب",
+    "store": "المتجر",
+    "priceEach": "{{price}} للقطعة",
+    "itemCountOne": "{{count}} عنصر",
+    "itemCountOther": "{{count}} عناصر",
+    "cartType": {
+      "basket": "سلة",
+      "recipe": "وصفة",
+      "products": "منتجات"
+    },
+    "cancelSuccess": "تم إلغاء الطلب بنجاح",
+    "cancelFailed": "فشل إلغاء الطلب",
+    "reorderSuccess": "تم إنشاء الطلب بنجاح",
+    "reorderFailed": "فشل إعادة الطلب",
     "cancelModal": {
       "title": "إلغاء هذا الطلب؟",
       "titleWithFee": "إلغاء هذا الطلب مع رسوم؟",
@@ -610,7 +635,8 @@
       "refundAmount": "المبلغ المسترد:",
       "totalLabel": "المجموع:",
       "understandCheckbox": "أفهم أنه سيتم تطبيق رسوم إلغاء وسيتم استرداد المبلغ المتبقي."
-    }
+    },
+    "itemsBadge": "{{count}} عناصر"
   },
   "successPopup": {
     "title": "!شكراً لك",
@@ -663,12 +689,18 @@
       "unreadCount": "{{count}} غير مقروء",
       "allRead": "الكل مقروء",
       "pushSettings": "إعدادات إشعارات الدفع",
-      "enablePushDesc": "فعّل إشعارات الدفع لتلقي التحديثات الفورية حتى عندما لا تتصفح."
+      "enablePushDesc": "فعّل إشعارات الدفع لتلقي التحديثات الفورية حتى عندما لا تتصفح.",
+      "badgeNew": "جديد",
+      "badgeRead": "مقروء",
+      "filterAriaLabel": "تصفية الإشعارات"
     },
     "profile": {
       "title": "حسابي",
       "subtitle": "معلومات الملف الشخصي",
       "editProfile": "تعديل الملف الشخصي",
+      "spotlightEyebrow": "مساحتك",
+      "spotlightGreetingPrefix": "سعدنا بك،",
+      "spotlightGreetingSuffix": "— يمكنك تحديث بياناتك في أي وقت من الأسفل.",
       "fullName": "الاسم الكامل",
       "enterFullName": "أدخل الاسم الكامل",
       "mobileNumber": "رقم الهاتف",
@@ -714,7 +746,8 @@
       "deleteAccountDesc": "حذف أو تعطيل حسابك قد يؤدي إلى إزالة عناوينك، سجل الطلبات، النقاط، المكافآت والاشتراكات.",
       "logout": "تسجيل الخروج",
       "logoutDesc": "تسجيل الخروج من حسابك على هذا الجهاز.",
-      "manageAccountStatus": "إدارة حالة الحساب"
+      "manageAccountStatus": "إدارة حالة الحساب",
+      "decorativeBackgroundAlt": "خلفية الحساب"
     },
     "addresses": {
       "title": "العناوين المحفوظة",
@@ -757,7 +790,13 @@
       "setAsDefault": "تعيين كعنوان افتراضي",
       "setAsDefaultDesc": "سيتم استخدام هذا العنوان لجميع الطلبات المستقبلية",
       "saveAddress": "حفظ العنوان",
-      "requiredFieldsNote": "جميع الحقول المحددة بـ * مطلوبة"
+      "requiredFieldsNote": "جميع الحقول المحددة بـ * مطلوبة",
+      "compass": {
+        "north": "ش",
+        "south": "ج",
+        "east": "ش",
+        "west": "غ"
+      }
     },
     "editAddress": {
       "title": "تعديل العنوان",
@@ -795,10 +834,15 @@
         "joinCampaigns": "الانضمام إلى الحملات الخاصة (مثل ضعف النقاط اليوم)",
         "usePackages": "استخدام باقات الاشتراك المؤهلة"
       },
+      "pointValueFallback": "1 {{points}} = 10 $",
+      "estimatedValueFallback": "≈{{value}} $",
       "redeem": {
         "title": "استبدل نقاطك",
         "description": "اختر من المكافآت والعروض المتاحة.",
         "noOptions": "لا توجد خيارات استبدال متاحة.",
+        "filterTabsAriaLabel": "فئات المكافآت",
+        "success": "تم الاستبدال بنجاح!",
+        "error": "فشل الاستبدال. يرجى المحاولة مرة أخرى.",
         "options": {
           "orderDiscount": {
             "title": "خصم الطلب"
@@ -855,6 +899,27 @@
           "balance": "الرصيد"
         },
         "noHistory": "لا يوجد سجل نقاط"
+      },
+      "exchangeHistory": {
+        "title": "سجل الاستبدال",
+        "empty": "لا توجد عمليات استبدال بعد.",
+        "type": "النوع",
+        "status": "الحالة",
+        "statuses": {
+          "pending": "قيد الانتظار",
+          "completed": "مكتمل",
+          "approved": "موافق عليه",
+          "rejected": "مرفوض",
+          "cancelled": "ملغي",
+          "delivered": "تم التسليم",
+          "processing": "قيد المعالجة"
+        }
+      },
+      "giftAddress": {
+        "title": "اختر عنوان التوصيل",
+        "description": "اختر مكان توصيل هديتك.",
+        "success": "تم تعيين عنوان التوصيل بنجاح!",
+        "error": "فشل تعيين العنوان. يرجى المحاولة مرة أخرى."
       }
     },
     "myReviews": {
@@ -923,8 +988,10 @@
         "addPhoto": "أضف صورة",
         "infoBanner": "تقييمات المنتجات متاحة فقط للعناصر التي اشتريتها واستلمتها.",
         "maybeLater": "ربما لاحقاً",
-        "submitReview": "إرسال التقييم"
+        "submitReview": "إرسال التقييم",
+        "imagePreviewAlt": "معاينة"
       },
+      "reviewImageAlt": "تقييم {{index}}",
       "mustPurchaseToRate": "يجب شراء هذا المنتج قبل تقييمه",
       "confirmDelete": "هل أنت متأكد من حذف هذا التقييم؟",
       "rating": "التقييم",
@@ -1192,7 +1259,11 @@
     "timelineSubmitted": "تم إرسال شكواك بنجاح.",
     "timelineReviewDesc": "سيراجع فريق الدعم حالتك.",
     "estimatedResolution": "الوقت المتوقع للحل",
-    "estimatedResolutionValue": "حسب نوع مشكلتك، نهدف للرد خلال 24-48 ساعة."
+    "estimatedResolutionValue": "حسب نوع مشكلتك، نهدف للرد خلال 24-48 ساعة.",
+    "orderOption": "الطلب #{{code}}",
+    "ticketId": "#TC{{id}}",
+    "previewLine": "الطلب #{{orderId}} — {{preview}}{{suffix}}",
+    "noOrdersAvailable": "لا توجد طلبات متاحة للشكاوى"
   },
   "marketer": {
     "title": "كن مسوقاً",
@@ -1423,7 +1494,15 @@
     "deliverySummary": "ملخص التوصيل",
     "startDate": "تاريخ البدء",
     "intervalDays": "عدد الأيام",
-    "savedSuccessfully": "تم حفظ السلة بنجاح"
+    "savedSuccessfully": "تم حفظ السلة بنجاح",
+    "discountPercentOff": "خصم {{value}}%",
+    "discountAmountOff": "خصم {{value}}"
+  },
+  "sections": {
+    "account": "الحساب",
+    "orders": "الطلبات",
+    "activity": "النشاط",
+    "support": "الدعم"
   },
   "footer": {
     "explore": "استكشف",

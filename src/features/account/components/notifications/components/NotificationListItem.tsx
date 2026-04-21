@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { HiBell, HiCheck, HiChevronDown, HiChevronUp } from "react-icons/hi";
+import { Bell, Check, ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import type { NotificationItem } from "@/features/account/api/notificationsApi";
 
@@ -50,7 +50,7 @@ export function NotificationListItem({
               : "bg-custom-tertiary/70 text-custom-tertiary shadow-sm",
           )}
         >
-          <HiBell className="h-5 w-5" aria-hidden />
+          <Bell className="h-5 w-5" aria-hidden />
           {isUnread && (
             <span className="absolute -end-0.5 -top-0.5 flex h-2.5 w-2.5 rounded-full bg-primary shadow-[0_0_0_2px_var(--color-bg-card)]" />
           )}
@@ -74,9 +74,9 @@ export function NotificationListItem({
                 {notification.created_at}
               </time>
               {isExpanded ? (
-                <HiChevronUp className="h-4 w-4 shrink-0 text-custom-tertiary opacity-70 group-hover:opacity-100" />
+                <ChevronUp className="h-4 w-4 shrink-0 text-custom-tertiary opacity-70 group-hover:opacity-100" aria-hidden />
               ) : (
-                <HiChevronDown className="h-4 w-4 shrink-0 text-custom-tertiary opacity-70 group-hover:opacity-100" />
+                <ChevronDown className="h-4 w-4 shrink-0 text-custom-tertiary opacity-70 group-hover:opacity-100" aria-hidden />
               )}
             </div>
           </div>
@@ -98,7 +98,7 @@ export function NotificationListItem({
               </span>
             ) : (
               <span className="inline-flex items-center gap-1 text-[11px] font-medium text-custom-tertiary">
-                <HiCheck className="h-3.5 w-3.5" aria-hidden />
+                <Check className="h-3.5 w-3.5" aria-hidden />
                 {t("account.notificationsPage.badgeRead")}
               </span>
             )}

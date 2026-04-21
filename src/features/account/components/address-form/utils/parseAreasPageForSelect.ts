@@ -1,9 +1,6 @@
 import type { Area } from "@/features/auth/types";
 import type { PaginatedData } from "@/shared/hooks/useInfiniteSelect";
 
-/**
- * Normalizes areas API payloads (array or `{ items }`) for infinite select — same logic as the legacy form.
- */
 export function parseAreasPageForSelect(data: unknown): PaginatedData<Area> {
     if (data == null) return { items: [], pagination: null };
     if (Array.isArray(data)) {

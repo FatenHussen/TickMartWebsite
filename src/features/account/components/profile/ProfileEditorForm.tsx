@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { HiPencil } from "react-icons/hi";
+import { Pencil } from "lucide-react";
 import { Button } from "@/shared/ui";
 import { cn } from "@/shared/lib/utils";
 import { API_SECOND_BUTTON_CLASS } from "./apiPaletteClasses";
@@ -77,7 +77,7 @@ export function ProfileEditorForm({ editor }: ProfileEditorFormProps) {
                                 "px-6 shadow-md shadow-primary/20",
                             )}
                         >
-                            <HiPencil className="w-4 h-4" />
+                            <Pencil className="w-4 h-4" />
                             {t("common.saveChanges", "حفظ التغييرات")}
                         </Button>
                     </div>

@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { HiSparkles } from "react-icons/hi";
+import { Sparkles } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import UnreviewedItemCard from "../../UnreviewedItemCard";
 import { mockUnreviewedItems } from "../../../data/mockData";
@@ -34,7 +34,7 @@ export default function MyReviewsUnreviewedSection({
             <div className="relative mb-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-start gap-3">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[color-mix(in_srgb,var(--color-api-second)_20%,var(--color-bg-card))] text-[var(--color-api-second)] shadow-md">
-                        <HiSparkles className="h-5 w-5" aria-hidden />
+                        <Sparkles className="h-5 w-5" aria-hidden />
                     </div>
                     <div>
                         <h2 className="text-lg font-bold text-custom-primary">

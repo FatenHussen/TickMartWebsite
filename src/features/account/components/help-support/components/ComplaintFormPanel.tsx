@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { HiChevronDown, HiCloudUpload } from "react-icons/hi";
+import { ChevronDown, CloudUpload } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContext";
 import { cn } from "@/shared/lib/utils";
@@ -83,7 +83,7 @@ export function ComplaintFormPanel({ onCancel, onCreateSuccess }: ComplaintFormP
                                     </option>
                                 ))}
                             </select>
-                            <HiChevronDown
+                            <ChevronDown
                                 className={cn(
                                     "pointer-events-none absolute top-1/2 h-5 w-5 -translate-y-1/2 text-text-secondary",
                                     isRTL ? "left-3" : "right-3"
@@ -113,7 +113,7 @@ export function ComplaintFormPanel({ onCancel, onCreateSuccess }: ComplaintFormP
                                     </option>
                                 ))}
                             </select>
-                            <HiChevronDown
+                            <ChevronDown
                                 className={cn(
                                     "pointer-events-none absolute top-1/2 h-5 w-5 -translate-y-1/2 text-primary-dark",
                                     isRTL ? "left-3" : "right-3"
@@ -160,7 +160,7 @@ export function ComplaintFormPanel({ onCancel, onCreateSuccess }: ComplaintFormP
                         form.isDropZoneActive && "bg-primary/10 shadow-inner"
                     )}
                 >
-                    <HiCloudUpload className="w-12 h-12 mx-auto text-custom-tertiary mb-3" />
+                    <CloudUpload className="mx-auto mb-3 h-12 w-12 text-custom-tertiary" aria-hidden />
                     <p className="text-sm font-medium text-custom-primary mb-1">
                         {t("complaints.dropFilesHere")}
                     </p>

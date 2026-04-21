@@ -202,13 +202,16 @@ export default function BrandProducts() {
                 </div>
             )}
 
-            <div className="page-container py-6">
-                {otherBeforeSections.length > 0 && (
-                    <FullBleedSection>
-                        <ApiSectionsRenderer sections={otherBeforeSections} />
-                    </FullBleedSection>
-                )}
+            {otherBeforeSections.length > 0 && (
+                <FullBleedSection contain={false}>
+                    <ApiSectionsRenderer
+                        sections={otherBeforeSections}
+                        edgeToEdgeSectionBackgrounds
+                    />
+                </FullBleedSection>
+            )}
 
+            <div className="page-container py-6">
                 {/* Brand Header */}
                 <div className="mb-6">
                     <BrandHeader brand={brandData} />
@@ -263,12 +266,6 @@ export default function BrandProducts() {
                     <div ref={observerTarget} className="h-10" />
                 </div>
 
-                {afterSections.length > 0 && (
-                    <FullBleedSection>
-                        <ApiSectionsRenderer sections={afterSections} />
-                    </FullBleedSection>
-                )}
-
                 {/* Rate this brand */}
                 {token && brandIdNum > 0 && (
                     <div className="mt-10">
@@ -300,6 +297,15 @@ export default function BrandProducts() {
                     )}
                 </div>
             </div>
+
+            {afterSections.length > 0 && (
+                <FullBleedSection contain={false}>
+                    <ApiSectionsRenderer
+                        sections={afterSections}
+                        edgeToEdgeSectionBackgrounds
+                    />
+                </FullBleedSection>
+            )}
 
             <RatingFormModal
                 isOpen={ratingModalOpen}

@@ -1,4 +1,4 @@
-import { HiChevronLeft, HiChevronRight } from "react-icons/hi";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { MarketerOrdersPagination } from "@/features/marketer/types";
 import { ORDERS_TABLE_PAGINATION_NAV_CLASS } from "@/features/marketer/utils/orderTableStyles";
@@ -46,7 +46,7 @@ export function OrdersTablePagination({
                     className={ORDERS_TABLE_PAGINATION_NAV_CLASS}
                     aria-label={t("marketer.dashboard.prevPage", "Previous page")}
                 >
-                    {isRTL ? <HiChevronRight className="h-4 w-4" /> : <HiChevronLeft className="h-4 w-4" />}
+                    {isRTL ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
                 </button>
                 <button
                     type="button"
@@ -55,7 +55,7 @@ export function OrdersTablePagination({
                     className={ORDERS_TABLE_PAGINATION_NAV_CLASS}
                     aria-label={t("marketer.dashboard.nextPage", "Next page")}
                 >
-                    {isRTL ? <HiChevronLeft className="h-4 w-4" /> : <HiChevronRight className="h-4 w-4" />}
+                    {isRTL ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                 </button>
             </div>
         </div>

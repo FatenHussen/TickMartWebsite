@@ -1,4 +1,4 @@
-import { HiChevronDown, HiChevronUp } from "react-icons/hi";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/shared/lib/utils";
 import type { Complaint } from "@/features/account/types";
@@ -75,12 +75,12 @@ export function ComplaintTicketCard({ complaint, expanded, onToggle }: Complaint
                     {expanded ? (
                         <>
                             {t("complaints.hideDetails")}
-                            <HiChevronUp className="w-4 h-4" />
+                            <ChevronUp className="w-4 h-4" aria-hidden />
                         </>
                     ) : (
                         <>
                             {t("complaints.viewDetails")}
-                            <HiChevronDown className="w-4 h-4" />
+                            <ChevronDown className="w-4 h-4" aria-hidden />
                         </>
                     )}
                 </button>

@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { HiBell } from "react-icons/hi";
+import { Bell } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import { ENABLE_PUSH_BUTTON_CLASSES } from "../constants";
 
@@ -41,7 +41,7 @@ export function PushSettingsPanel({
       />
       <div className="relative flex items-start gap-4">
         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[color-mix(in_srgb,var(--color-api-second)_22%,var(--color-bg-card))] text-[var(--color-api-second)] shadow-sm">
-          <HiBell className="h-5 w-5" />
+          <Bell className="h-5 w-5" aria-hidden />
         </div>
         <div className="min-w-0 flex-1">
           <h3 className="mb-1 text-sm font-semibold text-custom-primary">

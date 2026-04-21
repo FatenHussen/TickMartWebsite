@@ -70,8 +70,8 @@ export function AddressFormMapSection({
             </button>
             <p className="text-xs text-custom-secondary">
                 {t("account.addAddress.pinnedLocation")}: {latNum?.toFixed(4)}°
-                {latNum >= 0 ? t("account.addAddress.compass.north") : t("account.addAddress.compass.south")}, {lngNum?.toFixed(4)}°
-                {lngNum >= 0 ? t("account.addAddress.compass.east") : t("account.addAddress.compass.west")}
+                {latNum >= 0 ? "N" : "S"}, {lngNum?.toFixed(4)}°
+                {lngNum >= 0 ? "E" : "W"}
             </p>
         </div>
     );

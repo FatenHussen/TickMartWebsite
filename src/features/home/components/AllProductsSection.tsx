@@ -20,7 +20,14 @@ import {
     mapApiTopBadgesToProductCard,
 } from "@/shared/lib/mapProductBadges";
 
-export default function AllProductsSection() {
+type AllProductsSectionProps = {
+    /** When home already wraps this block in `.page-container`, avoid nesting a second one. */
+    disablePageContainer?: boolean;
+};
+
+export default function AllProductsSection({
+    disablePageContainer = false,
+}: AllProductsSectionProps) {
     const { t } = useTranslation();
     const navigate = useNavigate();
 
@@ -131,7 +138,11 @@ export default function AllProductsSection() {
 
     return (
         <section className="py-8 bg-custom-card">
-            <div className="page-container">
+            <div
+                className={
+                    disablePageContainer ? "w-full min-w-0" : "page-container"
+                }
+            >
                 {/* Header */}
                 <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div>

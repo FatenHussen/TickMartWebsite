@@ -38,7 +38,15 @@
     "complaintSubmitted": "Complaint submitted",
     "toggleTheme": "Toggle theme",
     "failedToSubmitComplaint": "Failed to submit complaint",
-    "previous": "Previous"
+    "previous": "Previous",
+    "loadingShort": "...",
+    "expandSidebar": "Expand sidebar",
+    "collapseSidebar": "Collapse sidebar",
+    "ratingOutOfFive": "{{value}} out of 5",
+    "removeImage": "Remove image",
+    "confirm": "Confirm",
+    "decorativeBackground": "Decorative background",
+    "each": "each"
   },
   "search": {
     "allTypes": "All",
@@ -212,6 +220,10 @@
     "activeSubscription": "Active Subscription",
     "available": "Available",
     "viewDetails": "View Details",
+    "earnWhileYouShop": "Earn while you shop",
+    "redeemExclusiveOffers": "Redeem exclusive offers",
+    "enjoyPremiumBenefits": "Enjoy premium benefits",
+    "noActiveSubscription": "No active subscription",
     "orderNumber": "Order #12345",
     "outForDelivery": "Out for delivery · ETA: 15-20 min · Fresh Market",
     "outForDeliveryTitle": "Out for Delivery",
@@ -223,6 +235,7 @@
     "driverOnWay": "Driver is on the way",
     "delivered": "Delivered",
     "orderDelivered": "Order delivered",
+    "estimatedDeliveryShort": "ETA: 20–25 min",
     "confirmationCode": "Confirmation Code",
     "nearbyStores": "Nearby Stores",
     "suggestedForYou": "Suggested for You",
@@ -550,7 +563,7 @@
     "orderDetails": "Order Details",
     "orderNotFound": "Order not found.",
     "trackOrderOnMap": "Track Order on Map",
-    "trackOrder": "Track Order",
+    "trackOrder": "Track order",
     "myOrders": "My Orders",
     "myOrdersDescription": "Review, track and reorder your past orders.",
     "searchPlaceholder": "Search by order number, store or item",
@@ -567,7 +580,6 @@
     "visaEnding": "Visa ending",
     "viewDetails": "View details",
     "reorder": "Reorder",
-    "trackOrder": "Track order",
     "addComplaint": "Add complaint",
     "deliveredTo": "Delivered to",
     "moreItemsFromStore": "+{{count}} more item from {{storeCount}} store",
@@ -597,6 +609,19 @@
     "instantDelivery": "Instant delivery",
     "noOrderFound": "Order not found",
     "cancelOrder": "Cancel order",
+    "store": "Store",
+    "priceEach": "{{price}} each",
+    "itemCountOne": "{{count}} item",
+    "itemCountOther": "{{count}} items",
+    "cartType": {
+      "basket": "Basket",
+      "recipe": "Recipe",
+      "products": "Products"
+    },
+    "cancelSuccess": "Order cancelled successfully",
+    "cancelFailed": "Failed to cancel order",
+    "reorderSuccess": "Order placed successfully",
+    "reorderFailed": "Failed to reorder",
     "cancelModal": {
       "title": "Cancel this order?",
       "titleWithFee": "Cancel this order with a fee?",
@@ -610,7 +635,8 @@
       "refundAmount": "Refund amount:",
       "totalLabel": "Total:",
       "understandCheckbox": "I understand that a cancellation fee will be applied and the remaining amount will be refunded."
-    }
+    },
+    "itemsBadge": "{{count}} items"
   },
   "successPopup": {
     "title": "THANK YOU!",
@@ -663,12 +689,18 @@
       "unreadCount": "{{count}} unread",
       "allRead": "All read",
       "pushSettings": "Push notification settings",
-      "enablePushDesc": "Enable push notifications to get real-time updates even when you're not browsing."
+      "enablePushDesc": "Enable push notifications to get real-time updates even when you're not browsing.",
+      "badgeNew": "New",
+      "badgeRead": "Read",
+      "filterAriaLabel": "Notifications filter"
     },
     "profile": {
       "title": "My Account",
       "subtitle": "Profile information",
       "editProfile": "Edit profile",
+      "spotlightEyebrow": "Your space",
+      "spotlightGreetingPrefix": "Good to see you,",
+      "spotlightGreetingSuffix": "— update your details anytime below.",
       "fullName": "Full name",
       "enterFullName": "Enter full name",
       "mobileNumber": "Mobile number",
@@ -714,7 +746,8 @@
       "deleteAccountDesc": "Deleting or deactivating your account can remove your addresses, order history, points, rewards and subscriptions.",
       "logout": "Logout",
       "logoutDesc": "Sign out of your account on this device.",
-      "manageAccountStatus": "Manage account status"
+      "manageAccountStatus": "Manage account status",
+      "decorativeBackgroundAlt": "Account background"
     },
     "addresses": {
       "title": "Saved addresses",
@@ -757,7 +790,13 @@
       "setAsDefault": "Set as default address",
       "setAsDefaultDesc": "This address will be used for all future orders",
       "saveAddress": "Save address",
-      "requiredFieldsNote": "All fields marked * are required"
+      "requiredFieldsNote": "All fields marked * are required",
+      "compass": {
+        "north": "N",
+        "south": "S",
+        "east": "E",
+        "west": "W"
+      }
     },
     "editAddress": {
       "title": "Edit address",
@@ -795,10 +834,15 @@
         "joinCampaigns": "Join special campaigns (e.g. 2x points today)",
         "usePackages": "Use eligible subscription packages"
       },
+      "pointValueFallback": "1 {{points}} = 10 $",
+      "estimatedValueFallback": "≈{{value}} $",
       "redeem": {
         "title": "Redeem your points",
         "description": "Choose from available rewards and offers.",
         "noOptions": "No redemption options available.",
+        "filterTabsAriaLabel": "Reward categories",
+        "success": "Exchange successful!",
+        "error": "Exchange failed. Please try again.",
         "options": {
           "orderDiscount": {
             "title": "Order discount"
@@ -855,6 +899,27 @@
           "balance": "Balance"
         },
         "noHistory": "No points history found"
+      },
+      "exchangeHistory": {
+        "title": "Exchange History",
+        "empty": "No exchanges yet.",
+        "type": "Type",
+        "status": "Status",
+        "statuses": {
+          "pending": "Pending",
+          "completed": "Completed",
+          "approved": "Approved",
+          "rejected": "Rejected",
+          "cancelled": "Cancelled",
+          "delivered": "Delivered",
+          "processing": "Processing"
+        }
+      },
+      "giftAddress": {
+        "title": "Select Delivery Address",
+        "description": "Choose where to deliver your gift.",
+        "success": "Delivery address set successfully!",
+        "error": "Failed to set address. Please try again."
       }
     },
     "myReviews": {
@@ -923,8 +988,10 @@
         "addPhoto": "Add photo",
         "infoBanner": "Product ratings are available only for items you have purchased and received.",
         "maybeLater": "Maybe later",
-        "submitReview": "Submit review"
+        "submitReview": "Submit review",
+        "imagePreviewAlt": "Preview"
       },
+      "reviewImageAlt": "Review {{index}}",
       "mustPurchaseToRate": "You must purchase this product before rating it",
       "confirmDelete": "Are you sure you want to delete this review?",
       "rating": "Rating",
@@ -1256,7 +1323,11 @@
     "timelineSubmitted": "Your complaint has been submitted successfully.",
     "timelineReviewDesc": "Our support team will review your case.",
     "estimatedResolution": "Estimated Resolution Time",
-    "estimatedResolutionValue": "Based on your issue type, we aim to respond within 24-48 hours."
+    "estimatedResolutionValue": "Based on your issue type, we aim to respond within 24-48 hours.",
+    "orderOption": "Order #{{code}}",
+    "ticketId": "#TC{{id}}",
+    "previewLine": "Order #{{orderId}} — {{preview}}{{suffix}}",
+    "noOrdersAvailable": "No orders available for complaints"
   },
   "vendor": {
     "title": "Become a vendor",
@@ -1417,7 +1488,15 @@
     "deliverySummary": "Delivery Summary",
     "startDate": "Start date",
     "intervalDays": "Interval days",
-    "savedSuccessfully": "Basket saved successfully"
+    "savedSuccessfully": "Basket saved successfully",
+    "discountPercentOff": "{{value}}% OFF",
+    "discountAmountOff": "{{value}} OFF"
+  },
+  "sections": {
+    "account": "Account",
+    "orders": "Orders",
+    "activity": "Activity",
+    "support": "Support"
   },
   "footer": {
     "explore": "Explore",

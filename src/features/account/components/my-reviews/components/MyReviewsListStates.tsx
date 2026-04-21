@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { HiStar } from "react-icons/hi";
+import { Star } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import type { ReviewUnion } from "../../../types";
 import BasketReviewCard from "../../BasketReviewCard";
@@ -142,7 +142,7 @@ export default function MyReviewsListStates({
                             "shadow-[0_0_0_6px_color-mix(in_srgb,var(--color-api-second)_10%,transparent)]",
                         )}
                     >
-                        <HiStar className="h-8 w-8 opacity-90" aria-hidden />
+                        <Star className="h-8 w-8 opacity-90" aria-hidden />
                     </div>
                     <p className="text-base font-medium text-custom-primary">
                         {t("account.myReviews.noReviewsFound")}

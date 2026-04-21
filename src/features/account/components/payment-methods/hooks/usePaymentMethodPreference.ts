@@ -4,9 +4,7 @@ import { useCheckoutStore } from "@/store/checkout";
 import { PAYMENT_METHOD_STORAGE_KEY } from "../constants";
 
 interface UsePaymentMethodPreferenceResult {
-    /** Currently highlighted method id (may be empty before hydration). */
     selectedMethodId: string;
-    /** First method in the API list — receives the “Default” badge in the UI. */
     defaultMethodId: string | undefined;
     selectMethod: (methodId: string) => void;
 }

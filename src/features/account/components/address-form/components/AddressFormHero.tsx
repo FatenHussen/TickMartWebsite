@@ -1,4 +1,4 @@
-import { HiPencil, HiPlus } from "react-icons/hi";
+import { Pencil, Plus } from "lucide-react";
 import { ADDRESS_FORM_HERO_BACKDROP_STYLE } from "../constants";
 
 type AddressFormHeroProps = {
@@ -20,9 +20,9 @@ export function AddressFormHero({ isEditMode, title, subtitle }: AddressFormHero
             <div className="relative flex min-w-0 flex-col gap-4 p-6 sm:p-8 sm:flex-row sm:items-start sm:gap-5">
                 <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[var(--color-main)] to-[var(--color-primary-dark)] shadow-md ring-2 ring-white/25 dark:ring-white/10">
                     {isEditMode ? (
-                        <HiPencil className="h-7 w-7 text-white" aria-hidden />
+                        <Pencil className="h-7 w-7 text-white" aria-hidden />
                     ) : (
-                        <HiPlus className="h-7 w-7 text-white" aria-hidden />
+                        <Plus className="h-7 w-7 text-white" aria-hidden />
                     )}
                 </div>
                 <div className="min-w-0 space-y-1">

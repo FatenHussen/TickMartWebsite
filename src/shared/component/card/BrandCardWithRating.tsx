@@ -1,6 +1,6 @@
 import BrandCard from "./BrandCard";
 import { useBrandRatings } from "@/features/product/hooks/useBrands";
-import type { SectionItemBadge } from "@/features/home/types";
+import type { SectionItemBadge, SectionCardVariant } from "@/features/home/types";
 import {
     mapApiBottomBadgesToProductCard,
     mapApiTopBadgesToProductCard,
@@ -21,11 +21,16 @@ type BrandItemWithOptionalRating = {
 type BrandCardWithRatingProps = {
     item: BrandItemWithOptionalRating;
     onClick: () => void;
+    layout?: SectionCardVariant;
+    /** Optional card tint from API `section.background_card_color` or page defaults */
+    surfaceColor?: string | null;
 };
 
 export default function BrandCardWithRating({
     item,
     onClick,
+    layout,
+    surfaceColor,
 }: BrandCardWithRatingProps) {
     const ratingFromItem = item.rating ?? item.average_rating;
     const shouldFetch = typeof ratingFromItem !== "number";
@@ -46,6 +51,8 @@ export default function BrandCardWithRating({
             badge={badge}
             bottomBadges={bottomBadges}
             onClick={onClick}
+            layout={layout}
+            surfaceColor={surfaceColor}
         />
     );
 }

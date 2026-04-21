@@ -31,6 +31,11 @@ import {
     mapApiTopBadgesToProductCard,
     type ApiProductBadgeLike,
 } from "@/shared/lib/mapProductBadges";
+import {
+    getSectionCardVariant,
+    getSliderPresetForSection,
+    getSectionCardSurfaceColor,
+} from "./sectionCardVariant";
 
 /** Shop list may send badges on the item or on `vendor` */
 function shopTopBadgesFromItem(item: ShopItem) {
@@ -45,6 +50,21 @@ function shopBottomBadgesFromItem(item: ShopItem) {
 
 type ApiSectionsRendererProps = {
     sections: Section[];
+    /** When true (e.g. home rows), brand section background spans viewport width */
+    edgeToEdgeSectionBackgrounds?: boolean;
+    /**
+     * When the renderer is already inside `.page-container` (e.g. unified Home column),
+     * banner blocks use `w-full` instead of nesting another `.page-container`.
+     */
+    skipInnerPageContainer?: boolean;
+    /**
+     * When API omits `background_color` / card tint, brand rows fall back to
+     * `--color-api-second`. Pass this on pages (e.g. all-brands) that should use white instead.
+     */
+    brandDefaultsWhenApiMissing?: {
+        sectionBackground: string;
+        cardSurface: string;
+    };
 };
 
 // Helper to check if item is manual type
@@ -123,6 +143,9 @@ const DISPLAY_TYPES = {
 
 export default function ApiSectionsRenderer({
     sections,
+    edgeToEdgeSectionBackgrounds = false,
+    skipInnerPageContainer = false,
+    brandDefaultsWhenApiMissing,
 }: ApiSectionsRendererProps) {
     const navigate = useNavigate();
     const { t } = useTranslation();
@@ -209,6 +232,9 @@ export default function ApiSectionsRenderer({
                         onViewAll={() => handleViewAll(section)}
                         onItemClick={(item) => handleItemClick(section, item)}
                         t={t}
+                        edgeToEdgeSectionBackgrounds={edgeToEdgeSectionBackgrounds}
+                        skipInnerPageContainer={skipInnerPageContainer}
+                        brandDefaultsWhenApiMissing={brandDefaultsWhenApiMissing}
                         productIsFavoriteFor={makeIsFavoriteFor("product", productFavoriteIds)}
                         recipeIsFavoriteFor={makeIsFavoriteFor("recipe", recipeFavoriteIds)}
                         basketIsFavoriteFor={makeIsFavoriteFor("basket", basketFavoriteIds)}
@@ -237,6 +263,9 @@ type SectionByDisplayTypeProps = {
     onViewAll: () => void;
     onItemClick: (item: SectionItem) => void;
     t: (key: string) => string;
+    edgeToEdgeSectionBackgrounds?: boolean;
+    skipInnerPageContainer?: boolean;
+    brandDefaultsWhenApiMissing?: ApiSectionsRendererProps["brandDefaultsWhenApiMissing"];
     productIsFavoriteFor: (id: number, itemIsFavorite?: boolean) => boolean;
     recipeIsFavoriteFor: (id: number, itemIsFavorite?: boolean) => boolean;
     basketIsFavoriteFor: (id: number, itemIsFavorite?: boolean) => boolean;
@@ -252,6 +281,9 @@ function SectionByDisplayType({
     onViewAll,
     onItemClick,
     t,
+    edgeToEdgeSectionBackgrounds,
+    skipInnerPageContainer,
+    brandDefaultsWhenApiMissing,
     productIsFavoriteFor,
     recipeIsFavoriteFor,
     basketIsFavoriteFor,
@@ -272,6 +304,7 @@ function SectionByDisplayType({
                     onViewAll={onViewAll}
                     onItemClick={onItemClick}
                     t={t}
+                    skipInnerPageContainer={skipInnerPageContainer}
                 />
             );
 
@@ -322,6 +355,8 @@ function SectionByDisplayType({
                     onViewAll={onViewAll}
                     onItemClick={onItemClick}
                     t={t}
+                    edgeToEdgeSectionBackgrounds={edgeToEdgeSectionBackgrounds}
+                    brandDefaultsWhenApiMissing={brandDefaultsWhenApiMissing}
                 />
             );
 
@@ -352,6 +387,9 @@ type SectionProps = {
     onViewAll: () => void;
     onItemClick: (item: SectionItem) => void;
     t: (key: string) => string;
+    edgeToEdgeSectionBackgrounds?: boolean;
+    brandDefaultsWhenApiMissing?: ApiSectionsRendererProps["brandDefaultsWhenApiMissing"];
+    skipInnerPageContainer?: boolean;
 };
 
 type SectionPropsWithFavorites = SectionProps & {
@@ -367,7 +405,9 @@ function BannerSection({
     onViewAll,
     onItemClick,
     t,
+    skipInnerPageContainer,
 }: SectionProps) {
+    const innerMax = skipInnerPageContainer ? "w-full" : "page-container";
     // If only one item, show promotional banner with container
     if (section.items.length === 1) {
         const item = section.items[0];
@@ -377,7 +417,9 @@ function BannerSection({
         return (
             <div className="w-full">
                 {showViewAll && section.name && (
-                    <div className="page-container mb-4 flex items-center justify-between">
+                    <div
+                        className={`${innerMax} mb-4 flex items-center justify-between`}
+                    >
                         <h2 className="text-2xl font-bold text-custom-primary">
                             {section.name}
                         </h2>
@@ -389,7 +431,7 @@ function BannerSection({
                         </button>
                     </div>
                 )}
-                <div className="page-container">
+                <div className={innerMax}>
                     <PromotionalBannerCard
                         item={itemData as any}
                         link={link}
@@ -403,7 +445,7 @@ function BannerSection({
 
     // Multiple items - use hero-style slider (like HeroSlider)
     return (
-        <div className="page-container">
+        <div className={innerMax}>
             {showViewAll && section.name && (
                 <div className="mb-4 flex items-center justify-between">
                     <h2 className="text-2xl font-bold text-custom-primary">
@@ -896,18 +938,34 @@ function BrandSection({
     onViewAll,
     onItemClick,
     t,
+    edgeToEdgeSectionBackgrounds,
+    brandDefaultsWhenApiMissing,
 }: SectionProps) {
+    const cardVariant = getSectionCardVariant(section);
+    const sliderPreset = getSliderPresetForSection(
+        section.display_type_id,
+        cardVariant
+    );
+    const surfaceColor =
+        getSectionCardSurfaceColor(section) ??
+        brandDefaultsWhenApiMissing?.cardSurface ??
+        null;
+    const sectionBgFallback =
+        brandDefaultsWhenApiMissing?.sectionBackground ?? "var(--color-api-second)";
+
     return (
         <SliderSection
             title={section.name}
             viewAllLabel={showViewAll ? t("common.viewAll") : undefined}
             onViewAllClick={showViewAll ? onViewAll : undefined}
             items={section.items}
-            breakpoints={{
-                640: { slidesPerView: 2.5 },
-                768: { slidesPerView: 3.5 },
-                1024: { slidesPerView: 6 },
-            }}
+            slidesPerView={sliderPreset.slidesPerView}
+            breakpoints={sliderPreset.breakpoints}
+            spaceBetween={sliderPreset.spaceBetween}
+            sectionBackgroundColor={
+                section.background_color ?? sectionBgFallback
+            }
+            edgeToEdgeSectionBackground={edgeToEdgeSectionBackgrounds}
             renderItem={(item) => {
                 if (isBrandItem(item)) {
                     return (
@@ -915,10 +973,11 @@ function BrandSection({
                             key={item.id}
                             item={item}
                             onClick={() => onItemClick(item)}
+                            layout={cardVariant}
+                            surfaceColor={surfaceColor}
                         />
                     );
                 }
-                // Fallback for backward compatibility
                 const data = getItemData(item);
                 const d = data as {
                     id: number;
@@ -927,6 +986,7 @@ function BrandSection({
                     image?: string;
                     rating?: number;
                     average_rating?: number;
+                    orders_count?: number;
                     top_badges?: SectionItemBadge[];
                     bottom_badges?: SectionItemBadge[];
                     budges?: SectionItemBadge[];
@@ -940,11 +1000,14 @@ function BrandSection({
                             image: d.image || "",
                             rating: d.rating,
                             average_rating: d.average_rating,
+                            orders_count: d.orders_count,
                             top_badges: d.top_badges,
                             bottom_badges: d.bottom_badges,
                             budges: d.budges,
                         }}
                         onClick={() => onItemClick(item)}
+                        layout={cardVariant}
+                        surfaceColor={surfaceColor}
                     />
                 );
             }}

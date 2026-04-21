@@ -1,4 +1,4 @@
-import { HiDownload, HiSparkles } from "react-icons/hi";
+import { Download, Sparkles } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { MARKETER_SPOTLIGHT_BACKGROUND_STYLE } from "@/features/marketer/constants/marketerSpotlightBackground";
 import { API_SECOND_DASHBOARD_BTN } from "@/features/marketer/constants/apiSecondClasses";
@@ -34,7 +34,7 @@ export function MarketerDashboardHero({
             <div className="relative flex flex-col gap-6 p-6 sm:p-8 lg:flex-row lg:items-start lg:justify-between">
                 <div className="min-w-0 flex-1">
                     <div className="inline-flex items-center gap-2 rounded-full border border-custom-primary/55 bg-custom-primary/35 px-3 py-1.5 backdrop-blur-sm">
-                        <HiSparkles className="h-4 w-4 shrink-0 text-[var(--color-main)]" aria-hidden />
+                        <Sparkles className="h-4 w-4 shrink-0 text-[var(--color-main)]" aria-hidden />
                         <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--color-api-second)]">
                             {t("marketer.dashboard.heroEyebrow", "Your dashboard")}
                         </span>
@@ -74,7 +74,7 @@ export function MarketerDashboardHero({
                         onClick={onRequestWithdraw}
                         className={`${API_SECOND_DASHBOARD_BTN} w-full shrink-0 lg:w-auto lg:self-start`}
                     >
-                        <HiDownload className="h-5 w-5 shrink-0" aria-hidden />
+                        <Download className="h-5 w-5 shrink-0" aria-hidden />
                         {t("marketer.dashboard.requestWithdraw", "Request Withdraw")}
                     </button>
                 )}

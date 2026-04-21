@@ -10,6 +10,11 @@ body {
   /* background-color: var(--color-blue-off); */
 }
 
+/* Approx. Navbar height (both rows). Account sidebar column height = 100dvh minus this. */
+:root {
+  --app-navbar-offset: 7.75rem;
+}
+
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
@@ -52,6 +57,46 @@ body {
   --color-accent-primary-hover: #0099b8;
   --color-accent-light: #4cdaf6;
   --color-accent-light-bg: #e0f7fa;
+
+  /* Brand gradient + accents (API `main_color` overrides via themeColors; static fallbacks) */
+  --color-gradient-from: var(--color-primary-light);
+  --color-gradient-to: var(--color-primary);
+  --color-shadow-accent: color-mix(in srgb, var(--color-primary) 15%, transparent);
+  --color-shadow-strong: color-mix(in srgb, var(--color-primary) 22%, transparent);
+  --color-border-accent-light: color-mix(in srgb, var(--color-primary) 35%, transparent);
+
+  /* Status Colors */
+  --color-success: #16a34a;
+  --color-error: #EF4444;
+  --color-status-error-bg: #fef2f2;
+  --color-status-success-bg: #f0fdf4;
+
+  /* Shadows */
+  --shadow-card-neutral: 0 4px 20px -4px color-mix(in srgb, var(--color-primary) 14%, transparent);
+
+  /* UI Palette — static Tailwind-equivalent color tokens */
+  --color-ui-amber-50:  #fffbeb;
+  --color-ui-amber-100: #fef3c7;
+  --color-ui-amber-200: #fde68a;
+  --color-ui-amber-400: #fbbf24;
+  --color-ui-amber-800: #92400e;
+  --color-ui-amber-900: #78350f;
+  --color-ui-green-100: #dcfce7;
+  --color-ui-green-400: #4ade80;
+  --color-ui-green-500: #22c55e;
+  --color-ui-green-800: #166534;
+  --color-ui-green-900: #14532d;
+  --color-ui-sky-100:   #e0f2fe;
+  --color-ui-sky-300:   #7dd3fc;
+  --color-ui-sky-400:   #38bdf8;
+  --color-ui-sky-800:   #075985;
+  --color-ui-sky-900:   #0c4a6e;
+  --color-ui-red-100:   #fee2e2;
+  --color-ui-red-400:   #f87171;
+  --color-ui-red-500:   #ef4444;
+  --color-ui-red-600:   #dc2626;
+  --color-ui-red-800:   #991b1b;
+  --color-ui-red-900:   #7f1d1d;
 }
 
 @layer theme {
@@ -92,13 +137,34 @@ body {
       --color-accent-primary-hover: #00aed1;
       --color-accent-light: #00aed1;
       --color-accent-light-bg: #1e3a5f;
+
+      --color-gradient-from: var(--color-primary-light);
+      --color-gradient-to: var(--color-primary);
+      --color-shadow-accent: color-mix(in srgb, var(--color-primary) 22%, transparent);
+      --color-shadow-strong: color-mix(in srgb, var(--color-primary) 30%, transparent);
+      --color-border-accent-light: color-mix(in srgb, var(--color-primary) 40%, transparent);
+
+      /* Status Colors - Dark */
+      --color-success: #22c55e;
+      --color-error: #f87171;
+      --color-status-error-bg: rgba(239, 68, 68, 0.1);
+      --color-status-success-bg: rgba(34, 197, 94, 0.1);
     }
   }
 }
 
 @layer components {
+  /* Single layout column: match Navbar (`HEADER_MAX`) so header + pages align. */
   .page-container {
-    @apply mx-auto max-w-7xl px-4 sm:px-6 lg:px-0;
+    @apply mx-auto w-full max-w-[90rem] px-4 sm:px-6 lg:px-8;
+  }
+
+  .bg-gradient-brand-vertical {
+    background: linear-gradient(
+      180deg,
+      var(--color-gradient-from) 0%,
+      var(--color-gradient-to) 100%
+    );
   }
 
   /* Custom Scrollbar Styles */
@@ -170,6 +236,34 @@ body {
 
   .bg-custom-card {
     background-color: var(--color-bg-card);
+  }
+
+  /**
+   * Navbar: vertical brand wash (top → bottom), like Tickmart reference:
+   * saturated `--color-primary` at top → pale peach/cream at bottom (API `main_color`).
+   * Lower nav row sits on the lightest band.
+   */
+  .bg-gradient-navbar {
+    background: linear-gradient(
+      180deg,
+      var(--color-primary) 0%,
+      color-mix(in srgb, var(--color-primary) 78%, #ffffff) 22%,
+      color-mix(in srgb, var(--color-primary) 42%, #ffffff) 48%,
+      color-mix(in srgb, var(--color-primary) 18%, #fffef8) 78%,
+      color-mix(in srgb, var(--color-primary) 7%, #fffbf5) 100%
+    );
+    box-shadow: 0 2px 10px -6px var(--color-shadow-accent);
+  }
+
+  .dark .bg-gradient-navbar {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--color-primary) 55%, var(--color-bg-card)) 0%,
+      color-mix(in srgb, var(--color-primary) 28%, var(--color-bg-card)) 40%,
+      color-mix(in srgb, var(--color-primary) 12%, var(--color-bg-card)) 72%,
+      var(--color-bg-card) 100%
+    );
+    box-shadow: 0 2px 12px -8px color-mix(in srgb, var(--color-primary) 35%, transparent);
   }
 
   /* Text Colors */
@@ -568,4 +662,213 @@ body {
 /* Ensure swiper wrapper maintains equal height */
 .swiper-wrapper {
   align-items: stretch;
+}
+
+/* Shared product/brand carousels:
+   keep cards clipped to slider bounds while reserving inner space for hover lift. */
+.shared-swiper.swiper {
+  overflow: hidden;
+  padding-top: 8px;
+  padding-bottom: 14px;
+  margin-top: -8px;
+  margin-bottom: -14px;
+}
+
+.shared-swiper .swiper-slide {
+  overflow: visible;
+}
+
+.shared-swiper .swiper-slide:hover {
+  z-index: 20;
+}
+
+/* ============================================== */
+/* Order tracking card animations                 */
+/* ============================================== */
+
+/* Scooter / truck bounce (LTR) */
+@keyframes truck-bounce {
+  0%,
+  100% {
+    transform: translateX(0) translateY(0);
+  }
+  25% {
+    transform: translateX(2px) translateY(-1px);
+  }
+  50% {
+    transform: translateX(3px) translateY(0);
+  }
+  75% {
+    transform: translateX(2px) translateY(-1px);
+  }
+}
+
+.animate-truck-bounce {
+  animation: truck-bounce 1.4s ease-in-out infinite;
+}
+
+[dir="rtl"] .animate-truck-bounce {
+  animation: truck-bounce-rtl 1.4s ease-in-out infinite;
+}
+
+@keyframes truck-bounce-rtl {
+  0%,
+  100% {
+    transform: translateX(0) translateY(0);
+  }
+  25% {
+    transform: translateX(-2px) translateY(-1px);
+  }
+  50% {
+    transform: translateX(-3px) translateY(0);
+  }
+  75% {
+    transform: translateX(-2px) translateY(-1px);
+  }
+}
+
+/* Hourglass slow flip */
+@keyframes hourglass-flip {
+  0%,
+  45% {
+    transform: rotate(0deg);
+  }
+  50%,
+  55% {
+    transform: rotate(180deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-hourglass-flip {
+  animation: hourglass-flip 2.4s ease-in-out infinite;
+  transform-origin: center;
+}
+
+/* Active step gentle float */
+@keyframes step-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+.animate-step-float {
+  animation: step-float 2.4s ease-in-out infinite;
+}
+
+/* Completed step pop-in (runs on mount) */
+@keyframes step-pop {
+  0% {
+    transform: scale(0.75);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-step-pop {
+  animation: step-pop 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.3) both;
+}
+
+/* Check bounce-in */
+@keyframes check-pop {
+  0% {
+    transform: scale(0) rotate(-45deg);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.25) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+.animate-check-pop {
+  animation: check-pop 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.3) both;
+}
+
+/* Traveling shimmer on completed connector */
+@keyframes connector-flow {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(400%);
+  }
+}
+
+.animate-connector-flow {
+  animation: connector-flow 2s ease-in-out infinite;
+}
+
+[dir="rtl"] .animate-connector-flow {
+  animation: connector-flow-rtl 2s ease-in-out infinite;
+}
+
+@keyframes connector-flow-rtl {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-400%);
+  }
+}
+
+/* Active label soft glow pulse */
+@keyframes label-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.04);
+  }
+  50% {
+    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.08);
+  }
+}
+
+.animate-label-glow {
+  animation: label-glow 2.4s ease-in-out infinite;
+}
+
+/* Card entrance */
+@keyframes card-enter {
+  0% {
+    transform: translateY(8px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-card-enter {
+  animation: card-enter 0.45s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-truck-bounce,
+  .animate-hourglass-flip,
+  .animate-step-float,
+  .animate-step-pop,
+  .animate-check-pop,
+  .animate-connector-flow,
+  .animate-label-glow,
+  .animate-card-enter {
+    animation: none;
+  }
 }

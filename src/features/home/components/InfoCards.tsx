@@ -16,7 +16,7 @@ export default function InfoCards() {
   }
 
   return (
-    <div className="pt-8 space-y-5" dir={isRTL ? "rtl" : "ltr"}>
+    <div className="space-y-6 pt-8 pb-2" dir={isRTL ? "rtl" : "ltr"}>
       <PointsRewardsCard
         points={activePoints?.points ?? 0}
         rewardsCount={activePoints?.gifts_count ?? 0}

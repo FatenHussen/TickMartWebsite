@@ -1,4 +1,4 @@
-import { HiCurrencyDollar } from "react-icons/hi";
+import { DollarSign } from "lucide-react";
 import type { TFunction } from "i18next";
 import type { MarketerOrder } from "@/features/marketer/types";
 import { calculateOrderAffiliateCommission } from "@/features/marketer/utils/affiliateCommission";
@@ -39,7 +39,7 @@ export function OrdersTableDataRow({ order, rowIndex, t }: OrdersTableDataRowPro
             </td>
             <td className="px-4 py-3.5">
                 <span className="inline-flex items-center gap-1 rounded-lg bg-status-success-bg/80 px-2 py-1 text-sm font-semibold tabular-nums text-success">
-                    <HiCurrencyDollar className="h-3.5 w-3.5 opacity-80" aria-hidden />+
+                    <DollarSign className="h-3.5 w-3.5 opacity-80" aria-hidden />+
                     {commission.toLocaleString()}
                 </span>
             </td>

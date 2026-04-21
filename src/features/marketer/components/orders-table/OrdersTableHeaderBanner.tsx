@@ -1,4 +1,4 @@
-import { HiShoppingBag } from "react-icons/hi";
+import { ShoppingBag } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 export function OrdersTableHeaderBanner() {
@@ -14,7 +14,7 @@ export function OrdersTableHeaderBanner() {
                         className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[color-mix(in_srgb,var(--color-api-second)_18%,var(--color-bg-card))] text-[var(--color-main)] shadow-sm ring-1 ring-[color-mix(in_srgb,var(--color-api-second)_30%,transparent)]"
                         aria-hidden
                     >
-                        <HiShoppingBag className="h-5 w-5" />
+                        <ShoppingBag className="h-5 w-5" />
                     </div>
                     <div className="min-w-0 space-y-1">
                         <h3 className="text-lg font-bold tracking-tight text-text-primary">

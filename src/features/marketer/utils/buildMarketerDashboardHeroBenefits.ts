@@ -1,9 +1,9 @@
-import type { IconType } from "react-icons";
-import { HiCurrencyDollar, HiDownload, HiTrendingUp } from "react-icons/hi";
+import { DollarSign, Download, TrendingUp } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import type { TFunction } from "i18next";
 
 export interface MarketerDashboardHeroBenefit {
-    icon: IconType;
+    icon: LucideIcon;
     title: string;
     body: string;
 }
@@ -11,7 +11,7 @@ export interface MarketerDashboardHeroBenefit {
 export function buildMarketerDashboardHeroBenefits(t: TFunction): MarketerDashboardHeroBenefit[] {
     return [
         {
-            icon: HiTrendingUp,
+            icon: TrendingUp,
             title: t("marketer.dashboard.heroBenefit1Title", "Performance overview"),
             body: t(
                 "marketer.dashboard.heroBenefit1Body",
@@ -19,7 +19,7 @@ export function buildMarketerDashboardHeroBenefits(t: TFunction): MarketerDashbo
             ),
         },
         {
-            icon: HiCurrencyDollar,
+            icon: DollarSign,
             title: t("marketer.dashboard.heroBenefit2Title", "Earnings & balance"),
             body: t(
                 "marketer.dashboard.heroBenefit2Body",
@@ -27,7 +27,7 @@ export function buildMarketerDashboardHeroBenefits(t: TFunction): MarketerDashbo
             ),
         },
         {
-            icon: HiDownload,
+            icon: Download,
             title: t("marketer.dashboard.heroBenefit3Title", "Withdraw easily"),
             body: t(
                 "marketer.dashboard.heroBenefit3Body",

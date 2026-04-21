@@ -48,13 +48,18 @@ export default function AddressLabelSelector({
  type="button"
  onClick={() => field.onChange(option.value)}
  className={cn(
-"flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all",
+"flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all",
  isSelected
- ?"bg-primary-light text-white"
- :"bg-custom-card dark:bg-bg-primary text-text-secondary border border-custom-primary hover:border-primary",
+ ?"bg-[var(--color-api-second)] text-white shadow-sm hover:bg-[var(--color-api-second-hover)]"
+ :"border border-custom-primary bg-custom-card text-text-secondary hover:border-[var(--color-main)] dark:bg-bg-primary",
  )}
  >
- <Icon className="w-5 h-5"/>
+ <Icon
+ className={cn(
+ "h-5 w-5 shrink-0",
+ isSelected ? "text-white" : "text-current",
+ )}
+ />
  <span>
  {t(`account.addAddress.labels.${option.labelKey}`)}
  </span>
@@ -65,7 +70,7 @@ export default function AddressLabelSelector({
  )}
  />
  {error && (
- <p className="text-sm text-red-600 dark:text-red-400">
+ <p className="text-sm text-[var(--color-ui-red-600)] dark:text-[var(--color-ui-red-400)]">
  {error.message as string}
  </p>
  )}

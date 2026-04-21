@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { HiBell, HiCheckCircle } from "react-icons/hi";
+import { Bell, CircleCheck } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 
 interface NotificationsPageHeaderProps {
@@ -36,7 +36,7 @@ export function NotificationsPageHeader({
               "bg-gradient-to-br from-primary to-primary-dark",
             )}
           >
-            <HiBell className="h-6 w-6 text-white" />
+            <Bell className="h-6 w-6 text-white" aria-hidden />
           </div>
           <div className="min-w-0">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-api-second)]">
@@ -64,7 +64,7 @@ export function NotificationsPageHeader({
               disabled={markAllReadIsPending}
               className="inline-flex items-center gap-1.5 rounded-xl bg-custom-card/90 px-4 py-2.5 text-sm font-medium text-accent-primary shadow-sm transition-colors hover:bg-custom-light dark:bg-bg-hover/60 dark:text-accent-light dark:hover:bg-bg-hover disabled:opacity-50"
             >
-              <HiCheckCircle className="h-4 w-4 shrink-0" />
+              <CircleCheck className="h-4 w-4 shrink-0" aria-hidden />
               {t("account.notificationsPage.markAllRead")}
             </button>
           )}

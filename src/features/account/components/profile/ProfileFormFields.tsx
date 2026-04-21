@@ -1,7 +1,7 @@
 import type { UIEvent } from "react";
 import type { FieldErrors, UseFormRegister } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { HiUser, HiPhone, HiMail } from "react-icons/hi";
+import { User, Phone, Mail } from "lucide-react";
 import type { SelectOption } from "@/shared/hooks/useInfiniteSelect";
 import type { ProfileFormValues } from "../../types/profileForm";
 
@@ -46,7 +46,7 @@ export function ProfileFormFields({
                     </label>
                     <div className="relative">
                         <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
-                            <HiUser className="w-5 h-5 text-primary" />
+                            <User className="w-5 h-5 text-primary" />
                         </span>
                         <input
                             {...register("name", { required: requiredMessage })}
@@ -68,7 +68,7 @@ export function ProfileFormFields({
                     </label>
                     <div className="relative">
                         <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
-                            <HiPhone className="w-5 h-5 text-primary" />
+                            <Phone className="w-5 h-5 text-primary" />
                         </span>
                         <input
                             readOnly
@@ -85,7 +85,7 @@ export function ProfileFormFields({
                 </label>
                 <div className="relative">
                     <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
-                        <HiMail className="w-5 h-5 text-primary" />
+                        <Mail className="w-5 h-5 text-primary" />
                     </span>
                     <input
                         readOnly

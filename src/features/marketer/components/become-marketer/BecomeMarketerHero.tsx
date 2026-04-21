@@ -1,4 +1,4 @@
-import { HiSparkles } from "react-icons/hi";
+import { Sparkles } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { MARKETER_SPOTLIGHT_BACKGROUND_STYLE } from "@/features/marketer/constants/marketerSpotlightBackground";
 import type { BecomeMarketerBenefitItem } from "@/features/marketer/utils/buildBecomeMarketerBenefitItems";
@@ -24,7 +24,7 @@ export function BecomeMarketerHero({ benefitItems }: BecomeMarketerHeroProps) {
 
             <div className="relative p-6 sm:p-8">
                 <div className="inline-flex items-center gap-2 rounded-full border border-custom-primary/55 bg-custom-primary/35 px-3 py-1.5 backdrop-blur-sm">
-                    <HiSparkles
+                    <Sparkles
                         className="h-4 w-4 shrink-0 text-[var(--color-main)]"
                         aria-hidden
                     />

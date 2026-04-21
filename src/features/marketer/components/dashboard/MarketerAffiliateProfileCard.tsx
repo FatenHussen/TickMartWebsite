@@ -1,4 +1,4 @@
-import { HiClipboardCopy, HiExternalLink } from "react-icons/hi";
+import { ClipboardCopy, ExternalLink } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { MarketerProfile } from "@/features/marketer/types";
 
@@ -63,7 +63,7 @@ export function MarketerAffiliateProfileCard({
                             onClick={onCopyAffiliateLink}
                             className="flex items-center gap-2 rounded-xl bg-white/20 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-white/30"
                         >
-                            <HiClipboardCopy className="h-4 w-4 shrink-0" aria-hidden />
+                            <ClipboardCopy className="h-4 w-4 shrink-0" aria-hidden />
                             {t("marketer.dashboard.copyLink", "Copy Affiliate Link")}
                         </button>
                         <a
@@ -72,7 +72,7 @@ export function MarketerAffiliateProfileCard({
                             rel="noopener noreferrer"
                             className="flex items-center gap-2 rounded-xl bg-white/10 px-4 py-2.5 text-sm text-white transition-colors hover:bg-white/20"
                         >
-                            <HiExternalLink className="h-4 w-4 shrink-0" aria-hidden />
+                            <ExternalLink className="h-4 w-4 shrink-0" aria-hidden />
                             {t("marketer.dashboard.viewLink", "View Link")}
                         </a>
                     </div>

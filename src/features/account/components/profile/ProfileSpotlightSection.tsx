@@ -1,4 +1,4 @@
-import { HiPencil, HiSparkles } from "react-icons/hi";
+import { Pencil, Sparkles } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { API_SECOND_BUTTON_CLASS } from "./apiPaletteClasses";
 
@@ -42,7 +42,7 @@ export function ProfileSpotlightSection({
             <div className="relative grid gap-8 p-6 sm:p-8 lg:grid-cols-[1fr_auto] lg:items-end">
                 <div className="space-y-4">
                     <div className="inline-flex items-center gap-2 rounded-full border border-custom-primary/60 bg-custom-primary/40 px-3 py-1 backdrop-blur-sm">
-                        <HiSparkles
+                        <Sparkles
                             className="h-4 w-4 shrink-0 text-[var(--color-main)]"
                             aria-hidden
                         />
@@ -87,7 +87,7 @@ export function ProfileSpotlightSection({
                         onClick={onToggleEditMode}
                         className={API_SECOND_BUTTON_CLASS}
                     >
-                        <HiPencil className="h-4 w-4 shrink-0" aria-hidden />
+                        <Pencil className="h-4 w-4 shrink-0" aria-hidden />
                         {editProfileLabel}
                     </button>
                 </div>

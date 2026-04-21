@@ -3,7 +3,6 @@ import { useLanguage } from "@/context/LanguageContext";
 import Categories from "../components/Categories";
 import InfoCards from "../components/InfoCards";
 import AllProductsSection from "../components/AllProductsSection";
-import FullBleedSection from "@/shared/component/FullBleedSection";
 import ApiSectionsRenderer from "@/shared/component/sections/ApiSectionsRenderer";
 import { useSectionsByPosition } from "../hooks/useSections";
 import { useAuthStore } from "@/store/auth";
@@ -40,8 +39,12 @@ export default function Home() {
         : beforeSections;
 
     return (
-        <div className="min-h-screen bg-custom-primary" dir={isRTL ? "rtl" : "ltr"}>
-            <div className="page-container">
+        <div
+            className="min-h-screen bg-[#FFF9F5] dark:bg-custom-primary"
+            dir={isRTL ? "rtl" : "ltr"}
+        >
+            {/* One `.page-container` for the whole home column (matches Navbar width). */}
+            <div className="page-container flex flex-col gap-8 pb-12 pt-4 sm:gap-10 sm:pt-6">
                 {/* <PromotionalHeroSlider
  items={heroItems}
  getLink={heroBannerSection ? undefined : getHeroLink}
@@ -50,30 +53,30 @@ export default function Home() {
  }
  /> */}
                 <InfoCards />
+
+                {beforeSectionsFiltered.length > 0 && (
+                    <ApiSectionsRenderer
+                        sections={beforeSectionsFiltered}
+                        edgeToEdgeSectionBackgrounds={false}
+                        skipInnerPageContainer
+                    />
+                )}
+
+                <div className="min-w-0 py-1">
+                    <Categories />
+                </div>
+
+                {afterSections.length > 0 && (
+                    <ApiSectionsRenderer
+                        sections={afterSections}
+                        edgeToEdgeSectionBackgrounds={false}
+                        skipInnerPageContainer
+                    />
+                )}
+
+                <AllProductsSection disablePageContainer />
             </div>
 
-            {/* Sections before Categories */}
-            {beforeSectionsFiltered.length > 0 && (
-                <FullBleedSection>
-                    <ApiSectionsRenderer sections={beforeSectionsFiltered} />
-                </FullBleedSection>
-            )}
-
-            <FullBleedSection>
-                <Categories />
-            </FullBleedSection>
-
-            {/* Sections after Categories */}
-            {afterSections.length > 0 && (
-                <FullBleedSection>
-                    <ApiSectionsRenderer sections={afterSections} />
-                </FullBleedSection>
-            )}
-
-            {/* All Products Section */}
-            <AllProductsSection />
-
-            {/* First-time packages popup */}
             <AffiliatePackagesPopup
                 isOpen={showPackagesPopup}
                 onClose={handleClosePackagesPopup}

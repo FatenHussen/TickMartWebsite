@@ -1,7 +1,3 @@
-/**
- * Resolves API fields that may be a string or `{ ar?, en? }` for infinite-select labels.
- * Matches the behaviour previously inlined in `AddressForm`.
- */
 export function resolveLocalizedOptionLabel(value: unknown, lang: string): string {
     if (value == null) return "";
     if (typeof value === "string") return value;

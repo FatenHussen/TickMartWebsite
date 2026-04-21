@@ -1,5 +1,5 @@
 import { useTranslation } from"react-i18next";
-import { HiTruck } from"react-icons/hi";
+import { Truck } from "lucide-react";
 import StarRating from"./StarRating";
 import type { DeliveryReview } from"../types";
 
@@ -21,7 +21,7 @@ export default function DeliveryReviewCard({
  <div className="flex items-start gap-4 flex-1 min-w-0">
  {/* Delivery Icon - green */}
  <div className="w-12 h-12 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center shrink-0">
- <HiTruck className="w-6 h-6 text-green-600 dark:text-green-400"/>
+ <Truck className="w-6 h-6 text-green-600 dark:text-green-400" aria-hidden />
  </div>
 
  {/* Delivery Info */}
@@ -45,11 +45,8 @@ export default function DeliveryReviewCard({
  </div>
 
  {/* Rating */}
- <div className="flex items-center gap-2 mt-3">
- <StarRating rating={review.rating} size="sm"/>
- <span className="text-sm font-bold text-custom-primary">
- {review.rating.toFixed(1)}
- </span>
+ <div className="mt-3">
+ <StarRating rating={review.rating} size="sm" variant="brand"/>
  </div>
 
  {/* Review Text */}

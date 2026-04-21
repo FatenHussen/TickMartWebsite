@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { HiOutlineLogout } from "react-icons/hi";
+import { LogOut } from "lucide-react";
 import { ProfileSectionShell } from "./ProfileSectionShell";
 
 interface ProfileLogoutSectionProps {
@@ -10,11 +10,11 @@ export function ProfileLogoutSection({ onOpenLogoutConfirm }: ProfileLogoutSecti
     const { t } = useTranslation();
 
     return (
-        <ProfileSectionShell>
+        <ProfileSectionShell tone="danger">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-3">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-custom-tertiary">
-                        <HiOutlineLogout className="h-5 w-5 text-custom-secondary" />
+                        <LogOut className="h-5 w-5 text-custom-secondary" />
                     </div>
                     <div>
                         <h2 className="font-semibold text-custom-primary">
@@ -26,7 +26,7 @@ export function ProfileLogoutSection({ onOpenLogoutConfirm }: ProfileLogoutSecti
                 <button
                     type="button"
                     onClick={onOpenLogoutConfirm}
-                    className="shrink-0 rounded-full bg-red-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-red-700"
+                    className="shrink-0 rounded-full bg-[var(--color-ui-red-500)] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[var(--color-ui-red-600)]"
                 >
                     {t("account.profile.logout")}
                 </button>

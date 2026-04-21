@@ -309,7 +309,7 @@ export default function RatingFormModal({
                                 <div className="relative shrink-0">
                                     <img
                                         src={imagePreview}
-                                        alt="Preview"
+                                        alt={t("account.myReviews.ratingForm.imagePreviewAlt")}
                                         className="w-20 h-20 object-cover rounded-lg border border-slate-200 dark:border-slate-600"
                                     />
                                     <button

@@ -4,7 +4,6 @@ import { PaymentMethodOptionCard } from "./PaymentMethodOptionCard";
 interface PaymentMethodOptionsListProps {
     methods: PaymentMethodOption[];
     isLoading: boolean;
-    /** Resolved selection: explicit choice or implicit default when empty. */
     effectiveSelectedId: string | undefined;
     defaultMethodId: string | undefined;
     defaultBadgeLabel: string;

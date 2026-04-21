@@ -1,215 +1,554 @@
-import { useState } from"react";
-import { NavLink, useLocation } from"react-router-dom";
-import { useTranslation } from"react-i18next";
-import { useLanguage } from"@/context/LanguageContext";
-import { useTheme } from"@/context/ThemeContext";
-import { cn } from"@/shared/lib/utils";
-import { LogoutPopup } from"@/shared/component";
-import { useLogout } from"@/features/auth/hooks/useAuth";
-import { useAuthStore } from"@/store/auth";
+import { useState } from "react";
+import { NavLink } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { useLanguage } from "@/context/LanguageContext";
+import { cn } from "@/shared/lib/utils";
+import { LogoutPopup } from "@/shared/component";
+import { useLogout } from "@/features/auth/hooks/useAuth";
+import { useAuthStore } from "@/store/auth";
 import {
- HiUser,
- HiLocationMarker,
- HiCreditCard,
- HiShoppingBag,
- HiShoppingCart,
- HiCube,
- HiHeart,
- HiGift,
- HiBell,
- HiStar,
- HiQuestionMarkCircle,
- HiCog,
- HiLogout,
- HiTrendingUp,
- HiTrash,
-} from"react-icons/hi";
-import type { IconType } from"react-icons";
+  User,
+  MapPin,
+  CreditCard,
+  ShoppingBag,
+  ShoppingCart,
+  Package,
+  Heart,
+  Gift,
+  Bell,
+  Star,
+  HelpCircle,
+  Settings,
+  LogOut,
+  Trash2,
+  TrendingUp,
+  PanelLeftClose,
+  PanelLeftOpen,
+} from "lucide-react";
 
 interface AccountSidebarProps {
- user?: {
- fullName: string;
- email: string;
- avatar?: string;
- isOnline?: boolean;
- };
+  user?: {
+    fullName: string;
+    email: string;
+    avatar?: string;
+    isOnline?: boolean;
+  };
+  isCollapsed?: boolean;
+  onToggle?: (collapsed: boolean) => void;
 }
 
-const baseMenuItems: { id: string; icon: IconType; path: string }[] = [
- { id:"profile", icon: HiUser, path:"/account/profile"},
- { id:"addresses", icon: HiLocationMarker, path:"/account/addresses"},
- { id:"paymentMethods", icon: HiCreditCard, path:"/account/payment-methods"},
- { id:"myOrders", icon: HiShoppingBag, path:"/account/orders"},
- { id:"myBaskets", icon: HiShoppingCart, path:"/account/baskets"},
- { id:"myPackages", icon: HiCube, path:"/account/packages"},
- { id:"wishlist", icon: HiHeart, path:"/account/wishlist"},
- { id:"pointsRewards", icon: HiGift, path:"/account/points-rewards"},
- { id:"notifications", icon: HiBell, path:"/account/notifications"},
- { id:"myReviews", icon: HiStar, path:"/account/reviews"},
- { id:"helpSupport", icon: HiQuestionMarkCircle, path:"/account/help-support"},
- { id:"settings", icon: HiCog, path:"/account/settings"},
+const ALL_MENU_ITEMS = [
+  { id: "profile", icon: User, path: "/account/profile" },
+  { id: "addresses", icon: MapPin, path: "/account/addresses" },
+  { id: "paymentMethods", icon: CreditCard, path: "/account/payment-methods" },
+  { id: "marketerDashboard", icon: TrendingUp, path: "/account/marketer-dashboard" },
+  { id: "myOrders", icon: ShoppingBag, path: "/account/orders" },
+  { id: "myBaskets", icon: ShoppingCart, path: "/account/baskets" },
+  { id: "myPackages", icon: Package, path: "/account/packages" },
+  { id: "wishlist", icon: Heart, path: "/account/wishlist" },
+  { id: "pointsRewards", icon: Gift, path: "/account/points-rewards" },
+  { id: "notifications", icon: Bell, path: "/account/notifications" },
+  { id: "myReviews", icon: Star, path: "/account/reviews" },
+  { id: "helpSupport", icon: HelpCircle, path: "/account/help-support" },
+  { id: "settings", icon: Settings, path: "/account/settings" },
 ];
 
-export default function AccountSidebar({ user }: AccountSidebarProps) {
- const { t } = useTranslation();
- const { isRTL } = useLanguage();
- const { theme } = useTheme();
- const isDark = theme ==="dark";
- const location = useLocation();
- const [showLogoutPopup, setShowLogoutPopup] = useState(false);
- const logoutMutation = useLogout();
- const { user: authUser } = useAuthStore();
+const SECTION_GROUPS = [
+  {
+    labelKey: "sections.account",
+    itemIds: ["profile", "addresses", "paymentMethods", "marketerDashboard"],
+  },
+  {
+    labelKey: "sections.orders",
+    itemIds: ["myOrders", "myBaskets", "myPackages"],
+  },
+  {
+    labelKey: "sections.activity",
+    itemIds: ["wishlist", "pointsRewards", "notifications", "myReviews"],
+  },
+  {
+    labelKey: "sections.support",
+    itemIds: ["helpSupport", "settings"],
+  },
+];
 
- const isApprovedMarketer =
- authUser?.affiliate?.is_affiliate === true &&
- authUser?.affiliate?.approved === true;
+/* ---------- Tooltip (shown when collapsed) ---------- */
+function ItemTooltip({
+  label,
+  isRTL,
+}: {
+  label: string;
+  isRTL: boolean;
+}) {
+  const side = isRTL ? "right-full mr-3" : "left-full ml-3";
+  return (
+    <span
+      role="tooltip"
+      className={cn(
+        "absolute z-[100] px-3 py-1.5 text-xs font-semibold whitespace-nowrap",
+        "pointer-events-none shadow-xl rounded-lg",
+        "opacity-0 group-hover:opacity-100",
+        "transition-all duration-150 delay-100",
+        side,
+        "bg-[var(--color-text-primary)] text-[var(--color-bg-card)]"
+      )}
+    >
+      {label}
+    </span>
+  );
+}
 
- const menuItems = isApprovedMarketer
- ? [
- ...baseMenuItems.slice(0, 1),
- { id:"marketerDashboard", icon: HiTrendingUp, path:"/account/marketer-dashboard"},
- ...baseMenuItems.slice(1),
- ]
- : baseMenuItems;
+/* ---------- Nav Item ---------- */
+function NavItem({
+  item,
+  isCollapsed,
+  isRTL,
+}: {
+  item: (typeof ALL_MENU_ITEMS)[0];
+  isCollapsed: boolean;
+  isRTL: boolean;
+}) {
+  const { t } = useTranslation();
+  const Icon = item.icon;
+  const label = t(`account.menu.${item.id}`);
 
- const currentUser = user ?? {
- fullName: authUser?.name ?? "",
- email: authUser?.email ?? "",
- avatar: undefined,
- };
+  return (
+    <li className="relative">
+      <NavLink
+        to={item.path}
+        className={({ isActive }) =>
+          cn(
+            "group relative flex items-center gap-3",
+            "transition-all duration-200 ease-in-out text-sm font-medium rounded-xl",
+            "focus-visible:outline-none",
+            isCollapsed
+              ? "justify-center px-0 py-3 mx-auto w-11 h-11"
+              : "px-3 py-2.5",
+            isRTL && !isCollapsed ? "flex-row-reverse" : "",
+            !isActive && "hover:bg-[var(--color-bg-hover)]"
+          )
+        }
+        style={({ isActive }) => ({
+          backgroundColor: isActive ? "var(--color-accent-light-bg)" : undefined,
+          color: isActive ? "var(--color-primary)" : "var(--color-text-secondary)",
+        })}
+      >
+        {({ isActive }) => (
+          <>
+            {/* Active pill indicator */}
+            {!isCollapsed && (
+              <span
+                className={cn(
+                  "absolute top-1/2 -translate-y-1/2 w-1 h-5 rounded-full",
+                  "transition-all duration-300 ease-out",
+                  isRTL ? "-right-0" : "-left-0",
+                  isActive ? "opacity-100 scale-y-100" : "opacity-0 scale-y-50"
+                )}
+                style={{ backgroundColor: "var(--color-primary)" }}
+              />
+            )}
 
- const handleLogoutClick = () => {
- setShowLogoutPopup(true);
- };
+            {/* Icon */}
+            <span
+              className={cn(
+                "flex items-center justify-center shrink-0 rounded-xl transition-all duration-200",
+                isCollapsed ? "w-10 h-10" : "w-5 h-5"
+              )}
+              style={
+                isCollapsed && isActive
+                  ? { backgroundColor: "var(--color-accent-light-bg)" }
+                  : undefined
+              }
+            >
+              <Icon
+                style={{
+                  width: isCollapsed ? 20 : 17,
+                  height: isCollapsed ? 20 : 17,
+                  color: isActive
+                    ? "var(--color-primary)"
+                    : "var(--color-text-tertiary)",
+                }}
+              />
+            </span>
 
- const handleLogoutConfirm = () => {
- logoutMutation.mutate();
- };
+            {/* Label */}
+            {!isCollapsed && (
+              <span
+                className={cn(
+                  "flex-1 truncate leading-tight",
+                  isRTL ? "text-right" : "text-left"
+                )}
+              >
+                {label}
+              </span>
+            )}
 
- const handleLogoutClose = () => {
- setShowLogoutPopup(false);
- };
+            {/* Tooltip when collapsed */}
+            {isCollapsed && <ItemTooltip label={label} isRTL={isRTL} />}
+          </>
+        )}
+      </NavLink>
+    </li>
+  );
+}
 
- const sidebarGradient = isDark
- ?"linear-gradient(180deg, #1e3a5f 0%, #1e293b 50%, #0f172a 100%)"
- :"linear-gradient(180deg, #2C8090 0%, #3AB8C4 50%, #4CDAF6 100%)";
- const headerGradient = isDark
- ?"linear-gradient(180deg, #1e3a5f 0%, #0f172a 100%)"
- :"linear-gradient(180deg, #4CDAF6 0%, #2C8090 100%)";
+/* ---------- Destructive Action Item (Logout / Delete) ---------- */
+function DestructiveItem({
+  label,
+  icon: Icon,
+  isCollapsed,
+  isRTL,
+  href,
+  onClick,
+}: {
+  label: string;
+  icon: React.ElementType;
+  isCollapsed: boolean;
+  isRTL: boolean;
+  href?: string;
+  onClick?: () => void;
+}) {
+  const baseClass = cn(
+    "group relative flex items-center gap-3 rounded-xl w-full",
+    "transition-all duration-200 ease-in-out text-sm font-medium",
+    "hover:bg-[var(--color-status-error-bg)]",
+    isCollapsed ? "justify-center px-0 py-3 mx-auto w-11 h-11" : "px-3 py-2.5",
+    isRTL && !isCollapsed ? "flex-row-reverse" : ""
+  );
 
- return (
- <div
- className={cn(
-"rounded-3xl overflow-hidden",
-"shadow-[0_10px_15px_rgba(0,0,0,0.1),0_4px_6px_rgba(0,0,0,0.1)]",
- isDark &&"shadow-[0_10px_15px_rgba(0,0,0,0.3),0_4px_6px_rgba(0,0,0,0.2)]"
- )}
- style={{ background: sidebarGradient }}
- >
- {/* User Profile Header */}
- <div
- className="p-6 text-white text-center rounded-t-3xl"
- style={{ background: headerGradient }}
- >
- <div className="relative inline-block mb-3">
- <div className="w-20 h-20 rounded-full overflow-hidden border-3 border-custom-primary/30 mx-auto">
- {currentUser.avatar ? (
- <img
- src={currentUser.avatar}
- alt={currentUser.fullName}
- className="w-full h-full object-cover"
- />
- ) : (
- <div className="w-full h-full bg-custom-card/20 flex items-center justify-center font-semibold text-2xl text-white/90">
- {currentUser.fullName?.charAt(0)?.toUpperCase() ||"?"}
- </div>
- )}
- </div>
- {currentUser.isOnline && (
- <span className="absolute bottom-1 right-1 w-4 h-4 bg-[#28A745] border-2 border-custom-primary rounded-full"/>
- )}
- </div>
- <h3 className="font-semibold text-lg text-white">{currentUser.fullName}</h3>
- <p className="text-sm text-white/80">{currentUser.email}</p>
- </div>
+  const content = (
+    <>
+      <span
+        className={cn(
+          "flex items-center justify-center shrink-0 rounded-xl transition-all duration-200",
+          isCollapsed ? "w-10 h-10" : "w-5 h-5"
+        )}
+      >
+        <Icon
+          style={{
+            width: isCollapsed ? 20 : 17,
+            height: isCollapsed ? 20 : 17,
+            color: "var(--color-error)",
+          }}
+        />
+      </span>
+      {!isCollapsed && (
+        <span
+          className={cn(
+            "flex-1 truncate",
+            isRTL ? "text-right" : "text-left"
+          )}
+          style={{ color: "var(--color-error)" }}
+        >
+          {label}
+        </span>
+      )}
+      {isCollapsed && <ItemTooltip label={label} isRTL={isRTL} />}
+    </>
+  );
 
- {/* Navigation Menu */}
- <nav className="py-2"style={{ background:"transparent"}}>
- <ul className="space-y-1">
- {menuItems.map((item) => {
- const Icon = item.icon;
- const isActive = location.pathname === item.path;
+  if (href) {
+    return (
+      <li className="relative">
+        <NavLink
+          to={href}
+          title={isCollapsed ? label : undefined}
+          className={({ isActive }) =>
+            cn(baseClass, isActive && "bg-[var(--color-status-error-bg)]")
+          }
+        >
+          {content}
+        </NavLink>
+      </li>
+    );
+  }
 
- return (
- <li key={item.id}>
- <NavLink
- to={item.path}
- className={({ isActive: active }) =>
- cn(
-"flex items-center gap-3 px-6 py-3 transition-all duration-200",
- active
- ?"bg-custom-primary text-custom-primary font-medium shadow-md"
- :"text-white",
- active && !isRTL &&"ml-3 rounded-l-3xl",
- active && isRTL &&"mr-3 rounded-r-3xl",
- isRTL &&"flex-row-reverse"
- )
- }
- >
- <Icon
- className={cn(
-"w-5 h-5 shrink-0",
- isActive ?"text-custom-primary":"text-white"
- )}
- />
- <span className="text-sm">{t(`account.menu.${item.id}`)}</span>
- </NavLink>
- </li>
- );
- })}
+  return (
+    <li className="relative">
+      <button
+        onClick={onClick}
+        title={isCollapsed ? label : undefined}
+        className={baseClass}
+      >
+        {content}
+      </button>
+    </li>
+  );
+}
 
- {/* Logout */}
- <li className="pt-2 mt-2"style={{ borderTop:"1px solid rgba(255,255,255,0.2)"}}>
- <button
- onClick={handleLogoutClick}
- className={cn(
-"flex items-center gap-3 px-6 py-3 transition-all duration-200 w-full",
- isRTL ?"text-right":"text-left"
- )}
- style={{ color:"#DC3545"}}
- >
- <HiLogout className="w-5 h-5 shrink-0"style={{ color:"#DC3545"}} />
- <span className="text-sm font-medium">{t("account.menu.logout")}</span>
- </button>
- </li>
+/* ---------- Section Label ---------- */
+function SectionLabel({
+  labelKey,
+  isCollapsed,
+}: {
+  labelKey: string;
+  isCollapsed: boolean;
+}) {
+  const { t } = useTranslation();
 
- {/* Delete Account */}
- <li>
- <NavLink
- to="/account/delete"
- className={cn(
-"flex items-center gap-3 px-6 py-3 transition-all duration-200",
- location.pathname === "/account/delete"
- ?"bg-custom-primary text-red-500 font-medium shadow-md"
- :"text-red-400",
- location.pathname === "/account/delete" && !isRTL &&"ml-3 rounded-l-3xl",
- location.pathname === "/account/delete" && isRTL &&"mr-3 rounded-r-3xl",
- isRTL &&"flex-row-reverse"
- )}
- >
- <HiTrash className="w-5 h-5 shrink-0" />
- <span className="text-sm font-medium">{t("account.menu.deleteAccount")}</span>
- </NavLink>
- </li>
- </ul>
- </nav>
+  if (isCollapsed) {
+    return (
+      <li className="flex justify-center py-2">
+        <span
+          className="block w-4 h-px rounded-full"
+          style={{ backgroundColor: "var(--color-border-primary)" }}
+        />
+      </li>
+    );
+  }
 
- {/* Logout Popup */}
- <LogoutPopup
- isOpen={showLogoutPopup}
- onClose={handleLogoutClose}
- onConfirm={handleLogoutConfirm}
- />
- </div>
- );
+  return (
+    <li className="px-3 pt-5 pb-1.5 first:pt-3">
+      <span
+        className="text-[10px] font-semibold tracking-[0.12em] uppercase select-none opacity-80"
+        style={{ color: "var(--color-text-tertiary)" }}
+      >
+        {t(labelKey)}
+      </span>
+    </li>
+  );
+}
+
+/* ---------- Main Sidebar Component ---------- */
+export default function AccountSidebar({
+  user,
+  isCollapsed: controlledCollapsed,
+  onToggle,
+}: AccountSidebarProps) {
+  const { t } = useTranslation();
+  const { isRTL } = useLanguage();
+  const { user: authUser } = useAuthStore();
+  const logoutMutation = useLogout();
+  const [internalCollapsed, setInternalCollapsed] = useState(false);
+  const [showLogoutPopup, setShowLogoutPopup] = useState(false);
+
+  const isControlled = controlledCollapsed !== undefined;
+  const isCollapsed = isControlled ? controlledCollapsed : internalCollapsed;
+
+  const handleToggle = () => {
+    const next = !isCollapsed;
+    if (!isControlled) setInternalCollapsed(next);
+    onToggle?.(next);
+  };
+
+  const isApprovedMarketer =
+    authUser?.affiliate?.is_affiliate === true &&
+    authUser?.affiliate?.approved === true;
+
+  const visibleIds = new Set(
+    ALL_MENU_ITEMS.filter(
+      (item) => item.id !== "marketerDashboard" || isApprovedMarketer
+    ).map((item) => item.id)
+  );
+
+  const currentUser = user ?? {
+    fullName: authUser?.name ?? "",
+    email: authUser?.email ?? "",
+    avatar: undefined,
+  };
+  const initials = currentUser.fullName?.charAt(0)?.toUpperCase() ?? "?";
+
+  /* LTR: rounded left edge removed + shadow right; RTL: opposite */
+  const sidebarEdge = isRTL
+    ? "lg:rounded-r-none lg:border-r-0 lg:shadow-[-8px_0_32px_-12px_rgba(0,0,0,0.08)]"
+    : "lg:rounded-l-none lg:border-l-0 lg:shadow-[8px_0_32px_-12px_rgba(0,0,0,0.08)]";
+
+  const collapseIcon = isCollapsed
+    ? isRTL
+      ? PanelLeftOpen
+      : PanelLeftClose
+    : isRTL
+    ? PanelLeftClose
+    : PanelLeftOpen;
+  const CollapseIcon = collapseIcon;
+
+  return (
+    <div
+      className={cn(
+        "flex min-h-10 flex-col overflow-hidden lg:h-full lg:min-h-0 lg:max-h-full",
+        "max-lg:h-full",
+        "max-lg:rounded-2xl max-lg:shadow-lg max-lg:shadow-black/5",
+        sidebarEdge,
+        "transition-[width] duration-300 ease-in-out motion-reduce:transition-none",
+        isCollapsed ? "w-[72px]" : "w-full"
+      )}
+      style={{
+        backgroundColor: "var(--color-bg-card)",
+        borderWidth: 1,
+        borderStyle: "solid",
+        borderColor: "var(--color-border-primary)",
+      }}
+    >
+      {/* ── Header ── */}
+      <div
+        className={cn(
+          "relative shrink-0 overflow-hidden",
+          !isCollapsed && "rounded-b-2xl"
+        )}
+        style={{
+          background:
+            "linear-gradient(135deg, var(--color-gradient-from) 0%, var(--color-gradient-to) 100%)",
+        }}
+      >
+        {/* Glassmorphism overlay */}
+        <div
+          className="pointer-events-none absolute inset-0 opacity-35 mix-blend-overlay"
+          style={{
+            backgroundImage:
+              "radial-gradient(at 0% 0%, rgba(255,255,255,0.35) 0%, transparent 50%),radial-gradient(at 100% 100%, rgba(255,255,255,0.2) 0%, transparent 45%)",
+          }}
+        />
+
+        {/* Decorative circles (visible when expanded) */}
+        {!isCollapsed && (
+          <>
+            <span className="absolute -top-6 -right-6 w-28 h-28 rounded-full bg-white/10 pointer-events-none blur-[2px]" />
+            <span className="absolute -bottom-6 -left-8 w-20 h-20 rounded-full bg-white/10 pointer-events-none" />
+            <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-24 rounded-full bg-white/[0.07] blur-3xl pointer-events-none" />
+          </>
+        )}
+
+        {/* User info */}
+        <div
+          className={cn(
+            "relative flex flex-col items-center gap-2",
+            isCollapsed ? "py-5 px-2" : "pt-6 pb-4 px-4"
+          )}
+        >
+          {/* Avatar */}
+          <div className="relative">
+            <div
+              className={cn(
+                "rounded-full overflow-hidden ring-2 ring-white/30",
+                "transition-all duration-300 ease-in-out",
+                isCollapsed ? "w-10 h-10" : "w-16 h-16"
+              )}
+            >
+              {currentUser.avatar ? (
+                <img
+                  src={currentUser.avatar}
+                  alt={currentUser.fullName}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div
+                  className={cn(
+                    "w-full h-full flex items-center justify-center font-bold text-white bg-white/20",
+                    isCollapsed ? "text-sm" : "text-xl"
+                  )}
+                >
+                  {initials}
+                </div>
+              )}
+            </div>
+            {currentUser.isOnline && (
+              <span
+                className="absolute bottom-0 right-0 w-3 h-3 rounded-full ring-2 ring-white"
+                style={{ backgroundColor: "var(--color-success)" }}
+              />
+            )}
+          </div>
+
+          {/* Name + email (expanded only) */}
+          {!isCollapsed && (
+            <div className="text-center w-full px-1">
+              <p className="font-bold text-white text-sm leading-snug truncate">
+                {currentUser.fullName}
+              </p>
+              {currentUser.email && (
+                <p className="text-white/60 text-[11px] mt-0.5 truncate">
+                  {currentUser.email}
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Collapse toggle button */}
+        <button
+          type="button"
+          onClick={handleToggle}
+          aria-label={t(isCollapsed ? "common.expandSidebar" : "common.collapseSidebar")}
+          className={cn(
+            "absolute bottom-0 translate-y-1/2 p-1.5 rounded-full z-10",
+            "bg-white/95 text-gray-500 hover:text-gray-800 hover:bg-white",
+            "shadow-md ring-2 ring-white/40 transition-all duration-200 hover:scale-105 active:scale-95",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-2",
+            isRTL ? "left-3" : "right-3"
+          )}
+        >
+          <CollapseIcon className="w-3.5 h-3.5" />
+        </button>
+      </div>
+
+      {/* ── Nav items ── */}
+      <nav className="mt-2 min-h-0 flex-1 overflow-x-visible overflow-y-auto pt-1 scrollbar-custom">
+        <ul
+          className={cn(
+            "pb-2",
+            isCollapsed ? "px-1 space-y-1" : "px-3 space-y-0.5"
+          )}
+        >
+          {SECTION_GROUPS.map((section) => {
+            const sectionItems = ALL_MENU_ITEMS.filter(
+              (item) =>
+                section.itemIds.includes(item.id) && visibleIds.has(item.id)
+            );
+            if (sectionItems.length === 0) return null;
+
+            return (
+              <li key={section.labelKey}>
+                <ul>
+                  <SectionLabel
+                    labelKey={section.labelKey}
+                    isCollapsed={isCollapsed}
+                  />
+                  {sectionItems.map((item) => (
+                    <NavItem
+                      key={item.id}
+                      item={item}
+                      isCollapsed={isCollapsed}
+                      isRTL={isRTL}
+                    />
+                  ))}
+                </ul>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
+
+      {/* ── Footer: logout + delete ── */}
+      <div
+        className={cn(
+          "shrink-0 border-t pb-3 pt-2",
+          isCollapsed ? "px-1 space-y-1" : "px-3 space-y-0.5"
+        )}
+        style={{ borderColor: "var(--color-border-primary)" }}
+      >
+        <ul>
+          <DestructiveItem
+            label={t("account.menu.logout")}
+            icon={LogOut}
+            isCollapsed={isCollapsed}
+            isRTL={isRTL}
+            onClick={() => setShowLogoutPopup(true)}
+          />
+          <DestructiveItem
+            label={t("account.menu.deleteAccount")}
+            icon={Trash2}
+            isCollapsed={isCollapsed}
+            isRTL={isRTL}
+            href="/account/delete"
+          />
+        </ul>
+      </div>
+
+      <LogoutPopup
+        isOpen={showLogoutPopup}
+        onClose={() => setShowLogoutPopup(false)}
+        onConfirm={() => logoutMutation.mutate()}
+      />
+    </div>
+  );
 }

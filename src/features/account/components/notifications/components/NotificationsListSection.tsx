@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { HiBell } from "react-icons/hi";
+import { Bell } from "lucide-react";
 import type { NotificationItem } from "@/features/account/api/notificationsApi";
 import { NotificationListItem } from "./NotificationListItem";
 
@@ -40,7 +40,7 @@ export function NotificationsListSection({
         <div className="relative mx-auto mb-5 flex h-24 w-24 items-center justify-center">
           <div className="absolute inset-0 rounded-full bg-[color-mix(in_srgb,var(--color-api-second)_18%,var(--color-bg-card))] blur-md" />
           <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-custom-card shadow-inner">
-            <HiBell className="h-10 w-10 text-[var(--color-api-second)] opacity-80" />
+            <Bell className="h-10 w-10 text-[var(--color-api-second)] opacity-80" aria-hidden />
           </div>
         </div>
         <h3 className="mb-1 text-lg font-semibold text-custom-primary">

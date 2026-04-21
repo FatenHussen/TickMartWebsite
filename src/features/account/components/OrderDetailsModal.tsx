@@ -1,5 +1,6 @@
 import { useEffect, useState } from"react";
 import { useTranslation } from"react-i18next";
+import i18n from"@/i18n/config";
 import { useLanguage } from"@/context/LanguageContext";
 import {
  HiX,
@@ -30,7 +31,8 @@ function formatPrice(value: number): string {
 function formatDate(createdAt: string): string {
  try {
  const d = new Date(createdAt);
- return d.toLocaleDateString("en-GB", {
+ const locale = i18n.language ==="ar"?"ar":"en-GB";
+ return d.toLocaleDateString(locale, {
  day:"2-digit",
  month:"short",
  year:"numeric",

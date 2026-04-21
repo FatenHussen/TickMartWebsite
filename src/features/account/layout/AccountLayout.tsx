@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Outlet } from "react-router-dom";
 import { useLanguage } from "@/context/LanguageContext";
 import { cn } from "@/shared/lib/utils";
@@ -10,6 +11,7 @@ export default function AccountLayout() {
   const { isRTL } = useLanguage();
   const { data: profileData } = useProfile();
   const { user: authUser } = useAuthStore();
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const user = profileData
     ? {
@@ -19,34 +21,62 @@ export default function AccountLayout() {
       }
     : undefined;
 
+  const sidebarWidth = isCollapsed
+    ? "w-[72px]"
+    : "w-[min(280px,28vw)] xl:w-[280px]";
+
   return (
- <div className="page-container py-6 lg:py-10">
- {/* Mobile Menu */}
- <MobileAccountMenu user={user} />
+    <div className="flex min-h-0 w-full max-w-none flex-1 flex-col pb-[env(safe-area-inset-bottom,0px)]">
+      {/* Mobile header */}
+      <div className="px-3 pt-3 pb-2 sm:px-5 sm:pt-4 sm:pb-3 lg:hidden">
+        <MobileAccountMenu user={user} />
+      </div>
 
- {/* Desktop Layout - dir="ltr"keeps grid columns fixed so sidebar is on RIGHT when Arabic */}
- <div
- dir="ltr"
- className={cn(
-"grid gap-6 lg:gap-8",
-"grid-cols-1 lg:grid-cols-[300px_1fr]",
- isRTL &&"lg:grid-cols-[1fr_300px]"
- )}
- >
- {/* Sidebar - Hidden on mobile */}
- <aside
- className={cn("hidden lg:block", isRTL ?"lg:order-2":"lg:order-1")}
- >
- <div className="sticky top-24">
- <AccountSidebar user={user} />
- </div>
- </aside>
+      {/* Desktop: sticky collapsible sidebar + main content */}
+      <div
+        className={cn(
+          "relative hidden w-full items-start lg:flex",
+          isRTL ? "flex-row-reverse" : "flex-row"
+        )}
+      >
+        <aside
+          className={cn(
+            "flex shrink-0 flex-col self-start overflow-hidden",
+            "lg:sticky lg:top-0 lg:z-20",
+            "h-screen",
+            "transition-[width] duration-300 ease-in-out motion-reduce:transition-none",
+            sidebarWidth,
+            "ring-1 ring-inset ring-black/[0.04] dark:ring-white/[0.06]"
+          )}
+        >
+          <AccountSidebar
+            user={user}
+            isCollapsed={isCollapsed}
+            onToggle={setIsCollapsed}
+          />
+        </aside>
 
- {/* Main Content */}
- <main className={cn(isRTL ?"lg:order-1":"lg:order-2")}>
- <Outlet />
- </main>
- </div>
- </div>
- );
+        <main
+          className={cn(
+            "min-w-0 flex-1",
+            "bg-gradient-to-br from-[color-mix(in_srgb,var(--color-bg-secondary)_55%,var(--color-bg-primary))] via-[var(--color-bg-primary)] to-[color-mix(in_srgb,var(--color-bg-secondary)_40%,var(--color-bg-primary))]",
+            "dark:from-[color-mix(in_srgb,var(--color-bg-secondary)_35%,var(--color-bg-primary))] dark:via-[var(--color-bg-primary)] dark:to-[var(--color-bg-secondary)]",
+            "py-5 sm:py-7 lg:py-10",
+            "ps-4 pe-4 sm:ps-6 sm:pe-6 lg:ps-8 lg:pe-10 xl:ps-11 xl:pe-12"
+          )}
+        >
+          <div className="mx-auto min-w-0 w-full max-w-6xl 2xl:max-w-[88rem]">
+            <Outlet />
+          </div>
+        </main>
+      </div>
+
+      {/* Mobile content area */}
+      <div className="flex min-h-0 flex-1 flex-col bg-[var(--color-bg-primary)] px-3 py-4 sm:px-5 sm:py-5 lg:hidden">
+        <div className="mx-auto min-w-0 w-full max-w-lg flex-1 sm:max-w-none">
+          <Outlet />
+        </div>
+      </div>
+    </div>
+  );
 }

@@ -19,6 +19,7 @@ type SliderSectionProps<T extends { id: number | string }> = {
   slidesPerView?: number | "auto";
   spaceBetween?: number;
   sectionBackgroundColor?: string | null;
+  edgeToEdgeSectionBackground?: boolean;
 };
 
 const defaultBreakpoints = {
@@ -45,6 +46,7 @@ export default function SliderSection<T extends { id: number | string }>({
   slidesPerView,
   spaceBetween,
   sectionBackgroundColor,
+  edgeToEdgeSectionBackground,
 }: SliderSectionProps<T>) {
  const children = items.map((item) => {
  const rendered = renderItem(item);
@@ -70,6 +72,7 @@ export default function SliderSection<T extends { id: number | string }>({
       slidesPerView={slidesPerView}
       spaceBetween={spaceBetween}
       sectionBackgroundColor={sectionBackgroundColor}
+      edgeToEdgeSectionBackground={edgeToEdgeSectionBackground}
     >
       {children}
     </Slider>

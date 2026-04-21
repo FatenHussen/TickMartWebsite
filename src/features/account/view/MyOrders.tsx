@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from"react";
 import { useNavigate } from"react-router-dom";
 import { useTranslation } from"react-i18next";
+import i18n from"@/i18n/config";
 import { useLanguage } from"@/context/LanguageContext";
 import { useCurrency } from"@/context/CurrencyContext";
-import { HiSearch } from"react-icons/hi";
+import { Search } from "lucide-react";
 import { cn } from"@/shared/lib/utils";
 import { useMutation, useQueryClient } from"@tanstack/react-query";
 import { toast } from"sonner";
@@ -23,7 +24,8 @@ import type { OrderListItem } from"../types/order";
 function formatOrderDate(createdAt: string): string {
  try {
  const d = new Date(createdAt);
- return d.toLocaleDateString("en-GB", {
+ const locale = i18n.language ==="ar"?"ar":"en-GB";
+ return d.toLocaleDateString(locale, {
  day:"2-digit",
  month:"short",
  year:"numeric",
@@ -55,10 +57,15 @@ function mapOrderToCard(item: OrderListItem, formatPrice: (n: number) => string)
  const status = toOrderStatus(item.status);
  const cartTypeLabel =
  item.cart_type ==="admin_cart"
- ?"Basket"
+ ? i18n.t("orders.cartType.basket")
  : item.cart_type ==="recipe"
- ?"Recipe"
- :"Products";
+ ? i18n.t("orders.cartType.recipe")
+ : i18n.t("orders.cartType.products");
+
+ const itemCountLabel =
+ item.total_quantity === 1
+ ? i18n.t("orders.itemCountOne", { count: item.total_quantity })
+ : i18n.t("orders.itemCountOther", { count: item.total_quantity });
 
  return {
  id: item.id,
@@ -67,7 +74,7 @@ function mapOrderToCard(item: OrderListItem, formatPrice: (n: number) => string)
  status,
  items: [
  {
- name: `${item.total_quantity} ${item.total_quantity === 1 ?"item":"items"}`,
+ name: itemCountLabel,
  category:"",
  store: cartTypeLabel,
  quantity: item.total_quantity,
@@ -77,7 +84,7 @@ function mapOrderToCard(item: OrderListItem, formatPrice: (n: number) => string)
  additionalInfo: undefined,
  deliveryAddress: undefined,
  total: formatPrice(item.total_with_delivery),
- paymentMethod:"-",
+ paymentMethod:"—",
  actions: {
  viewDetails: true,
  trackOrder: status !=="delivered"&& status !=="cancelled",
@@ -259,7 +266,7 @@ export default function MyOrders() {
  <div className="flex flex-col lg:flex-row gap-4 mb-6">
  <div className="flex-1">
  <div className="relative">
- <HiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-text-secondary"/>
+                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-text-secondary"/>
  <input
  type="text"
  value={searchQuery}
@@ -311,19 +318,19 @@ export default function MyOrders() {
  </div>
  ) : (
  <>
- <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
- {filteredOrders.map((order) => (
- <div
- key={order.id}
- role="button"
- tabIndex={0}
- onClick={(e) => handleCardClick(order.id, e)}
- onKeyDown={(e) =>
- e.key ==="Enter"&&
- handleCardClick(order.id, e as unknown as React.MouseEvent)
- }
- className="cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-2xl"
- >
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5 lg:gap-6">
+            {filteredOrders.map((order) => (
+              <div
+                key={order.id}
+                role="button"
+                tabIndex={0}
+                onClick={(e) => handleCardClick(order.id, e)}
+                onKeyDown={(e) =>
+                  e.key ==="Enter"&&
+                  handleCardClick(order.id, e as unknown as React.MouseEvent)
+                }
+                className="group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg-primary)] rounded-3xl"
+              >
  <OrderCard
  key={order.id}
  orderNumber={order.orderNumber}

@@ -1,5 +1,5 @@
 import type { ChangeEvent, RefObject } from "react";
-import { HiUser, HiCamera } from "react-icons/hi";
+import { User, Camera } from "lucide-react";
 
 interface ProfileAvatarBannerProps {
     avatarSrc: string;
@@ -37,7 +37,7 @@ export function ProfileAvatarBanner({
                             />
                         ) : (
                             <div className="w-full h-full bg-bg-secondary dark:bg-bg-tertiary flex items-center justify-center">
-                                <HiUser className="w-8 h-8 text-primary" />
+                                <User className="w-8 h-8 text-primary" />
                             </div>
                         )}
                     </div>
@@ -49,7 +49,7 @@ export function ProfileAvatarBanner({
                         onClick={openFilePicker}
                         className="absolute -bottom-1 -end-1 w-8 h-8 bg-primary hover:bg-primary-dark text-white rounded-full flex items-center justify-center transition-colors shadow-md ring-2 ring-custom-card"
                     >
-                        <HiCamera className="w-4 h-4" />
+                        <Camera className="w-4 h-4" />
                     </button>
                 )}
                 <input
