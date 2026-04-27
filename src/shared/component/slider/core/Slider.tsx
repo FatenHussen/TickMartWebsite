@@ -1,10 +1,13 @@
 import { Swiper, SwiperSlide } from "swiper/react";
 import { FreeMode } from "swiper/modules";
-import type { ReactNode } from "react";
+import { type ReactNode } from "react";
 import Button from "@/shared/ui/Button";
 
 type SliderProps = {
     title?: string;
+    flashSaleEndDate?: string | null;
+    flashSaleMainColor?: string | null;
+    flashSaleSecondColor?: string | null;
     viewAllLabel?: string;
     onViewAll?: () => void;
     children: ReactNode[];
@@ -25,6 +28,7 @@ type SliderProps = {
      * When true without a section color, wraps content in `.page-container` only.
      */
     edgeToEdgeSectionBackground?: boolean;
+    removeVerticalSpacing?: boolean;
 };
 
 export default function Slider({
@@ -39,6 +43,7 @@ export default function Slider({
     slideClassName = "",
     sectionBackgroundColor,
     edgeToEdgeSectionBackground = false,
+    removeVerticalSpacing = false,
 }: SliderProps) {
     const defaultBreakpoints = breakpoints || {
         640: { slidesPerView: 2.5 },
@@ -49,11 +54,13 @@ export default function Slider({
     const header =
         (title || viewAllLabel) && (
             <div className="mb-6 flex items-center justify-between">
-                {title && (
-                    <h2 className="text-2xl font-bold tracking-tight text-stone-900 dark:text-custom-primary">
-                        {title}
-                    </h2>
-                )}
+                <div className="flex items-center gap-3">
+                    {title && (
+                        <h2 className="text-2xl font-bold tracking-tight text-stone-900 dark:text-custom-primary">
+                            {title}
+                        </h2>
+                    )}
+                </div>
                 {viewAllLabel && (
                     <Button
                         variant="ghost"
@@ -94,7 +101,7 @@ export default function Slider({
     /** Full-viewport tint while keeping title + swiper aligned to `.page-container`. */
     if (sectionBackgroundColor) {
         return (
-            <div className={`mt-8 w-full min-w-0 ${className}`}>
+            <div className={`${removeVerticalSpacing ? "mt-0" : "mt-8"} w-full min-w-0 ${className}`}>
                 <div
                     className="relative w-screen max-w-[100vw] py-4 sm:py-5 [margin-inline-start:calc(50%-50vw)]"
                     style={{ backgroundColor: sectionBackgroundColor }}
@@ -107,11 +114,15 @@ export default function Slider({
 
     if (edgeToEdgeSectionBackground) {
         return (
-            <div className={`mt-8 w-full ${className}`}>
+            <div className={`${removeVerticalSpacing ? "mt-0" : "mt-8"} w-full ${className}`}>
                 <div className="page-container">{inner}</div>
             </div>
         );
     }
 
-    return <div className={`mt-8 w-full ${className}`}>{inner}</div>;
+    return (
+        <div className={`${removeVerticalSpacing ? "mt-0" : "mt-8"} w-full ${className}`}>
+            {inner}
+        </div>
+    );
 }

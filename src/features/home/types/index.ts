@@ -108,6 +108,7 @@ export interface ShopItem {
  name: string;
  description: string | null;
  logo_url: string | null;
+ cover_image?: string | null;
  is_active: boolean;
  average_rating: number;
  ratings_count: number;
@@ -116,6 +117,13 @@ export interface ShopItem {
  vendor: ShopItemVendor;
  /** Optional: store cover image (API may add later) */
  image?: string | null;
+ address?: string | null;
+ is_service_provider?: boolean;
+ is_restaurant?: boolean;
+ is_recommended?: boolean;
+ pricing_tier?: string | null;
+ payment_methods?: string[];
+ categories?: Array<{ id: number; name: string }>;
  /** Optional: delivery fee display (API may add later) */
  delivery_price?: string | number | null;
  /** Optional: discount badge e.g."30% OFF"(API may add later) */
@@ -154,6 +162,9 @@ export interface BasketItem {
  top_badges?: SectionItemBadge[];
  bottom_badges?: SectionItemBadge[];
  budges?: SectionItemBadge[];
+  main_color?: string | null;
+  second_color?: string | null;
+  text_color?: string | null;
  is_favorite?: boolean;
 }
 
@@ -216,6 +227,10 @@ export interface Section {
  background_card_color?: string | null;
  /** API `variant` — card layout for product/brand/etc. sliders */
  variant?: SectionCardVariant | null;
+ end_date?: string | null;
+ main_color?: string | null;
+ second_color?: string | null;
+ text_color?: string | null;
  see_more: SectionSeeMore | null;
  action: SectionAction;
  items: SectionItem[];

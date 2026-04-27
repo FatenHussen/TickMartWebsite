@@ -674,6 +674,13 @@ body {
   margin-bottom: -14px;
 }
 
+.shared-swiper--no-vertical-gutter.swiper {
+  padding-top: 0;
+  padding-bottom: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
 .shared-swiper .swiper-slide {
   overflow: visible;
 }
@@ -869,6 +876,32 @@ body {
   .animate-connector-flow,
   .animate-label-glow,
   .animate-card-enter {
+    animation: none;
+  }
+}
+
+/* Popup campaign: slide-in from bottom to center */
+@keyframes popup-slide-in-from-bottom {
+  0% {
+    opacity: 0;
+    transform: translateY(120px) scale(0.97);
+  }
+  65% {
+    opacity: 1;
+    transform: translateY(-8px) scale(1);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.popup-slide-in-from-bottom {
+  animation: popup-slide-in-from-bottom 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .popup-slide-in-from-bottom {
     animation: none;
   }
 }

@@ -4,6 +4,9 @@ import Slider from"./Slider";
 
 type SliderSectionProps<T extends { id: number | string }> = {
   title?: string;
+  flashSaleEndDate?: string | null;
+  flashSaleMainColor?: string | null;
+  flashSaleSecondColor?: string | null;
   viewAllLabel?: string;
   onViewAllClick?: () => void;
   items: T[];
@@ -20,6 +23,7 @@ type SliderSectionProps<T extends { id: number | string }> = {
   spaceBetween?: number;
   sectionBackgroundColor?: string | null;
   edgeToEdgeSectionBackground?: boolean;
+  removeVerticalSpacing?: boolean;
 };
 
 const defaultBreakpoints = {
@@ -36,6 +40,9 @@ const defaultBreakpoints = {
 
 export default function SliderSection<T extends { id: number | string }>({
   title,
+  flashSaleEndDate,
+  flashSaleMainColor,
+  flashSaleSecondColor,
   viewAllLabel,
   onViewAllClick,
   items,
@@ -47,6 +54,7 @@ export default function SliderSection<T extends { id: number | string }>({
   spaceBetween,
   sectionBackgroundColor,
   edgeToEdgeSectionBackground,
+  removeVerticalSpacing = false,
 }: SliderSectionProps<T>) {
  const children = items.map((item) => {
  const rendered = renderItem(item);
@@ -64,6 +72,9 @@ export default function SliderSection<T extends { id: number | string }>({
   return (
     <Slider
       title={title}
+      flashSaleEndDate={flashSaleEndDate}
+      flashSaleMainColor={flashSaleMainColor}
+      flashSaleSecondColor={flashSaleSecondColor}
       viewAllLabel={viewAllLabel}
       onViewAll={onViewAllClick}
       breakpoints={breakpoints}
@@ -73,6 +84,7 @@ export default function SliderSection<T extends { id: number | string }>({
       spaceBetween={spaceBetween}
       sectionBackgroundColor={sectionBackgroundColor}
       edgeToEdgeSectionBackground={edgeToEdgeSectionBackground}
+      removeVerticalSpacing={removeVerticalSpacing}
     >
       {children}
     </Slider>

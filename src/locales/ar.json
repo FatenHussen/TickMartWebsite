@@ -260,7 +260,8 @@
     "baskets": "السلال",
     "suggestedBaskets": "السلال المقترحة",
     "readyMadeBaskets": "سلال جاهزة بناءً على طلباتك السابقة",
-    "addToCart": "أضف إلى السلة"
+    "addToCart": "أضف إلى السلة",
+    "openBasket": "افتح السلة"
   },
   "productsListing": {
     "title": "المنتجات",
@@ -452,6 +453,24 @@
     "noStoresFound": "لم يتم العثور على متاجر",
     "rateShop": "قيم هذا المتجر",
     "shopReviews": "تقييمات المتجر",
+    "services": "الخدمات",
+    "noServices": "لا توجد خدمات متاحة في هذا المتجر",
+    "bookService": "احجز الخدمة",
+    "serviceDuration": "{{minutes}} دقيقة",
+    "openNow": "مفتوح الآن",
+    "closed": "مغلق",
+    "booking": {
+      "title": "احجز الخدمة",
+      "date": "التاريخ",
+      "pickDate": "اختر تاريخاً",
+      "time": "الوقت",
+      "notes": "ملاحظات",
+      "notesPlaceholder": "أضف أي تفاصيل إضافية لمزوّد الخدمة",
+      "confirm": "تأكيد الحجز",
+      "success": "تم إرسال طلب الحجز",
+      "failed": "فشل إرسال طلب الحجز",
+      "outsideHours": "يجب أن يكون الوقت بين {{open}} و {{close}}"
+    },
     "promotionalBanner": {
       "title": "مجموعة الربيع 2024",
       "description": "اكتشف أحدث صيحات الموضة. خصم يصل إلى 40% على العناصر المختارة.",
@@ -1381,6 +1400,8 @@
     "rateBrand": "قيم هذه العلامة التجارية",
     "brandReviews": "تقييمات العلامة التجارية",
     "viewDetails": "عرض تفاصيل العلامة",
+    "openCategory": "فتح الفئة",
+    "cardActionAria": "فتح فئة {{name}}",
     "stores": "متاجر",
     "store": "متجر",
     "products": "منتجات",

@@ -28,7 +28,8 @@ export default function Badge({
  imageAlt,
  imageClassName,
 }: BadgeProps) {
- const shouldRenderImage = Boolean(imageSrc && (type === "image" || !type));
+ const normalizedType = type?.toLowerCase();
+ const shouldRenderImage = Boolean(imageSrc && normalizedType !== "text");
 
  if (shouldRenderImage) {
  return (

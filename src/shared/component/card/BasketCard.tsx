@@ -37,6 +37,9 @@ export type BasketCardProps = {
     className?: string;
     layout?: SectionCardVariant;
     surfaceColor?: string | null;
+    mainColor?: string | null;
+    secondColor?: string | null;
+    textColor?: string | null;
 };
 
 export default function BasketCard({
@@ -60,7 +63,31 @@ export default function BasketCard({
     className,
     layout,
     surfaceColor,
+    mainColor,
+    secondColor,
+    textColor,
 }: BasketCardProps) {
+    const cardShapeClass = layout
+        ? layout === "horizontal"
+            ? "rounded-2xl"
+            : layout === "vertical"
+              ? "rounded-[2rem]"
+              : "rounded-3xl"
+        : "rounded-2xl";
+    const imageShapeClass = layout
+        ? layout === "horizontal"
+            ? "rounded-t-2xl"
+            : layout === "vertical"
+              ? "rounded-t-[2rem]"
+              : "rounded-t-3xl"
+        : "rounded-t-2xl";
+    const buttonShapeClass = layout
+        ? layout === "horizontal"
+            ? "rounded-xl"
+            : layout === "vertical"
+              ? "rounded-full"
+              : "rounded-2xl"
+        : "rounded-xl";
     const imageFrameClass = layout
         ? layout === "horizontal"
             ? "h-44 sm:h-48"
@@ -68,6 +95,9 @@ export default function BasketCard({
               ? "h-64 sm:h-72"
               : "h-56 sm:h-60"
         : "h-56";
+    const resolvedMainColor = mainColor?.trim() || "var(--color-main)";
+    const resolvedSecondColor = secondColor?.trim() || "var(--color-api-second)";
+    const resolvedTextColor = textColor?.trim() || "var(--color-text)";
     const saveAsBadge: ProductCardBadge[] = saveAmount
         ? [
             {
@@ -97,16 +127,22 @@ export default function BasketCard({
             })),
         [bottomBadges, t],
     );
+    const ctaLabel = (() => {
+        if (!t) return "Open Basket";
+        const translated = t("home.openBasket");
+        return translated === "home.openBasket" ? "Open Basket" : translated;
+    })();
 
     return (
         <div
             className={cn(
-                "group relative flex h-full flex-col overflow-hidden rounded-2xl border border-stone-200/80 bg-white",
+                "group relative flex h-full flex-col overflow-hidden border border-stone-200/80 bg-white",
                 "shadow-[0_2px_8px_-2px_rgba(15,23,42,0.06),0_8px_20px_-6px_rgba(15,23,42,0.08)]",
                 "transition-[transform,box-shadow] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
                 "hover:-translate-y-1 hover:shadow-[0_12px_28px_-8px_rgba(15,23,42,0.12),0_4px_12px_-4px_rgba(15,23,42,0.08)]",
                 "dark:border-white/10 dark:bg-stone-900 dark:shadow-[0_2px_12px_-2px_rgba(0,0,0,0.4)] dark:hover:shadow-[0_16px_36px_-8px_rgba(0,0,0,0.55)]",
                 "motion-reduce:transition-none motion-reduce:hover:translate-y-0",
+                cardShapeClass,
                 onClick &&
                     "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-main)]/35 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg-card)]",
                 className,
@@ -118,12 +154,16 @@ export default function BasketCard({
                 if (!onClick) return;
                 if (e.key === "Enter" || e.key === " ") onClick(id);
             }}
+            style={{
+                backgroundImage: `linear-gradient(145deg, color-mix(in srgb, ${resolvedMainColor} 13%, #ffffff) 0%, color-mix(in srgb, ${resolvedSecondColor} 18%, #ffffff) 48%, #ffffff 100%)`,
+            }}
         >
             {/* Image */}
             <div
                 className={cn(
-                    "relative w-full shrink-0 overflow-hidden rounded-t-2xl bg-stone-100 dark:bg-stone-900/50",
+                    "relative w-full shrink-0 overflow-hidden bg-stone-100 dark:bg-stone-900/50",
                     imageFrameClass,
+                    imageShapeClass,
                 )}
             >
                 <LazyImage
@@ -188,7 +228,11 @@ export default function BasketCard({
                         "bg-gradient-to-b from-emerald-50/95 via-emerald-50/70 to-white dark:from-emerald-950/40 dark:via-stone-900/80 dark:to-stone-900",
                 )}
                 style={
-                    surfaceColor ? { backgroundColor: surfaceColor } : undefined
+                    surfaceColor
+                        ? { backgroundColor: surfaceColor }
+                        : {
+                              backgroundImage: `linear-gradient(160deg, color-mix(in srgb, ${resolvedMainColor} 8%, #ffffff) 0%, color-mix(in srgb, ${resolvedSecondColor} 12%, #ffffff) 60%, #ffffff 100%)`,
+                          }
                 }
             >
                 {/* Title */}
@@ -248,13 +292,22 @@ export default function BasketCard({
                         variant="primary"
                         size="md"
                         fullWidth
-                        className="h-11 min-h-[44px] rounded-xl border-0 bg-gradient-to-b from-amber-300 to-amber-400 px-4 pb-2 pt-3 text-base font-bold text-amber-950 shadow-md transition-[transform,box-shadow] duration-300 hover:-translate-y-0.5 hover:from-amber-200 hover:to-amber-300 hover:shadow-lg focus-visible:ring-2 focus-visible:ring-amber-500/50 motion-reduce:hover:translate-y-0"
+                        className={cn(
+                            "h-11 min-h-[44px] border-0 px-4 pb-2 pt-3 text-base font-bold shadow-md transition-[transform,box-shadow,background-color] duration-300 hover:-translate-y-0.5 hover:shadow-lg motion-reduce:hover:translate-y-0",
+                            "bg-[var(--color-api-second)] hover:bg-[var(--color-api-second-hover)]",
+                            "focus-visible:ring-2 focus-visible:ring-[var(--color-main)]/40",
+                            buttonShapeClass,
+                        )}
+                        style={{
+                            backgroundColor: resolvedSecondColor,
+                            color: resolvedTextColor,
+                        }}
                         onClick={(e) => {
                             e.stopPropagation();
                             onAddToCart?.(id);
                         }}
                     >
-                        {t ? t("home.addToCart") : "Add to Cart"}
+                        {ctaLabel}
                     </Button>
 
                     {bottomBadges != null &&

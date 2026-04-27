@@ -1,6 +1,21 @@
 import type { ShopDetailsData } from"../types/shop";
 import type { StoreMeta } from"../data/mockData";
 
+function getLocalizedValue(value: unknown): string {
+ if (typeof value === "string") return value;
+ if (!value || typeof value !== "object") return "";
+
+ const localized = value as { en?: string | null; ar?: string | null };
+ return localized.en || localized.ar || "";
+}
+
+function humanizePaymentMethod(method: string): string {
+ return method
+ .split("_")
+ .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+ .join(" ");
+}
+
 export function convertShopDataToStoreMeta(shop: ShopDetailsData): StoreMeta {
  // Convert working hours to schedule string
  const scheduleParts: string[] = [];
@@ -35,8 +50,11 @@ export function convertShopDataToStoreMeta(shop: ShopDetailsData): StoreMeta {
  scheduleParts.length > 0 ? scheduleParts.join(",") :"Not specified";
 
  // Convert services to badges
- const services = (shop.services || []).map((service: unknown) => ({
- label: typeof service ==="string"? service :"Service",
+ const services = (shop.services || [])
+ .map((service) => getLocalizedValue(service?.name))
+ .filter(Boolean)
+ .map((label) => ({
+ label,
  variant:"outline"as const,
  }));
 
@@ -50,6 +68,12 @@ export function convertShopDataToStoreMeta(shop: ShopDetailsData): StoreMeta {
 
  // Create perks
  const perks = [
+ shop.is_recommended
+ ? { label:"Recommended by Tikmool", variant:"primary"as const }
+ : null,
+ shop.is_active
+ ? { label:"Verified store", variant:"primary"as const }
+ : null,
  shop.is_open_now
  ? { label:"Accepting orders", variant:"success"as const }
  : null,
@@ -62,6 +86,8 @@ export function convertShopDataToStoreMeta(shop: ShopDetailsData): StoreMeta {
  name: shop.name,
  category: shop.area ||"Store",
  rating: shop.average_rating,
+    ratingsCount: shop.ratings_count,
+    description: shop.description,
  city: shop.address.split("-")[0] || shop.address,
  address: shop.address,
  phone: shop.phone,
@@ -73,12 +99,17 @@ export function convertShopDataToStoreMeta(shop: ShopDetailsData): StoreMeta {
  tags,
  services,
  perks,
+    paymentMethods: shop.payment_methods?.map(humanizePaymentMethod) ?? [],
+    pricingTier: shop.pricing_tier ?? null,
+    isRecommended: shop.is_recommended ?? false,
+    isActive: shop.is_active,
+    isServiceProvider: shop.is_service_provider ?? false,
+    isRestaurant: shop.is_restaurant ?? false,
  heroImage:
+ shop.cover_image ||
  shop.cover_images_urls?.[0] ||
-"https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=1600&q=80",
- logo:
- shop.logo_url ||
-"https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=200&q=60",
+ null,
+ logo: shop.logo_url || null,
     isFavorite: shop.is_favorite ?? false,
  };
 }

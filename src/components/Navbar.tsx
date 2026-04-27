@@ -67,8 +67,6 @@ export default function Navbar() {
     const profileButtonRef = useRef<HTMLButtonElement>(null);
     const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left?: number; right?: number } | null>(null);
     const [packagesPopupOpen, setPackagesPopupOpen] = useState(false);
-    const [categoriesNavOpen, setCategoriesNavOpen] = useState(false);
-    const categoriesNavRef = useRef<HTMLDivElement>(null);
 
     const { data: packages = [], isLoading: packagesLoading } = usePackages(authenticated);
 
@@ -120,10 +118,9 @@ export default function Navbar() {
         return parts.join(",") || selectedAddress.label;
     }, [selectedAddress, language]);
 
-    // Close mobile menu and categories nav when route changes
+    // Close mobile menu when route changes
     useEffect(() => {
         setIsMobileMenuOpen(false);
-        setCategoriesNavOpen(false);
     }, [location.pathname]);
 
     // Close account dropdown when clicking outside
@@ -170,16 +167,6 @@ export default function Navbar() {
     useEffect(() => () => {
         if (closeDropdownTimeoutRef.current) clearTimeout(closeDropdownTimeoutRef.current);
     }, []);
-
-    useEffect(() => {
-        if (!categoriesNavOpen) return;
-        const handle = (e: MouseEvent) => {
-            if (categoriesNavRef.current?.contains(e.target as Node)) return;
-            setCategoriesNavOpen(false);
-        };
-        document.addEventListener("click", handle);
-        return () => document.removeEventListener("click", handle);
-    }, [categoriesNavOpen]);
 
     const isActive = (path: string) => {
         if (path === "/" || path === "/home") {
@@ -567,35 +554,12 @@ export default function Navbar() {
                             >
                                 {t("home.home") || "Home"}
                             </Link>
-                            <div className="relative shrink-0" ref={categoriesNavRef}>
-                                <button
-                                    type="button"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        setCategoriesNavOpen((o) => !o);
-                                    }}
-                                    className={cn(
-                                        navLinkClass(isActive(paths.client.categories)),
-                                        "items-center gap-0.5",
-                                    )}
-                                    aria-expanded={categoriesNavOpen}
-                                    aria-haspopup="true"
-                                >
-                                    {t("categories.mainCategories") || "Categories"}
-                                    <HiChevronDown className="h-4 w-4 shrink-0" />
-                                </button>
-                                {categoriesNavOpen && (
-                                    <div className="absolute start-0 top-full z-50 mt-1 min-w-[200px] rounded-lg border border-gray-bold bg-custom-card py-1 shadow-lg">
-                                        <Link
-                                            to={paths.client.categories}
-                                            className="block px-4 py-2 text-sm text-custom-primary hover:bg-primary-light/10"
-                                            onClick={() => setCategoriesNavOpen(false)}
-                                        >
-                                            {t("categories.mainCategories") || "Categories"}
-                                        </Link>
-                                    </div>
-                                )}
-                            </div>
+                            <Link
+                                to={paths.client.categories}
+                                className={navLinkClass(isActive(paths.client.categories))}
+                            >
+                                {t("categories.mainCategories") || "Categories"}
+                            </Link>
                             {navItemsAfterCategories.map((item) => (
                                 <Link
                                     key={item.path}

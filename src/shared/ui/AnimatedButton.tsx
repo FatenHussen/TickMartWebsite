@@ -91,7 +91,7 @@ function MultiLabelAnimatedButton({
                     <span
                         key={i}
                         className={cn(
-                            "col-start-1 row-start-1 justify-self-center whitespace-nowrap px-1.5",
+                            "col-start-1 row-start-1 justify-self-center whitespace-nowrap px-6  ",
                             heightClassName
                         )}
                     >
@@ -113,7 +113,7 @@ function MultiLabelAnimatedButton({
                         <div
                             key={i}
                             className={cn(
-                                "flex w-full shrink-0 items-center justify-center whitespace-nowrap px-1.5 text-[10px] font-semibold leading-none",
+                                "flex w-full shrink-0 items-center justify-center whitespace-nowrap px-2 text-md font-semibold leading-none",
                                 heightClassName,
                                 it.className
                             )}
@@ -132,7 +132,7 @@ export default function AnimatedButton(props: AnimatedButtonProps) {
         const {
             items,
             className,
-            heightClassName = "h-[18px]",
+            heightClassName = "h-6",
             durationMs = 2500,
             pauseRatio = 0.4,
             /** `size` adds vertical padding and breaks tiny fixed rows (e.g. 18px) */
@@ -158,7 +158,7 @@ export default function AnimatedButton(props: AnimatedButtonProps) {
     const {
         note,
         className,
-        heightClassName = "h-[18px]",
+        heightClassName = "h-6",
         durationMs = 2500,
         pauseRatio = 0.4,
         ...rest
@@ -173,7 +173,7 @@ export default function AnimatedButton(props: AnimatedButtonProps) {
             {...rest}
             style={{ ...(props.style || {}), ...style }}
             className={cn(
-                "relative inline-flex items-center justify-center overflow-hidden rounded-full h-[18px]",
+                "relative inline-flex items-center justify-center overflow-hidden rounded-full h-6",
                 heightClassName,
                 className
             )}
@@ -181,7 +181,7 @@ export default function AnimatedButton(props: AnimatedButtonProps) {
             <span className="invisible pointer-events-none grid">
                 <span
                     className={cn(
-                        "col-start-1 row-start-1 whitespace-nowrap px-1",
+                        "col-start-1 row-start-1 whitespace-nowrap px-2 text-xs font-semibold",
                         heightClassName
                     )}
                 >
@@ -189,7 +189,7 @@ export default function AnimatedButton(props: AnimatedButtonProps) {
                 </span>
                 <span
                     className={cn(
-                        "col-start-1 row-start-1 whitespace-nowrap px-1",
+                        "col-start-1 row-start-1 whitespace-nowrap px-2 text-xs font-semibold",
                         heightClassName
                     )}
                 >

@@ -207,28 +207,71 @@ export const apiRoutes = {
     shop: {
         list: (filters?: {
             page?: number;
-            type?: "top_rated" | "offers" | "nearby";
+            area_id?: number;
+            city_id?: number;
             lat?: number;
             lng?: number;
+            max_distance?: number;
             governorate_id?: number;
             category_id?: number;
+            brand_id?: number;
             search?: string;
+            type?: "top_rated" | "offers" | "nearby" | "active";
+            is_service_provider?: 0 | 1;
         }) => {
             const params = new URLSearchParams();
             if (filters?.page) params.append("page", String(filters.page));
+            if (filters?.area_id != null) params.append("area_id", String(filters.area_id));
+            if (filters?.city_id != null) params.append("city_id", String(filters.city_id));
             if (filters?.type) params.append("type", filters.type);
             if (filters?.lat != null) params.append("lat", String(filters.lat));
             if (filters?.lng != null) params.append("lng", String(filters.lng));
+            if (filters?.max_distance != null)
+                params.append("max_distance", String(filters.max_distance));
             if (filters?.governorate_id != null)
                 params.append("governorate_id", String(filters.governorate_id));
             if (filters?.category_id != null)
                 params.append("category_id", String(filters.category_id));
+            if (filters?.brand_id != null)
+                params.append("brand_id", String(filters.brand_id));
+            if (filters?.is_service_provider != null)
+                params.append("is_service_provider", String(filters.is_service_provider));
             if (filters?.search)
                 params.append("search", filters.search.trim());
             return `/user/shops${params.toString() ? `?${params.toString()}` : ""
                 }` as const;
         },
         details: (shopId: number) => `/user/shops/${shopId}` as const,
+        services: (shopId: number) => `/user/shops/${shopId}/services` as const,
+    },
+
+    vendorServices: {
+        list: "/user/vendor-services" as const,
+    },
+
+    /**
+    * Service Orders endpoints (booking a vendor service)
+    */
+    serviceOrders: {
+        list: (params?: {
+            status?: string;
+            search?: string;
+            sort_field?: "id" | "created_at" | "date";
+            sort_order?: "asc" | "desc";
+            page?: number;
+            per_page?: number;
+        }) => {
+            const p = new URLSearchParams();
+            if (params?.status) p.append("status", params.status);
+            if (params?.search) p.append("search", params.search.trim());
+            if (params?.sort_field) p.append("sort_field", params.sort_field);
+            if (params?.sort_order) p.append("sort_order", params.sort_order);
+            if (params?.page) p.append("page", String(params.page));
+            if (params?.per_page) p.append("per_page", String(params.per_page));
+            return `/user/service-orders${p.toString() ? `?${p.toString()}` : ""}` as const;
+        },
+        details: (id: number | string) => `/user/service-orders/${id}` as const,
+        create: "/user/service-orders" as const,
     },
 
     /**
@@ -556,6 +599,21 @@ export const apiRoutes = {
     */
     quickActions: {
         list: "/user/quick-actions" as const,
+    },
+
+    /**
+    * Popup campaign endpoints (public — no auth required)
+    */
+    popups: {
+        active: (params?: { page_type?: string; current_url?: string }) => {
+            const p = new URLSearchParams();
+            if (params?.page_type) p.set("page_type", params.page_type);
+            if (params?.current_url) p.set("current_url", params.current_url);
+            const qs = p.toString();
+            return `/popups/active${qs ? `?${qs}` : ""}` as const;
+        },
+        trackView: (id: number) => `/popups/${id}/track-view` as const,
+        trackClick: (id: number) => `/popups/${id}/track-click` as const,
     },
 
     /**

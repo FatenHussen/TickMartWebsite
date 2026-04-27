@@ -24,6 +24,11 @@ type ShopCardProps = {
     /** Extra top badges (same as ProductCard); "Open" is still controlled by `isOpenNow` */
     badge?: ProductCardBadge | ProductCardBadge[];
     rating?: number;
+    address?: string | null;
+    isServiceProvider?: boolean;
+    isRestaurant?: boolean;
+    pricingTier?: string | null;
+    paymentMethods?: string[];
     deliveryPrice?: string | number | null;
     discountLabel?: string | null;
     /** API `bottom_badges` — cycled in one animated control when present */
@@ -41,10 +46,15 @@ export default function ShopCard({
     name,
     description,
     image,
-    isOpenNow = false,
+    isOpenNow: _isOpenNow = false,
     badge,
     rating = 0,
-    deliveryPrice,
+    address,
+    isServiceProvider = false,
+    isRestaurant = false,
+    pricingTier,
+    paymentMethods,
+    deliveryPrice: _deliveryPrice,
     discountLabel,
     bottomBadges,
     isFavorite = false,
@@ -63,33 +73,25 @@ export default function ShopCard({
         : "aspect-[4/3]";
 
     const imageSrc = image || DEFAULT_STORE_IMAGE;
-    const deliveryText =
-        deliveryPrice != null && deliveryPrice !== ""
-            ? typeof deliveryPrice === "number"
-                ? `£${deliveryPrice.toFixed(2)} delivery`
-                : String(deliveryPrice)
-            : null;
-
-    const openBadge: ProductCardBadge[] = isOpenNow
-        ? [
-              {
-                  label: "Open",
-                  className:
-                      "rounded-full bg-emerald-500 px-2.5 py-0.5 text-xs font-semibold text-white shadow-md ring-1 ring-emerald-400/40",
-                  align: "left",
-              },
-          ]
-        : [];
     const extraBadge = badge
         ? Array.isArray(badge)
             ? badge
             : [badge]
         : [];
-    const allTop = [...openBadge, ...extraBadge].slice(0, 1);
-    const leftBadges = allTop.filter((b) => (b.align ?? "left") === "left");
-    const rightBadges = allTop.filter((b) => b.align === "right");
+    const allTop = [...extraBadge].slice(0, 1);
+    const topBadge = allTop[0];
 
     const hasApiBottomBadges = Boolean(bottomBadges?.length);
+    const hasPaymentMethods = Boolean(paymentMethods?.length);
+    const roleLabel = isServiceProvider
+        ? "Service Provider"
+        : isRestaurant
+          ? "Restaurant"
+          : "Shop";
+    const normalizedPricingTier =
+        pricingTier && pricingTier.length > 0
+            ? `${pricingTier[0].toUpperCase()}${pricingTier.slice(1)}`
+            : null;
 
     const bottomBadgeItems = useMemo(
         () =>
@@ -110,10 +112,10 @@ export default function ShopCard({
                 if (e.key === "Enter" || e.key === " ") onClick();
             }}
             className={cn(
-                "group flex h-full flex-col overflow-hidden rounded-2xl border border-stone-200/80 bg-custom-card",
+                    "group flex h-full flex-col overflow-hidden rounded-3xl border border-stone-200/80 bg-custom-card",
                 "shadow-[0_2px_8px_-2px_rgba(15,23,42,0.06),0_8px_20px_-6px_rgba(15,23,42,0.08)]",
                 "transition-[transform,box-shadow] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
-                "hover:-translate-y-1 hover:shadow-[0_12px_28px_-8px_rgba(15,23,42,0.12),0_4px_12px_-4px_rgba(15,23,42,0.08)]",
+                    "hover:-translate-y-1.5 hover:shadow-[0_16px_32px_-10px_rgba(15,23,42,0.16),0_6px_14px_-6px_rgba(15,23,42,0.1)]",
                 "dark:border-white/10 dark:shadow-[0_2px_12px_-2px_rgba(0,0,0,0.4)] dark:hover:shadow-[0_16px_36px_-8px_rgba(0,0,0,0.55)]",
                 "motion-reduce:transition-none motion-reduce:hover:translate-y-0",
                 onClick &&
@@ -134,38 +136,45 @@ export default function ShopCard({
                     className="h-full w-full object-cover transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform group-hover:scale-[1.03] motion-reduce:group-hover:scale-100"
                     wrapperClassName="h-full w-full"
                 />
-                <div
-                    className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/20 via-black/5 to-transparent dark:from-black/40"
-                    aria-hidden
-                />
-                {leftBadges.length > 0 && (
-                    <div className="absolute left-3 top-3 z-10 flex flex-col gap-1">
-                        {leftBadges.map((b, idx) => (
-                            <Badge
-                                key={idx}
-                                label={resolveProductCardBadgeLabel(b)}
-                                type={b.type}
-                                imageSrc={b.image}
-                                imageAlt={resolveProductCardBadgeLabel(b)}
-                                className={cn(
-                                    "rounded-full px-2.5 py-0.5 text-xs font-medium",
-                                    b.className
-                                )}
-                            />
-                        ))}
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/25 via-black/5 to-transparent dark:from-black/45" aria-hidden />
+                {topBadge && (
+                    <div className="absolute left-3 top-3 z-10">
+                        <Badge
+                            label={resolveProductCardBadgeLabel(topBadge)}
+                            type={topBadge.type}
+                            imageSrc={topBadge.image}
+                            imageAlt={resolveProductCardBadgeLabel(topBadge)}
+                            className={cn(
+                                "rounded-full bg-white/95 px-2.5 py-1 text-[11px] font-semibold text-stone-800 ring-1 ring-stone-200/70 dark:bg-stone-900/90 dark:text-stone-100 dark:ring-white/20",
+                                topBadge.className,
+                            )}
+                        />
                     </div>
                 )}
-                <div className="absolute right-3 top-3 z-10 flex flex-col items-end gap-1">
-                    {rightBadges.map((b, idx) => (
-                        <Badge
-                            key={idx}
-                            label={resolveProductCardBadgeLabel(b)}
-                            type={b.type}
-                            imageSrc={b.image}
-                            imageAlt={resolveProductCardBadgeLabel(b)}
-                            className={cn("rounded-lg", b.className)}
+                <div className="absolute right-3 top-3 z-10 flex items-center gap-2">
+                    <span
+                        className={cn(
+                            "inline-flex max-w-[150px] items-center gap-1 truncate rounded-full px-2.5 py-1 text-[11px] font-semibold shadow-sm ring-1 backdrop-blur-sm",
+                            isServiceProvider
+                                ? "bg-violet-100/95 text-violet-800 ring-violet-200/80 dark:bg-violet-900/70 dark:text-violet-100 dark:ring-violet-700/70"
+                                : isRestaurant
+                                  ? "bg-sky-100/95 text-sky-800 ring-sky-200/80 dark:bg-sky-900/70 dark:text-sky-100 dark:ring-sky-700/70"
+                                  : "bg-white/95 text-stone-700 ring-stone-200/70 dark:bg-stone-900/90 dark:text-stone-100 dark:ring-white/20",
+                        )}
+                        title={roleLabel}
+                    >
+                        <span
+                            className={cn(
+                                "h-1.5 w-1.5 shrink-0 rounded-full",
+                                isServiceProvider
+                                    ? "bg-violet-500 dark:bg-violet-300"
+                                    : isRestaurant
+                                      ? "bg-sky-500 dark:bg-sky-300"
+                                      : "bg-emerald-500 dark:bg-emerald-300",
+                            )}
                         />
-                    ))}
+                        {roleLabel}
+                    </span>
                     <FavoriteButton
                         isFavorite={isFavorite}
                         onToggle={(e) => {
@@ -189,9 +198,9 @@ export default function ShopCard({
             {/* Info — soft wash when no API card tint */}
             <div
                 className={cn(
-                    "flex flex-1 flex-col rounded-b-2xl border-t border-stone-200/60 px-4 pb-4 pt-3.5 dark:border-white/[0.08]",
+                    "flex flex-1 flex-col rounded-b-3xl border-t border-stone-200/60 px-4 pb-4 pt-3.5 dark:border-white/[0.08]",
                     !surfaceColor &&
-                        "bg-gradient-to-b from-emerald-50/90 via-emerald-50/50 to-white dark:from-emerald-950/35 dark:via-stone-900/70 dark:to-stone-900",
+                        "bg-gradient-to-b from-emerald-50/95 via-sky-50/55 to-white dark:from-emerald-950/35 dark:via-stone-900/70 dark:to-stone-900",
                 )}
                 style={
                     surfaceColor ? { backgroundColor: surfaceColor } : undefined
@@ -205,8 +214,25 @@ export default function ShopCard({
                         {description}
                     </p>
                 )}
+                {address && (
+                    <p className="mt-1 line-clamp-1 text-xs text-custom-secondary/80">
+                        {address}
+                    </p>
+                )}
 
-                <div className="mt-auto flex w-full flex-col gap-2 pt-3">
+                <div className="mt-auto flex w-full flex-col gap-2.5 pt-3">
+                    <div className="flex min-w-0 flex-wrap items-center gap-2">
+                        {normalizedPricingTier && (
+                            <span className="shrink-0 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-800 ring-1 ring-amber-100 dark:bg-amber-950/40 dark:text-amber-200 dark:ring-amber-900/40">
+                                {normalizedPricingTier}
+                            </span>
+                        )}
+                        {hasPaymentMethods && paymentMethods?.[0] && (
+                            <span className="shrink-0 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-800 ring-1 ring-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-200 dark:ring-emerald-900/40">
+                                {paymentMethods[0].replaceAll("_", " ")}
+                            </span>
+                        )}
+                    </div>
                     {hasApiBottomBadges && (
                         <div className="flex items-start justify-between gap-2">
                             <div className="flex min-w-0 flex-wrap items-center gap-2">
@@ -219,15 +245,10 @@ export default function ShopCard({
                                     </span>
                                 )}
                             </div>
-                            {deliveryText && (
-                                <span className="shrink-0 text-right text-xs font-medium text-custom-secondary">
-                                    {deliveryText}
-                                </span>
-                            )}
                         </div>
                     )}
 
-                    {hasApiBottomBadges ? (
+                    {hasApiBottomBadges && (
                         <AnimatedButton
                             items={bottomBadgeItems}
                             heightClassName="h-[18px]"
@@ -235,33 +256,6 @@ export default function ShopCard({
                             onClick={(e) => e.stopPropagation()}
                             className="self-center justify-center text-xs font-semibold"
                         />
-                    ) : (
-                        <>
-                            <AnimatedButton
-                                variant="primary"
-                                size="sm"
-                                type="button"
-                                onClick={(e) => e.stopPropagation()}
-                                className="w-full justify-center rounded-full bg-gradient-to-r from-sky-500 to-sky-600 text-sm font-semibold text-white shadow-md ring-1 ring-sky-400/30 transition-[transform,box-shadow] hover:shadow-lg"
-                                note={{
-                                    primary: "Delivery",
-                                    secondary: deliveryText ?? "Order now",
-                                }}
-                            />
-                            {discountLabel && (
-                                <AnimatedButton
-                                    variant="primary"
-                                    size="sm"
-                                    type="button"
-                                    onClick={(e) => e.stopPropagation()}
-                                    className="w-full justify-center rounded-full bg-gradient-to-r from-rose-500 to-rose-600 text-xs font-semibold text-white shadow-md ring-1 ring-rose-400/30 transition-[transform,box-shadow] hover:shadow-lg"
-                                    note={{
-                                        primary: discountLabel,
-                                        secondary: discountLabel,
-                                    }}
-                                />
-                            )}
-                        </>
                     )}
                 </div>
             </div>

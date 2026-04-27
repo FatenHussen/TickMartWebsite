@@ -27,8 +27,16 @@ export type StoreMeta = {
  tags: Badge[];
  services: Badge[];
  perks: Badge[];
- heroImage: string;
- logo: string;
+  paymentMethods?: string[];
+  pricingTier?: string | null;
+  ratingsCount?: number;
+  isRecommended?: boolean;
+  isActive?: boolean;
+  isServiceProvider?: boolean;
+  isRestaurant?: boolean;
+  description?: string;
+ heroImage: string | null;
+ logo: string | null;
   isFavorite?: boolean;
 };
 

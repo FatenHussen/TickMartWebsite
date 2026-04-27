@@ -17,6 +17,14 @@ export function useShopDetails(shopId: number) {
  });
 }
 
+export function useShopServices(shopId: number, enabled = true) {
+ return useQuery({
+ queryKey: queryKeys.shop.services(shopId),
+ queryFn: () => _ShopApi.getShopServices(shopId),
+ enabled: enabled && shopId > 0,
+ });
+}
+
 function mapItemToReview(item: RatingItem): Review {
  const date = item.created_at
  ? new Date(item.created_at).toLocaleDateString(undefined, {

@@ -6,6 +6,7 @@ import { useScrollToTop } from "@/shared/hooks/useScrollToTop";
 import { useThemeFromApi } from "@/shared/hooks/useThemeFromApi";
 import NotificationToast from "@/components/NotificationToast";
 import useFirebaseNotifications from "@/hooks/useFirebaseNotifications";
+import PopupCampaign from "@/features/popup/components/PopupCampaign";
 import "@/i18n/config";
 
 type AppProps = {
@@ -32,6 +33,7 @@ export default function App({ children }: AppProps) {
         <ThemeProvider>
           <ThemeFromApiSync />
           {children}
+          <PopupCampaign />
           <NotificationToast
             notification={notification}
             onClose={dismissNotification}

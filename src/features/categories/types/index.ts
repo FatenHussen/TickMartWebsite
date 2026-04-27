@@ -11,6 +11,10 @@ export interface ApiCategory {
  id: number;
  name: string;
  icon: string | null;
+ main_color?: string | null;
+ second_color?: string | null;
+ mainColor?: string | null;
+ secondColor?: string | null;
  children: CategoryChild[];
 }
 
@@ -57,6 +61,10 @@ category_id?: number;
  sold_number: number;
  rating: number;
  is_favorite: boolean;
+ main_color?: string | null;
+ second_color?: string | null;
+ mainColor?: string | null;
+ secondColor?: string | null;
  top_badges: ProductBadge[];
  bottom_badges: ProductBadge[];
 }

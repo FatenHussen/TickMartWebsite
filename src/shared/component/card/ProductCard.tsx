@@ -60,6 +60,8 @@ export type ProductCardProps = {
     layout?: SectionCardVariant;
     /** API `background_card_color` — lower content panel tint. */
     surfaceColor?: string | null;
+    /** API-driven gradient for lower content panel. */
+    surfaceGradient?: string | null;
 };
 
 export default function ProductCard({
@@ -88,6 +90,7 @@ export default function ProductCard({
     className,
     layout,
     surfaceColor,
+    surfaceGradient,
 }: ProductCardProps) {
     const imageFrameClass = layout
         ? layout === "horizontal"
@@ -110,11 +113,21 @@ export default function ProductCard({
             })),
         [bottomBadgesShown, t],
     );
+    const mergedBottomBadgeItems = useMemo(() => {
+        const items = [...bottomBadgeItems];
+        if (discountLabel) {
+            items.unshift({
+                label: discountLabel,
+                className: undefined,
+            });
+        }
+        return items;
+    }, [bottomBadgeItems, discountLabel]);
 
     return (
         <div
             className={cn(
-                "group relative flex h-full flex-col overflow-hidden rounded-2xl border border-stone-200/70 bg-custom-primary",
+                "group relative flex h-full flex-col overflow-hidden rounded-3xl border border-stone-200/70 bg-custom-primary",
                 "shadow-[0_2px_8px_-2px_rgba(15,23,42,0.05),0_10px_24px_-8px_rgba(15,23,42,0.09)]",
                 "before:pointer-events-none before:absolute before:inset-x-4 before:top-0 before:z-[1] before:h-px before:rounded-full before:bg-gradient-to-r before:from-transparent before:via-white/80 before:to-transparent dark:before:via-white/15",
                 "transition-[transform,box-shadow] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
@@ -134,10 +147,10 @@ export default function ProductCard({
             }}
         >
             {/* Image — inset frame for a calmer, gallery-like look */}
-            <div className="shrink-0 p-2 pb-0">
+            <div className="shrink-0 p-2.5 pb-0">
                 <div
                     className={cn(
-                        "relative overflow-hidden rounded-xl bg-stone-100 ring-1 ring-inset ring-black/[0.04] dark:bg-stone-900/50 dark:ring-white/[0.06]",
+                        "relative overflow-hidden rounded-2xl bg-stone-100 ring-1 ring-inset ring-black/[0.04] dark:bg-stone-900/50 dark:ring-white/[0.06]",
                         imageFrameClass,
                     )}
                 >
@@ -222,10 +235,15 @@ export default function ProductCard({
                     "flex min-h-0 flex-1 flex-col px-4 pb-5 pt-4",
                     "border-t border-stone-200/50 dark:border-white/[0.07]",
                     !surfaceColor &&
-                        "bg-gradient-to-b from-custom-secondary to-[color-mix(in_srgb,var(--color-bg-card)_88%,var(--color-bg-tertiary))] dark:from-custom-secondary dark:to-custom-secondary",
+                        "bg-gradient-to-b from-custom-secondary via-custom-secondary to-[color-mix(in_srgb,var(--color-bg-card)_85%,#dbeafe)] dark:from-custom-secondary dark:to-custom-secondary",
                 )}
                 style={
-                    surfaceColor
+                    surfaceGradient
+                        ? {
+                              backgroundImage: surfaceGradient,
+                              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.45)",
+                          }
+                        : surfaceColor
                         ? {
                               backgroundColor: surfaceColor,
                               boxShadow: "inset 0 1px 0 rgba(255,255,255,0.45)",
@@ -278,7 +296,7 @@ export default function ProductCard({
 
                 {/* View details + discount label + bottom badges + delivery */}
                 {(onViewDetails ||
-                    bottomBadgesShown.length > 0 ||
+                    mergedBottomBadgeItems.length > 0 ||
                     deliveryInfo ||
                     discountLabel) && (
                     <div className="mt-auto flex w-full flex-col items-center gap-3 pt-5">
@@ -297,14 +315,9 @@ export default function ProductCard({
                                 {viewDetailsLabel ?? "View details"}
                             </Button>
                         )}
-                        {discountLabel && (
-                            <span className="rounded-full bg-gradient-to-r from-rose-500 via-rose-500 to-rose-600 px-3.5 py-1.5 text-center text-[10px] font-bold uppercase tracking-wider text-white shadow-md ring-1 ring-rose-300/40">
-                                {discountLabel}
-                            </span>
-                        )}
-                        {bottomBadgesShown.length > 0 && (
+                        {mergedBottomBadgeItems.length > 0 && (
                             <AnimatedButton
-                                items={bottomBadgeItems}
+                                items={mergedBottomBadgeItems}
                                 heightClassName="h-5"
                                 type="button"
                                 onClick={(e) => e.stopPropagation()}

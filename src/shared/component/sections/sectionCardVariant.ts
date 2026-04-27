@@ -31,7 +31,7 @@ function sliderPresetForCardVariant(v: SectionCardVariant): SectionSliderPreset 
             // Whole-number slidesPerView only — fractional (e.g. 1.5) makes one slide
             // ~⅔ of the row and the next a “peek”, so cards look different widths.
             return {
-                slidesPerView: 2,
+                slidesPerView: 1,
                 breakpoints: {
                     640: { slidesPerView: 2 },
                     768: { slidesPerView: 3 },
@@ -40,7 +40,7 @@ function sliderPresetForCardVariant(v: SectionCardVariant): SectionSliderPreset 
             };
         case "vertical":
             return {
-                slidesPerView: 2,
+                slidesPerView: 1,
                 breakpoints: {
                     640: { slidesPerView: 3 },
                     768: { slidesPerView: 4 },
@@ -50,7 +50,7 @@ function sliderPresetForCardVariant(v: SectionCardVariant): SectionSliderPreset 
         case "square":
         default:
             return {
-                slidesPerView: 2,
+                slidesPerView: 1,
                 breakpoints: {
                     640: { slidesPerView: 3 },
                     768: { slidesPerView: 4 },

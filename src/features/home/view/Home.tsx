@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useLanguage } from "@/context/LanguageContext";
 import Categories from "../components/Categories";
 import InfoCards from "../components/InfoCards";
 import AllProductsSection from "../components/AllProductsSection";
+import HomeFlashSaleBanner from "../components/HomeFlashSaleBanner";
 import ApiSectionsRenderer from "@/shared/component/sections/ApiSectionsRenderer";
 import { useSectionsByPosition } from "../hooks/useSections";
 import { useAuthStore } from "@/store/auth";
@@ -33,10 +34,28 @@ export default function Home() {
         localStorage.setItem(HAS_SEEN_POPUP_KEY, "true");
     };
 
-    const heroBannerSection = beforeSections.find((s) => s.display_type_id === 1);
-    const beforeSectionsFiltered = heroBannerSection
-        ? beforeSections.filter((s) => s.id !== heroBannerSection.id)
-        : beforeSections;
+    const homeFlashSale = useMemo(() => {
+        const firstFlashSection = [...beforeSections, ...afterSections].find(
+            (section) =>
+                typeof section.end_date === "string" &&
+                section.end_date.trim().length > 0 &&
+                Number.isFinite(Date.parse(section.end_date))
+        );
+
+        if (!firstFlashSection?.end_date) return null;
+
+        return {
+            endDate: firstFlashSection.end_date,
+            title: firstFlashSection.name,
+            mainColor:
+                firstFlashSection.main_color ??
+                firstFlashSection.background_color ??
+                "#ef4444",
+            secondColor: firstFlashSection.second_color ?? "#f59e0b",
+            textColor: firstFlashSection.text_color ?? "#ffffff",
+            seeMore: firstFlashSection.see_more,
+        };
+    }, [beforeSections, afterSections]);
 
     return (
         <div
@@ -44,7 +63,7 @@ export default function Home() {
             dir={isRTL ? "rtl" : "ltr"}
         >
             {/* One `.page-container` for the whole home column (matches Navbar width). */}
-            <div className="page-container flex flex-col gap-8 pb-12 pt-4 sm:gap-10 sm:pt-6">
+            <div className="page-container flex flex-col gap-0 pb-12 pt-4  sm:pt-6">
                 {/* <PromotionalHeroSlider
  items={heroItems}
  getLink={heroBannerSection ? undefined : getHeroLink}
@@ -54,11 +73,17 @@ export default function Home() {
  /> */}
                 <InfoCards />
 
-                {beforeSectionsFiltered.length > 0 && (
+                {homeFlashSale && (
+                    <HomeFlashSaleBanner flashSale={homeFlashSale} isRTL={isRTL} />
+                )}
+
+                {beforeSections.length > 0 && (
                     <ApiSectionsRenderer
-                        sections={beforeSectionsFiltered}
+                        sections={beforeSections}
                         edgeToEdgeSectionBackgrounds={false}
                         skipInnerPageContainer
+                        sectionClassName="!mt-0"
+                        removeSectionVerticalSpacing
                     />
                 )}
 
@@ -71,6 +96,8 @@ export default function Home() {
                         sections={afterSections}
                         edgeToEdgeSectionBackgrounds={false}
                         skipInnerPageContainer
+                        sectionClassName="!mt-0"
+                        removeSectionVerticalSpacing
                     />
                 )}
 

@@ -37,6 +37,25 @@ import {
     getSectionCardSurfaceColor,
 } from "./sectionCardVariant";
 
+function getFlashSaleEndDate(endDate?: string | null): string | null {
+    if (!endDate) return null;
+    const normalized = endDate.trim();
+    if (!normalized) return null;
+    const parsed = Date.parse(normalized);
+    return Number.isFinite(parsed) ? normalized : null;
+}
+
+function getFlashSaleColors(section: Section): {
+    mainColor: string | null;
+    secondColor: string | null;
+} {
+    return {
+        mainColor: section.main_color ?? section.background_color ?? null,
+        secondColor:
+            section.second_color ?? getSectionCardSurfaceColor(section) ?? null,
+    };
+}
+
 /** Shop list may send badges on the item or on `vendor` */
 function shopTopBadgesFromItem(item: ShopItem) {
     if (item.top_badges?.length) return item.top_badges;
@@ -46,6 +65,97 @@ function shopTopBadgesFromItem(item: ShopItem) {
 
 function shopBottomBadgesFromItem(item: ShopItem) {
     return item.bottom_badges ?? item.vendor?.bottom_badges;
+}
+
+type ShopCardMappedData = {
+    sourceItem: SectionItem;
+    id: number;
+    name: string;
+    description?: string | null;
+    image?: string | null;
+    isOpenNow: boolean;
+    badge?: ProductCardBadge[];
+    rating: number;
+    address?: string | null;
+    isServiceProvider?: boolean;
+    isRestaurant?: boolean;
+    pricingTier?: string | null;
+    paymentMethods?: string[];
+    deliveryPrice?: string | number | null;
+    discountLabel?: string | null;
+    bottomBadges?: ProductCardBadge[];
+    isFavorite?: boolean;
+};
+
+function mapSectionItemToShopCardData(item: SectionItem): ShopCardMappedData | null {
+    if (isShopItem(item)) {
+        return {
+            sourceItem: item,
+            id: item.id,
+            name: item.name,
+            description: item.description,
+            image: item.image ?? item.cover_image ?? item.logo_url,
+            isOpenNow: item.is_open_now,
+            badge: mapApiTopBadgesToProductCard(shopTopBadgesFromItem(item)),
+            rating: item.average_rating ?? 0,
+            address: item.address,
+            isServiceProvider: item.is_service_provider,
+            isRestaurant: item.is_restaurant,
+            pricingTier: item.pricing_tier,
+            paymentMethods: item.payment_methods,
+            deliveryPrice: item.delivery_price,
+            discountLabel: item.discount_label,
+            bottomBadges: mapApiBottomBadgesToProductCard(shopBottomBadgesFromItem(item)),
+            isFavorite: item.is_favorite,
+        };
+    }
+
+    const data = getItemData(item) as unknown as Record<string, unknown>;
+    const vendor = data.vendor as
+        | { top_badges?: unknown[]; bottom_badges?: unknown[] }
+        | undefined;
+
+    const topBadges = ((data.top_badges as ShopItem["top_badges"])?.length
+        ? (data.top_badges as ShopItem["top_badges"])
+        : vendor?.top_badges?.length
+          ? (vendor.top_badges as ShopItem["top_badges"])
+          : (data.budges as ShopItem["budges"])) as ApiProductBadgeLike[] | undefined;
+
+    const bottomBadges = ((data.bottom_badges as ShopItem["bottom_badges"]) ??
+        vendor?.bottom_badges) as ApiProductBadgeLike[] | undefined;
+
+    const rawId = data.id;
+    const normalizedId =
+        typeof rawId === "number"
+            ? rawId
+            : typeof rawId === "string" && rawId.trim().length > 0
+              ? Number(rawId)
+              : NaN;
+    if (!Number.isFinite(normalizedId)) return null;
+
+    return {
+        sourceItem: item,
+        id: normalizedId,
+        name: ((data.name as string) ?? (data.title as string) ?? "").trim(),
+        description: (data.description as string) ?? null,
+        image:
+            (data.image as string) ??
+            (data.cover_image as string) ??
+            (data.logo_url as string) ??
+            null,
+        isOpenNow: (data.is_open_now as boolean) ?? false,
+        badge: mapApiTopBadgesToProductCard(topBadges),
+        rating: (data.average_rating as number) ?? 0,
+        address: (data.address as string) ?? null,
+        isServiceProvider: (data.is_service_provider as boolean) ?? false,
+        isRestaurant: (data.is_restaurant as boolean) ?? false,
+        pricingTier: (data.pricing_tier as string) ?? null,
+        paymentMethods: (data.payment_methods as string[]) ?? [],
+        deliveryPrice: (data.delivery_price as string | number) ?? null,
+        discountLabel: (data.discount_label as string) ?? null,
+        bottomBadges: mapApiBottomBadgesToProductCard(bottomBadges),
+        isFavorite: data.is_favorite as boolean | undefined,
+    };
 }
 
 type ApiSectionsRendererProps = {
@@ -65,6 +175,9 @@ type ApiSectionsRendererProps = {
         sectionBackground: string;
         cardSurface: string;
     };
+    /** Optional class applied to each slider section wrapper. */
+    sectionClassName?: string;
+    removeSectionVerticalSpacing?: boolean;
 };
 
 // Helper to check if item is manual type
@@ -137,8 +250,8 @@ const DISPLAY_TYPES = {
     PRODUCT: 2,
     SHOP: 3,
     BASKET: 4,
-    BRAND: 5,
-    RECIPE: 6,
+    BRAND: 6,
+    RECIPE: 7,
 } as const;
 
 export default function ApiSectionsRenderer({
@@ -146,6 +259,8 @@ export default function ApiSectionsRenderer({
     edgeToEdgeSectionBackgrounds = false,
     skipInnerPageContainer = false,
     brandDefaultsWhenApiMissing,
+    sectionClassName,
+    removeSectionVerticalSpacing = false,
 }: ApiSectionsRendererProps) {
     const navigate = useNavigate();
     const { t } = useTranslation();
@@ -235,6 +350,8 @@ export default function ApiSectionsRenderer({
                         edgeToEdgeSectionBackgrounds={edgeToEdgeSectionBackgrounds}
                         skipInnerPageContainer={skipInnerPageContainer}
                         brandDefaultsWhenApiMissing={brandDefaultsWhenApiMissing}
+                        sectionClassName={sectionClassName}
+                        removeSectionVerticalSpacing={removeSectionVerticalSpacing}
                         productIsFavoriteFor={makeIsFavoriteFor("product", productFavoriteIds)}
                         recipeIsFavoriteFor={makeIsFavoriteFor("recipe", recipeFavoriteIds)}
                         basketIsFavoriteFor={makeIsFavoriteFor("basket", basketFavoriteIds)}
@@ -266,6 +383,8 @@ type SectionByDisplayTypeProps = {
     edgeToEdgeSectionBackgrounds?: boolean;
     skipInnerPageContainer?: boolean;
     brandDefaultsWhenApiMissing?: ApiSectionsRendererProps["brandDefaultsWhenApiMissing"];
+    sectionClassName?: string;
+    removeSectionVerticalSpacing?: boolean;
     productIsFavoriteFor: (id: number, itemIsFavorite?: boolean) => boolean;
     recipeIsFavoriteFor: (id: number, itemIsFavorite?: boolean) => boolean;
     basketIsFavoriteFor: (id: number, itemIsFavorite?: boolean) => boolean;
@@ -284,6 +403,8 @@ function SectionByDisplayType({
     edgeToEdgeSectionBackgrounds,
     skipInnerPageContainer,
     brandDefaultsWhenApiMissing,
+    sectionClassName,
+    removeSectionVerticalSpacing,
     productIsFavoriteFor,
     recipeIsFavoriteFor,
     basketIsFavoriteFor,
@@ -317,6 +438,8 @@ function SectionByDisplayType({
                     onItemClick={onItemClick}
                     t={t}
                     edgeToEdgeSectionBackgrounds={edgeToEdgeSectionBackgrounds}
+                    sectionClassName={sectionClassName}
+                    removeSectionVerticalSpacing={removeSectionVerticalSpacing}
                     isFavoriteFor={productIsFavoriteFor}
                     onToggleFavorite={onToggleProductFavorite}
                 />
@@ -331,6 +454,8 @@ function SectionByDisplayType({
                     onItemClick={onItemClick}
                     t={t}
                     edgeToEdgeSectionBackgrounds={edgeToEdgeSectionBackgrounds}
+                    sectionClassName={sectionClassName}
+                    removeSectionVerticalSpacing={removeSectionVerticalSpacing}
                     isFavoriteFor={shopIsFavoriteFor}
                     onToggleFavorite={onToggleShopFavorite}
                 />
@@ -345,6 +470,8 @@ function SectionByDisplayType({
                     onItemClick={onItemClick}
                     t={t}
                     edgeToEdgeSectionBackgrounds={edgeToEdgeSectionBackgrounds}
+                    sectionClassName={sectionClassName}
+                    removeSectionVerticalSpacing={removeSectionVerticalSpacing}
                     isFavoriteFor={basketIsFavoriteFor}
                     onToggleFavorite={onToggleBasketFavorite}
                 />
@@ -360,6 +487,8 @@ function SectionByDisplayType({
                     t={t}
                     edgeToEdgeSectionBackgrounds={edgeToEdgeSectionBackgrounds}
                     brandDefaultsWhenApiMissing={brandDefaultsWhenApiMissing}
+                    sectionClassName={sectionClassName}
+                    removeSectionVerticalSpacing={removeSectionVerticalSpacing}
                 />
             );
 
@@ -372,6 +501,8 @@ function SectionByDisplayType({
                     onItemClick={onItemClick}
                     t={t}
                     edgeToEdgeSectionBackgrounds={edgeToEdgeSectionBackgrounds}
+                    sectionClassName={sectionClassName}
+                    removeSectionVerticalSpacing={removeSectionVerticalSpacing}
                     isFavoriteFor={recipeIsFavoriteFor}
                     onToggleFavorite={onToggleRecipeFavorite}
                 />
@@ -395,6 +526,8 @@ type SectionProps = {
     edgeToEdgeSectionBackgrounds?: boolean;
     brandDefaultsWhenApiMissing?: ApiSectionsRendererProps["brandDefaultsWhenApiMissing"];
     skipInnerPageContainer?: boolean;
+    sectionClassName?: string;
+    removeSectionVerticalSpacing?: boolean;
 };
 
 type SectionPropsWithFavorites = SectionProps & {
@@ -480,6 +613,8 @@ function ProductSection({
     onItemClick,
     t,
     edgeToEdgeSectionBackgrounds,
+    sectionClassName,
+    removeSectionVerticalSpacing,
     isFavoriteFor,
     onToggleFavorite,
 }: SectionPropsWithFavorites) {
@@ -489,10 +624,15 @@ function ProductSection({
         cardVariant
     );
     const surfaceColor = getSectionCardSurfaceColor(section);
+    const flashSaleEndDate = getFlashSaleEndDate(section.end_date);
+    const { mainColor, secondColor } = getFlashSaleColors(section);
 
     return (
         <SliderSection
             title={section.name}
+            flashSaleEndDate={flashSaleEndDate}
+            flashSaleMainColor={mainColor}
+            flashSaleSecondColor={secondColor}
             viewAllLabel={showViewAll ? t("common.viewAll") : undefined}
             onViewAllClick={showViewAll ? onViewAll : undefined}
             items={section.items}
@@ -501,6 +641,8 @@ function ProductSection({
             spaceBetween={sliderPreset.spaceBetween}
             sectionBackgroundColor={section.background_color ?? null}
             edgeToEdgeSectionBackground={edgeToEdgeSectionBackgrounds}
+            className={sectionClassName}
+            removeVerticalSpacing={removeSectionVerticalSpacing}
             renderItem={(item) => {
                 if (isProductItem(item)) {
                     const hasDiscount = item.discount && parseFloat(item.discount) > 0;
@@ -525,13 +667,14 @@ function ProductSection({
                         ) ?? [];
 
                     const topMerged = [...discountBadges, ...fromApi];
-                    const badge = topMerged.length ? topMerged.slice(0, 1) : undefined;
+                    const badge = topMerged.length ? topMerged : undefined;
 
                     return (
                         <ProductCard
                             key={item.id}
                             id={item.id}
                             name={item.name}
+                            description={item.description ?? undefined}
                             store=""
                             price={
                                 item.price_after_discount_formatted ??
@@ -548,6 +691,9 @@ function ProductSection({
                             bottomBadges={mapApiBottomBadgesToProductCard(
                                 item.bottom_badges
                             )}
+                            category={item.category}
+                            sold={item.sold_number}
+                            savings={item.amount_saved_formatted ?? undefined}
                             layout={cardVariant}
                             surfaceColor={surfaceColor}
                             t={t}
@@ -579,14 +725,15 @@ function ProductSection({
                     ) ?? [];
 
                 const topMergedFb = [...discountBadgesFb, ...fromApiFb];
-                const badgeFb = topMergedFb.length ? topMergedFb.slice(0, 1) : undefined;
+                const badgeFb = topMergedFb.length ? topMergedFb : undefined;
 
                 return (
                     <ProductCard
                         key={data.id}
                         id={data.id}
                         name={data.name || data.desc || data.title || ""}
-                        store=""
+                        description={data.description ?? data.desc ?? undefined}
+                        store={(data.vendor as string) ?? ""}
                         price={
                             data.price_after_discount_formatted ??
                             (data.price_after_discount
@@ -604,6 +751,20 @@ function ProductSection({
                         bottomBadges={mapApiBottomBadgesToProductCard(
                             data.bottom_badges
                         )}
+                        category={data.category}
+                        sold={
+                            typeof data.sold_number === "number"
+                                ? data.sold_number
+                                : typeof data.sold === "number"
+                                  ? data.sold
+                                  : undefined
+                        }
+                        savings={
+                            (data.amount_saved_formatted as string) ??
+                            (typeof data.amount_saved === "number"
+                                ? `${data.amount_saved}`
+                                : undefined)
+                        }
                         layout={cardVariant}
                         surfaceColor={surfaceColor}
                         t={t}
@@ -624,6 +785,8 @@ function RecipeSection({
     onItemClick,
     t,
     edgeToEdgeSectionBackgrounds,
+    sectionClassName,
+    removeSectionVerticalSpacing,
     isFavoriteFor,
     onToggleFavorite,
 }: SectionPropsWithFavorites) {
@@ -633,10 +796,15 @@ function RecipeSection({
         cardVariant
     );
     const surfaceColor = getSectionCardSurfaceColor(section);
+    const flashSaleEndDate = getFlashSaleEndDate(section.end_date);
+    const { mainColor, secondColor } = getFlashSaleColors(section);
 
     return (
         <SliderSection
             title={section.name}
+            flashSaleEndDate={flashSaleEndDate}
+            flashSaleMainColor={mainColor}
+            flashSaleSecondColor={secondColor}
             viewAllLabel={showViewAll ? t("common.viewAll") : undefined}
             onViewAllClick={showViewAll ? onViewAll : undefined}
             items={section.items}
@@ -645,6 +813,8 @@ function RecipeSection({
             spaceBetween={sliderPreset.spaceBetween}
             sectionBackgroundColor={section.background_color ?? null}
             edgeToEdgeSectionBackground={edgeToEdgeSectionBackgrounds}
+            className={sectionClassName}
+            removeVerticalSpacing={removeSectionVerticalSpacing}
             renderItem={(item) => {
                 if (isRecipeItem(item)) {
                     const hasDiscount = item.discount && parseFloat(item.discount) > 0;
@@ -776,6 +946,8 @@ function BasketSection({
     onItemClick,
     t,
     edgeToEdgeSectionBackgrounds,
+    sectionClassName,
+    removeSectionVerticalSpacing,
     isFavoriteFor,
     onToggleFavorite,
 }: SectionPropsWithFavorites) {
@@ -785,10 +957,15 @@ function BasketSection({
         cardVariant
     );
     const surfaceColor = getSectionCardSurfaceColor(section);
+    const flashSaleEndDate = getFlashSaleEndDate(section.end_date);
+    const { mainColor, secondColor } = getFlashSaleColors(section);
 
     return (
         <SliderSection
             title={section.name}
+            flashSaleEndDate={flashSaleEndDate}
+            flashSaleMainColor={mainColor}
+            flashSaleSecondColor={secondColor}
             viewAllLabel={showViewAll ? t("common.viewAll") : undefined}
             onViewAllClick={showViewAll ? onViewAll : undefined}
             items={section.items}
@@ -797,6 +974,8 @@ function BasketSection({
             spaceBetween={sliderPreset.spaceBetween}
             sectionBackgroundColor={section.background_color ?? null}
             edgeToEdgeSectionBackground={edgeToEdgeSectionBackgrounds}
+            className={sectionClassName}
+            removeVerticalSpacing={removeSectionVerticalSpacing}
             renderItem={(item) => {
                 if (isBasketItem(item)) {
                     const saveAmount =
@@ -836,6 +1015,9 @@ function BasketSection({
                             )}
                             layout={cardVariant}
                             surfaceColor={surfaceColor}
+                            mainColor={item.main_color ?? null}
+                            secondColor={item.second_color ?? null}
+                            textColor={item.text_color ?? null}
                             isFavorite={isFav}
                             t={t}
                             onClick={() => onItemClick(item)}
@@ -874,6 +1056,9 @@ function BasketSection({
                         )}
                         layout={cardVariant}
                         surfaceColor={surfaceColor}
+                        mainColor={(data.main_color as string) ?? null}
+                        secondColor={(data.second_color as string) ?? null}
+                        textColor={(data.text_color as string) ?? null}
                         isFavorite={isFav}
                         t={t}
                         onClick={() => onItemClick(item)}
@@ -893,6 +1078,8 @@ function ShopSection({
     onItemClick,
     t,
     edgeToEdgeSectionBackgrounds,
+    sectionClassName,
+    removeSectionVerticalSpacing,
     isFavoriteFor,
     onToggleFavorite,
 }: SectionPropsWithFavorites) {
@@ -902,10 +1089,15 @@ function ShopSection({
         cardVariant
     );
     const surfaceColor = getSectionCardSurfaceColor(section);
+    const flashSaleEndDate = getFlashSaleEndDate(section.end_date);
+    const { mainColor, secondColor } = getFlashSaleColors(section);
 
     return (
         <SliderSection
             title={section.name}
+            flashSaleEndDate={flashSaleEndDate}
+            flashSaleMainColor={mainColor}
+            flashSaleSecondColor={secondColor}
             viewAllLabel={showViewAll ? t("common.viewAll") : undefined}
             onViewAllClick={showViewAll ? onViewAll : undefined}
             items={section.items}
@@ -914,70 +1106,37 @@ function ShopSection({
             spaceBetween={sliderPreset.spaceBetween}
             sectionBackgroundColor={section.background_color ?? null}
             edgeToEdgeSectionBackground={edgeToEdgeSectionBackgrounds}
+            className={sectionClassName}
+            removeVerticalSpacing={removeSectionVerticalSpacing}
             renderItem={(item) => {
-                if (isShopItem(item)) {
-                    const isFav = isFavoriteFor(item.id, item.is_favorite);
-                    return (
-                        <ShopCard
-                            key={item.id}
-                            id={item.id}
-                            name={item.name}
-                            description={item.description}
-                            image={item.image ?? item.logo_url}
-                            isOpenNow={item.is_open_now}
-                            badge={mapApiTopBadgesToProductCard(
-                                shopTopBadgesFromItem(item)
-                            )}
-                            rating={item.average_rating}
-                            deliveryPrice={item.delivery_price}
-                            discountLabel={item.discount_label}
-                            bottomBadges={mapApiBottomBadgesToProductCard(
-                                shopBottomBadgesFromItem(item)
-                            )}
-                            layout={cardVariant}
-                            surfaceColor={surfaceColor}
-                            isFavorite={isFav}
-                            onFavorite={(id) => onToggleFavorite(Number(id), isFav)}
-                            onClick={() => onItemClick(item)}
-                        />
-                    );
-                }
-                const data = getItemData(item) as unknown as Record<string, unknown>;
-                const isFav = isFavoriteFor(
-                    data.id as number,
-                    data.is_favorite as boolean | undefined
-                );
-                const shopData = data as Record<string, unknown>;
-                const vendor = shopData.vendor as
-                    | { top_badges?: unknown[]; bottom_badges?: unknown[] }
-                    | undefined;
+                const shopCardData = mapSectionItemToShopCardData(item);
+                if (!shopCardData) return null;
+
+                const isFav = isFavoriteFor(shopCardData.id, shopCardData.isFavorite);
+
                 return (
                     <ShopCard
-                        key={data.id as number}
-                        id={data.id as number}
-                        name={(data.name as string) ?? ""}
-                        description={(data.description as string) ?? null}
-                        image={(data.image as string) ?? (data.logo_url as string) ?? null}
-                        isOpenNow={(data.is_open_now as boolean) ?? false}
-                        badge={mapApiTopBadgesToProductCard(
-                            (shopData.top_badges as ShopItem["top_badges"])?.length
-                                ? (shopData.top_badges as ShopItem["top_badges"])
-                                : vendor?.top_badges?.length
-                                  ? (vendor.top_badges as ShopItem["top_badges"])
-                                  : (shopData.budges as ShopItem["budges"])
-                        )}
-                        rating={(data.average_rating as number) ?? 0}
-                        deliveryPrice={(data.delivery_price as string | number) ?? null}
-                        discountLabel={(data.discount_label as string) ?? null}
-                        bottomBadges={mapApiBottomBadgesToProductCard(
-                            ((shopData.bottom_badges as ShopItem["bottom_badges"]) ??
-                                vendor?.bottom_badges) as ApiProductBadgeLike[] | undefined
-                        )}
+                        key={shopCardData.id}
+                        id={shopCardData.id}
+                        name={shopCardData.name}
+                        description={shopCardData.description}
+                        image={shopCardData.image}
+                        isOpenNow={shopCardData.isOpenNow}
+                        badge={shopCardData.badge}
+                        rating={shopCardData.rating}
+                        address={shopCardData.address}
+                        isServiceProvider={shopCardData.isServiceProvider}
+                        isRestaurant={shopCardData.isRestaurant}
+                        pricingTier={shopCardData.pricingTier}
+                        paymentMethods={shopCardData.paymentMethods}
+                        deliveryPrice={shopCardData.deliveryPrice}
+                        discountLabel={shopCardData.discountLabel}
+                        bottomBadges={shopCardData.bottomBadges}
                         layout={cardVariant}
                         surfaceColor={surfaceColor}
                         isFavorite={isFav}
                         onFavorite={(id) => onToggleFavorite(Number(id), isFav)}
-                        onClick={() => onItemClick(item)}
+                        onClick={() => onItemClick(shopCardData.sourceItem)}
                     />
                 );
             }}
@@ -993,6 +1152,8 @@ function BrandSection({
     t,
     edgeToEdgeSectionBackgrounds,
     brandDefaultsWhenApiMissing,
+    sectionClassName,
+    removeSectionVerticalSpacing,
 }: SectionProps) {
     const cardVariant = getSectionCardVariant(section);
     const sliderPreset = getSliderPresetForSection(
@@ -1003,12 +1164,17 @@ function BrandSection({
         getSectionCardSurfaceColor(section) ??
         brandDefaultsWhenApiMissing?.cardSurface ??
         null;
+    const flashSaleEndDate = getFlashSaleEndDate(section.end_date);
+    const { mainColor, secondColor } = getFlashSaleColors(section);
     const sectionBgFallback =
         brandDefaultsWhenApiMissing?.sectionBackground ?? "var(--color-api-second)";
 
     return (
         <SliderSection
             title={section.name}
+            flashSaleEndDate={flashSaleEndDate}
+            flashSaleMainColor={mainColor}
+            flashSaleSecondColor={secondColor}
             viewAllLabel={showViewAll ? t("common.viewAll") : undefined}
             onViewAllClick={showViewAll ? onViewAll : undefined}
             items={section.items}
@@ -1019,6 +1185,8 @@ function BrandSection({
                 section.background_color ?? sectionBgFallback
             }
             edgeToEdgeSectionBackground={edgeToEdgeSectionBackgrounds}
+            className={sectionClassName}
+            removeVerticalSpacing={removeSectionVerticalSpacing}
             renderItem={(item) => {
                 if (isBrandItem(item)) {
                     return (

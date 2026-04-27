@@ -136,12 +136,17 @@ export default function AllProductsSection({
         };
     };
 
+    const sectionClassName = disablePageContainer
+        ? "relative w-screen max-w-[100vw] [margin-inline-start:calc(50%-50vw)] py-8 bg-custom-card"
+        : "py-8 bg-custom-card";
+    const contentClassName = disablePageContainer
+        ? "page-container min-w-0"
+        : "page-container";
+
     return (
-        <section className="py-8 bg-custom-card">
+        <section className={sectionClassName}>
             <div
-                className={
-                    disablePageContainer ? "w-full min-w-0" : "page-container"
-                }
+                className={contentClassName}
             >
                 {/* Header */}
                 <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -248,14 +253,14 @@ export default function AllProductsSection({
 
                 {/* Products Grid */}
                 {isLoading && products.length === 0 ? (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                         {Array.from({ length: 10 }).map((_, index) => (
                             <ProductCardSkeleton key={`skeleton-${index}`} />
                         ))}
                     </div>
                 ) : products.length > 0 ? (
                     <>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                             {products.map((product) => (
                                 <ProductCard
                                     key={product.id}
@@ -265,7 +270,7 @@ export default function AllProductsSection({
                         </div>
 
                         {isFetchingNextPage && (
-                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mt-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mt-4">
                                 {Array.from({ length: 5 }).map((_, index) => (
                                     <ProductCardSkeleton key={`loading-${index}`} />
                                 ))}

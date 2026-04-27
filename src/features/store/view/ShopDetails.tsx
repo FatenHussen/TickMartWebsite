@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from"react";
 import { useParams, useNavigate } from"react-router-dom";
 import { useTranslation } from"react-i18next";
 import { useLanguage } from"@/context/LanguageContext";
-import { useShopDetails } from"../hooks/useShopDetails";
+import { useShopDetails, useShopServices } from"../hooks/useShopDetails";
 import { _ShopApi } from"../api/shopApi";
 import { useSectionsByPosition } from"@/features/home/hooks/useSections";
 import { useCategories } from"@/features/home/hooks/useCategories";
@@ -12,10 +12,13 @@ import ApiSectionsRenderer from"@/shared/component/sections/ApiSectionsRenderer"
 import FullBleedSection from"@/shared/component/FullBleedSection";
 import StoreDetailsCard from"../components/StoreDetailsCard";
 import CategoryStore from"../components/CategoryStore";
+import ShopServiceCard from"../components/ShopServiceCard";
+import BookServiceModal from"../components/BookServiceModal";
 import ProductCard from"@/shared/component/card/ProductCard";
 import { convertShopDataToStoreMeta } from"../utils/shopDataConverter";
 import { mapActionPageSlugToRoute } from"@/utils/routeMapper";
 import type { ApiProduct } from"@/features/categories/types";
+import type { ShopVendorService } from"../types/shop";
 import { mapApiTopBadgesToProductCard } from "@/shared/lib/mapProductBadges";
 
 export default function ShopDetails() {
@@ -33,6 +36,9 @@ export default function ShopDetails() {
  const toggleFavorite = useToggleFavorite();
  const [isFavorite, setIsFavorite] = useState(false);
 const [selectedCategoryId, setSelectedCategoryId] = useState<number>(0);
+const [bookingService, setBookingService] = useState<ShopVendorService | null>(null);
+
+ const isServiceProvider = shop?.is_service_provider === true;
 
  const { data: categoriesData = [] } = useCategories();
  const {
@@ -54,9 +60,14 @@ const [selectedCategoryId, setSelectedCategoryId] = useState<number>(0);
  page,
  categoryId: selectedCategoryId || undefined,
  }),
- enabled: shopIdNum > 0,
+ enabled: shopIdNum > 0 && !isServiceProvider,
  threshold: 500,
  });
+
+ const {
+ data: services = [],
+ isLoading: isServicesLoading,
+ } = useShopServices(shopIdNum, isServiceProvider);
 
  const { beforeSections, afterSections } =
  useSectionsByPosition("shop_details");
@@ -144,10 +155,12 @@ selected: selectedCategoryId === category.id,
  onFavoriteClick={handleToggleFavorite}
  />
 
+{!isServiceProvider && (
 <CategoryStore
 categories={categoryItems}
 onSelectCategory={setSelectedCategoryId}
 />
+)}
 
  {/* Other Sections before products */}
  {otherBeforeSections.length > 0 && (
@@ -156,8 +169,34 @@ onSelectCategory={setSelectedCategoryId}
  </FullBleedSection>
  )}
 
- {/* Products Grid */}
-{isProductsLoading ? (
+ {isServiceProvider ? (
+ isServicesLoading ? (
+ <div className="mt-8 flex justify-center py-12">
+ <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary-light"/>
+ </div>
+ ) : services.length > 0 ? (
+ <div className="mt-8">
+ <h2 className="text-2xl font-bold text-custom-primary mb-6">
+ {t("store.services","Services")}
+ </h2>
+ <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+ {services.map((s) => (
+ <ShopServiceCard
+ key={s.id}
+ service={s}
+ onBook={(svc) => setBookingService(svc)}
+ />
+ ))}
+ </div>
+ </div>
+ ) : (
+ <div className="mt-8 flex items-center justify-center h-64 bg-custom-card rounded-2xl">
+ <p className="text-custom-secondary">
+ {t("store.noServices","No services available in this shop")}
+ </p>
+ </div>
+ )
+ ) : isProductsLoading ? (
  <div className="mt-8 flex justify-center py-12">
  <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary-light"/>
  </div>
@@ -240,6 +279,13 @@ onSelectCategory={setSelectedCategoryId}
  </FullBleedSection>
  )}
  </div>
+
+ <BookServiceModal
+ open={bookingService !== null}
+ onClose={() => setBookingService(null)}
+ service={bookingService}
+ shopId={shopIdNum}
+ />
  </div>
  );
 }

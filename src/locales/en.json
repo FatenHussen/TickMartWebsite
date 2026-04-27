@@ -260,7 +260,8 @@
     "baskets": "Baskets",
     "suggestedBaskets": "Suggested baskets",
     "readyMadeBaskets": "Ready-made baskets based on your previous orders",
-    "addToCart": "Add to Cart"
+    "addToCart": "Add to Cart",
+    "openBasket": "Open Basket"
   },
   "productsListing": {
     "title": "Products",
@@ -452,6 +453,24 @@
     "noStoresFound": "No stores found",
     "rateShop": "Rate this shop",
     "shopReviews": "Shop reviews",
+    "services": "Services",
+    "noServices": "No services available in this shop",
+    "bookService": "Book service",
+    "serviceDuration": "{{minutes}} min",
+    "openNow": "Open now",
+    "closed": "Closed",
+    "booking": {
+      "title": "Book service",
+      "date": "Date",
+      "pickDate": "Pick a date",
+      "time": "Time",
+      "notes": "Notes",
+      "notesPlaceholder": "Add any extra details for the provider",
+      "confirm": "Confirm booking",
+      "success": "Booking request sent",
+      "failed": "Failed to send booking request",
+      "outsideHours": "Time must be between {{open}} and {{close}}"
+    },
     "promotionalBanner": {
       "title": "Spring Collection 2024",
       "description": "Discover the latest trends in fashion. Up to 40% off on selected items.",
@@ -1375,6 +1394,8 @@
     "rateBrand": "Rate this brand",
     "brandReviews": "Brand reviews",
     "viewDetails": "View brand details",
+    "openCategory": "Open category",
+    "cardActionAria": "Open {{name}} category",
     "stores": "stores",
     "store": "store",
     "products": "products",

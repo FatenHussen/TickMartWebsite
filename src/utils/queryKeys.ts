@@ -211,11 +211,16 @@ export const queryKeys = {
  : (["shop","list"] as const),
  listInfinite: (filters?: {
  type?: string;
- lat?: number;
- lng?: number;
+ area_id?: number;
+ city_id?: number;
  governorate_id?: number;
  category_id?: number;
+ brand_id?: number;
  search?: string;
+ lat?: number;
+ lng?: number;
+ max_distance?: number;
+ is_service_provider?: 0 | 1;
  }) =>
  filters && Object.keys(filters).length > 0
  ? (["shop","list","infinite", filters] as const)
@@ -224,6 +229,10 @@ export const queryKeys = {
  id !== undefined
  ? (["shop","details", id] as const)
  : (["shop","details"] as const),
+ services: (id?: number) =>
+ id !== undefined
+ ? (["shop","services", id] as const)
+ : (["shop","services"] as const),
  },
 
  /**
@@ -414,5 +423,16 @@ export const queryKeys = {
  all: () => ["notifications"] as const,
  list: (params?: { read?: boolean; page?: number }) =>
  params ? (["notifications","list", params] as const) : (["notifications","list"] as const),
+ },
+
+ /**
+ * Popup campaign query keys
+ */
+ popups: {
+ all: () => ["popups"] as const,
+ active: (params?: { page_type?: string; current_url?: string }) =>
+ params && Object.keys(params).length > 0
+ ? (["popups","active", params] as const)
+ : (["popups","active"] as const),
  },
 } as const;
