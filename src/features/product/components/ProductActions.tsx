@@ -20,7 +20,7 @@ export default function ProductActions({
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                 {icons.map((icon) => {
                     const sharedClassName =
-                        "flex flex-col items-center justify-center gap-1 rounded-lg border border-custom-primary bg-custom-card px-3 py-3 text-center transition-all hover:border-primary-light hover:shadow-sm";
+                        "flex flex-col items-center justify-center gap-1 rounded-lg border border-[color-mix(in_srgb,var(--color-api-second)_32%,var(--color-border-primary))] bg-custom-card px-3 py-3 text-center transition-all hover:border-primary hover:bg-[color-mix(in_srgb,var(--color-api-second)_6%,var(--color-bg-card))] hover:shadow-sm";
                     const isClickable = onIconClick && icon.description;
                     const content = (
                         <>

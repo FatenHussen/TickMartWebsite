@@ -193,7 +193,12 @@ export default function Cart() {
 
         if (preview?.available_promotions?.length) {
             preview.available_promotions.forEach((promotion) => {
-                if (promotion?.name) badges.push(promotion.name);
+                if (!promotion?.name) return;
+                const name =
+                    typeof promotion.name === "string"
+                        ? promotion.name
+                        : (promotion.name.en ?? promotion.name.ar ?? "");
+                if (name) badges.push(name);
             });
         }
 
@@ -334,11 +339,9 @@ export default function Cart() {
     const isCartEmpty = items.length === 0;
 
     return (
-        <div className="min-h-screen bg-custom-primary">
-             <OrderFlowHeader />
+        <div className="min-h-screen bg-custom-tertiary">
+             {/* <OrderFlowHeader /> */}
             <div className="page-container py-6" dir={isRTL ? "rtl" : "ltr"}>
-               
-
                 {/* Progress Indicator - only when cart has items */}
                 {!isCartEmpty && (
                     <div className="mb-8">
@@ -346,50 +349,82 @@ export default function Cart() {
                     </div>
                 )}
 
-                {/* Header */}
-                {/* <div className="mb-6">
-                    <h1 className="text-2xl sm:text-3xl font-bold text-custom-primary mb-2">
-                        {t("cart.myShoppingCart")}
-                    </h1>
-                </div> */}
-
                 {isCartEmpty ? (
-                    /* Creative empty cart box - no sidebar */
+                    /* Creative empty cart — uses theme tokens */
                     <div className="flex justify-center items-center min-h-[60vh]">
                         <div className="relative w-full max-w-md mx-auto">
-                            <div className="relative overflow-hidden rounded-3xl bg-linear-to-br from-gray-50 to-gray-100 dark:from-gray-800/50 dark:to-gray-900/50 border border-custom-secondary/20 p-12 text-center shadow-lg">
-                                {/* Decorative circles */}
-                                <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full bg-custom-accent/10 blur-2xl" />
-                                <div className="absolute -bottom-10 -left-10 w-24 h-24 rounded-full bg-primary-light/10 blur-xl" />
-                                {/* Cart icon */}
-                                <div className="relative mx-auto mb-6 w-20 h-20 rounded-2xl bg-custom-card/80 flex items-center justify-center shadow-inner border border-custom-secondary/10">
-                                    <svg
-                                        className="w-10 h-10 text-custom-secondary/70"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
+                            <div
+                                className="relative overflow-hidden rounded-3xl border bg-custom-card p-12 text-center shadow-sm"
+                                style={{
+                                    borderColor:
+                                        "color-mix(in srgb, var(--color-main) 18%, transparent)",
+                                    boxShadow:
+                                        "0 12px 32px -16px color-mix(in srgb, var(--color-main) 22%, transparent)",
+                                }}
+                            >
+                                <div
+                                    className="pointer-events-none absolute -top-12 -right-12 h-36 w-36 rounded-full blur-3xl"
+                                    style={{
+                                        background:
+                                            "radial-gradient(circle, color-mix(in srgb, var(--color-main) 28%, transparent) 0%, transparent 70%)",
+                                    }}
+                                    aria-hidden
+                                />
+                                <div
+                                    className="pointer-events-none absolute -bottom-12 -left-12 h-32 w-32 rounded-full blur-2xl"
+                                    style={{
+                                        background:
+                                            "radial-gradient(circle, color-mix(in srgb, var(--color-api-second) 26%, transparent) 0%, transparent 72%)",
+                                    }}
+                                    aria-hidden
+                                />
+
+                                <div className="relative">
+                                    <div
+                                        className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-2xl text-white"
+                                        style={{
+                                            background:
+                                                "linear-gradient(135deg, var(--color-main) 0%, var(--color-api-second) 100%)",
+                                            boxShadow:
+                                                "0 12px 28px -10px color-mix(in srgb, var(--color-main) 50%, transparent)",
+                                        }}
                                     >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth={1.5}
-                                            d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+                                        <svg
+                                            className="h-10 w-10"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={1.5}
+                                                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+                                            />
+                                        </svg>
+                                    </div>
+                                    <h2 className="text-xl font-bold text-[color:var(--color-text)] mb-2">
+                                        {t("cart.yourCartIsEmpty")}
+                                    </h2>
+                                    <p className="text-sm text-custom-secondary mb-8 max-w-xs mx-auto leading-relaxed">
+                                        {t("cart.emptyCartHint")}
+                                    </p>
+                                    <Link
+                                        to="/home"
+                                        className="inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5"
+                                        style={{
+                                            backgroundColor:
+                                                "var(--color-api-second)",
+                                            boxShadow:
+                                                "0 8px 22px -8px color-mix(in srgb, var(--color-main) 45%, transparent)",
+                                        }}
+                                    >
+                                        <HiArrowLeft
+                                            className={`w-5 h-5 ${isRTL ? "rotate-180" : ""}`}
                                         />
-                                    </svg>
+                                        {t("cart.continueShopping")}
+                                    </Link>
                                 </div>
-                                <h2 className="relative text-xl font-semibold text-custom-primary mb-2">
-                                    {t("cart.yourCartIsEmpty")}
-                                </h2>
-                                <p className="relative text-custom-secondary text-sm mb-8 max-w-xs mx-auto">
-                                    {t("cart.emptyCartHint")}
-                                </p>
-                                <Link
-                                    to="/home"
-                                    className="relative inline-flex items-center gap-2 rounded-xl bg-custom-accent hover:bg-custom-accent/90 text-white font-medium px-6 py-3 transition-colors shadow-md hover:shadow-lg"
-                                >
-                                    <HiArrowLeft className="w-5 h-5" />
-                                    {t("cart.continueShopping")}
-                                </Link>
                             </div>
                         </div>
                     </div>
@@ -490,21 +525,29 @@ export default function Cart() {
                                 )}
 
                             {/* Action Buttons */}
-                            <div className="flex flex-wrap items-center justify-between gap-3 rounded-[20px] bg-[#E1F0FF] px-6 py-4">
-                                <Link to="/home" className="shrink-0">
+                            <div
+                                className="flex flex-col gap-3 rounded-2xl p-4 sm:px-6 sm:py-4 border md:flex-row md:flex-wrap md:items-center md:justify-between"
+                                style={{
+                                    backgroundColor:
+                                        "color-mix(in srgb, var(--color-main) 6%, var(--color-bg-card))",
+                                    borderColor:
+                                        "color-mix(in srgb, var(--color-main) 18%, transparent)",
+                                }}
+                            >
+                                <Link to="/home" className="block w-full md:w-auto md:shrink-0">
                                     <Button
                                         variant="primary"
-                                        className="h-12 min-w-[252px] rounded-xl bg-primary-light px-6 text-sm font-semibold text-white hover:opacity-90"
+                                        className="h-12 w-full md:min-w-[252px] rounded-xl px-6 text-sm font-semibold text-white !bg-[color:var(--color-api-second)] hover:!bg-[color:var(--color-api-second-hover)] transition-colors"
                                     >
-                                        <HiArrowLeft className="w-5 h-5" />
+                                        <HiArrowLeft className={`w-5 h-5 ${isRTL ? "rotate-180" : ""}`} />
                                         {t("cart.returnToShop")}
                                     </Button>
                                 </Link>
-                                <div className="flex items-center gap-3">
+                                <div className="grid grid-cols-2 gap-3 md:flex md:items-center">
                                     <Button
                                         variant="outline"
                                         onClick={handleClearCartClick}
-                                        className="h-12 min-w-[150px] rounded-xl border border-rose-300 bg-white px-6 text-sm font-medium text-rose-500 hover:bg-rose-50"
+                                        className="h-12 w-full md:min-w-[150px] rounded-xl px-4 sm:px-6 text-sm font-medium transition-colors !bg-custom-card !border !border-[color:color-mix(in_srgb,var(--color-error)_35%,transparent)] !text-[color:var(--color-error)] hover:!bg-[color:color-mix(in_srgb,var(--color-error)_8%,var(--color-bg-card))]"
                                     >
                                         <HiTrash className="h-5 w-5" />
                                         {t("cart.clearCart", "Delete all")}
@@ -512,7 +555,7 @@ export default function Cart() {
                                     <Button
                                         variant="outline"
                                         onClick={handleUpdateCart}
-                                        className="h-12 min-w-[150px] rounded-xl border border-primary-light bg-white px-6 text-sm font-medium text-custom-primary hover:bg-[#F4F9FF]"
+                                        className="h-12 w-full md:min-w-[150px] rounded-xl px-4 sm:px-6 text-sm font-medium !bg-custom-card !border !border-custom-primary !text-[color:var(--color-text)] hover:!border-[color:color-mix(in_srgb,var(--color-main)_35%,transparent)] hover:!bg-custom-hover transition-colors"
                                     >
                                         {t("cart.updateCart")}
                                     </Button>
@@ -537,7 +580,14 @@ export default function Cart() {
                 isOpen={showClearCartPopup}
                 onClose={() => setShowClearCartPopup(false)}
                 icon={
-                    <div className="w-20 h-20 rounded-full bg-rose-500 flex items-center justify-center shadow-lg">
+                    <div
+                        className="w-20 h-20 rounded-full flex items-center justify-center shadow-lg"
+                        style={{
+                            backgroundColor: "var(--color-error)",
+                            boxShadow:
+                                "0 12px 28px -10px color-mix(in srgb, var(--color-error) 40%, transparent)",
+                        }}
+                    >
                         <HiTrash className="w-10 h-10 text-white" />
                     </div>
                 }

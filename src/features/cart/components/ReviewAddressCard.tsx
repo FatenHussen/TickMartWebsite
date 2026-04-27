@@ -1,42 +1,58 @@
-import type { DeliveryAddress } from"../types";
+import { HiOutlineLocationMarker, HiOutlinePencil } from "react-icons/hi";
+import { useTranslation } from "react-i18next";
+import type { DeliveryAddress } from "../types";
 
 type ReviewAddressCardProps = {
- address: DeliveryAddress;
- onEdit: () => void;
+    address: DeliveryAddress;
+    onEdit: () => void;
 };
 
 export default function ReviewAddressCard({
- address,
- onEdit,
+    address,
+    onEdit,
 }: ReviewAddressCardProps) {
- return (
- <div
- className="rounded-2xl"
- style={{
- background:"linear-gradient(90deg, #4CDAF6 0%, #2C8090 100%)",
- padding:"1px",
- borderRadius:"16px",
- boxShadow:"0 4px 20px rgba(0, 0, 0, 0.25)",
- }}
- >
- <div className="rounded-2xl p-4 bg-custom-secondary dark:bg-custom-tertiary">
- <div className="flex items-center justify-between mb-2">
- <h3 className="text-sm font-semibold text-status-success">
- Delivery Address
- </h3>
- <button
- onClick={onEdit}
- className="text-sm font-medium text-custom-accent"
- >
- Edit
- </button>
- </div>
- <div className="text-sm text-custom-secondary space-y-1">
- <p className="font-semibold text-custom-primary">{address.fullName}</p>
- <p>{address.phoneNumber}</p>
- <p className="whitespace-pre-line">{address.address}</p>
- </div>
- </div>
- </div>
- );
+    const { t } = useTranslation();
+    return (
+        <div className="rounded-2xl bg-custom-card border border-custom-primary shadow-sm p-4 transition-shadow hover:shadow-md">
+            <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                    <span
+                        className="flex h-7 w-7 items-center justify-center rounded-lg"
+                        style={{
+                            background:
+                                "color-mix(in srgb, var(--color-main) 14%, var(--color-bg-card))",
+                            color: "var(--color-main)",
+                        }}
+                    >
+                        <HiOutlineLocationMarker className="w-4 h-4" />
+                    </span>
+                    <h3 className="text-sm font-bold text-[color:var(--color-text)]">
+                        {t("checkout.deliveryAddress", "Delivery Address")}
+                    </h3>
+                </div>
+                <button
+                    type="button"
+                    onClick={onEdit}
+                    className="inline-flex items-center gap-1 text-xs font-semibold rounded-full px-2.5 py-1 transition-colors"
+                    style={{
+                        color: "var(--color-main)",
+                        backgroundColor:
+                            "color-mix(in srgb, var(--color-main) 10%, transparent)",
+                    }}
+                >
+                    <HiOutlinePencil className="w-3.5 h-3.5" />
+                    {t("common.edit", "Edit")}
+                </button>
+            </div>
+            <div className="text-sm space-y-1">
+                <p className="font-semibold text-[color:var(--color-text)]">
+                    {address.fullName}
+                </p>
+                <p className="text-custom-secondary">{address.phoneNumber}</p>
+                <p className="text-custom-secondary leading-relaxed whitespace-pre-line">
+                    {address.address}
+                </p>
+            </div>
+        </div>
+    );
 }

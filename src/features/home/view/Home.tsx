@@ -40,7 +40,7 @@ export default function Home() {
 
     return (
         <div
-            className="min-h-screen bg-[#FFF9F5] dark:bg-custom-primary"
+            className="min-h-screen overflow-x-clip bg-[#FFF9F5] dark:bg-custom-primary"
             dir={isRTL ? "rtl" : "ltr"}
         >
             {/* One `.page-container` for the whole home column (matches Navbar width). */}

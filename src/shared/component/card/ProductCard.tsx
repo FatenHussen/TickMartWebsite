@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 
+import type { SectionCardVariant } from "@/features/home/types";
 import { cn } from "../../lib/utils";
 import Rating from "@/shared/component/Rating";
 import AnimatedButton from "../../ui/AnimatedButton";
@@ -55,6 +56,10 @@ export type ProductCardProps = {
 
     t?: (key: string) => string;
     className?: string;
+    /** API section `variant` — image block height (home API rows). */
+    layout?: SectionCardVariant;
+    /** API `background_card_color` — lower content panel tint. */
+    surfaceColor?: string | null;
 };
 
 export default function ProductCard({
@@ -81,7 +86,17 @@ export default function ProductCard({
     viewDetailsLabel,
     t,
     className,
+    layout,
+    surfaceColor,
 }: ProductCardProps) {
+    const imageFrameClass = layout
+        ? layout === "horizontal"
+            ? "h-36 sm:h-40"
+            : layout === "vertical"
+              ? "h-52 sm:h-56"
+              : "h-44 sm:h-48"
+        : "h-[200px]";
+
     const allBadges = badge ? (Array.isArray(badge) ? badge : [badge]) : [];
     const leftBadges = allBadges.filter((b) => (b.align ?? "left") === "left");
     const rightBadges = allBadges.filter((b) => b.align === "right");
@@ -99,8 +114,15 @@ export default function ProductCard({
     return (
         <div
             className={cn(
-                "relative flex h-full flex-col overflow-hidden rounded-xl bg-custom-primary shadow-[0_1px_2px_0_rgba(0,0,0,0.05)] transition hover:shadow-md",
-                onClick && "cursor-pointer",
+                "group relative flex h-full flex-col overflow-hidden rounded-2xl border border-stone-200/70 bg-custom-primary",
+                "shadow-[0_2px_8px_-2px_rgba(15,23,42,0.05),0_10px_24px_-8px_rgba(15,23,42,0.09)]",
+                "before:pointer-events-none before:absolute before:inset-x-4 before:top-0 before:z-[1] before:h-px before:rounded-full before:bg-gradient-to-r before:from-transparent before:via-white/80 before:to-transparent dark:before:via-white/15",
+                "transition-[transform,box-shadow] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                "hover:-translate-y-1 hover:border-stone-300/90 hover:shadow-[0_16px_36px_-10px_rgba(15,23,42,0.14),0_6px_14px_-4px_rgba(15,23,42,0.08)]",
+                "dark:border-white/10 dark:shadow-[0_2px_14px_-2px_rgba(0,0,0,0.45)] dark:hover:border-white/15 dark:hover:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.6)]",
+                "motion-reduce:transition-none motion-reduce:hover:translate-y-0",
+                onClick &&
+                    "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-main)]/35 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg-card)]",
                 className,
             )}
             onClick={() => onClick?.(id)}
@@ -111,107 +133,141 @@ export default function ProductCard({
                 if (e.key === "Enter" || e.key === " ") onClick(id);
             }}
         >
-            {/* Image Section */}
-            <div className="relative h-[200px] w-full shrink-0">
-                <LazyImage
-                    src={image}
-                    alt={name}
-                    className="h-full w-full object-cover"
-                    wrapperClassName="h-full w-full"
-                />
-
-                {/* Left Badges (top-left, stacked vertically) */}
-                {leftBadges.length > 0 && (
-                    <div className="absolute left-3 top-3 z-10 flex flex-col gap-1">
-                        {leftBadges.map((b, idx) => (
-                            <Badge
-                                key={idx}
-                                label={resolveProductCardBadgeLabel(b, t)}
-                                type={b.type}
-                                imageSrc={b.image}
-                                imageAlt={resolveProductCardBadgeLabel(b, t)}
-                                className={cn(b.className || "bg-blue-500 text-white")}
-                            />
-                        ))}
-                    </div>
-                )}
-
-                {/* Right Badges (top-right, stacked vertically under favorite) */}
-                {rightBadges.length > 0 && (
-                    <div className="absolute right-3 top-14 z-10 flex flex-col items-end gap-1">
-                        {rightBadges.map((b, idx) => (
-                            <Badge
-                                key={idx}
-                                label={resolveProductCardBadgeLabel(b, t)}
-                                type={b.type}
-                                imageSrc={b.image}
-                                imageAlt={resolveProductCardBadgeLabel(b, t)}
-                                className={cn(b.className || "bg-yellow-500 text-white")}
-                            />
-                        ))}
-                    </div>
-                )}
-
-                {/* Favorite Button (top-right) */}
-                <div className="absolute right-3 top-3 z-20">
-                    <FavoriteButton
-                        isFavorite={isFavorite}
-                        onToggle={(e) => {
-                            e.stopPropagation();
-                            onToggleFavorite?.(id);
-                        }}
-                        size="md"
-                        ariaLabel="Toggle favorite"
+            {/* Image — inset frame for a calmer, gallery-like look */}
+            <div className="shrink-0 p-2 pb-0">
+                <div
+                    className={cn(
+                        "relative overflow-hidden rounded-xl bg-stone-100 ring-1 ring-inset ring-black/[0.04] dark:bg-stone-900/50 dark:ring-white/[0.06]",
+                        imageFrameClass,
+                    )}
+                >
+                    <LazyImage
+                        src={image}
+                        alt={name}
+                        className="h-full w-full object-cover transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform group-hover:scale-[1.04] motion-reduce:group-hover:scale-100"
+                        wrapperClassName="h-full w-full"
                     />
-                </div>
-
-                {/* Rating (bottom-left) */}
-                <div className="absolute bottom-3 left-3 z-10 rounded-full bg-white/95 px-2.5 py-1 shadow-sm backdrop-blur-[1px]">
-                    <Rating
-                        rating={rating}
-                        size="sm"
-                        className="px-0 py-0 [&_span:last-child]:font-semibold [&_span:last-child]:text-custom-primary"
+                    <div
+                        className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/25 via-black/[0.07] to-transparent dark:from-black/50"
+                        aria-hidden
                     />
+
+                    {/* Left Badges (top-left, stacked vertically) */}
+                    {leftBadges.length > 0 && (
+                        <div className="absolute left-2.5 top-2.5 z-10 flex flex-col gap-1.5">
+                            {leftBadges.map((b, idx) => (
+                                <Badge
+                                    key={idx}
+                                    label={resolveProductCardBadgeLabel(b, t)}
+                                    type={b.type}
+                                    imageSrc={b.image}
+                                    imageAlt={resolveProductCardBadgeLabel(b, t)}
+                                    className={cn(
+                                        "shadow-md ring-1 ring-white/25",
+                                        b.className ||
+                                            "rounded-full bg-gradient-to-br from-sky-500 to-blue-600 px-2.5 py-0.5 text-xs font-semibold text-white",
+                                    )}
+                                />
+                            ))}
+                        </div>
+                    )}
+
+                    {/* Right Badges (top-right, stacked vertically under favorite) */}
+                    {rightBadges.length > 0 && (
+                        <div className="absolute right-2.5 top-14 z-10 flex flex-col items-end gap-1.5">
+                            {rightBadges.map((b, idx) => (
+                                <Badge
+                                    key={idx}
+                                    label={resolveProductCardBadgeLabel(b, t)}
+                                    type={b.type}
+                                    imageSrc={b.image}
+                                    imageAlt={resolveProductCardBadgeLabel(b, t)}
+                                    className={cn(
+                                        "shadow-md ring-1 ring-white/20",
+                                        b.className ||
+                                            "rounded-full bg-gradient-to-br from-amber-400 to-orange-500 px-2.5 py-0.5 text-xs font-semibold text-white",
+                                    )}
+                                />
+                            ))}
+                        </div>
+                    )}
+
+                    {/* Favorite — frosted chip */}
+                    <div className="absolute right-2.5 top-2.5 z-20 rounded-full bg-white/90 p-0.5 shadow-md ring-1 ring-stone-900/8 backdrop-blur-md dark:bg-stone-900/85 dark:ring-white/10">
+                        <FavoriteButton
+                            isFavorite={isFavorite}
+                            onToggle={(e) => {
+                                e.stopPropagation();
+                                onToggleFavorite?.(id);
+                            }}
+                            size="md"
+                            ariaLabel="Toggle favorite"
+                        />
+                    </div>
+
+                    {/* Rating (bottom-left) */}
+                    <div className="absolute bottom-2.5 left-2.5 z-10 rounded-full bg-white/95 px-3 py-1.5 shadow-md ring-1 ring-stone-900/[0.06] backdrop-blur-md dark:bg-stone-900/92 dark:ring-white/10">
+                        <Rating
+                            rating={rating}
+                            size="sm"
+                            className="px-0 py-0 [&_span:last-child]:font-semibold [&_span:last-child]:text-custom-primary dark:[&_span:last-child]:text-stone-100"
+                        />
+                    </div>
                 </div>
             </div>
 
             {/* Info Section */}
-            <div className="flex flex-1 flex-col bg-custom-secondary px-4 pb-4 pt-3">
+            <div
+                className={cn(
+                    "flex min-h-0 flex-1 flex-col px-4 pb-5 pt-4",
+                    "border-t border-stone-200/50 dark:border-white/[0.07]",
+                    !surfaceColor &&
+                        "bg-gradient-to-b from-custom-secondary to-[color-mix(in_srgb,var(--color-bg-card)_88%,var(--color-bg-tertiary))] dark:from-custom-secondary dark:to-custom-secondary",
+                )}
+                style={
+                    surfaceColor
+                        ? {
+                              backgroundColor: surfaceColor,
+                              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.45)",
+                          }
+                        : undefined
+                }
+            >
                 {/* Product Name - 2 lines */}
-                <h3 className="line-clamp-2 text-base font-bold leading-snug text-custom-primary">
+                <h3 className="line-clamp-2 text-[0.9375rem] font-bold leading-snug tracking-tight text-custom-primary sm:text-base">
                     {name}
                 </h3>
 
                 {/* Description or category */}
                 {(description || category) && (
-                    <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-custom-secondary">
+                    <p className="mt-2 line-clamp-2 text-[13px] leading-relaxed text-custom-secondary/90 sm:text-sm">
                         {description || category}
                     </p>
                 )}
 
                 {/* Price Section */}
-                <div className="mt-2">
-                    {/* Main (discounted) price */}
-                    <span className="text-lg font-bold text-custom-primary">{price}</span>
+                <div className="mt-3">
+                    <div className="flex flex-wrap items-end gap-x-2 gap-y-1">
+                        <span className="text-xl font-extrabold tabular-nums tracking-tight text-custom-primary sm:text-[1.35rem] sm:leading-none">
+                            {price}
+                        </span>
+                    </div>
 
-                    {/* Original price + savings + sold (same row — Figma) */}
+                    {/* Original price + savings + sold */}
                     {(originalPrice || savings || sold != null) && (
-                        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                        <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1.5">
                             {originalPrice && (
-                                <span className="text-sm text-custom-tertiary line-through">
+                                <span className="text-sm text-custom-tertiary/90 line-through decoration-custom-tertiary/50">
                                     {originalPrice}
                                 </span>
                             )}
                             {savings && (
-                                <span
-                                    className="text-sm font-medium"
-                                    style={{ color: "var(--color-green)" }}
-                                >
+                                <span className="inline-flex items-center rounded-lg bg-emerald-500/10 px-2 py-0.5 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-600/15 dark:bg-emerald-400/10 dark:text-emerald-300 dark:ring-emerald-400/20">
                                     {savings}
                                 </span>
                             )}
                             {sold != null && (
-                                <span className="ml-auto text-sm font-medium text-custom-secondary">
+                                <span className="ml-auto text-xs font-medium uppercase tracking-wide text-custom-secondary/80">
                                     {sold.toLocaleString()}{" "}
                                     {t?.("product.sold") || "Sold"}
                                 </span>
@@ -225,14 +281,14 @@ export default function ProductCard({
                     bottomBadgesShown.length > 0 ||
                     deliveryInfo ||
                     discountLabel) && (
-                    <div className="mt-auto flex w-full flex-col items-center gap-2 pt-4">
+                    <div className="mt-auto flex w-full flex-col items-center gap-3 pt-5">
                         {onViewDetails && (
                             <Button
                                 type="button"
                                 variant="primary"
                                 size="sm"
                                 fullWidth={false}
-                                className="h-9 min-h-9 w-[185px] max-w-full rounded-md px-4 py-2 text-sm font-semibold shadow-none"
+                                className="h-10 min-h-10 w-[min(100%,200px)] rounded-full bg-gradient-to-r from-[var(--color-main)] to-[color-mix(in_srgb,var(--color-main)_78%,#1e293b)] px-5 text-sm font-semibold text-white shadow-md transition-[transform,box-shadow] duration-300 hover:shadow-lg motion-reduce:transition-none"
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     onViewDetails(id);
@@ -242,17 +298,17 @@ export default function ProductCard({
                             </Button>
                         )}
                         {discountLabel && (
-                            <span className="rounded bg-red-400 px-2 py-1 text-center text-[10px] font-semibold uppercase tracking-wide text-white">
+                            <span className="rounded-full bg-gradient-to-r from-rose-500 via-rose-500 to-rose-600 px-3.5 py-1.5 text-center text-[10px] font-bold uppercase tracking-wider text-white shadow-md ring-1 ring-rose-300/40">
                                 {discountLabel}
                             </span>
                         )}
                         {bottomBadgesShown.length > 0 && (
                             <AnimatedButton
                                 items={bottomBadgeItems}
-                                heightClassName="h-[18px]"
+                                heightClassName="h-5"
                                 type="button"
                                 onClick={(e) => e.stopPropagation()}
-                                className="self-center justify-center text-xs font-semibold"
+                                className="self-center justify-center text-xs font-semibold text-custom-secondary"
                             />
                         )}
                         {/* {deliveryInfo && (

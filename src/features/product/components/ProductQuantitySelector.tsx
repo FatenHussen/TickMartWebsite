@@ -1,4 +1,4 @@
-import { HiMinus, HiPlus } from"react-icons/hi";
+import { HiMinus, HiPlus, HiShoppingCart } from "react-icons/hi";
 import { cn } from"@/shared/lib/utils";
 
 export type ProductQuantitySelectorProps = {
@@ -36,9 +36,11 @@ export default function ProductQuantitySelector({
                     onClick={handleDecrease}
                     disabled={quantity <= min}
                     className={cn(
-                        "flex h-10 w-10 items-center justify-center rounded-md border border-[#DCE8EE] bg-white text-[#495666] transition-colors",
-                        "hover:bg-[#F6FAFC]",
-                        "disabled:opacity-40 disabled:cursor-not-allowed"
+                        "flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg border-2",
+                        "border-[color-mix(in_srgb,var(--color-api-second)_42%,var(--color-border-primary))] bg-white text-primary",
+                        "transition-colors hover:border-[var(--color-api-second)]/80",
+                        "hover:bg-[color-mix(in_srgb,var(--color-api-second)_10%,var(--color-bg-card))]",
+                        "disabled:cursor-not-allowed disabled:opacity-40"
                     )}
                     aria-label="Decrease quantity"
                 >
@@ -54,9 +56,11 @@ export default function ProductQuantitySelector({
                     onClick={handleIncrease}
                     disabled={max !== undefined && quantity >= max}
                     className={cn(
-                        "flex h-10 w-10 items-center justify-center rounded-md border border-[#DCE8EE] bg-white text-[#495666] transition-colors",
-                        "hover:bg-[#F6FAFC]",
-                        "disabled:opacity-40 disabled:cursor-not-allowed"
+                        "flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg border-2",
+                        "border-[color-mix(in_srgb,var(--color-api-second)_42%,var(--color-border-primary))] bg-white text-primary",
+                        "transition-colors hover:border-[var(--color-api-second)]/80",
+                        "hover:bg-[color-mix(in_srgb,var(--color-api-second)_10%,var(--color-bg-card))]",
+                        "disabled:cursor-not-allowed disabled:opacity-40"
                     )}
                     aria-label="Increase quantity"
                 >
@@ -68,8 +72,17 @@ export default function ProductQuantitySelector({
                 <button
                     type="button"
                     onClick={onAddToCart}
-                    className="h-10 min-w-[240px] rounded-md bg-gradient-to-b from-[#4FD4EA] to-[#2798B7] px-8 text-lg font-semibold text-white shadow-[0_10px_24px_rgba(39,152,183,0.18)] transition-all hover:from-[#42CBE3] hover:to-[#228DAA]"
+                    className={cn(
+                        "inline-flex h-10 min-w-[240px] cursor-pointer items-center justify-center gap-2 rounded-xl border border-primary/20 bg-primary px-8",
+                        "text-base font-semibold text-white",
+                        "shadow-md shadow-[0_8px_28px_-6px_var(--color-shadow-accent)]",
+                        "transition-[background-color,box-shadow,transform] duration-200",
+                        "hover:border-primary/30 hover:bg-[var(--color-primary-dark)] hover:shadow-lg",
+                        "active:scale-[0.99] focus:outline-none focus-visible:ring-2",
+                        "focus-visible:ring-primary/40 focus-visible:ring-offset-2"
+                    )}
                 >
+                    <HiShoppingCart className="h-5 w-5 shrink-0" aria-hidden />
                     {addToCartText}
                 </button>
             )}

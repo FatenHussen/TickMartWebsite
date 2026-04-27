@@ -137,8 +137,8 @@ const DISPLAY_TYPES = {
     PRODUCT: 2,
     SHOP: 3,
     BASKET: 4,
-    BRAND: 6,
-    RECIPE: 7,
+    BRAND: 5,
+    RECIPE: 6,
 } as const;
 
 export default function ApiSectionsRenderer({
@@ -316,6 +316,7 @@ function SectionByDisplayType({
                     onViewAll={onViewAll}
                     onItemClick={onItemClick}
                     t={t}
+                    edgeToEdgeSectionBackgrounds={edgeToEdgeSectionBackgrounds}
                     isFavoriteFor={productIsFavoriteFor}
                     onToggleFavorite={onToggleProductFavorite}
                 />
@@ -329,6 +330,7 @@ function SectionByDisplayType({
                     onViewAll={onViewAll}
                     onItemClick={onItemClick}
                     t={t}
+                    edgeToEdgeSectionBackgrounds={edgeToEdgeSectionBackgrounds}
                     isFavoriteFor={shopIsFavoriteFor}
                     onToggleFavorite={onToggleShopFavorite}
                 />
@@ -342,6 +344,7 @@ function SectionByDisplayType({
                     onViewAll={onViewAll}
                     onItemClick={onItemClick}
                     t={t}
+                    edgeToEdgeSectionBackgrounds={edgeToEdgeSectionBackgrounds}
                     isFavoriteFor={basketIsFavoriteFor}
                     onToggleFavorite={onToggleBasketFavorite}
                 />
@@ -368,6 +371,7 @@ function SectionByDisplayType({
                     onViewAll={onViewAll}
                     onItemClick={onItemClick}
                     t={t}
+                    edgeToEdgeSectionBackgrounds={edgeToEdgeSectionBackgrounds}
                     isFavoriteFor={recipeIsFavoriteFor}
                     onToggleFavorite={onToggleRecipeFavorite}
                 />
@@ -387,6 +391,7 @@ type SectionProps = {
     onViewAll: () => void;
     onItemClick: (item: SectionItem) => void;
     t: (key: string) => string;
+    /** Full-bleed section tint (same prop as brand rows; brand UI unchanged). */
     edgeToEdgeSectionBackgrounds?: boolean;
     brandDefaultsWhenApiMissing?: ApiSectionsRendererProps["brandDefaultsWhenApiMissing"];
     skipInnerPageContainer?: boolean;
@@ -474,20 +479,28 @@ function ProductSection({
     onViewAll,
     onItemClick,
     t,
+    edgeToEdgeSectionBackgrounds,
     isFavoriteFor,
     onToggleFavorite,
 }: SectionPropsWithFavorites) {
+    const cardVariant = getSectionCardVariant(section);
+    const sliderPreset = getSliderPresetForSection(
+        section.display_type_id,
+        cardVariant
+    );
+    const surfaceColor = getSectionCardSurfaceColor(section);
+
     return (
         <SliderSection
             title={section.name}
             viewAllLabel={showViewAll ? t("common.viewAll") : undefined}
             onViewAllClick={showViewAll ? onViewAll : undefined}
             items={section.items}
-            breakpoints={{
-                640: { slidesPerView: 2 },
-                768: { slidesPerView: 3 },
-                1024: { slidesPerView: 4 },
-            }}
+            slidesPerView={sliderPreset.slidesPerView}
+            breakpoints={sliderPreset.breakpoints}
+            spaceBetween={sliderPreset.spaceBetween}
+            sectionBackgroundColor={section.background_color ?? null}
+            edgeToEdgeSectionBackground={edgeToEdgeSectionBackgrounds}
             renderItem={(item) => {
                 if (isProductItem(item)) {
                     const hasDiscount = item.discount && parseFloat(item.discount) > 0;
@@ -535,6 +548,8 @@ function ProductSection({
                             bottomBadges={mapApiBottomBadgesToProductCard(
                                 item.bottom_badges
                             )}
+                            layout={cardVariant}
+                            surfaceColor={surfaceColor}
                             t={t}
                             isFavorite={isFav}
                             onClick={() => onItemClick(item)}
@@ -589,6 +604,8 @@ function ProductSection({
                         bottomBadges={mapApiBottomBadgesToProductCard(
                             data.bottom_badges
                         )}
+                        layout={cardVariant}
+                        surfaceColor={surfaceColor}
                         t={t}
                         isFavorite={isFav}
                         onClick={() => onItemClick(item)}
@@ -606,20 +623,28 @@ function RecipeSection({
     onViewAll,
     onItemClick,
     t,
+    edgeToEdgeSectionBackgrounds,
     isFavoriteFor,
     onToggleFavorite,
 }: SectionPropsWithFavorites) {
+    const cardVariant = getSectionCardVariant(section);
+    const sliderPreset = getSliderPresetForSection(
+        section.display_type_id,
+        cardVariant
+    );
+    const surfaceColor = getSectionCardSurfaceColor(section);
+
     return (
         <SliderSection
             title={section.name}
             viewAllLabel={showViewAll ? t("common.viewAll") : undefined}
             onViewAllClick={showViewAll ? onViewAll : undefined}
             items={section.items}
-            breakpoints={{
-                640: { slidesPerView: 2 },
-                768: { slidesPerView: 3 },
-                1024: { slidesPerView: 4 },
-            }}
+            slidesPerView={sliderPreset.slidesPerView}
+            breakpoints={sliderPreset.breakpoints}
+            spaceBetween={sliderPreset.spaceBetween}
+            sectionBackgroundColor={section.background_color ?? null}
+            edgeToEdgeSectionBackground={edgeToEdgeSectionBackgrounds}
             renderItem={(item) => {
                 if (isRecipeItem(item)) {
                     const hasDiscount = item.discount && parseFloat(item.discount) > 0;
@@ -670,6 +695,8 @@ function RecipeSection({
                                     ? item.sold
                                     : undefined
                             }
+                            layout={cardVariant}
+                            surfaceColor={surfaceColor}
                             t={t}
                             isFavorite={isFav}
                             onClick={() => onItemClick(item)}
@@ -729,6 +756,8 @@ function RecipeSection({
                                 ? data.sold
                                 : undefined
                         }
+                        layout={cardVariant}
+                        surfaceColor={surfaceColor}
                         t={t}
                         isFavorite={isFav}
                         onClick={() => onItemClick(item)}
@@ -746,20 +775,28 @@ function BasketSection({
     onViewAll,
     onItemClick,
     t,
+    edgeToEdgeSectionBackgrounds,
     isFavoriteFor,
     onToggleFavorite,
 }: SectionPropsWithFavorites) {
+    const cardVariant = getSectionCardVariant(section);
+    const sliderPreset = getSliderPresetForSection(
+        section.display_type_id,
+        cardVariant
+    );
+    const surfaceColor = getSectionCardSurfaceColor(section);
+
     return (
         <SliderSection
             title={section.name}
             viewAllLabel={showViewAll ? t("common.viewAll") : undefined}
             onViewAllClick={showViewAll ? onViewAll : undefined}
             items={section.items}
-            breakpoints={{
-                640: { slidesPerView: 1.2 },
-                768: { slidesPerView: 2 },
-                1024: { slidesPerView: 3 },
-            }}
+            slidesPerView={sliderPreset.slidesPerView}
+            breakpoints={sliderPreset.breakpoints}
+            spaceBetween={sliderPreset.spaceBetween}
+            sectionBackgroundColor={section.background_color ?? null}
+            edgeToEdgeSectionBackground={edgeToEdgeSectionBackgrounds}
             renderItem={(item) => {
                 if (isBasketItem(item)) {
                     const saveAmount =
@@ -797,6 +834,8 @@ function BasketSection({
                             bottomBadges={mapApiBottomBadgesToProductCard(
                                 item.bottom_badges
                             )}
+                            layout={cardVariant}
+                            surfaceColor={surfaceColor}
                             isFavorite={isFav}
                             t={t}
                             onClick={() => onItemClick(item)}
@@ -833,6 +872,8 @@ function BasketSection({
                         bottomBadges={mapApiBottomBadgesToProductCard(
                             data.bottom_badges
                         )}
+                        layout={cardVariant}
+                        surfaceColor={surfaceColor}
                         isFavorite={isFav}
                         t={t}
                         onClick={() => onItemClick(item)}
@@ -851,20 +892,28 @@ function ShopSection({
     onViewAll,
     onItemClick,
     t,
+    edgeToEdgeSectionBackgrounds,
     isFavoriteFor,
     onToggleFavorite,
 }: SectionPropsWithFavorites) {
+    const cardVariant = getSectionCardVariant(section);
+    const sliderPreset = getSliderPresetForSection(
+        section.display_type_id,
+        cardVariant
+    );
+    const surfaceColor = getSectionCardSurfaceColor(section);
+
     return (
         <SliderSection
             title={section.name}
             viewAllLabel={showViewAll ? t("common.viewAll") : undefined}
             onViewAllClick={showViewAll ? onViewAll : undefined}
             items={section.items}
-            breakpoints={{
-                640: { slidesPerView: 1.2 },
-                768: { slidesPerView: 2 },
-                1024: { slidesPerView: 3 },
-            }}
+            slidesPerView={sliderPreset.slidesPerView}
+            breakpoints={sliderPreset.breakpoints}
+            spaceBetween={sliderPreset.spaceBetween}
+            sectionBackgroundColor={section.background_color ?? null}
+            edgeToEdgeSectionBackground={edgeToEdgeSectionBackgrounds}
             renderItem={(item) => {
                 if (isShopItem(item)) {
                     const isFav = isFavoriteFor(item.id, item.is_favorite);
@@ -885,6 +934,8 @@ function ShopSection({
                             bottomBadges={mapApiBottomBadgesToProductCard(
                                 shopBottomBadgesFromItem(item)
                             )}
+                            layout={cardVariant}
+                            surfaceColor={surfaceColor}
                             isFavorite={isFav}
                             onFavorite={(id) => onToggleFavorite(Number(id), isFav)}
                             onClick={() => onItemClick(item)}
@@ -922,6 +973,8 @@ function ShopSection({
                             ((shopData.bottom_badges as ShopItem["bottom_badges"]) ??
                                 vendor?.bottom_badges) as ApiProductBadgeLike[] | undefined
                         )}
+                        layout={cardVariant}
+                        surfaceColor={surfaceColor}
                         isFavorite={isFav}
                         onFavorite={(id) => onToggleFavorite(Number(id), isFav)}
                         onClick={() => onItemClick(item)}

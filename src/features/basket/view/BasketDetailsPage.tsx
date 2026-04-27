@@ -25,10 +25,10 @@ export default function BasketDetailsPage() {
  if (isLoading) {
  return (
  <div
- className="min-h-screen bg-custom-primary flex items-center justify-center"
+ className="min-h-screen bg-custom-light flex items-center justify-center"
  dir={isRTL ?"rtl":"ltr"}
  >
- <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-light"></div>
+ <div className="h-12 w-12 rounded-full border-2 border-[color-mix(in_srgb,var(--color-main)_20%,transparent)] border-t-[var(--color-main)] animate-spin" />
  </div>
  );
  }
@@ -36,17 +36,16 @@ export default function BasketDetailsPage() {
  // Error state
  if (error || !basket) {
  return (
- <div
- className="min-h-screen bg-custom-primary flex items-center justify-center p-6"
- dir={isRTL ?"rtl":"ltr"}
- >
- <div className="text-center">
+ <div className="min-h-screen bg-custom-light" dir={isRTL ?"rtl":"ltr"}>
+ <div className="page-container flex min-h-[50vh] items-center justify-center py-12">
+ <div className="max-w-md w-full text-center rounded-2xl border border-custom-primary/10 bg-custom-card px-8 py-10 shadow-[var(--shadow-card-neutral)]">
  <h2 className="text-2xl font-bold text-custom-primary mb-2">
  {t("baskets.basketNotFound")}
  </h2>
- <p className="text-custom-secondary">
+ <p className="text-custom-secondary leading-relaxed">
  {t("baskets.basketNotFoundDescription")}
  </p>
+ </div>
  </div>
  </div>
  );

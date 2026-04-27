@@ -43,7 +43,7 @@ import {
     mapApiTopBadgesToProductCard,
 } from "@/shared/lib/mapProductBadges";
 import { cn } from "@/shared/lib/utils";
-import { HiEye } from "react-icons/hi";
+import { HiEye, HiShoppingCart } from "react-icons/hi";
 
 function ProductDetails() {
     const { t } = useTranslation();
@@ -739,7 +739,7 @@ function ProductDetails() {
                             product.category_details &&
                             product.category_details.length > 0 && (
                                 <div className="">
-                                    <h3 className="text-lg font-semibold text-custom-primary mb-3">
+                                    <h3 className="mb-3 border-b-2 border-primary/20 pb-2 text-lg font-semibold text-primary">
                                         {t(
                                             "product.categoryDetails",
                                             "Category Details"
@@ -756,7 +756,7 @@ function ProductDetails() {
                             product.extra_details &&
                             product.extra_details.length > 0 && (
                                 <div className="mt-4">
-                                    <h3 className="text-lg font-semibold text-custom-primary mb-3">
+                                    <h3 className="mb-3 border-b-2 border-primary/20 pb-2 text-lg font-semibold text-primary">
                                         {t("product.details", "Details")}
                                     </h3>
                                     <ExtraDetailsTable
@@ -832,7 +832,7 @@ function ProductDetails() {
                                 <button
                                     type="button"
                                     onClick={() => setRatingModalOpen(true)}
-                                    className="px-4 py-2 rounded-lg bg-cyan-500 hover:bg-cyan-600 text-white font-medium text-sm"
+                                    className="px-4 py-2 rounded-lg bg-[var(--color-api-second)] hover:bg-[var(--color-api-second-hover)] text-white font-medium text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2"
                                 >
                                     {t("account.myReviews.rateProduct", "قيم هذا المنتج")}
                                 </button>
@@ -866,8 +866,8 @@ function ProductDetails() {
                         <span
                             className={cn(
                                 "flex h-14 w-14 items-center justify-center rounded-2xl shadow-inner",
-                                "bg-gradient-to-br from-cyan-400/30 via-sky-400/20 to-primary/25",
-                                "text-cyan-700 ring-2 ring-cyan-400/35 dark:text-cyan-200 dark:ring-cyan-400/25"
+                                "bg-gradient-to-br from-primary/25 via-[color-mix(in_srgb,var(--color-api-second)_18%,var(--color-bg-card))] to-primary/20",
+                                "text-primary ring-2 ring-primary/30 dark:ring-primary/20"
                             )}
                         >
                             <HiEye className="h-8 w-8" aria-hidden />
@@ -887,12 +887,12 @@ function ProductDetails() {
                               )
                     }
                     maxWidth="xl"
-                    backdropClassName="pv-modal-backdrop bg-gradient-to-br from-slate-950/80 via-cyan-950/45 to-slate-900/75 backdrop-blur-md"
+                    backdropClassName="pv-modal-backdrop bg-gradient-to-br from-slate-950/80 via-[color-mix(in_srgb,var(--color-primary)_12%,#0f172a)] to-slate-900/80 backdrop-blur-md"
                     className={cn(
                         "pv-modal-panel border-0",
                         "bg-gradient-to-b from-white via-white to-slate-50/95",
-                        "shadow-[0_28px_90px_-20px_rgba(0,174,209,0.38)]",
-                        "ring-2 ring-cyan-400/30 dark:from-slate-900 dark:via-slate-950 dark:to-slate-950 dark:ring-cyan-500/25"
+                        "shadow-[0_28px_90px_-20px_color-mix(in_srgb,var(--color-primary)_32%,transparent)]",
+                        "ring-2 ring-primary/25 dark:from-slate-900 dark:via-slate-950 dark:to-slate-950 dark:ring-primary/20"
                     )}
                     contentClassName="!pt-14 text-start max-h-[78vh] overflow-y-auto !px-6 !pb-6"
                     actions={
@@ -904,6 +904,12 @@ function ProductDetails() {
                                     type="button"
                                     variant="primary"
                                     fullWidth
+                                    leftIcon={
+                                        <HiShoppingCart
+                                            className="h-5 w-5 shrink-0"
+                                            aria-hidden
+                                        />
+                                    }
                                     disabled={
                                         (boughtWithPreview.shop_variants
                                             ?.length ?? 0) > 0
@@ -913,7 +919,7 @@ function ProductDetails() {
                                               previewQuantity < 1
                                             : false
                                     }
-                                    className="rounded-xl bg-gradient-to-r from-cyan-500 to-primary shadow-lg shadow-cyan-500/25 transition hover:brightness-105 disabled:opacity-50"
+                                    className="cursor-pointer rounded-xl border border-primary/20 bg-primary shadow-md shadow-[0_8px_28px_-6px_var(--color-shadow-accent)] !opacity-100 transition duration-200 hover:!border-primary/30 hover:!bg-[var(--color-primary-dark)] hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50"
                                     onClick={handleAddPreviewToCart}
                                 >
                                     {t("product.addToCart", "Add To Cart")}
@@ -922,7 +928,7 @@ function ProductDetails() {
                                     type="button"
                                     variant="outline"
                                     fullWidth
-                                    className="rounded-xl border-2 border-cyan-500/40 font-semibold"
+                                    className="cursor-pointer rounded-xl border-2 border-[var(--color-api-second)]/75 font-semibold text-primary hover:bg-[color-mix(in_srgb,var(--color-api-second)_12%,var(--color-bg-card))] hover:border-[var(--color-api-second)]"
                                     onClick={() => {
                                         navigate(
                                             paths.client.productDetails(
@@ -949,17 +955,17 @@ function ProductDetails() {
                             <div
                                 className={cn(
                                     "-mx-1 flex items-center gap-2 overflow-hidden rounded-xl px-3 py-2",
-                                    "bg-gradient-to-r from-cyan-500/12 via-sky-400/10 to-transparent",
-                                    "text-xs font-semibold uppercase tracking-[0.2em] text-cyan-800 dark:text-cyan-200/90"
+                                    "bg-gradient-to-r from-primary/12 via-[color-mix(in_srgb,var(--color-api-second)_10%,transparent)] to-transparent",
+                                    "text-xs font-semibold uppercase tracking-[0.2em] text-primary dark:text-primary/90"
                                 )}
                             >
-                                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.9)]" />
+                                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary shadow-[0_0_10px_var(--color-shadow-accent)]" />
                                 {t("product.quickViewBadge", "Quick view")}
                             </div>
 
                             {isBoughtWithPreviewLoading && (
                                 <div className="flex flex-col items-center justify-center gap-3 py-14">
-                                    <div className="h-12 w-12 animate-spin rounded-full border-2 border-b-2 border-t-2 border-cyan-400/80 border-t-transparent" />
+                                    <div className="h-12 w-12 animate-spin rounded-full border-2 border-b-2 border-t-2 border-primary/80 border-t-transparent" />
                                     <p className="text-sm text-custom-secondary">
                                         {t(
                                             "product.quickViewLoadingHint",
@@ -1058,7 +1064,7 @@ function ProductDetails() {
                                             onSelect={
                                                 setPreviewSelectedShopVariantId
                                             }
-                                            className="rounded-2xl border border-cyan-400/20 bg-cyan-50/40 p-4 dark:bg-cyan-950/20"
+                                            className="rounded-2xl border border-primary/20 bg-[color-mix(in_srgb,var(--color-api-second)_8%,var(--color-bg-card))] p-4 dark:bg-[color-mix(in_srgb,var(--color-primary)_8%,var(--color-bg-surface))]"
                                         />
                                     )}
                                     <div className="rounded-xl border border-custom-primary/20 bg-custom-secondary/30 px-3 py-2">

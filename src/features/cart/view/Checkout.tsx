@@ -190,17 +190,15 @@ export default function Checkout() {
     };
 
     return (
-        <div className="bg-custom-primary min-h-screen relative">
-               <OrderFlowHeader />
-            <div className="page-container py-6" dir={isRTL ? "rtl" : "ltr"}>
-                <img src={circle} alt="" className="absolute left-0 top-0" />
+        <div className="bg-custom-tertiary min-h-screen relative">
+               {/* <OrderFlowHeader /> */}
+            <div className="page-container py-6 relative" dir={isRTL ? "rtl" : "ltr"}>
+                <img src={circle} alt="" className="absolute left-0 top-0 opacity-60 pointer-events-none" />
                 <img
                     src={circleBottom}
                     alt=""
-                    className="absolute right-0 -bottom-2/4"
+                    className="absolute right-0 -bottom-2/4 opacity-60 pointer-events-none"
                 />
-
-             
 
                 {/* Progress Indicator */}
                 <div className="mb-8">
@@ -238,7 +236,13 @@ export default function Checkout() {
                                 onAddNewAddress={handleAddNewAddress}
                             />
                         ) : (
-                            <div className="mb-6 p-6 bg-custom-card rounded-2xl border border-primary-light/30">
+                            <div
+                                className="mb-6 p-6 bg-custom-card rounded-2xl border shadow-sm"
+                                style={{
+                                    borderColor:
+                                        "color-mix(in srgb, var(--color-main) 25%, transparent)",
+                                }}
+                            >
                                 <AddressForm
                                     inline
                                     onSuccess={handleAddressFormSuccess}

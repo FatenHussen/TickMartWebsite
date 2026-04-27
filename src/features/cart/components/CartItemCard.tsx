@@ -18,7 +18,9 @@ type CartItemCardProps = {
     isExcludedFromCoupon?: boolean;
     /** When false, plus/minus and delete are disabled (e.g. when cart_type !== "default") */
     canEditQuantity?: boolean;
-    promotionBadges?: string[];
+    promotionBadges?: Array<
+        string | { ar?: string | null; en?: string | null } | null | undefined
+    >;
     onQuantityChange: (itemId: number | string, quantity: number) => void;
     onRemove: (itemId: number | string) => void;
     onMoveToWishlist?: (itemId: number | string) => void;
@@ -38,7 +40,7 @@ export default function CartItemCard({
     onRemove,
     onMoveToWishlist,
 }: CartItemCardProps) {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const { isRTL } = useLanguage();
     const { formatPrice } = useCurrency();
 
@@ -66,6 +68,15 @@ export default function CartItemCard({
                 .map(([k, v]) => `${k}: ${v}`)
                 .join(", ")
             : undefined;
+
+    const resolveLocalizedText = (
+        value: string | { ar?: string | null; en?: string | null } | null | undefined
+    ): string => {
+        if (typeof value === "string") return value;
+        if (!value || typeof value !== "object") return "";
+        const isArabic = i18n.language.toLowerCase().startsWith("ar");
+        return (isArabic ? value.ar : value.en) ?? value.en ?? value.ar ?? "";
+    };
 
     const handleDecrease = () => {
         onQuantityChange(item.id, Math.max(1, item.quantity - 1));
@@ -142,14 +153,14 @@ export default function CartItemCard({
                         <div className="mb-3 flex flex-wrap items-center gap-2">
                             {promotionBadges.map((badge, index) => (
                                 <span
-                                    key={`${badge}-${index}`}
+                                    key={`promotion-badge-${index}`}
                                     className={`rounded-full px-3 py-1 text-sm font-medium leading-5 ${
                                         index % 2 === 0
                                             ? "bg-[#DDF8E8] text-[#16A34A]"
                                             : "bg-[#FDE8D0] text-[#FF5A1F]"
                                     }`}
                                 >
-                                    {badge}
+                                    {resolveLocalizedText(badge)}
                                 </span>
                             ))}
                         </div>

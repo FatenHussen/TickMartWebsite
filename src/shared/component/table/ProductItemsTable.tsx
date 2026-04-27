@@ -4,16 +4,16 @@ import { useLanguage } from "@/context/LanguageContext";
 import { HiMinus, HiPlus, HiTrash } from "react-icons/hi2";
 import { cn } from "@/shared/lib/utils";
 
-/** Figma: QTY stepper — 32px circle, 1px border as cyan→teal gradient */
-const QTY_STEPPER_BUTTON_STYLE: CSSProperties = {
+/** QTY stepper ring: API `main` → `second` on card surface */
+const qtyStepperButtonStyle = (): CSSProperties => ({
     backgroundImage:
-        "linear-gradient(#ffffff, #ffffff), linear-gradient(180deg, #4cdaf6 0%, #2c8090 100%)",
+        "linear-gradient(var(--color-bg-card), var(--color-bg-card)), linear-gradient(180deg, var(--color-main) 0%, var(--color-api-second) 100%)",
     backgroundOrigin: "border-box",
     backgroundClip: "padding-box, border-box",
-};
+});
 
 const selectInputClassName =
-    "w-full min-w-[10rem] max-w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-custom-primary shadow-sm focus:outline-none focus:ring-2 focus:ring-[#00AED1]/40 dark:border-slate-600 dark:bg-custom-primary";
+    "w-full min-w-[10rem] max-w-full rounded-xl border border-custom-primary/15 bg-custom-card px-3 py-2.5 text-sm text-custom-primary shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--color-main)]/30 dark:border-custom-primary/25";
 
 export interface ProductItemCompany {
     id: number;
@@ -111,7 +111,7 @@ export default function ProductItemsTable({
 
     const headerCell = (align: "left" | "center" | "right") =>
         cn(
-            "py-3 px-6 text-xs font-bold uppercase tracking-wide text-white",
+            "py-3.5 px-5 sm:px-6 text-[11px] font-bold uppercase tracking-wider text-white/95",
             align === "left" && (isRTL ? "text-right" : "text-left"),
             align === "right" && (isRTL ? "text-left" : "text-right"),
             align === "center" && "text-center"
@@ -120,14 +120,19 @@ export default function ProductItemsTable({
     return (
         <div
             className={cn(
-                "overflow-hidden   bg-custom-primary ",
+                "overflow-hidden rounded-2xl border border-custom-primary/10 bg-custom-card shadow-[var(--shadow-card-neutral)]",
                 className
             )}
         >
             <div className="overflow-x-auto">
                 <table className="w-full min-w-[640px] border-collapse">
                     <thead>
-                        <tr className="bg-gradient-to-r from-[#4CDAF6] to-[#2C8090]">
+                        <tr
+                            className={cn(
+                                "bg-gradient-to-r from-[var(--color-main)] to-[var(--color-api-second)]",
+                                isRTL && "bg-gradient-to-l"
+                            )}
+                        >
                             <th className={headerCell("left")}>{t("recipes.product")}</th>
                             {showCompanyColumn && (
                                 <th className={headerCell("left")}>{t("recipes.companyBrand")}</th>
@@ -150,10 +155,15 @@ export default function ProductItemsTable({
                             return (
                                 <tr
                                     key={item.id}
-                                    className="border-b border-slate-200 bg-custom-primary transition last:border-b-0 hover:bg-slate-50/70 dark:border-slate-700 dark:hover:bg-white/[0.04]"
+                                    className={cn(
+                                        "border-b border-custom-primary/10 transition-colors last:border-b-0",
+                                        "bg-custom-card hover:bg-[color-mix(in_srgb,var(--color-main)_5%,var(--color-bg-card))]",
+                                        "even:bg-[color-mix(in_srgb,var(--color-main)_2.5%,var(--color-bg-card))]",
+                                        "dark:border-custom-primary/15 dark:hover:bg-white/[0.04]"
+                                    )}
                                 >
                                     {/* Product */}
-                                    <td className="align-middle px-6 py-5">
+                                    <td className="align-middle px-5 py-4 sm:px-6 sm:py-5">
                                         <div className="flex items-center gap-3">
                                             {item.image && (
                                                 <img
@@ -166,7 +176,7 @@ export default function ProductItemsTable({
                                                 <span className="font-bold text-custom-primary">
                                                     {item.name}
                                                     {item.is_required && (
-                                                        <span className="ml-1 text-red-500">*</span>
+                                                        <span className="ms-1 text-[var(--color-error)]">*</span>
                                                     )}
                                                 </span>
                                                 {item.variantLabel && (
@@ -180,7 +190,7 @@ export default function ProductItemsTable({
 
                                     {/* Company/Brand */}
                                     {showCompanyColumn && (
-                                        <td className="align-middle px-6 py-5">
+                                        <td className="align-middle px-5 py-4 sm:px-6 sm:py-5">
                                             {item.companies && item.companies.length > 0 ? (
                                                 <select
                                                     value={item.selectedCompanyId ?? item.companies.find((c) => c.is_default)?.id}
@@ -206,7 +216,7 @@ export default function ProductItemsTable({
 
                                     {/* Variant/Option */}
                                     {showVariantColumn && (
-                                        <td className="align-middle px-6 py-5">
+                                        <td className="align-middle px-5 py-4 sm:px-6 sm:py-5">
                                             {item.variants && item.variants.length > 0 ? (
                                                 <select
                                                     value={item.selectedVariantId ?? item.variants[0]?.id}
@@ -234,7 +244,7 @@ export default function ProductItemsTable({
                                                                 {isHex ? (
                                                                     <>
                                                                         <span
-                                                                            className="w-4 h-4 rounded border border-slate-300 dark:border-slate-600 shrink-0"
+                                                                            className="h-4 w-4 shrink-0 rounded border border-custom-primary/20 dark:border-custom-primary/30"
                                                                             style={{ backgroundColor: strVal }}
                                                                             title={strVal}
                                                                         />
@@ -254,18 +264,18 @@ export default function ProductItemsTable({
                                     )}
 
                                     {/* Quantity */}
-                                    <td className="align-middle px-6 py-5">
+                                    <td className="align-middle px-5 py-4 sm:px-6 sm:py-5">
                                         {!readonly && item.can_adjust !== false ? (
-                                            <div className="flex items-center justify-center gap-4">
+                                            <div className="flex items-center justify-center gap-3 sm:gap-4">
                                                 <button
                                                     type="button"
                                                     onClick={() => handleQuantityDecrease(item)}
                                                     disabled={item.quantity <= minQty}
                                                     className={cn(
-                                                        "flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-transparent p-0 text-neutral-900 transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 dark:text-neutral-100",
-                                                        item.quantity <= minQty && "opacity-50 cursor-not-allowed"
+                                                        "flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-transparent p-0 text-custom-primary transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40",
+                                                        item.quantity <= minQty && "cursor-not-allowed opacity-50"
                                                     )}
-                                                    style={QTY_STEPPER_BUTTON_STYLE}
+                                                    style={qtyStepperButtonStyle()}
                                                     aria-label={t("cart.decreaseQuantity")}
                                                 >
                                                     <HiMinus className="h-4 w-4" />
@@ -278,10 +288,10 @@ export default function ProductItemsTable({
                                                     onClick={() => handleQuantityIncrease(item)}
                                                     disabled={item.quantity >= maxQty}
                                                     className={cn(
-                                                        "flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-transparent p-0 text-neutral-900 transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 dark:text-neutral-100",
-                                                        item.quantity >= maxQty && "opacity-50 cursor-not-allowed"
+                                                        "flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-transparent p-0 text-custom-primary transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40",
+                                                        item.quantity >= maxQty && "cursor-not-allowed opacity-50"
                                                     )}
-                                                    style={QTY_STEPPER_BUTTON_STYLE}
+                                                    style={qtyStepperButtonStyle()}
                                                     aria-label={t("cart.increaseQuantity")}
                                                 >
                                                     <HiPlus className="h-4 w-4" />
@@ -297,7 +307,7 @@ export default function ProductItemsTable({
                                     {/* Price */}
                                     <td
                                         className={cn(
-                                            "align-middle px-6 py-5 text-lg font-bold text-custom-primary tabular-nums",
+                                            "align-middle px-5 py-4 text-base font-bold text-custom-primary tabular-nums sm:px-6 sm:py-5 sm:text-lg",
                                             isRTL ? "text-left" : "text-right"
                                         )}
                                     >
@@ -307,11 +317,11 @@ export default function ProductItemsTable({
 
                                     {/* Action */}
                                     {showActionColumn && !readonly && (
-                                        <td className="px-6 py-5 text-center align-middle">
+                                        <td className="px-5 py-4 text-center align-middle sm:px-6 sm:py-5">
                                             <button
                                                 type="button"
                                                 onClick={() => onRemoveItem?.(item.id)}
-                                                className="inline-flex text-[#EF4444] transition hover:text-red-700"
+                                                className="inline-flex text-[var(--color-error)] transition hover:opacity-80"
                                                 aria-label={t("cart.removeItem")}
                                             >
                                                 <HiTrash className="h-5 w-5" />

@@ -20,8 +20,9 @@ type SliderProps = {
     slideClassName?: string;
     sectionBackgroundColor?: string | null;
     /**
-     * When true (e.g. home / brands API rows outside page-container), the section
-     * background spans the viewport; title and swiper stay in page-container.
+     * When `sectionBackgroundColor` is set, the tint always spans the full viewport
+     * (breakout from `.page-container`); title + swiper stay in `.page-container`.
+     * When true without a section color, wraps content in `.page-container` only.
      */
     edgeToEdgeSectionBackground?: boolean;
 };
@@ -90,33 +91,27 @@ export default function Slider({
         </>
     );
 
-    if (edgeToEdgeSectionBackground) {
+    /** Full-viewport tint while keeping title + swiper aligned to `.page-container`. */
+    if (sectionBackgroundColor) {
         return (
-            <div className={`mt-8 w-full ${className}`}>
-                {sectionBackgroundColor ? (
-                    <div
-                        className="w-full py-4"
-                        style={{ backgroundColor: sectionBackgroundColor }}
-                    >
-                        <div className="page-container">{inner}</div>
-                    </div>
-                ) : (
+            <div className={`mt-8 w-full min-w-0 ${className}`}>
+                <div
+                    className="relative w-screen max-w-[100vw] py-4 sm:py-5 [margin-inline-start:calc(50%-50vw)]"
+                    style={{ backgroundColor: sectionBackgroundColor }}
+                >
                     <div className="page-container">{inner}</div>
-                )}
+                </div>
             </div>
         );
     }
 
-    return (
-        <div
-            className={`mt-8 w-full ${className}`}
-            style={
-                sectionBackgroundColor
-                    ? { backgroundColor: sectionBackgroundColor }
-                    : undefined
-            }
-        >
-            {inner}
-        </div>
-    );
+    if (edgeToEdgeSectionBackground) {
+        return (
+            <div className={`mt-8 w-full ${className}`}>
+                <div className="page-container">{inner}</div>
+            </div>
+        );
+    }
+
+    return <div className={`mt-8 w-full ${className}`}>{inner}</div>;
 }

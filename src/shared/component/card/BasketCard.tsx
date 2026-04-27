@@ -7,6 +7,7 @@ import Rating from "@/shared/component/Rating";
 import Badge from "@/shared/component/Badge";
 import LazyImage from "@/shared/component/LazyImage";
 import { cn } from "@/shared/lib/utils";
+import type { SectionCardVariant } from "@/features/home/types";
 import {
     type ProductCardBadge,
     resolveProductCardBadgeLabel,
@@ -34,6 +35,8 @@ export type BasketCardProps = {
     onClick?: (id: number) => void;
     t?: (key: string) => string;
     className?: string;
+    layout?: SectionCardVariant;
+    surfaceColor?: string | null;
 };
 
 export default function BasketCard({
@@ -55,13 +58,22 @@ export default function BasketCard({
     onClick,
     t,
     className,
+    layout,
+    surfaceColor,
 }: BasketCardProps) {
+    const imageFrameClass = layout
+        ? layout === "horizontal"
+            ? "h-44 sm:h-48"
+            : layout === "vertical"
+              ? "h-64 sm:h-72"
+              : "h-56 sm:h-60"
+        : "h-56";
     const saveAsBadge: ProductCardBadge[] = saveAmount
         ? [
             {
                 label: saveAmount,
                 className:
-                    "bg-[#FFD700] text-slate-900 shadow-sm text-xs font-semibold",
+                    "rounded-full bg-amber-300 px-3 py-1 text-xs font-semibold text-amber-950 shadow-sm ring-1 ring-amber-400/30",
                 align: "left",
                 rawLabel: true,
             },
@@ -89,25 +101,40 @@ export default function BasketCard({
     return (
         <div
             className={cn(
-                "relative flex h-full flex-col overflow-hidden rounded-xl bg-white shadow-[0_1px_2px_0_rgba(0,0,0,0.05)] transition hover:shadow-md",
-                onClick && "cursor-pointer",
-                className
+                "group relative flex h-full flex-col overflow-hidden rounded-2xl border border-stone-200/80 bg-white",
+                "shadow-[0_2px_8px_-2px_rgba(15,23,42,0.06),0_8px_20px_-6px_rgba(15,23,42,0.08)]",
+                "transition-[transform,box-shadow] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                "hover:-translate-y-1 hover:shadow-[0_12px_28px_-8px_rgba(15,23,42,0.12),0_4px_12px_-4px_rgba(15,23,42,0.08)]",
+                "dark:border-white/10 dark:bg-stone-900 dark:shadow-[0_2px_12px_-2px_rgba(0,0,0,0.4)] dark:hover:shadow-[0_16px_36px_-8px_rgba(0,0,0,0.55)]",
+                "motion-reduce:transition-none motion-reduce:hover:translate-y-0",
+                onClick &&
+                    "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-main)]/35 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg-card)]",
+                className,
             )}
             onClick={() => onClick?.(id)}
             role={onClick ? "button" : undefined}
             tabIndex={onClick ? 0 : undefined}
             onKeyDown={(e) => {
                 if (!onClick) return;
-                if (e.key === "Enter" || e.key === "") onClick(id);
+                if (e.key === "Enter" || e.key === " ") onClick(id);
             }}
         >
             {/* Image */}
-            <div className="relative h-56 w-full shrink-0 overflow-hidden rounded-t-xl">
+            <div
+                className={cn(
+                    "relative w-full shrink-0 overflow-hidden rounded-t-2xl bg-stone-100 dark:bg-stone-900/50",
+                    imageFrameClass,
+                )}
+            >
                 <LazyImage
                     src={image}
                     alt={name}
-                    className="h-full w-full object-cover"
+                    className="h-full w-full object-cover transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform group-hover:scale-[1.03] motion-reduce:group-hover:scale-100"
                     wrapperClassName="h-full w-full"
+                />
+                <div
+                    className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/15 to-transparent dark:from-black/35"
+                    aria-hidden
                 />
 
                 {/* Top-left badges */}
@@ -121,8 +148,8 @@ export default function BasketCard({
                                 imageSrc={b.image}
                                 imageAlt={resolveProductCardBadgeLabel(b, t)}
                                 className={cn(
-                                    "rounded-lg px-2.5 py-1 text-xs font-semibold leading-none shadow-none",
-                                    b.className || "bg-[#FFD700] text-slate-900"
+                                    "rounded-full px-3 py-1 text-xs font-semibold leading-none shadow-sm ring-1 ring-amber-400/25",
+                                    b.className || "bg-amber-300 text-amber-950"
                                 )}
                             />
                         ))}
@@ -153,15 +180,24 @@ export default function BasketCard({
                 </div>
             </div>
 
-            {/* Body — light mint (brand green @ 10%) */}
-            <div className="flex flex-1 flex-col bg-[rgb(22_163_74/0.1)] px-4 pb-5 pt-4">
+            {/* Body — soft mint wash when no API card tint */}
+            <div
+                className={cn(
+                    "flex flex-1 flex-col border-t border-stone-200/60 px-4 pb-5 pt-4 dark:border-white/[0.08]",
+                    !surfaceColor &&
+                        "bg-gradient-to-b from-emerald-50/95 via-emerald-50/70 to-white dark:from-emerald-950/40 dark:via-stone-900/80 dark:to-stone-900",
+                )}
+                style={
+                    surfaceColor ? { backgroundColor: surfaceColor } : undefined
+                }
+            >
                 {/* Title */}
-                <h3 className="line-clamp-1 text-lg font-bold leading-snug text-slate-900">
+                <h3 className="line-clamp-2 text-lg font-bold leading-snug tracking-tight text-slate-900 dark:text-stone-50">
                     {name}
                 </h3>
 
                 {/* Description */}
-                <p className="mt-1.5 line-clamp-2 text-sm font-normal leading-relaxed text-slate-600">
+                <p className="mt-1.5 line-clamp-2 text-sm font-normal leading-relaxed text-slate-600 dark:text-stone-400">
                     {description}
                 </p>
 
@@ -175,7 +211,9 @@ export default function BasketCard({
                 {/* Price Section */}
                 <div className="mt-3">
                     <div className="flex items-baseline gap-2">
-                        <span className="text-2xl font-bold leading-none text-slate-900">{price}</span>
+                        <span className="text-2xl font-bold tabular-nums leading-none tracking-tight text-slate-900 dark:text-stone-50">
+                            {price}
+                        </span>
                     </div>
 
                     {/* Original Price and Savings */}
@@ -210,7 +248,7 @@ export default function BasketCard({
                         variant="primary"
                         size="md"
                         fullWidth
-                        className="h-11 min-h-[44px] rounded-lg border-0 bg-[#FFD700] px-4 pb-2 pt-3 text-base font-bold text-slate-900 shadow-none hover:bg-[#e6cc00] focus-visible:ring-2 focus-visible:ring-yellow-500/60"
+                        className="h-11 min-h-[44px] rounded-xl border-0 bg-gradient-to-b from-amber-300 to-amber-400 px-4 pb-2 pt-3 text-base font-bold text-amber-950 shadow-md transition-[transform,box-shadow] duration-300 hover:-translate-y-0.5 hover:from-amber-200 hover:to-amber-300 hover:shadow-lg focus-visible:ring-2 focus-visible:ring-amber-500/50 motion-reduce:hover:translate-y-0"
                         onClick={(e) => {
                             e.stopPropagation();
                             onAddToCart?.(id);

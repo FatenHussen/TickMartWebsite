@@ -1,10 +1,6 @@
 import { useId } from "react";
 import { cn } from "../lib/utils";
 
-/** Figma: top → bottom cyan to teal */
-const GRADIENT_TOP = "#4CDAF6";
-const GRADIENT_BOTTOM = "#2C8090";
-
 /** Fixed frame + max constraints so flex layouts cannot stretch the circle */
 const SIZE_CLASS = {
     sm: "h-[28px] w-[28px] min-h-[28px] min-w-[28px] max-h-[28px] max-w-[28px]",
@@ -54,11 +50,12 @@ export default function FavoriteButton({
                 SIZE_CLASS[size],
                 "cursor-pointer touch-manipulation",
                 "transition-opacity duration-150 hover:opacity-90",
-                "focus:outline-none focus-visible:ring-2 focus-visible:ring-[#4CDAF6]/50 focus-visible:ring-offset-1",
+                "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-light/50 focus-visible:ring-offset-1",
                 className
             )}
             style={{
-                backgroundImage: `linear-gradient(#FFFFFF, #FFFFFF), linear-gradient(180deg, ${GRADIENT_TOP} 0%, ${GRADIENT_BOTTOM} 100%)`,
+                backgroundImage:
+                    "linear-gradient(#FFFFFF, #FFFFFF), linear-gradient(180deg, var(--color-gradient-from) 0%, var(--color-gradient-to) 100%)",
                 backgroundOrigin: "border-box",
                 backgroundClip: "padding-box, border-box",
             }}
@@ -79,8 +76,8 @@ export default function FavoriteButton({
                         y2="1"
                         gradientUnits="objectBoundingBox"
                     >
-                        <stop offset="0%" stopColor={GRADIENT_TOP} />
-                        <stop offset="100%" stopColor={GRADIENT_BOTTOM} />
+                        <stop offset="0%" stopColor="var(--color-gradient-from)" />
+                        <stop offset="100%" stopColor="var(--color-gradient-to)" />
                     </linearGradient>
                 </defs>
                 {isFavorite ? (

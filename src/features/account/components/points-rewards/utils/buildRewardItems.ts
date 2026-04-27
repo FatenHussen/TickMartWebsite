@@ -28,6 +28,8 @@ export function buildRewardItems({
     if (!exchangeOptions) return [];
 
     const opts = exchangeOptions.options;
+    if (!opts) return [];
+
     const available = exchangeOptions.available;
     const pointsWord = t("account.pointsRewards.points");
     const items: RewardItem[] = [];

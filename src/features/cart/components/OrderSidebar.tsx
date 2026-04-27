@@ -1,255 +1,292 @@
+import { useTranslation } from "react-i18next";
+import {
+    HiOutlineUser,
+    HiOutlinePhone,
+    HiOutlineLocationMarker,
+    HiOutlineClock,
+    HiOutlineCreditCard,
+} from "react-icons/hi";
+import {
+    HiOutlineReceiptPercent,
+    HiOutlineExclamationCircle,
+} from "react-icons/hi2";
+import type { ComponentType, ReactNode, SVGProps } from "react";
+
 type OrderSidebarProps = {
- priceSummary: {
- numOfItems: number;
- subtotal: string;
- shipping: string;
- shippingIsFree: boolean;
- storeDiscounts: string;
- tax: string;
- couponDiscount: string;
- total: string;
- };
- delivery: {
- fullName: string;
- phoneNumber: string;
- address: string;
- eta: string;
- message?: string;
- };
- payment: {
- method:"cash_on_delivery"|"credit_card"|"paypal";
- /** Display name from API (e.g."MTN Cash","Cash on Delivery") */
- name: string;
- description: string;
- };
- onTrackOnMap?: () => void;
+    priceSummary: {
+        numOfItems: number;
+        subtotal: string;
+        shipping: string;
+        shippingIsFree: boolean;
+        storeDiscounts: string;
+        tax: string;
+        couponDiscount: string;
+        total: string;
+    };
+    delivery: {
+        fullName: string;
+        phoneNumber: string;
+        address: string;
+        eta: string;
+        message?: string;
+    };
+    payment: {
+        method: "cash_on_delivery" | "credit_card" | "paypal";
+        /** Display name from API (e.g. "MTN Cash", "Cash on Delivery") */
+        name: string;
+        description: string;
+    };
+    onTrackOnMap?: () => void;
 };
 
 /** Payment can be omitted when API returns null */
 export type OrderSidebarPayment = OrderSidebarProps["payment"];
 
 export default function OrderSidebar({
- priceSummary,
- delivery,
- payment,
+    priceSummary,
+    delivery,
+    payment,
 }: OrderSidebarProps) {
- return (
- <div className="space-y-4">
- {/* Order Summary Card */}
- <OrderSummaryCard priceSummary={priceSummary} />
+    return (
+        <div className="space-y-4">
+            <OrderSummaryCard priceSummary={priceSummary} />
+            <DeliveryDetailsCard delivery={delivery} />
+            <PaymentMethodCard payment={payment} />
+        </div>
+    );
+}
 
- {/* Delivery Details Card */}
- <DeliveryDetailsCard delivery={delivery} />
+type SidebarCardProps = {
+    title: string;
+    icon: ComponentType<SVGProps<SVGSVGElement>>;
+    children: ReactNode;
+};
 
- {/* Payment Method Card */}
- <PaymentMethodCard payment={payment} />
- </div>
- );
+function SidebarCard({ title, icon: Icon, children }: SidebarCardProps) {
+    return (
+        <div className="rounded-2xl bg-custom-card border border-custom-primary shadow-sm overflow-hidden transition-shadow hover:shadow-md">
+            <div className="flex items-center gap-2.5 px-4 sm:px-5 py-3 sm:py-4 border-b border-custom-primary">
+                <div
+                    className="flex h-8 w-8 items-center justify-center rounded-lg"
+                    style={{
+                        background:
+                            "color-mix(in srgb, var(--color-main) 12%, var(--color-bg-card))",
+                        color: "var(--color-main)",
+                    }}
+                >
+                    <Icon className="w-4 h-4" />
+                </div>
+                <h3 className="text-sm font-semibold text-[color:var(--color-text)]">
+                    {title}
+                </h3>
+            </div>
+            <div className="px-4 sm:px-5 py-4">{children}</div>
+        </div>
+    );
 }
 
 type OrderSummaryCardProps = {
- priceSummary: OrderSidebarProps["priceSummary"];
+    priceSummary: OrderSidebarProps["priceSummary"];
 };
 
 function OrderSummaryCard({ priceSummary }: OrderSummaryCardProps) {
- return (
- <div
- className="rounded-2xl shadow-sm overflow-hidden"
- style={{
- background:"linear-gradient(180deg, #FBFBE4 0%, #FFFAB6 100%)",
- }}
- >
- {/* Header */}
- <div className="flex justify-center pt-4 pb-2 relative">
- <div
- className="px-4 py-2 rounded-full bg-cover bg-center bg-no-repeat"
- style={{ backgroundImage:"url('/images/backOrder.png')"}}
- >
- <h3 className="text-custom-primary text-sm font-bold whitespace-nowrap">
- Order Summary
- </h3>
- </div>
- </div>
+    const { t } = useTranslation();
+    const hasDiscount = priceSummary.storeDiscounts.startsWith("-");
+    const hasCoupon = priceSummary.couponDiscount.startsWith("-");
 
- {/* Content */}
- <div className="px-5 pb-5 pt-2">
- <div className="space-y-3 text-sm">
- <SummaryRow label="Num of Items"value={priceSummary.numOfItems} />
- <SummaryRow label="Subtotal"value={priceSummary.subtotal} />
- <SummaryRow
- label="Shipping"
- value={priceSummary.shipping}
- isGreen={priceSummary.shippingIsFree}
- />
- <SummaryRow
- label="Store discounts"
- value={priceSummary.storeDiscounts}
- isRed={priceSummary.storeDiscounts.startsWith("-")}
- />
- <SummaryRow label="Tax"value={priceSummary.tax} isGreen />
- <SummaryRow
- label="Coupon discount"
- value={priceSummary.couponDiscount}
- />
- </div>
+    return (
+        <SidebarCard
+            title={t("orders.orderSummary", "Order Summary")}
+            icon={HiOutlineReceiptPercent}
+        >
+            <div className="space-y-2.5 text-sm">
+                <SummaryRow
+                    label={t("orders.numOfItems", "Items")}
+                    value={priceSummary.numOfItems}
+                />
+                <SummaryRow
+                    label={t("orders.subtotal", "Subtotal")}
+                    value={priceSummary.subtotal}
+                />
+                <SummaryRow
+                    label={t("orders.shipping", "Shipping")}
+                    value={priceSummary.shipping}
+                    accent={priceSummary.shippingIsFree ? "success" : undefined}
+                />
+                {hasDiscount && (
+                    <SummaryRow
+                        label={t("orders.storeDiscounts", "Store discounts")}
+                        value={priceSummary.storeDiscounts}
+                        accent="success"
+                    />
+                )}
+                {hasCoupon && (
+                    <SummaryRow
+                        label={t("orders.couponDiscount", "Coupon discount")}
+                        value={priceSummary.couponDiscount}
+                        accent="success"
+                    />
+                )}
+            </div>
 
- {/* Total */}
- <div className="flex items-center justify-between mt-4 pt-4 border-t border-dashed border-custom-secondary">
- <span className="text-base font-bold text-custom-primary">Total</span>
- <span className="text-2xl font-bold"style={{ color:"#2C8090"}}>
- {priceSummary.total}
- </span>
- </div>
- </div>
- </div>
- );
+            <div className="flex items-baseline justify-between mt-4 pt-4 border-t border-dashed border-custom-primary">
+                <span className="text-sm font-semibold text-[color:var(--color-text)]">
+                    {t("orders.total", "Total")}
+                </span>
+                <span className="text-2xl font-bold text-[color:var(--color-main)]">
+                    {priceSummary.total}
+                </span>
+            </div>
+        </SidebarCard>
+    );
 }
 
 type DeliveryDetailsCardProps = {
- delivery: OrderSidebarProps["delivery"];
+    delivery: OrderSidebarProps["delivery"];
 };
 
 function DeliveryDetailsCard({ delivery }: DeliveryDetailsCardProps) {
- return (
- <div
- className="rounded-2xl shadow-sm overflow-hidden"
- style={{
- background:"linear-gradient(180deg, #FBFBE4 0%, #FFFAB6 100%)",
- }}
- >
- {/* Header */}
- <div className="flex justify-center pt-4 pb-2 relative">
- <div
- className="px-4 py-2 rounded-full bg-cover bg-center bg-no-repeat"
- style={{ backgroundImage:"url('/images/backOrder.png')"}}
- >
- <h3 className="text-custom-primary text-sm font-bold whitespace-nowrap">
- Delivery Details
- </h3>
- </div>
- </div>
+    const { t } = useTranslation();
+    return (
+        <SidebarCard
+            title={t("orders.deliveryDetails", "Delivery Details")}
+            icon={HiOutlineLocationMarker}
+        >
+            <div className="space-y-3 text-sm">
+                <DetailRow
+                    icon={HiOutlineUser}
+                    label={t("orders.fullName", "Full Name")}
+                    value={delivery.fullName}
+                />
+                <DetailRow
+                    icon={HiOutlinePhone}
+                    label={t("orders.phoneNumber", "Phone")}
+                    value={delivery.phoneNumber}
+                />
+                <DetailRow
+                    icon={HiOutlineLocationMarker}
+                    label={t("orders.address", "Address")}
+                    value={delivery.address}
+                    multiline
+                />
+                <DetailRow
+                    icon={HiOutlineClock}
+                    label={t("orders.eta", "ETA")}
+                    value={delivery.eta}
+                />
+            </div>
 
- {/* Content */}
- <div className="px-5 pb-5 pt-2">
- <div className="space-y-3 text-sm">
- <DetailRow label="Full Name:"value={delivery.fullName} />
- <DetailRow label="Phone Number:"value={delivery.phoneNumber} />
- <div>
- <span className="text-custom-secondary font-medium">Address:</span>
- <p className="text-custom-primary mt-1">{delivery.address}</p>
- </div>
- <DetailRow label="ETA:"value={delivery.eta} />
- </div>
-
- {delivery.message && (
- <div
- className="mt-4 p-3 rounded-lg text-sm"
- style={{
- backgroundColor:"rgba(251, 191, 36, 0.2)",
- border:"1px solid #FBBF24",
- }}
- >
- <span className="text-custom-primary">{delivery.message}</span>
- </div>
- )}
- </div>
- </div>
- );
+            {delivery.message && (
+                <div
+                    className="mt-4 flex items-start gap-2 p-3 rounded-xl text-xs"
+                    style={{
+                        backgroundColor: "var(--color-ui-amber-50)",
+                        border: "1px solid var(--color-ui-amber-200)",
+                        color: "var(--color-ui-amber-900)",
+                    }}
+                >
+                    <HiOutlineExclamationCircle
+                        className="w-4 h-4 shrink-0 mt-0.5"
+                        style={{ color: "var(--color-ui-amber-400)" }}
+                    />
+                    <span className="leading-relaxed">{delivery.message}</span>
+                </div>
+            )}
+        </SidebarCard>
+    );
 }
 
 type PaymentMethodCardProps = {
- payment: OrderSidebarProps["payment"];
+    payment: OrderSidebarProps["payment"];
 };
 
 function PaymentMethodCard({ payment }: PaymentMethodCardProps) {
- return (
- <div
- className="rounded-2xl shadow-sm overflow-hidden"
- style={{
- background:"linear-gradient(180deg, #FBFBE4 0%, #FFFAB6 100%)",
- }}
- >
- {/* Header */}
- <div className="flex justify-center pt-4 pb-2 relative">
- <div
- className="px-4 py-2 rounded-full bg-cover bg-center bg-no-repeat"
- style={{ backgroundImage:"url('/images/backOrder.png')"}}
- >
- <h3 className="text-custom-primary text-sm font-bold whitespace-nowrap">
- Payment Method
- </h3>
- </div>
- </div>
-
- {/* Content */}
- <div className="px-5 pb-5 pt-2">
- <div className="flex items-center gap-3">
- <div
- className="w-12 h-8 rounded flex items-center justify-center"
- style={{
- background:"linear-gradient(135deg, #4CDAF6 0%, #2C8090 100%)",
- }}
- >
- <svg
- className="w-5 h-5 text-white"
- fill="none"
- stroke="currentColor"
- viewBox="0 0 24 24"
- >
- <path
- strokeLinecap="round"
- strokeLinejoin="round"
- strokeWidth={2}
- d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"
- />
- </svg>
- </div>
- <div>
- <p className="text-sm font-semibold text-custom-primary">
- {payment.name}
- </p>
- <p className="text-xs text-custom-secondary">{payment.description}</p>
- </div>
- </div>
- </div>
- </div>
- );
+    const { t } = useTranslation();
+    return (
+        <SidebarCard
+            title={t("orders.paymentMethod", "Payment Method")}
+            icon={HiOutlineCreditCard}
+        >
+            <div className="flex items-center gap-3">
+                <div
+                    className="w-12 h-12 shrink-0 rounded-xl flex items-center justify-center text-custom-inverse"
+                    style={{
+                        background:
+                            "linear-gradient(135deg, var(--color-main) 0%, var(--color-api-second) 100%)",
+                        boxShadow:
+                            "0 4px 12px -4px color-mix(in srgb, var(--color-main) 40%, transparent)",
+                    }}
+                >
+                    <HiOutlineCreditCard className="w-6 h-6" />
+                </div>
+                <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-[color:var(--color-text)] truncate">
+                        {payment.name}
+                    </p>
+                    <p className="text-xs text-custom-tertiary leading-snug">
+                        {payment.description}
+                    </p>
+                </div>
+            </div>
+        </SidebarCard>
+    );
 }
 
 type SummaryRowProps = {
- label: string;
- value: string | number;
- isGreen?: boolean;
- isRed?: boolean;
+    label: string;
+    value: string | number;
+    accent?: "success" | "danger";
 };
 
-function SummaryRow({
- label,
- value,
- isGreen = false,
- isRed = false,
-}: SummaryRowProps) {
- const colorStyle = isGreen ? { color:"#22C55E"} : isRed ? { color:"#EF4444"} : undefined;
- return (
- <div className="flex items-center justify-between">
- <span className="text-custom-secondary">{label}</span>
- <span className="font-medium"style={colorStyle}>
- {value}
- </span>
- </div>
- );
+function SummaryRow({ label, value, accent }: SummaryRowProps) {
+    const colorVar =
+        accent === "success"
+            ? "var(--color-success)"
+            : accent === "danger"
+              ? "var(--color-error)"
+              : undefined;
+
+    return (
+        <div className="flex items-center justify-between gap-3">
+            <span className="text-custom-secondary">{label}</span>
+            <span
+                className="font-semibold text-[color:var(--color-text)] tabular-nums"
+                style={colorVar ? { color: colorVar } : undefined}
+            >
+                {value}
+            </span>
+        </div>
+    );
 }
 
 type DetailRowProps = {
- label: string;
- value: string;
+    icon: ComponentType<SVGProps<SVGSVGElement>>;
+    label: string;
+    value: string;
+    multiline?: boolean;
 };
 
-function DetailRow({ label, value }: DetailRowProps) {
- return (
- <div className="flex items-center justify-between">
- <span className="text-custom-secondary font-medium">{label}</span>
- <span className="text-custom-primary">{value}</span>
- </div>
- );
+function DetailRow({
+    icon: Icon,
+    label,
+    value,
+    multiline = false,
+}: DetailRowProps) {
+    return (
+        <div className="flex items-start gap-3">
+            <Icon className="w-4 h-4 mt-0.5 shrink-0 text-custom-tertiary" />
+            <div className="min-w-0 flex-1">
+                <div className="text-[11px] uppercase tracking-wide text-custom-tertiary font-medium">
+                    {label}
+                </div>
+                <div
+                    className={`text-sm font-medium text-[color:var(--color-text)] ${
+                        multiline ? "leading-snug" : "truncate"
+                    }`}
+                >
+                    {value}
+                </div>
+            </div>
+        </div>
+    );
 }

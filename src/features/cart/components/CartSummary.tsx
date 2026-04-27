@@ -1,10 +1,19 @@
 import { useState, useEffect, type ReactNode } from "react";
-import { HiArrowRight, HiTruck, HiClock, HiGift } from "react-icons/hi";
+import {
+    HiArrowRight,
+    HiTruck,
+    HiClock,
+    HiGift,
+    HiOutlineReceiptTax,
+} from "react-icons/hi";
+import { HiOutlineExclamationTriangle } from "react-icons/hi2";
 import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 import { useLanguage } from "@/context/LanguageContext";
 import { useCurrency } from "@/context/CurrencyContext";
 import Button from "@/shared/ui/Button";
 import Input from "@/shared/ui/Input";
+import { cn } from "@/shared/lib/utils";
 import type { OrderSummary } from "../types";
 
 type CartSummaryStatus = "loading" | "no-address" | "ready";
@@ -39,6 +48,7 @@ export default function CartSummary({
     const { isRTL } = useLanguage();
     const { formatPrice } = useCurrency();
     const [localCoupon, setLocalCoupon] = useState(coupon);
+
     useEffect(() => {
         setLocalCoupon(coupon);
     }, [coupon]);
@@ -61,281 +71,467 @@ export default function CartSummary({
     const freeDeliveryThreshold = 50;
     const remainingForFreeDelivery = Math.max(
         0,
-        freeDeliveryThreshold - totalNum
+        freeDeliveryThreshold - totalNum,
     );
     const progressPercentage = Math.min(
         100,
-        ((freeDeliveryThreshold - remainingForFreeDelivery) / freeDeliveryThreshold) * 100
+        ((freeDeliveryThreshold - remainingForFreeDelivery) /
+            freeDeliveryThreshold) *
+            100,
     );
-
-    const teal = "#00AED1";
-    const cardBorderGradient = "linear-gradient(180deg, #4CDAF6, #2C8090)";
-    const cardShadow =
-        "0 8px 10px -6px rgba(0, 174, 209, 0.1), 0 20px 25px -5px rgba(0, 174, 209, 0.1)";
-    const cardWrapperStyle = {
-        padding: "1px",
-        borderRadius: "24px",
-        background: cardBorderGradient,
-        boxShadow: cardShadow,
-    };
-    const cardInnerStyle = {
-        borderRadius: "23px",
-        minHeight: "100%",
-    };
-    const cardStyle = "bg-cart-summary p-6 rounded-[23px]";
 
     if (status === "loading") {
         return (
-            <div
-                className="sticky top-4"
-                style={cardWrapperStyle}
-                dir={isRTL ? "rtl" : "ltr"}
-            >
-                <div
-                    className={`${cardStyle} space-y-6 animate-pulse`}
-                    style={cardInnerStyle}
-                dir={isRTL ? "rtl" : "ltr"}
-            >
-                <div className="h-6 bg-custom-muted rounded w-1/3" />
-                <div className="space-y-3">
-                    {[1, 2, 3, 4, 5, 6].map((i) => (
-                        <div key={i} className="flex justify-between">
-                            <div className="h-4 bg-custom-muted rounded w-24" />
-                            <div className="h-4 bg-custom-muted rounded w-16" />
-                        </div>
-                    ))}
+            <SummaryShell isRTL={isRTL}>
+                <div className="space-y-6 animate-pulse p-4 sm:p-6">
+                    <div className="h-6 bg-custom-muted rounded w-1/3" />
+                    <div className="space-y-3">
+                        {[1, 2, 3, 4, 5, 6].map((i) => (
+                            <div key={i} className="flex justify-between">
+                                <div className="h-4 bg-custom-muted rounded w-24" />
+                                <div className="h-4 bg-custom-muted rounded w-16" />
+                            </div>
+                        ))}
+                    </div>
+                    <div className="flex justify-between pt-4 border-t border-custom-primary">
+                        <div className="h-6 bg-custom-muted rounded w-20" />
+                        <div className="h-6 bg-custom-muted rounded w-24" />
+                    </div>
+                    <div className="h-12 bg-custom-muted rounded-xl" />
+                    <p className="text-xs text-custom-secondary text-center">
+                        {t("cart.loadingPreview", "Loading order summary...")}
+                    </p>
                 </div>
-                <div className="flex justify-between pt-4 border-t border-custom-secondary">
-                    <div className="h-6 bg-custom-muted rounded w-20" />
-                    <div className="h-6 bg-custom-muted rounded w-24" />
-                </div>
-                <div className="h-12 bg-custom-muted rounded" />
-                <p className="text-sm text-custom-secondary text-center">
-                    {t("cart.loadingPreview", "Loading order summary...")}
-                </p>
-                </div>
-            </div>
+            </SummaryShell>
         );
     }
 
     if (status === "no-address") {
         return (
-            <div className="sticky top-4" style={cardWrapperStyle} dir={isRTL ? "rtl" : "ltr"}>
-                <div className={cardStyle} style={cardInnerStyle}>
-                <h2 className="text-lg font-bold text-custom-primary mb-4">
-                    {t("checkout.orderSummary")}
-                </h2>
-                <p className="text-custom-secondary mb-4">
-                    {t("cart.addAddressForPreview", "Add a delivery address to see pricing and delivery details.")}
-                </p>
+            <SummaryShell isRTL={isRTL}>
+                <div className="p-4 sm:p-6 space-y-4">
+                    <div className="flex items-center gap-2.5">
+                        <SummaryIcon />
+                        <h2 className="text-lg font-bold text-[color:var(--color-text)]">
+                            {t("checkout.orderSummary")}
+                        </h2>
+                    </div>
+                    <p className="text-sm text-custom-secondary leading-relaxed">
+                        {t(
+                            "cart.addAddressForPreview",
+                            "Add a delivery address to see pricing and delivery details.",
+                        )}
+                    </p>
+                    <Button
+                        type="button"
+                        variant="primary"
+                        size="lg"
+                        fullWidth
+                        onClick={onAddAddress}
+                        className="rounded-xl text-white font-semibold !bg-[color:var(--color-api-second)] hover:!bg-[color:var(--color-api-second-hover)] transition-colors"
+                    >
+                        {t("cart.addAddress", "Add Address")}
+                    </Button>
+                </div>
+            </SummaryShell>
+        );
+    }
+
+    return (
+        <SummaryShell isRTL={isRTL}>
+            <div className="p-4 sm:p-6 space-y-5">
+                {/* Header */}
+                <div className="flex items-center gap-2.5">
+                    <SummaryIcon />
+                    <h2 className="text-lg font-bold text-[color:var(--color-text)]">
+                        {t("checkout.orderSummary")}
+                    </h2>
+                </div>
+
+                {/* Coupon */}
+                <div className="space-y-1.5">
+                    <div className="flex gap-2">
+                        <Input
+                            type="text"
+                            placeholder={t("cart.enterCode", "Enter coupon code")}
+                            value={localCoupon}
+                            onChange={(e) => setLocalCoupon(e.target.value)}
+                            onKeyDown={handleCouponKeyDown}
+                            className="flex-1 !bg-custom-card !border-custom-primary rounded-xl focus:!border-[color:var(--color-main)] focus:!ring-2 focus:!ring-[color:color-mix(in_srgb,var(--color-main)_25%,transparent)]"
+                            disabled={couponDisabled}
+                        />
+                        <Button
+                            type="button"
+                            variant="primary"
+                            onClick={handleApplyCoupon}
+                            disabled={isLoading || couponDisabled}
+                            className="!bg-[color:var(--color-api-second)] hover:!bg-[color:var(--color-api-second-hover)] disabled:!opacity-60 text-white font-semibold rounded-xl shrink-0 px-5 transition-colors"
+                        >
+                            {isLoading ? "…" : t("cart.apply", "Apply")}
+                        </Button>
+                    </div>
+                    {couponDisabled && (
+                        <p className="text-xs text-custom-secondary">
+                            {t(
+                                "cart.couponDisabledByBenefit",
+                                "Remove the selected discount benefit to use a coupon code",
+                            )}
+                        </p>
+                    )}
+                </div>
+
+                {/* Coupon feedback */}
+                {summary.couponFeedback &&
+                    summary.couponFeedback.fail_reasons?.length > 0 &&
+                    !summary.couponFeedback.applied && (
+                        <Alert tone="warning">
+                            {summary.couponFeedback.fail_reasons
+                                .filter((r) => r !== "No coupon provided")
+                                .map((r, i) => (
+                                    <p key={i}>{r}</p>
+                                ))}
+                        </Alert>
+                    )}
+
+                {/* Excluded items */}
+                {(summary.excludedItemsCount ?? 0) > 0 && (
+                    <Alert tone="warning">
+                        {t(
+                            "cart.couponExcludedItems",
+                            "{{count}} item(s) in your cart are not eligible for this coupon.",
+                            { count: summary.excludedItemsCount },
+                        )}
+                    </Alert>
+                )}
+
+                {/* Price breakdown */}
+                <div className="space-y-2.5 text-sm">
+                    <PriceRow
+                        label={t("cart.numOfItems", "Num of items")}
+                        value={String(summary.numOfItems)}
+                    />
+                    <PriceRow
+                        label={t("cart.itemsSubtotal", "Items subtotal")}
+                        value={summary.subtotal}
+                    />
+                    {summary.productDiscount != null && (
+                        <PriceRow
+                            label={t(
+                                "cart.productDiscount",
+                                "Product discount",
+                            )}
+                            value={summary.productDiscount}
+                            tone="success"
+                        />
+                    )}
+                    <PriceRow
+                        label={t("cart.basketDiscount", "Basket discount")}
+                        value={summary.storeDiscounts}
+                        tone="success"
+                    />
+                    <PriceRow
+                        label={t("cart.deliveryFee", "Delivery fee")}
+                        value={summary.shipping}
+                    />
+                    <PriceRow
+                        label={t(
+                            "checkout.couponDiscount",
+                            "Coupon discount",
+                        )}
+                        value={summary.couponDiscount}
+                        tone="success"
+                    />
+                    {summary.subscriptionDiscount != null && (
+                        <PriceRow
+                            label={t(
+                                "cart.subscriptionDiscount",
+                                "Subscription discount",
+                            )}
+                            value={summary.subscriptionDiscount}
+                            tone="success"
+                        />
+                    )}
+                    {summary.promotionDiscount != null && (
+                        <PriceRow
+                            label={t(
+                                "cart.promotionDiscount",
+                                "Promotion discount",
+                            )}
+                            value={summary.promotionDiscount}
+                            tone="success"
+                        />
+                    )}
+                </div>
+
+                {/* Perforated divider for receipt feel */}
+                <div className="relative h-px">
+                    <div className="absolute inset-0 border-t border-dashed border-[color:color-mix(in_srgb,var(--color-main)_30%,transparent)]" />
+                    <span
+                        className="absolute -start-9 -top-3 w-6 h-6 rounded-full bg-custom-tertiary"
+                        aria-hidden
+                    />
+                    <span
+                        className="absolute -end-9 -top-3 w-6 h-6 rounded-full bg-custom-tertiary"
+                        aria-hidden
+                    />
+                </div>
+
+                {/* Total */}
+                <div className="flex items-baseline justify-between">
+                    <span className="text-base font-bold text-[color:var(--color-text)]">
+                        {t("orders.total", "Total")}
+                    </span>
+                    <span className="text-2xl font-extrabold text-[color:var(--color-main)] tabular-nums">
+                        {summary.total}
+                    </span>
+                </div>
+
+                {/* Free delivery progress */}
+                <FreeDeliveryProgress
+                    remaining={remainingForFreeDelivery}
+                    percentage={progressPercentage}
+                    formatPrice={formatPrice}
+                    t={t}
+                />
+
+                {/* Rewards banner */}
+                {pointsEarned != null && pointsEarned > 0 && (
+                    <div
+                        className="rounded-xl py-3 px-4 flex items-center gap-3 border"
+                        style={{
+                            backgroundColor:
+                                "color-mix(in srgb, var(--color-main) 8%, var(--color-bg-card))",
+                            borderColor:
+                                "color-mix(in srgb, var(--color-main) 24%, transparent)",
+                        }}
+                    >
+                        <span
+                            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white"
+                            style={{
+                                background:
+                                    "linear-gradient(135deg, var(--color-main), var(--color-api-second))",
+                            }}
+                        >
+                            <HiGift className="w-5 h-5" />
+                        </span>
+                        <p className="text-sm font-medium text-[color:var(--color-text)]">
+                            {t(
+                                "cart.pointsEarned",
+                                "You'll earn {{points}} points from this order.",
+                                { points: pointsEarned },
+                            )}
+                        </p>
+                    </div>
+                )}
+
+                {/* Active benefits */}
+                {benefitsContent && (
+                    <div className="space-y-4 pt-1">{benefitsContent}</div>
+                )}
+
+                {/* Proceed to checkout */}
                 <Button
                     type="button"
                     variant="primary"
                     size="lg"
                     fullWidth
-                    onClick={onAddAddress}
-                    className="bg-primary-light hover:opacity-90 text-white"
+                    onClick={onCheckout}
+                    className="group !bg-[color:var(--color-api-second)] hover:!bg-[color:var(--color-api-second-hover)] text-white font-bold rounded-2xl flex items-center justify-center gap-2 shadow-[0_8px_22px_-8px_color-mix(in_srgb,var(--color-main)_45%,transparent)] transition-all duration-200 hover:-translate-y-0.5"
                 >
-                    {t("cart.addAddress", "Add Address")}
+                    <span>
+                        {t("cart.proceedToCheckout", "Proceed to checkout")}
+                    </span>
+                    <HiArrowRight
+                        className={cn(
+                            "w-5 h-5 transition-transform duration-200 group-hover:translate-x-0.5",
+                            isRTL && "rotate-180 group-hover:-translate-x-0.5",
+                        )}
+                    />
                 </Button>
+
+                {/* Estimated delivery */}
+                <div className="flex items-center justify-center gap-2 text-sm text-custom-secondary">
+                    <HiClock
+                        className="w-4 h-4 shrink-0"
+                        style={{ color: "var(--color-main)" }}
+                    />
+                    <span>
+                        {t("cart.estimatedDelivery", "Estimated delivery:")}{" "}
+                        <span className="font-semibold text-[color:var(--color-text)]">
+                            Today, 2–4 PM
+                        </span>
+                    </span>
                 </div>
             </div>
-        );
-    }
+        </SummaryShell>
+    );
+}
 
-    const discountGreen = "#22C55E";
+type SummaryShellProps = {
+    children: ReactNode;
+    isRTL: boolean;
+};
+
+function SummaryShell({ children, isRTL }: SummaryShellProps) {
+    return (
+        <div
+            className="sticky top-4 rounded-3xl"
+            style={{
+                padding: "1px",
+                background:
+                    "linear-gradient(180deg, color-mix(in srgb, var(--color-main) 50%, transparent), color-mix(in srgb, var(--color-api-second) 60%, transparent))",
+                boxShadow:
+                    "0 12px 32px -16px color-mix(in srgb, var(--color-main) 35%, transparent)",
+            }}
+            dir={isRTL ? "rtl" : "ltr"}
+        >
+            <div
+                className="rounded-[calc(1.5rem-1px)] bg-custom-card relative overflow-hidden"
+            >
+                {/* Decorative top accent wash (uses main → api-second) */}
+                <div
+                    className="pointer-events-none absolute inset-x-0 top-0 h-32 opacity-[0.07]"
+                    style={{
+                        background:
+                            "radial-gradient(120% 80% at 50% 0%, var(--color-main) 0%, transparent 70%)",
+                    }}
+                    aria-hidden
+                />
+                <div className="relative">{children}</div>
+            </div>
+        </div>
+    );
+}
+
+function SummaryIcon() {
+    return (
+        <span
+            className="flex h-8 w-8 items-center justify-center rounded-lg"
+            style={{
+                background:
+                    "color-mix(in srgb, var(--color-main) 14%, var(--color-bg-card))",
+                color: "var(--color-main)",
+            }}
+        >
+            <HiOutlineReceiptTax className="w-4 h-4" />
+        </span>
+    );
+}
+
+type PriceRowProps = {
+    label: string;
+    value: string;
+    tone?: "success" | "danger";
+};
+
+function PriceRow({ label, value, tone }: PriceRowProps) {
+    const colorVar =
+        tone === "success"
+            ? "var(--color-success)"
+            : tone === "danger"
+              ? "var(--color-error)"
+              : undefined;
 
     return (
-        <div className="sticky top-4" style={cardWrapperStyle} dir={isRTL ? "rtl" : "ltr"}>
-            <div
-                className={`${cardStyle} space-y-5`}
-                style={cardInnerStyle}
+        <div className="flex items-center justify-between gap-3">
+            <span className="text-custom-secondary">{label}</span>
+            <span
+                className="font-semibold text-[color:var(--color-text)] tabular-nums"
+                style={colorVar ? { color: colorVar } : undefined}
             >
-            {/* Order Summary Header */}
-            <h2 className="text-lg font-bold text-custom-primary">
-                {t("checkout.orderSummary")}
-            </h2>
+                {value}
+            </span>
+        </div>
+    );
+}
 
-            {/* Coupon Code */}
-            <div>
-                <div className="flex gap-2">
-                    <Input
-                        type="text"
-                        placeholder={t("cart.enterCode", "Enter coupon code")}
-                        value={localCoupon}
-                        onChange={(e) => setLocalCoupon(e.target.value)}
-                        onKeyDown={handleCouponKeyDown}
-                        className="flex-1 bg-white rounded-xl border border-gray-200 focus:border-[#00AED1] focus:ring-1 focus:ring-[#00AED1]"
-                        disabled={couponDisabled}
-                    />
-                    <Button
-                        type="button"
-                        variant="primary"
-                        onClick={handleApplyCoupon}
-                        disabled={isLoading || couponDisabled}
-                        className="text-white whitespace-nowrap hover:opacity-90 rounded-xl shrink-0"
-                        style={{ backgroundColor: teal }}
-                    >
-                        {isLoading ? "..." : t("cart.apply", "Apply")}
-                    </Button>
-                </div>
-                {couponDisabled && (
-                    <p className="text-xs text-amber-600 mt-1">
-                        {t("cart.couponDisabledByBenefit", "Remove the selected discount benefit to use a coupon code")}
-                    </p>
-                )}
-            </div>
+type AlertProps = {
+    tone: "warning" | "info";
+    children: ReactNode;
+};
 
-            {/* Coupon feedback when invalid */}
-            {summary.couponFeedback &&
-                summary.couponFeedback.fail_reasons?.length > 0 &&
-                !summary.couponFeedback.applied && (
-                    <div className="text-sm text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 rounded-lg px-3 py-2">
-                        {summary.couponFeedback.fail_reasons
-                            .filter((r) => r !== "No coupon provided")
-                            .map((r, i) => (
-                                <p key={i}>{r}</p>
-                            ))}
-                    </div>
-                )}
+function Alert({ children }: AlertProps) {
+    return (
+        <div
+            className="text-xs leading-relaxed flex items-start gap-2 rounded-xl px-3 py-2.5"
+            style={{
+                backgroundColor: "var(--color-ui-amber-50)",
+                color: "var(--color-ui-amber-900)",
+                border: "1px solid var(--color-ui-amber-200)",
+            }}
+        >
+            <HiOutlineExclamationTriangle
+                className="w-4 h-4 mt-0.5 shrink-0"
+                style={{ color: "var(--color-ui-amber-400)" }}
+            />
+            <div className="flex-1 space-y-1">{children}</div>
+        </div>
+    );
+}
 
-            {/* Excluded items warning */}
-            {(summary.excludedItemsCount ?? 0) > 0 && (
-                <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+type FreeDeliveryProgressProps = {
+    remaining: number;
+    percentage: number;
+    formatPrice: (n: number) => string;
+    t: TFunction;
+};
+
+function FreeDeliveryProgress({
+    remaining,
+    percentage,
+    formatPrice,
+    t,
+}: FreeDeliveryProgressProps) {
+    const unlocked = remaining <= 0;
+    return (
+        <div className="bg-custom-card rounded-2xl p-4 border border-custom-primary shadow-sm">
+            <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-semibold text-[color:var(--color-text)]">
                     {t(
-                        "cart.couponExcludedItems",
-                        "{{count}} item(s) in your cart are not eligible for this coupon.",
-                        { count: summary.excludedItemsCount }
+                        "cart.freeDeliveryProgress",
+                        "Free delivery progress",
                     )}
-                </div>
-            )}
-
-            {/* Price Breakdown */}
-            <div className="space-y-2 text-sm text-custom-primary">
-                <div className="flex justify-between">
-                    <span className="text-custom-secondary">{t("cart.numOfItems", "Num of items")}:</span>
-                    <span className="font-medium">{summary.numOfItems}</span>
-                </div>
-                <div className="flex justify-between">
-                    <span className="text-custom-secondary">{t("cart.itemsSubtotal", "Items subtotal")}:</span>
-                    <span className="font-medium">{summary.subtotal}</span>
-                </div>
-                {summary.productDiscount != null && (
-                    <div className="flex justify-between">
-                        <span className="text-custom-secondary">{t("cart.productDiscount", "Product discount")}:</span>
-                        <span className="font-medium" style={{ color: discountGreen }}>{summary.productDiscount}</span>
-                    </div>
-                )}
-                <div className="flex justify-between">
-                    <span className="text-custom-secondary">{t("cart.basketDiscount", "Basket discount")}:</span>
-                    <span className="font-medium" style={{ color: discountGreen }}>{summary.storeDiscounts}</span>
-                </div>
-                <div className="flex justify-between">
-                    <span className="text-custom-secondary">{t("cart.deliveryFee", "Delivery fee")}:</span>
-                    <span className="font-medium">{summary.shipping}</span>
-                </div>
-                {/* <div className="flex justify-between">
-                    <span className="text-custom-secondary">{t("cart.tax", "Tax")}:</span>
-                    <span className="font-medium">{summary.tax}</span>
-                </div> */}
-                <div className="flex justify-between">
-                    <span className="text-custom-secondary">{t("checkout.couponDiscount", "Coupon discount")}:</span>
-                    <span className="font-medium" style={{ color: discountGreen }}>{summary.couponDiscount}</span>
-                </div>
-                {summary.subscriptionDiscount != null && (
-                    <div className="flex justify-between">
-                        <span className="text-custom-secondary">{t("cart.subscriptionDiscount", "Subscription discount")}:</span>
-                        <span className="font-medium" style={{ color: discountGreen }}>{summary.subscriptionDiscount}</span>
-                    </div>
-                )}
-                {summary.promotionDiscount != null && (
-                    <div className="flex justify-between">
-                        <span className="text-custom-secondary">{t("cart.promotionDiscount", "Promotion discount")}:</span>
-                        <span className="font-medium" style={{ color: discountGreen }}>{summary.promotionDiscount}</span>
-                    </div>
-                )}
-
-                {/* Separator + Total */}
-                <div className="pt-3 mt-1 border-t border-[#00AED1]/30">
-                    <div className="flex justify-between pt-2">
-                        <span className="font-bold text-custom-primary">{t("orders.total", "Total")}:</span>
-                        <span className="font-bold text-custom-primary">{summary.total}</span>
-                    </div>
-                </div>
-            </div>
-
-            {/* Free Delivery Progress - White inner card */}
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-                <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-semibold text-custom-primary">
-                        {t("cart.freeDeliveryProgress", "Free delivery progress")}
-                    </span>
-                    <HiTruck className="w-5 h-5 shrink-0" style={{ color: teal }} />
-                </div>
-                <p className="text-sm font-medium mb-3" style={{ color: teal }}>
-                    {remainingForFreeDelivery > 0
-                        ? t("cart.awayFromFreeDelivery", "You're {{amount}} away from free delivery", {
-                              amount: formatPrice(remainingForFreeDelivery),
-                          })
-                        : t("cart.freeDeliveryUnlocked", "You've unlocked free delivery!")}
-                </p>
-                <div className="relative h-2.5 rounded-full overflow-hidden bg-gray-100">
-                    <div
-                        className="h-full rounded-full transition-all duration-500"
-                        style={{
-                            width: `${progressPercentage}%`,
-                            background: `linear-gradient(90deg, #4CDAF6 0%, ${teal} 100%)`,
-                        }}
-                    />
-                </div>
-            </div>
-
-            {/* Rewards / Points Earned */}
-            {pointsEarned != null && pointsEarned > 0 && (
-                <div
-                    className="rounded-xl py-3 px-4 flex items-center gap-3 w-full"
-                    style={{ backgroundColor: "#E9E0F5" }}
+                </span>
+                <span
+                    className="flex h-7 w-7 items-center justify-center rounded-full text-white"
+                    style={{
+                        background:
+                            "linear-gradient(135deg, var(--color-main), var(--color-api-second))",
+                    }}
                 >
-                    <HiGift className="w-5 h-5 shrink-0" style={{ color: "#6B46C1" }} />
-                    <p className="text-sm font-medium" style={{ color: "#6B46C1" }}>
-                        {t("cart.pointsEarned", "You'll earn {{points}} points from this order.", {
-                            points: pointsEarned,
-                        })}
-                    </p>
-                </div>
-            )}
-
-            {/* Active Benefits */}
-            {benefitsContent && (
-                <div className="space-y-4 pt-1">
-                    {benefitsContent}
-                </div>
-            )}
-
-            {/* Proceed to checkout */}
-            <Button
-                type="button"
-                variant="primary"
-                size="lg"
-                fullWidth
-                onClick={onCheckout}
-                className="hover:opacity-90 text-white flex items-center justify-center gap-2 rounded-2xl font-bold"
-                style={{
-                    background: "linear-gradient(180deg, #4CDAF6 0%, #00AED1 100%)",
-                }}
-            >
-                {t("cart.proceedToCheckout", "Proceed to checkout")}
-                <HiArrowRight className="w-5 h-5" />
-            </Button>
-
-            {/* Estimated Delivery Footer */}
-            <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
-                <HiClock className="w-4 h-4 shrink-0" style={{ color: "#FFD700" }} />
-                <span>
-                    {t("cart.estimatedDelivery", "Estimated delivery:")}{" "}
-                    <span className="font-medium">Today, 2–4 PM</span>
+                    <HiTruck className="w-4 h-4" />
                 </span>
             </div>
+            <p
+                className="text-sm font-medium mb-3"
+                style={{ color: "var(--color-main)" }}
+            >
+                {unlocked
+                    ? t(
+                          "cart.freeDeliveryUnlocked",
+                          "You've unlocked free delivery!",
+                      )
+                    : t(
+                          "cart.awayFromFreeDelivery",
+                          "You're {{amount}} away from free delivery",
+                          { amount: formatPrice(remaining) },
+                      )}
+            </p>
+            <div
+                className="relative h-2 rounded-full overflow-hidden"
+                style={{
+                    backgroundColor:
+                        "color-mix(in srgb, var(--color-main) 12%, var(--color-bg-tertiary))",
+                }}
+            >
+                <div
+                    className="h-full rounded-full transition-all duration-500"
+                    style={{
+                        width: `${percentage}%`,
+                        background:
+                            "linear-gradient(90deg, var(--color-main) 0%, var(--color-api-second) 100%)",
+                    }}
+                />
             </div>
         </div>
     );

@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 
 import { cn } from "@/shared/lib/utils";
+import type { SectionCardVariant } from "@/features/home/types";
 import AnimatedButton from "@/shared/ui/AnimatedButton";
 import Badge from "../Badge";
 import FavoriteButton from "../FavoriteButton";
@@ -31,6 +32,8 @@ type ShopCardProps = {
     onFavorite?: (id: number | string) => void;
     onClick?: () => void;
     className?: string;
+    layout?: SectionCardVariant;
+    surfaceColor?: string | null;
 };
 
 export default function ShopCard({
@@ -48,7 +51,17 @@ export default function ShopCard({
     onFavorite,
     onClick,
     className,
+    layout,
+    surfaceColor,
 }: ShopCardProps) {
+    const imageAspectClass = layout
+        ? layout === "horizontal"
+            ? "aspect-[16/10] max-h-44 sm:max-h-48"
+            : layout === "vertical"
+              ? "aspect-[3/4] max-h-72 sm:max-h-80"
+              : "aspect-[4/3]"
+        : "aspect-[4/3]";
+
     const imageSrc = image || DEFAULT_STORE_IMAGE;
     const deliveryText =
         deliveryPrice != null && deliveryPrice !== ""
@@ -62,7 +75,7 @@ export default function ShopCard({
               {
                   label: "Open",
                   className:
-                      "bg-green-500 text-white text-xs font-medium shadow-sm",
+                      "rounded-full bg-emerald-500 px-2.5 py-0.5 text-xs font-semibold text-white shadow-md ring-1 ring-emerald-400/40",
                   align: "left",
               },
           ]
@@ -97,18 +110,33 @@ export default function ShopCard({
                 if (e.key === "Enter" || e.key === " ") onClick();
             }}
             className={cn(
-                "flex h-full flex-col overflow-hidden rounded-2xl bg-custom-card shadow-[0_1px_2px_0_rgba(0,0,0,0.05)] transition-shadow hover:shadow-md",
-                onClick && "cursor-pointer",
-                className
+                "group flex h-full flex-col overflow-hidden rounded-2xl border border-stone-200/80 bg-custom-card",
+                "shadow-[0_2px_8px_-2px_rgba(15,23,42,0.06),0_8px_20px_-6px_rgba(15,23,42,0.08)]",
+                "transition-[transform,box-shadow] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                "hover:-translate-y-1 hover:shadow-[0_12px_28px_-8px_rgba(15,23,42,0.12),0_4px_12px_-4px_rgba(15,23,42,0.08)]",
+                "dark:border-white/10 dark:shadow-[0_2px_12px_-2px_rgba(0,0,0,0.4)] dark:hover:shadow-[0_16px_36px_-8px_rgba(0,0,0,0.55)]",
+                "motion-reduce:transition-none motion-reduce:hover:translate-y-0",
+                onClick &&
+                    "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-main)]/35 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg-card)]",
+                className,
             )}
         >
             {/* Image area */}
-            <div className="relative aspect-[4/3] w-full shrink-0 overflow-hidden rounded-t-2xl bg-custom-muted">
+            <div
+                className={cn(
+                    "relative w-full shrink-0 overflow-hidden rounded-t-2xl bg-custom-muted",
+                    imageAspectClass,
+                )}
+            >
                 <LazyImage
                     src={imageSrc}
                     alt={name}
-                    className="h-full w-full object-cover"
+                    className="h-full w-full object-cover transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform group-hover:scale-[1.03] motion-reduce:group-hover:scale-100"
                     wrapperClassName="h-full w-full"
+                />
+                <div
+                    className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/20 via-black/5 to-transparent dark:from-black/40"
+                    aria-hidden
                 />
                 {leftBadges.length > 0 && (
                     <div className="absolute left-3 top-3 z-10 flex flex-col gap-1">
@@ -149,22 +177,31 @@ export default function ShopCard({
                     />
                 </div>
                 {/* Rating — white pill (Figma) */}
-                <div className="absolute bottom-3 left-3 z-10 rounded-full bg-white/95 px-2.5 py-1 shadow-sm backdrop-blur-[1px]">
+                <div className="absolute bottom-3 left-3 z-10 rounded-full bg-white/95 px-3 py-1 shadow-md ring-1 ring-stone-900/5 backdrop-blur-sm dark:bg-stone-900/90 dark:ring-white/10">
                     <Rating
                         rating={rating}
                         size="sm"
-                        className="[&_span:last-child]:font-semibold [&_span:last-child]:text-custom-primary"
+                        className="[&_span:last-child]:font-semibold [&_span:last-child]:text-custom-primary dark:[&_span:last-child]:text-stone-100"
                     />
                 </div>
             </div>
 
-            {/* Info — mint tint */}
-            <div className="flex flex-1 flex-col rounded-b-2xl bg-[rgb(22_163_74/0.1)] px-4 pb-4 pt-3">
-                <h3 className="line-clamp-2 text-lg font-bold leading-snug text-custom-primary">
+            {/* Info — soft wash when no API card tint */}
+            <div
+                className={cn(
+                    "flex flex-1 flex-col rounded-b-2xl border-t border-stone-200/60 px-4 pb-4 pt-3.5 dark:border-white/[0.08]",
+                    !surfaceColor &&
+                        "bg-gradient-to-b from-emerald-50/90 via-emerald-50/50 to-white dark:from-emerald-950/35 dark:via-stone-900/70 dark:to-stone-900",
+                )}
+                style={
+                    surfaceColor ? { backgroundColor: surfaceColor } : undefined
+                }
+            >
+                <h3 className="line-clamp-2 text-lg font-bold leading-snug tracking-tight text-custom-primary">
                     {name}
                 </h3>
                 {description && (
-                    <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-custom-secondary">
+                    <p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-custom-secondary/95">
                         {description}
                     </p>
                 )}
@@ -173,11 +210,11 @@ export default function ShopCard({
                     {hasApiBottomBadges && (
                         <div className="flex items-start justify-between gap-2">
                             <div className="flex min-w-0 flex-wrap items-center gap-2">
-                                <span className="shrink-0 rounded-full bg-sky-100 px-2.5 py-1 text-xs font-medium text-sky-800">
+                                <span className="shrink-0 rounded-full bg-sky-50 px-2.5 py-1 text-xs font-medium text-sky-900 ring-1 ring-sky-100 dark:bg-sky-950/50 dark:text-sky-100 dark:ring-sky-800/40">
                                     Delivery
                                 </span>
                                 {discountLabel && (
-                                    <span className="shrink-0 rounded-full bg-rose-100 px-2.5 py-1 text-xs font-semibold text-red-600">
+                                    <span className="shrink-0 rounded-full bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700 ring-1 ring-rose-100 dark:bg-rose-950/40 dark:text-rose-200 dark:ring-rose-900/40">
                                         {discountLabel}
                                     </span>
                                 )}
@@ -205,7 +242,7 @@ export default function ShopCard({
                                 size="sm"
                                 type="button"
                                 onClick={(e) => e.stopPropagation()}
-                                className="w-full justify-center rounded-full bg-sky-400 text-sm font-medium text-white hover:bg-sky-500"
+                                className="w-full justify-center rounded-full bg-gradient-to-r from-sky-500 to-sky-600 text-sm font-semibold text-white shadow-md ring-1 ring-sky-400/30 transition-[transform,box-shadow] hover:shadow-lg"
                                 note={{
                                     primary: "Delivery",
                                     secondary: deliveryText ?? "Order now",
@@ -217,7 +254,7 @@ export default function ShopCard({
                                     size="sm"
                                     type="button"
                                     onClick={(e) => e.stopPropagation()}
-                                    className="w-full justify-center rounded-full bg-red-500 text-xs font-medium text-white hover:opacity-90"
+                                    className="w-full justify-center rounded-full bg-gradient-to-r from-rose-500 to-rose-600 text-xs font-semibold text-white shadow-md ring-1 ring-rose-400/30 transition-[transform,box-shadow] hover:shadow-lg"
                                     note={{
                                         primary: discountLabel,
                                         secondary: discountLabel,

@@ -179,7 +179,7 @@ export interface CouponPreviewResponse {
 
 export interface AvailablePromotion {
  id: number;
- name: string;
+ name: string | { ar?: string | null; en?: string | null };
  description?: string;
  discount_type?: string;
  discount_value?: number;
@@ -218,8 +218,11 @@ export interface OrderPreviewOrderItem {
   product_image?: string;
  quantity: number;
  price?: number | string;
+unit_price?: number | string;
   product_discount?: number | string;
  price_after_discount?: number | string;
+final_price?: number | string;
+subtotal?: number | string;
   total?: number | string;
  variant?: string[];
   image?: string;

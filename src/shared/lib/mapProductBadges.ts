@@ -1,10 +1,11 @@
 import type { ProductCardBadge } from "@/shared/component/card/ProductCard";
 import { getProductBadgeClassName } from "@/shared/lib/productBadgeColors";
+import i18next from "i18next";
 
 /** Matches API / section payloads: `top_badges`, `bottom_badges`, legacy `budges` */
 export type ApiProductBadgeLike = {
     id?: number;
-    name: string;
+    name: string | { ar?: string | null; en?: string | null } | null;
     color?: string | null;
     type?: string | null;
     image?: string | null;
@@ -24,6 +25,17 @@ export type MapApiBadgesOptions = {
     max?: number;
 };
 
+function normalizeLocalizedText(
+    value: ApiProductBadgeLike["name"]
+): string | undefined {
+    if (typeof value === "string") return value;
+    if (!value || typeof value !== "object") return undefined;
+
+    const lang = i18next.language?.toLowerCase() ?? "";
+    const preferred = lang.startsWith("ar") ? value.ar : value.en;
+    return preferred ?? value.en ?? value.ar ?? undefined;
+}
+
 /** Map `top_badges` / `budges` → ProductCard top overlay badges */
 export function mapApiTopBadgesToProductCard(
     badges: ApiProductBadgeLike[] | undefined | null,
@@ -34,7 +46,7 @@ export function mapApiTopBadgesToProductCard(
     const slice = max <= 0 ? [] : badges.slice(0, max);
     if (!slice.length) return undefined;
     return slice.map((b) => ({
-        label: b.name,
+        label: normalizeLocalizedText(b.name) ?? "",
         className: getProductBadgeClassName(b.color),
         align: horizontalAlign(b.position ?? b.postion),
         rawLabel: true,
@@ -53,7 +65,7 @@ export function mapApiBottomBadgesToProductCard(
     const slice = max <= 0 ? [] : badges.slice(0, max);
     if (!slice.length) return undefined;
     return slice.map((b) => ({
-        label: b.name,
+        label: normalizeLocalizedText(b.name) ?? "",
         className: getProductBadgeClassName(b.color),
         rawLabel: true,
         type: b.type ?? undefined,

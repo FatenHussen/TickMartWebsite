@@ -70,12 +70,12 @@ export default function ShopVariantsPreview({
                         "flex w-full gap-3 rounded-xl border p-3 text-start transition-all",
                         selectable && !outOfStock && "cursor-pointer",
                         selectable && isSelected
-                            ? "border-cyan-500 bg-cyan-50/80 shadow-md ring-2 ring-cyan-400/40 dark:bg-cyan-950/40"
+                            ? "border-primary bg-[color-mix(in_srgb,var(--color-primary)_8%,var(--color-bg-card))] shadow-md ring-2 ring-primary/35 dark:bg-[color-mix(in_srgb,var(--color-primary)_12%,var(--color-bg-surface))]"
                             : "border-custom-primary/60 bg-custom-secondary/40",
                         selectable &&
                             !isSelected &&
                             !outOfStock &&
-                            "hover:border-cyan-400/50",
+                            "hover:border-[color-mix(in_srgb,var(--color-api-second)_55%,var(--color-border-primary))]",
                         outOfStock && "opacity-60",
                     );
 
@@ -125,7 +125,7 @@ export default function ShopVariantsPreview({
                                 </div>
                             </div>
                             {selectable && isSelected && (
-                                <span className="shrink-0 self-center text-cyan-600 dark:text-cyan-300">
+                                <span className="shrink-0 self-center text-primary">
                                     <svg
                                         className="h-6 w-6"
                                         fill="currentColor"

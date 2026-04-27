@@ -307,17 +307,18 @@ export default function ReviewConfirm() {
     };
 
     return (
-        <div className="bg-custom-primary min-h-screen">
-              <OrderFlowHeader />
+        <div className="bg-custom-tertiary min-h-screen">
+              {/* <OrderFlowHeader /> */}
             <div className="page-container py-6" dir={isRTL ? "rtl" : "ltr"}>
-              
-
                 <div className="mb-8">
                     <CheckoutProgressIndicator currentStep="review" />
                 </div>
 
                 <div className="text-center mb-8">
-                    <p className="text-custom-secondary text-base">
+                    <h1 className="text-2xl sm:text-3xl font-bold text-[color:var(--color-text)] mb-2">
+                        {t("checkout.reviewTitle", "Review your order")}
+                    </h1>
+                    <p className="text-sm text-custom-secondary max-w-lg mx-auto leading-relaxed">
                         {t(
                             "checkout.reviewMessage",
                             "Please check all details before confirming your order.",
@@ -338,7 +339,7 @@ export default function ReviewConfirm() {
                     columnTemplate="1fr 362px"
                 >
                     <div className="space-y-6">
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             {selectedAddress && (
                                 <ReviewAddressCard
                                     address={selectedAddress}

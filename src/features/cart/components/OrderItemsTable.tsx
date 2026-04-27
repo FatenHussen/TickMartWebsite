@@ -61,11 +61,14 @@ function OrderItemRow({
 }: OrderItemRowProps) {
  const { t } = useTranslation();
  return (
- <GradientTableRow isLast={isLast} className="bg-cart-items">
+ <GradientTableRow
+ isLast={isLast}
+ className="bg-[color-mix(in_srgb,var(--color-main)_2%,var(--color-bg-card))] even:bg-[color-mix(in_srgb,var(--color-api-second)_4%,var(--color-bg-card))]"
+ >
  {/* Product */}
  <GradientTableCell align="left">
  <div className="flex items-start gap-3">
- <div className="w-14 h-14 rounded-lg overflow-hidden shrink-0 bg-custom-light">
+ <div className="w-14 h-14 rounded-lg overflow-hidden shrink-0 bg-[color-mix(in_srgb,var(--color-main)_10%,var(--color-bg-card))] ring-1 ring-[color-mix(in_srgb,var(--color-main)_25%,transparent)]">
  {item.image && (
  <img
  src={item.image}
@@ -78,7 +81,7 @@ function OrderItemRow({
  <p className="text-sm font-semibold text-custom-primary leading-tight">
  {item.name}
  {(item as { _isFree?: boolean })._isFree && (
- <span className="ml-1 font-medium"style={{ color:"#22C55E"}}>
+ <span className="ml-1 font-medium text-[var(--color-api-second)]">
  ({t("cart.free", "FREE")})
  </span>
  )}
@@ -90,7 +93,7 @@ function OrderItemRow({
  {item.size} | {item.type}
  </p>
  {((item as { _freeQuantity?: number })._freeQuantity ?? 0) > 0 && (
- <p className="text-xs font-medium"style={{ color:"#22C55E"}}>
+ <p className="text-xs font-medium text-[var(--color-api-second)]">
  {((item as { _freeQuantity?: number })._freeQuantity ?? 0)} × {t("cart.free", "FREE")}
  </p>
  )}
@@ -104,14 +107,13 @@ function OrderItemRow({
  <button
  type="button"
  onClick={() => onMoveToWishlist(item.id)}
- className="text-xs hover:underline"
- style={{ color:"#2C8090"}}
+ className="text-xs text-[var(--color-api-second)] hover:underline"
  >
  Move to wishlist
  </button>
  )}
  {item.hasFreeDelivery && (
- <span className="text-xs"style={{ color:"#22C55E"}}>
+ <span className="text-xs text-[var(--color-api-second)]">
  Free delivery
  </span>
  )}
@@ -131,7 +133,7 @@ function OrderItemRow({
  </div>
  )}
  {item.savingsText && (
- <div className="text-xs font-medium"style={{ color:"#22C55E"}}>
+ <div className="text-xs font-medium text-[var(--color-api-second)]">
  {item.savingsText}
  </div>
  )}

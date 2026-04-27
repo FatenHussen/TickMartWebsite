@@ -185,8 +185,59 @@ export const _OrderApi = {
  if (isStringDiscounts && d) {
  const couponDisc = d.coupon_discount;
  const basketDisc = d.basketDiscount ?? d.basket_discount_amount;
+ const couponPointsDisc = d.coupon_discount_from_points;
+ const subscriptionDisc = d.subscription_discount;
+ const promotionDisc = d.promotion_discount;
+ const deliveryPrice = d.delivery_price;
+ const freeDeliveryFromPoints = d.free_delivery_from_points;
+ const excludedItems = d.excluded_items;
  if (typeof couponDisc === 'string') result.coupon_discount = toNum(couponDisc);
  if (typeof basketDisc === 'string') result.basket_discount_amount = toNum(basketDisc);
+ if (typeof couponPointsDisc === 'string') result.coupon_discount_from_points = toNum(couponPointsDisc);
+ if (typeof subscriptionDisc === 'string') result.subscription_discount = toNum(subscriptionDisc);
+ if (typeof promotionDisc === 'string') result.promotion_discount = toNum(promotionDisc);
+ if (typeof deliveryPrice === 'string') result.delivery_price = toNum(deliveryPrice);
+ if (typeof freeDeliveryFromPoints === 'boolean') result.free_delivery_from_points = freeDeliveryFromPoints;
+ if (Array.isArray(excludedItems)) {
+ result.excluded_items = excludedItems as number[];
+ if (result.coupon && (result.coupon.excluded_items?.length ?? 0) === 0) {
+ result.coupon.excluded_items = excludedItems as number[];
+ }
+ }
+ }
+
+ // Some APIs return flat numeric discounts (not nested coupon/points objects)
+ if (d) {
+ if (result.coupon_discount == null) result.coupon_discount = toNum(d.coupon_discount);
+ if (result.coupon_discount_from_points == null) {
+ result.coupon_discount_from_points = toNum(d.coupon_discount_from_points);
+ }
+ if (result.subscription_discount == null) {
+ result.subscription_discount = toNum(d.subscription_discount);
+ }
+ if (result.promotion_discount == null) {
+ result.promotion_discount = toNum(d.promotion_discount);
+ }
+ if (result.free_delivery_from_points == null && typeof d.free_delivery_from_points === "boolean") {
+ result.free_delivery_from_points = d.free_delivery_from_points;
+ }
+ if ((result.excluded_items?.length ?? 0) === 0 && Array.isArray(d.excluded_items)) {
+ result.excluded_items = d.excluded_items as number[];
+ }
+ }
+
+ // Normalize order items for API variants:
+ // - legacy/new: price + price_after_discount
+ // - alternate: unit_price + final_price
+ if (Array.isArray(result.orderItems)) {
+ result.orderItems = result.orderItems.map((item) => {
+ const row = item as Record<string, unknown>;
+ return {
+ ...item,
+ price: row.price ?? row.unit_price,
+ price_after_discount: row.price_after_discount ?? row.final_price ?? row.price ?? row.unit_price,
+ };
+ });
  }
 
  return result;
