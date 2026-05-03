@@ -44,8 +44,8 @@ export default function ProductColorSelector({
  onClick={() => onColorChange?.(color.id)}
  className={cn(
 "h-6 w-6 p-0 rounded-full transition-transform",
-"ring-1 ring-slate-200 hover:scale-110",
- isSelected &&"ring-2 ring-slate-900"
+"ring-1 ring-slate-200 dark:ring-[color-mix(in_srgb,var(--color-main)_22%,#1f2230)] hover:scale-110",
+ isSelected &&"ring-2 ring-slate-900 dark:ring-[color-mix(in_srgb,var(--color-main)_45%,transparent)]"
  )}
  style={
  !color.isImage ? { backgroundColor: color.value } : undefined

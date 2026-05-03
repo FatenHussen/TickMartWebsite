@@ -75,10 +75,8 @@ export default function SearchResults() {
                                     type="button"
                                     onClick={() => setActiveFilterTab(tab.id)}
                                     className={cn(
-                                        "px-4 py-2 rounded-full text-sm font-medium transition-all",
-                                        activeFilterTab === tab.id
-                                            ? "bg-primary text-white"
-                                            : "bg-custom-primary border border-custom-secondary text-text-primary hover:border-primary"
+                                        "store-tab-pill px-4 py-2 rounded-full text-sm font-medium",
+                                        activeFilterTab === tab.id && "is-active"
                                     )}
                                 >
                                     {tab.label}
@@ -94,7 +92,7 @@ export default function SearchResults() {
                             <select
                                 value={sortBy}
                                 onChange={(e) => setSortBy(e.target.value)}
-                                className="px-3 py-2 rounded-lg border border-custom-secondary bg-custom-primary text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary"
+                                className="store-input px-3 py-2 rounded-lg text-sm"
                             >
                                 {sortOptions.map((option) => (
                                     <option key={option.id} value={option.id}>
@@ -106,7 +104,7 @@ export default function SearchResults() {
                     </div>
 
                     {/* Products Grid */}
-                    <div className="bg-custom-primary p-6 sm:p-8 rounded-2xl border border-custom-secondary">
+                    <div className="store-results-card p-6 sm:p-8 rounded-2xl">
                         <ProductsGrid
                             products={products}
                             onProductClick={(id) => console.log("Product clicked:", id)}

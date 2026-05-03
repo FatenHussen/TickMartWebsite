@@ -158,17 +158,17 @@ export default function StoreDetails() {
                             {t("store.allStores", "All stores")}
                         </h2>
 
-                        <div className="mb-7 rounded-2xl border border-primary-light/15 bg-gradient-to-br from-white via-sky-50/35 to-blue-100/20 p-3.5 sm:p-4 shadow-[0_8px_20px_-14px_rgba(14,165,233,0.45)]">
+                        <div className="store-filters-panel mb-7 rounded-2xl p-3.5 sm:p-4">
                             <div className="mb-3 flex items-center justify-between gap-2">
                                 <div className="inline-flex items-center gap-2 text-sm font-semibold text-custom-primary">
-                                    <HiAdjustments className="h-4 w-4 text-primary-light" />
+                                    <HiAdjustments className="h-4 w-4 text-custom-accent" />
                                     {t("store.filters", "Filters")}
                                 </div>
                                 {hasActiveFilters && (
                                     <button
                                         type="button"
                                         onClick={clearFilters}
-                                        className="inline-flex items-center gap-1 rounded-full border border-primary-light/25 bg-white/80 px-3 py-1 text-xs font-semibold text-primary-light transition hover:bg-white"
+                                        className="store-clear-btn inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold"
                                     >
                                         <HiX className="h-3.5 w-3.5" />
                                         {t("store.clearFilters", "Clear")}
@@ -189,7 +189,7 @@ export default function StoreDetails() {
                                         value={searchInput}
                                         onChange={(e) => setSearchInput(e.target.value)}
                                         placeholder={t("store.searchPlaceholder", "Search by store name...")}
-                                        className={`w-full py-2.5 rounded-xl border border-primary-light/20 bg-white text-custom-primary placeholder-gray-500 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-light/20 focus:border-primary-light ${isRTL ? "pr-10 pl-4" : "pl-10 pr-4"
+                                        className={`store-input w-full py-2.5 rounded-xl ${isRTL ? "pr-10 pl-4" : "pl-10 pr-4"
                                             }`}
                                     />
                                 </div>
@@ -202,7 +202,7 @@ export default function StoreDetails() {
                                     )
                                 }
                                 onScroll={handleGovScroll}
-                                className="px-4 py-2.5 rounded-xl border border-primary-light/20 bg-white text-custom-primary shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-light/20 min-w-[170px]"
+                                className="store-input px-4 py-2.5 rounded-xl min-w-[170px]"
                             >
                                 <option value="">{t("store.filterByGovernorate", "All governorates")}</option>
                                 {governorateOptions.map((opt) => (
@@ -222,7 +222,7 @@ export default function StoreDetails() {
                                     )
                                 }
                                 onScroll={handleCatScroll}
-                                className="px-4 py-2.5 rounded-xl border border-primary-light/20 bg-white text-custom-primary shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-light/20 min-w-[170px]"
+                                className="store-input px-4 py-2.5 rounded-xl min-w-[170px]"
                             >
                                 <option value="">{t("store.filterByCategory", "All categories")}</option>
                                 {categoryOptions.map((opt) => (

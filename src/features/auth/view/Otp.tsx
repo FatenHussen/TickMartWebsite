@@ -97,8 +97,8 @@ export default function Otp() {
     };
 
     const otpSidePanel = (
-        <div className="flex h-full w-full items-center justify-center bg-[#E8FBFF] px-8">
-            <div className="w-full max-w-[340px] rounded-[18px] bg-white p-10 shadow-[0_20px_45px_rgba(0,0,0,0.12)]">
+        <div className="flex h-full w-full items-center justify-center bg-[var(--color-bg-secondary)] px-8">
+            <div className="w-full max-w-[340px] rounded-[18px] border border-custom-primary bg-custom-card p-10 shadow-[0_20px_45px_-8px_var(--color-shadow)]">
                 <img
                     src="/images/auth/Vector.png"
                     alt="Tickmart"

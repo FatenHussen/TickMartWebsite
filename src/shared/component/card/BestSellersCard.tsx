@@ -94,6 +94,8 @@ export default function BestSellersCard({
         <div
             className={cn(
                 "relative overflow-hidden rounded-2xl bg-custom-primary shadow-sm transition hover:shadow-md flex flex-col h-full",
+                "dark:bg-[color-mix(in_srgb,var(--color-main)_18%,#13151c)] dark:shadow-[0_2px_14px_-2px_rgba(0,0,0,0.5)] dark:hover:shadow-[0_18px_38px_-8px_rgba(0,0,0,0.6)]",
+                "dark:ring-1 dark:ring-[color-mix(in_srgb,var(--color-main)_22%,transparent)]",
                 onClick && "cursor-pointer",
                 className
             )}
@@ -102,7 +104,7 @@ export default function BestSellersCard({
             tabIndex={onClick ? 0 : undefined}
             onKeyDown={(e) => {
                 if (!onClick) return;
-                if (e.key === "Enter" || e.key === "") onClick(id);
+                if (e.key === "Enter" || e.key === " ") onClick(id);
             }}
         >
             {/* Image Section */}
@@ -147,11 +149,11 @@ export default function BestSellersCard({
                 )}
 
                 {/* Rating badge (bottom-left) - White with yellow star */}
-                <div className="absolute left-3 bottom-3 z-10 bg-custom-card rounded-lg px-2.5 py-1 shadow-sm">
+                <div className="absolute left-3 bottom-3 z-10 rounded-lg bg-custom-card px-2.5 py-1 shadow-sm">
                     <Rating
                         rating={rating}
                         size="sm"
-                        className="[&>span:first-child]:text-yellow-500 [&>span:last-child]:text-slate-800 [&>span:last-child]:font-semibold gap-1.5"
+                        className="gap-1.5 [&>span:first-child]:text-yellow-500 [&>span:last-child]:font-semibold [&>span:last-child]:text-slate-800 dark:[&>span:last-child]:text-[var(--color-text)]"
                     />
                 </div>
 
@@ -169,24 +171,28 @@ export default function BestSellersCard({
                 </div>
             </div>
 
-            {/* Info Section - Light blue-gray background */}
-            <div className="bg-[#E4F0FB] px-4 pb-4 pt-4 flex flex-col flex-1">
+            {/* Info Section - light blue-gray, or API setting dark blend in dark mode */}
+            <div className="bg-[#E4F0FB] px-4 pb-4 pt-4 flex flex-col flex-1 dark:bg-[color-mix(in_srgb,var(--color-api-second)_20%,#10121a)] dark:border-t dark:border-[color-mix(in_srgb,var(--color-main)_18%,transparent)]">
                 {/* Product Name */}
-                <h3 className="text-base font-bold text-slate-900 line-clamp-2">
+                <h3 className="text-base font-bold text-slate-900 line-clamp-2 dark:text-[var(--color-text)]">
                     {name}
                 </h3>
 
                 {/* Category */}
                 {category && (
-                    <p className="mt-1 text-xs text-slate-500 line-clamp-1">{category}</p>
+                    <p className="mt-1 line-clamp-1 text-xs text-slate-500 dark:text-white/90">
+                        {category}
+                    </p>
                 )}
 
                 {/* Price Section */}
                 <div className="mt-3">
                     <div className="flex items-baseline gap-2">
-                        <span className="text-lg font-bold text-slate-900">{price}</span>
+                        <span className="text-lg font-bold text-slate-900 dark:text-[var(--color-text)]">
+                            {price}
+                        </span>
                         {originalPrice && (
-                            <span className="text-sm text-slate-500 line-through">
+                            <span className="text-sm text-slate-500 line-through dark:text-white/70 dark:decoration-white/40">
                                 {originalPrice}
                             </span>
                         )}
@@ -194,13 +200,15 @@ export default function BestSellersCard({
 
                     {/* Savings */}
                     {savings && (
-                        <p className="mt-1 text-sm font-medium text-green-600">{savings}</p>
+                        <p className="mt-1 text-sm font-medium text-green-600 dark:text-emerald-300">
+                            {savings}
+                        </p>
                     )}
                 </div>
 
                 {/* Sold Quantity */}
                 {sold !== undefined && (
-                    <p className="mt-2 text-xs text-slate-500">
+                    <p className="mt-2 text-xs text-slate-500 dark:text-white/85">
                         {sold.toLocaleString()} {t ? t("home.sold") : "Sold"}
                     </p>
                 )}
@@ -223,6 +231,7 @@ export default function BestSellersCard({
                                     onClick={(e) => e.stopPropagation()}
                                     className={cn(
                                         "w-full justify-center text-xs font-semibold",
+                                        "dark:[&_.ab-track_.ab-row:first-child]:text-[var(--color-text)] dark:[&_.ab-track_.ab-row:last-child]:text-white/90",
                                         b.className
                                     )}
                                     note={{

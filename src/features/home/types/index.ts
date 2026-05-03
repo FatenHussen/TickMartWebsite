@@ -217,6 +217,8 @@ export type SectionCardVariant = "horizontal" | "vertical" | "square";
 export interface Section {
  id: number;
  name: string;
+ /** Optional subtitle under the section title (when provided by CMS). */
+ description?: string | null;
  type:"api"|"manual";
  position:"before"|"after";
  order: number;
@@ -260,6 +262,12 @@ export interface Category {
  id: number;
  name: string;
  icon: string | null;
+ /** Optional brand colors from API (snake_case or camelCase). */
+ main_color?: string | null;
+ second_color?: string | null;
+ mainColor?: string | null;
+ secondColor?: string | null;
+ text_color?: string | null;
 }
 
 export interface CategoriesResponse {

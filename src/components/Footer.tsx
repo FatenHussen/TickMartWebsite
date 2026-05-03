@@ -65,7 +65,7 @@ export default function Footer() {
 
     return (
         <footer
-            className="mt-auto border-t border-[color-mix(in_srgb,var(--color-main)_30%,transparent)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--color-main)_12%,white)_0%,color-mix(in_srgb,var(--color-api-second)_10%,white)_100%)]"
+            className="mt-auto border-t border-[color-mix(in_srgb,var(--color-main)_45%,transparent)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--color-main)_60%,black)_0%,color-mix(in_srgb,var(--color-api-second)_45%,black)_55%,color-mix(in_srgb,var(--color-main)_30%,black)_100%)] text-white"
             dir={isRTL ? "rtl" : "ltr"}
         >
             <div className="page-container py-12">
@@ -79,7 +79,7 @@ export default function Footer() {
                             />
                         </Link>
                         <div className="space-y-2">
-                            <p className="text-sm font-semibold text-[var(--color-main)]">
+                            <p className="text-sm font-semibold text-white">
                                 {t("footer.getOurApp")}
                             </p>
                             <div className="flex flex-wrap gap-2">
@@ -87,7 +87,7 @@ export default function Footer() {
                                     href={iosAppUrl}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="rounded-full border border-[color-mix(in_srgb,var(--color-main)_40%,transparent)] bg-[color-mix(in_srgb,var(--color-main)_10%,transparent)] px-3 py-1.5 text-xs font-medium text-[color:var(--color-text)] transition-colors hover:border-[color-mix(in_srgb,var(--color-api-second)_45%,transparent)] hover:bg-[color-mix(in_srgb,var(--color-api-second)_12%,transparent)] hover:text-[var(--color-api-second)]"
+                                    className="rounded-full border border-white/25 bg-white/10 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:border-[color-mix(in_srgb,var(--color-api-second)_70%,white)] hover:bg-[color-mix(in_srgb,var(--color-api-second)_30%,transparent)]"
                                 >
                                     {t("footer.appStore")}
                                 </a>
@@ -95,20 +95,20 @@ export default function Footer() {
                                     href={androidAppUrl}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="rounded-full border border-[color-mix(in_srgb,var(--color-main)_40%,transparent)] bg-[color-mix(in_srgb,var(--color-main)_10%,transparent)] px-3 py-1.5 text-xs font-medium text-[color:var(--color-text)] transition-colors hover:border-[color-mix(in_srgb,var(--color-api-second)_45%,transparent)] hover:bg-[color-mix(in_srgb,var(--color-api-second)_12%,transparent)] hover:text-[var(--color-api-second)]"
+                                    className="rounded-full border border-white/25 bg-white/10 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:border-[color-mix(in_srgb,var(--color-api-second)_70%,white)] hover:bg-[color-mix(in_srgb,var(--color-api-second)_30%,transparent)]"
                                 >
                                     {t("footer.googlePlay")}
                                 </a>
                             </div>
                         </div>
-                        <p className="text-sm text-[color:var(--color-text)]/75">
+                        <p className="text-sm text-white/70">
                             {t("footer.copyright")}
                         </p>
                     </div>
 
                     {footerColumns.map((column) => (
                         <div key={column.title}>
-                            <h3 className="mb-4 text-sm font-bold text-[var(--color-main)]">
+                            <h3 className="mb-4 text-sm font-bold text-white">
                                 {column.title}
                             </h3>
                             <ul className="space-y-2.5">
@@ -116,7 +116,7 @@ export default function Footer() {
                                     <li key={`${link.path}-${link.label}`}>
                                         <Link
                                             to={link.path}
-                                            className="text-sm text-[color:var(--color-text)]/88 transition-colors hover:text-[var(--color-api-second)]"
+                                            className="text-sm text-white/80 transition-colors hover:text-[color-mix(in_srgb,var(--color-api-second)_60%,white)]"
                                         >
                                             {link.label}
                                         </Link>

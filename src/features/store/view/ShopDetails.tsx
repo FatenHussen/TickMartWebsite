@@ -241,7 +241,7 @@ onSelectCategory={setSelectedCategoryId}
  product.price) *
  100
  )}%`,
- className:"bg-red-500 text-white",
+ className: "store-discount-badge",
  }
  : undefined
  }

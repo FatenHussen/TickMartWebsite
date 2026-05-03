@@ -10,7 +10,7 @@ type BrandHeaderProps = {
 export default function BrandHeader({ brand }: BrandHeaderProps) {
     const { t } = useTranslation();
     return (
-        <div className="bg-blue-off/50 rounded-2xl border border-custom-secondary shadow-sm p-6">
+        <div className="bg-blue-off/50 rounded-2xl border border-custom-secondary shadow-sm p-6 dark:border-[color-mix(in_srgb,var(--color-main)_22%,#1f2230)]">
             <div className="flex items-start justify-between gap-6">
                 {/* Left: Logo and Brand Info */}
                 <div className="flex items-start gap-4 flex-1">

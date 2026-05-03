@@ -8,6 +8,7 @@ import Badge from "@/shared/component/Badge";
 import LazyImage from "@/shared/component/LazyImage";
 import { cn } from "@/shared/lib/utils";
 import type { SectionCardVariant } from "@/features/home/types";
+import { useTheme } from "@/context/ThemeContext";
 import {
     type ProductCardBadge,
     resolveProductCardBadgeLabel,
@@ -95,9 +96,23 @@ export default function BasketCard({
               ? "h-64 sm:h-72"
               : "h-56 sm:h-60"
         : "h-56";
-    const resolvedMainColor = mainColor?.trim() || "var(--color-main)";
-    const resolvedSecondColor = secondColor?.trim() || "var(--color-api-second)";
-    const resolvedTextColor = textColor?.trim() || "var(--color-text)";
+    const { theme } = useTheme();
+    const isDarkTheme = theme === "dark";
+    /**
+     * In dark mode, ignore per-item brand colors and pull main/second/text from
+     * the API settings dark palette so every basket reads consistently dark.
+     */
+    const resolvedMainColor = isDarkTheme
+        ? "var(--color-main)"
+        : (mainColor?.trim() || "var(--color-main)");
+    const resolvedSecondColor = isDarkTheme
+        ? "var(--color-api-second)"
+        : (secondColor?.trim() || "var(--color-api-second)");
+    const resolvedTextColor = isDarkTheme
+        ? "var(--color-text)"
+        : (textColor?.trim() || "var(--color-text)");
+    /** Creative dark base — replaces `--color-bg-card` for the gradient stops in dark. */
+    const gradientBase = isDarkTheme ? "#0c0e15" : "var(--color-bg-card)";
     const saveAsBadge: ProductCardBadge[] = saveAmount
         ? [
             {
@@ -140,7 +155,7 @@ export default function BasketCard({
                 "shadow-[0_2px_8px_-2px_rgba(15,23,42,0.06),0_8px_20px_-6px_rgba(15,23,42,0.08)]",
                 "transition-[transform,box-shadow] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
                 "hover:-translate-y-1 hover:shadow-[0_12px_28px_-8px_rgba(15,23,42,0.12),0_4px_12px_-4px_rgba(15,23,42,0.08)]",
-                "dark:border-white/10 dark:bg-stone-900 dark:shadow-[0_2px_12px_-2px_rgba(0,0,0,0.4)] dark:hover:shadow-[0_16px_36px_-8px_rgba(0,0,0,0.55)]",
+                "dark:border-[color-mix(in_srgb,var(--color-main)_22%,#1f2230)] dark:bg-[color-mix(in_srgb,var(--color-main)_18%,#13151c)] dark:shadow-[0_2px_14px_-2px_rgba(0,0,0,0.5)] dark:hover:shadow-[0_18px_38px_-8px_rgba(0,0,0,0.6)]",
                 "motion-reduce:transition-none motion-reduce:hover:translate-y-0",
                 cardShapeClass,
                 onClick &&
@@ -155,7 +170,8 @@ export default function BasketCard({
                 if (e.key === "Enter" || e.key === " ") onClick(id);
             }}
             style={{
-                backgroundImage: `linear-gradient(145deg, color-mix(in srgb, ${resolvedMainColor} 13%, #ffffff) 0%, color-mix(in srgb, ${resolvedSecondColor} 18%, #ffffff) 48%, #ffffff 100%)`,
+                backgroundImage: `linear-gradient(145deg, color-mix(in srgb, ${resolvedMainColor} ${isDarkTheme ? 28 : 13}%, ${gradientBase}) 0%, color-mix(in srgb, ${resolvedSecondColor} ${isDarkTheme ? 32 : 18}%, ${gradientBase}) 48%, ${gradientBase} 100%)`,
+                color: isDarkTheme ? resolvedTextColor : undefined,
             }}
         >
             {/* Image */}
@@ -223,39 +239,47 @@ export default function BasketCard({
             {/* Body — soft mint wash when no API card tint */}
             <div
                 className={cn(
-                    "flex flex-1 flex-col border-t border-stone-200/60 px-4 pb-5 pt-4 dark:border-white/[0.08]",
+                    "flex flex-1 flex-col border-t border-stone-200/60 px-4 pb-5 pt-4 dark:border-[color-mix(in_srgb,var(--color-main)_18%,transparent)]",
                     !surfaceColor &&
-                        "bg-gradient-to-b from-emerald-50/95 via-emerald-50/70 to-white dark:from-emerald-950/40 dark:via-stone-900/80 dark:to-stone-900",
+                        "bg-gradient-to-b from-emerald-50/95 via-emerald-50/70 to-white dark:from-[color-mix(in_srgb,var(--color-main)_16%,#11131a)] dark:via-[color-mix(in_srgb,var(--color-api-second)_14%,#10121a)] dark:to-[color-mix(in_srgb,var(--color-main)_10%,#0d0f16)]",
                 )}
                 style={
                     surfaceColor
-                        ? { backgroundColor: surfaceColor }
+                        ? {
+                              backgroundColor: surfaceColor,
+                              color: isDarkTheme ? resolvedTextColor : undefined,
+                          }
                         : {
-                              backgroundImage: `linear-gradient(160deg, color-mix(in srgb, ${resolvedMainColor} 8%, #ffffff) 0%, color-mix(in srgb, ${resolvedSecondColor} 12%, #ffffff) 60%, #ffffff 100%)`,
+                              backgroundImage: `linear-gradient(160deg, color-mix(in srgb, ${resolvedMainColor} ${isDarkTheme ? 22 : 8}%, ${gradientBase}) 0%, color-mix(in srgb, ${resolvedSecondColor} ${isDarkTheme ? 26 : 12}%, ${gradientBase}) 60%, ${gradientBase} 100%)`,
+                              color: isDarkTheme ? resolvedTextColor : undefined,
                           }
                 }
             >
                 {/* Title */}
-                <h3 className="line-clamp-2 text-lg font-bold leading-snug tracking-tight text-slate-900 dark:text-stone-50">
+                <h3 className="line-clamp-2 text-lg font-bold leading-snug tracking-tight text-custom-primary dark:text-[var(--color-text)]">
                     {name}
                 </h3>
 
                 {/* Description */}
-                <p className="mt-1.5 line-clamp-2 text-sm font-normal leading-relaxed text-slate-600 dark:text-stone-400">
+                <p className="mt-1.5 line-clamp-2 text-sm font-normal leading-relaxed text-custom-secondary dark:text-white/90">
                     {description}
                 </p>
 
                 {/* Rating */}
                 {rating != null && (
                     <div className="mt-2">
-                        <Rating rating={typeof rating === "number" ? rating.toFixed(1) : rating} size="sm" />
+                        <Rating
+                            rating={typeof rating === "number" ? rating.toFixed(1) : rating}
+                            size="sm"
+                            className="dark:[&_span:last-child]:text-[var(--color-text)]"
+                        />
                     </div>
                 )}
 
                 {/* Price Section */}
                 <div className="mt-3">
                     <div className="flex items-baseline gap-2">
-                        <span className="text-2xl font-bold tabular-nums leading-none tracking-tight text-slate-900 dark:text-stone-50">
+                        <span className="text-2xl font-bold tabular-nums leading-none tracking-tight text-custom-primary dark:text-[var(--color-text)]">
                             {price}
                         </span>
                     </div>
@@ -263,7 +287,7 @@ export default function BasketCard({
                     {/* Original Price and Savings */}
                     {originalPrice && savings && (
                         <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm leading-snug">
-                            <span className="text-slate-400 line-through decoration-1">
+                            <span className="text-custom-tertiary line-through decoration-1 dark:text-white/70 dark:decoration-white/40">
                                 {originalPrice}
                             </span>
                             <span className="font-medium text-green-600">
@@ -276,8 +300,10 @@ export default function BasketCard({
                 {/* Offer Ending Date */}
                 {offerEndingDate && (
                     <p className="mt-3 text-sm font-normal leading-snug">
-                        <span className="text-slate-500">Offer ending date:</span>{" "}
-                        <span className="text-red-600">{offerEndingDate}</span>
+                        <span className="text-custom-secondary dark:text-white/90">
+                            Offer ending date:
+                        </span>{" "}
+                        <span className="text-red-600 dark:text-red-400">{offerEndingDate}</span>
                     </p>
                 )}
 
@@ -317,7 +343,7 @@ export default function BasketCard({
                                 heightClassName="h-9"
                                 type="button"
                                 onClick={(e) => e.stopPropagation()}
-                                className="justify-center text-xs font-semibold"
+                                className="justify-center text-xs font-semibold text-custom-secondary dark:text-white/90"
                             />
                         )}
                 </div>

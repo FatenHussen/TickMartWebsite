@@ -12,7 +12,6 @@ import ScheduleDelivery, {
     type ScheduleDeliveryData,
 } from "../components/ScheduleDelivery";
 import CheckoutProgressIndicator from "@/shared/component/CheckoutProgressIndicator";
-import OrderFlowHeader from "@/shared/component/OrderFlowHeader";
 import BasePopup from "@/shared/component/BasePopup";
 import Button from "@/shared/ui/Button";
 import { HiArrowLeft, HiTrash } from "react-icons/hi";

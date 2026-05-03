@@ -231,11 +231,11 @@ export const _OrderApi = {
  // - alternate: unit_price + final_price
  if (Array.isArray(result.orderItems)) {
  result.orderItems = result.orderItems.map((item) => {
- const row = item as Record<string, unknown>;
  return {
  ...item,
- price: row.price ?? row.unit_price,
- price_after_discount: row.price_after_discount ?? row.final_price ?? row.price ?? row.unit_price,
+ price: item.price ?? item.unit_price,
+ price_after_discount:
+ item.price_after_discount ?? item.final_price ?? item.price ?? item.unit_price,
  };
  });
  }

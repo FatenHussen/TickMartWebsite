@@ -72,7 +72,7 @@ export default function AllBrands() {
     };
 
     return (
-        <div className="min-h-screen bg-custom-primary" dir={isRTL ? "rtl" : "ltr"}>
+        <div className="brands-page-canvas min-h-screen" dir={isRTL ? "rtl" : "ltr"}>
             {bannerSections.length > 0 && (
                 <div className="w-full">
                     <ApiSectionsRenderer
@@ -111,7 +111,7 @@ export default function AllBrands() {
                                     onChange={(e) => setSearchInput(e.target.value)}
                                     placeholder={t("brands.searchPlaceholder", "Search brands...")}
                                     rightIcon={<HiSearch className="w-5 h-5" />}
-                                    className="w-full py-2 rounded-lg border-custom-primary placeholder-gray-400"
+                                    className="w-full py-2 rounded-lg border-custom-primary placeholder-gray-400 dark:border-[color-mix(in_srgb,var(--color-text)_26%,transparent)] dark:focus:border-[color-mix(in_srgb,var(--color-main)_42%,var(--color-text))]"
                                 />
                             </div>
                             <div className="flex flex-wrap gap-2 shrink-0">
@@ -166,7 +166,6 @@ export default function AllBrands() {
                                     image={brand.image}
                                     rating={brand.rating ?? 0}
                                     ordersCount={brand.orders_count}
-                                    surfaceColor={brandsPageSectionDefaults.cardSurface}
                                     onClick={() => handleBrandClick(brand.id)}
                                 />
                             ))}

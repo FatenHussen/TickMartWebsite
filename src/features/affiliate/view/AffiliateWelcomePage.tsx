@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 import { Trans, useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContext";
+import { useTheme } from "@/context/ThemeContext";
+import { cn } from "@/shared/lib/utils";
 import { HiChevronRight } from "react-icons/hi";
 import { MapPin, Sparkles } from "lucide-react";
 import { paths } from "@/app/routes/path/paths";
@@ -10,6 +12,7 @@ import { useCheckoutStore } from "@/store/checkout";
 import { useMemo } from "react";
 import type { Address } from "@/features/account/types";
 import { useQuickActions } from "../hooks/useQuickActions";
+import { useAffiliateDarkScopeStyle } from "../hooks/useAffiliateDarkScopeStyle";
 import { resolveQuickActionPath } from "../lib/resolveQuickActionPath";
 
 /** Quick tiles: shared surface; icon alternates API main / second. */
@@ -48,6 +51,8 @@ function resolveLocalized(value: unknown, lang: string): string {
 }
 
 export default function AffiliateWelcomePage() {
+    const affiliateDarkScopeStyle = useAffiliateDarkScopeStyle();
+    const { theme } = useTheme();
     const { t, i18n } = useTranslation();
     const lang = i18n.language || "en";
     const { isRTL } = useLanguage();
@@ -89,11 +94,15 @@ export default function AffiliateWelcomePage() {
 
     return (
         <div
-            className="relative min-h-screen bg-custom-light"
+            className={cn(
+                "relative min-h-screen bg-gradient-to-br from-[var(--color-bg-primary)] via-[color-mix(in_srgb,var(--color-api-second)_12%,var(--color-bg-primary))] to-[color-mix(in_srgb,var(--color-main)_10%,var(--color-bg-secondary))]",
+                theme === "dark" && "dark",
+            )}
             dir={isRTL ? "rtl" : "ltr"}
+            style={affiliateDarkScopeStyle}
         >
             <div
-                className="pointer-events-none fixed inset-0 -z-10 opacity-[0.4] motion-reduce:opacity-0 dark:opacity-[0.18]"
+                className="pointer-events-none fixed inset-0 -z-10 opacity-[0.22] motion-reduce:opacity-0"
                 style={{
                     backgroundImage:
                         "radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--color-main) 14%, var(--color-border-primary)) 1px, transparent 0)",

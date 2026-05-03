@@ -9,11 +9,16 @@ import { useSectionsByPosition } from "../hooks/useSections";
 import { useAuthStore } from "@/store/auth";
 import { usePackages } from "@/features/account/hooks/usePackages";
 import AffiliatePackagesPopup from "@/components/AffiliatePackagesPopup";
+import { useTheme } from "@/context/ThemeContext";
+import { getHomeRootSurfaceStyle } from "../lib/homeRootSurface";
+import { homeStaticSectionRowSurface } from "../lib/homeStaticSectionSurface";
 
 const HAS_SEEN_POPUP_KEY = "hasSeenAffiliatePopup";
 
 export default function Home() {
     const { isRTL } = useLanguage();
+    const { theme } = useTheme();
+    const isDarkTheme = theme === "dark";
     const { beforeSections, afterSections } = useSectionsByPosition("home");
     const authenticated = useAuthStore((s) => s.authenticated);
     const { data: packages = [], isLoading: packagesLoading } = usePackages(
@@ -57,9 +62,16 @@ export default function Home() {
         };
     }, [beforeSections, afterSections]);
 
+    /** Same full-bleed band as InfoCards / API sliders (`getDarkSectionBackground` in dark). */
+    const homeSectionBandSurface = useMemo(
+        () => homeStaticSectionRowSurface(isDarkTheme, undefined),
+        [isDarkTheme]
+    );
+
     return (
         <div
-            className="min-h-screen overflow-x-clip bg-[#FFF9F5] dark:bg-custom-primary"
+            className="min-h-screen overflow-x-clip"
+            style={getHomeRootSurfaceStyle(isDarkTheme)}
             dir={isRTL ? "rtl" : "ltr"}
         >
             {/* One `.page-container` for the whole home column (matches Navbar width). */}
@@ -74,31 +86,55 @@ export default function Home() {
                 <InfoCards />
 
                 {homeFlashSale && (
-                    <HomeFlashSaleBanner flashSale={homeFlashSale} isRTL={isRTL} />
+                    <section
+                        className={homeSectionBandSurface.className}
+                        style={homeSectionBandSurface.style}
+                    >
+                        <div className="page-container min-w-0">
+                            <HomeFlashSaleBanner
+                                flashSale={homeFlashSale}
+                                isRTL={isRTL}
+                            />
+                        </div>
+                    </section>
                 )}
 
                 {beforeSections.length > 0 && (
-                    <ApiSectionsRenderer
-                        sections={beforeSections}
-                        edgeToEdgeSectionBackgrounds={false}
-                        skipInnerPageContainer
-                        sectionClassName="!mt-0"
-                        removeSectionVerticalSpacing
-                    />
+                    <section
+                        className={homeSectionBandSurface.className}
+                        style={homeSectionBandSurface.style}
+                    >
+                        <div className="page-container min-w-0">
+                            <ApiSectionsRenderer
+                                sections={beforeSections}
+                                edgeToEdgeSectionBackgrounds={false}
+                                skipInnerPageContainer
+                                sectionClassName="!mt-0"
+                                removeSectionVerticalSpacing
+                            />
+                        </div>
+                    </section>
                 )}
 
-                <div className="min-w-0 py-1">
+                <div className="min-w-0">
                     <Categories />
                 </div>
 
                 {afterSections.length > 0 && (
-                    <ApiSectionsRenderer
-                        sections={afterSections}
-                        edgeToEdgeSectionBackgrounds={false}
-                        skipInnerPageContainer
-                        sectionClassName="!mt-0"
-                        removeSectionVerticalSpacing
-                    />
+                    <section
+                        className={homeSectionBandSurface.className}
+                        style={homeSectionBandSurface.style}
+                    >
+                        <div className="page-container min-w-0">
+                            <ApiSectionsRenderer
+                                sections={afterSections}
+                                edgeToEdgeSectionBackgrounds={false}
+                                skipInnerPageContainer
+                                sectionClassName="!mt-0"
+                                removeSectionVerticalSpacing
+                            />
+                        </div>
+                    </section>
                 )}
 
                 <AllProductsSection disablePageContainer />

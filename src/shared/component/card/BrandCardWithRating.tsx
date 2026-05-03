@@ -5,6 +5,7 @@ import {
     mapApiBottomBadgesToProductCard,
     mapApiTopBadgesToProductCard,
 } from "@/shared/lib/mapProductBadges";
+import { useTheme } from "@/context/ThemeContext";
 
 type BrandItemWithOptionalRating = {
     id: number;
@@ -26,12 +27,22 @@ type BrandCardWithRatingProps = {
     surfaceColor?: string | null;
 };
 
+/**
+ * Creative API-setting dark surface — blends `--color-api-second` with a deep
+ * near-black so brand cards in dark mode source from the API settings palette,
+ * not per-section colors.
+ */
+const DARK_SURFACE_FALLBACK =
+    "color-mix(in srgb, var(--color-api-second) 18%, #10121a)";
+
 export default function BrandCardWithRating({
     item,
     onClick,
     layout,
     surfaceColor,
 }: BrandCardWithRatingProps) {
+    const { theme } = useTheme();
+    const isDarkTheme = theme === "dark";
     const ratingFromItem = item.rating ?? item.average_rating;
     const shouldFetch = typeof ratingFromItem !== "number";
     const { averageRating } = useBrandRatings(shouldFetch ? item.id : 0);
@@ -41,6 +52,15 @@ export default function BrandCardWithRating({
         item.top_badges?.length ? item.top_badges : item.budges;
     const badge = mapApiTopBadgesToProductCard(topSource);
     const bottomBadges = mapApiBottomBadgesToProductCard(item.bottom_badges);
+
+    /**
+     * In dark mode, ignore any per-section/per-page `surfaceColor` and force a
+     * creative API-settings-driven dark surface so brand cards stay consistent
+     * across the app.
+     */
+    const resolvedSurface = isDarkTheme
+        ? DARK_SURFACE_FALLBACK
+        : surfaceColor;
 
     return (
         <BrandCard
@@ -52,7 +72,7 @@ export default function BrandCardWithRating({
             bottomBadges={bottomBadges}
             onClick={onClick}
             layout={layout}
-            surfaceColor={surfaceColor}
+            surfaceColor={resolvedSurface}
         />
     );
 }

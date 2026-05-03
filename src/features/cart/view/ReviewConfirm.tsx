@@ -25,7 +25,6 @@ import { toNum } from "../utils";
 import { enrichCartItemsWithPreview, getFreeOnlyDisplayItems, buildOrderItemsByVariant } from "../utils/enrichCartItems";
 import { useCurrency } from "@/context/CurrencyContext";
 import type { Address } from "@/features/account/types";
-import OrderFlowHeader from "@/shared/component/OrderFlowHeader";
 
 function mapAddressToDeliveryAddress(addr: Address): DeliveryAddress {
     const parts = [

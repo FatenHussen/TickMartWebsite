@@ -1,14 +1,16 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { _ProductsApi } from "../api/products.service";
 import { _CategoriesApi } from "../api/categories.service";
 import { _BrandApi } from "@/features/product/api/brandApi";
 import { _ShopApi } from "@/features/store/api/shopApi";
 import { useInfiniteSelect } from "@/shared/hooks/useInfiniteSelect";
 import { useInfiniteList } from "@/shared/hooks/useInfiniteList";
-import type { Category } from "../types";
-import type { ProductItem } from "../types";
+import type { Category, ProductItem } from "../types";
+import { useSections } from "../hooks/useSections";
+import { mapPageSlugToRoute } from "@/utils/routeMapper";
+import { useTheme } from "@/context/ThemeContext";
 import type { BrandListItem } from "@/features/product/types/brand";
 import type { ShopListItem } from "@/features/store/types/shop";
 import { useToggleFavorite } from "@/features/account/hooks/useFavorites";
@@ -19,6 +21,10 @@ import {
     mapApiBottomBadgesToProductCard,
     mapApiTopBadgesToProductCard,
 } from "@/shared/lib/mapProductBadges";
+import {
+    homeStaticSectionRowSurface,
+    pickHomeSectionBySeeMorePageSlug,
+} from "../lib/homeStaticSectionSurface";
 
 type AllProductsSectionProps = {
     /** When home already wraps this block in `.page-container`, avoid nesting a second one. */
@@ -30,6 +36,40 @@ export default function AllProductsSection({
 }: AllProductsSectionProps) {
     const { t } = useTranslation();
     const navigate = useNavigate();
+    const { theme } = useTheme();
+    const isDarkTheme = theme === "dark";
+    const { data: homeSections } = useSections("home");
+    const headlineSection = useMemo(
+        () => pickHomeSectionBySeeMorePageSlug(homeSections, "products"),
+        [homeSections]
+    );
+
+    const titleText =
+        headlineSection?.name?.trim() ||
+        t("home.allProducts", "All Products");
+    const descriptionText =
+        headlineSection?.description?.trim() ||
+        t(
+            "home.allProductsDescription",
+            "Browse all products from different stores and brands in one place."
+        );
+
+    const subtitleStyle =
+        headlineSection?.text_color && !isDarkTheme
+            ? { color: headlineSection.text_color }
+            : headlineSection?.text_color && isDarkTheme
+              ? {
+                    color: `color-mix(in srgb, ${headlineSection.text_color} 55%, var(--color-text-primary))`,
+                }
+              : undefined;
+
+    const viewAllTo =
+        headlineSection?.see_more?.page_slug != null
+            ? mapPageSlugToRoute(
+                  headlineSection.see_more.page_slug,
+                  headlineSection.see_more.params
+              )
+            : paths.client.products;
 
     const [categoryFilter, setCategoryFilter] = useState<number | undefined>();
     const [brandFilter, setBrandFilter] = useState<number | undefined>();
@@ -136,38 +176,59 @@ export default function AllProductsSection({
         };
     };
 
-    const sectionClassName = disablePageContainer
-        ? "relative w-screen max-w-[100vw] [margin-inline-start:calc(50%-50vw)] py-8 bg-custom-card"
-        : "py-8 bg-custom-card";
+    const { className: sectionClassName, style: sectionSurfaceStyle } = useMemo(
+        () =>
+            homeStaticSectionRowSurface(
+                isDarkTheme,
+                headlineSection?.background_color,
+                {
+                    paddingClass: "py-8",
+                    breakout: disablePageContainer,
+                }
+            ),
+        [
+            isDarkTheme,
+            headlineSection?.background_color,
+            disablePageContainer,
+        ]
+    );
+
     const contentClassName = disablePageContainer
         ? "page-container min-w-0"
         : "page-container";
 
     return (
-        <section className={sectionClassName}>
+        <section className={sectionClassName} style={sectionSurfaceStyle}>
             <div
                 className={contentClassName}
             >
                 {/* Header */}
                 <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div>
-                        <h2 className="text-2xl font-bold text-custom-primary mb-2">
-                            {t("home.allProducts", "All Products")}
+                        <h2
+                            className={`text-2xl font-bold tracking-tight mb-2 ${
+                                isDarkTheme
+                                    ? "text-[color:var(--color-text,var(--color-text-primary))]"
+                                    : "text-custom-primary"
+                            }`}
+                        >
+                            {titleText}
                         </h2>
-                        <p className="text-sm text-custom-secondary">
-                            {t(
-                                "home.allProductsDescription",
-                                "Browse all products from different stores and brands in one place."
-                            )}
+                        <p
+                            className={`text-sm max-w-2xl leading-relaxed ${
+                                subtitleStyle ? "" : "text-custom-secondary"
+                            }`}
+                            style={subtitleStyle}
+                        >
+                            {descriptionText}
                         </p>
                     </div>
-                    <button
-                        type="button"
-                        onClick={() => navigate(paths.client.products)}
-                        className="shrink-0 text-sm font-semibold text-primary-light hover:underline self-start sm:self-center"
+                    <Link
+                        to={viewAllTo}
+                        className="shrink-0 self-start sm:self-center text-sm font-semibold text-primary-light hover:underline"
                     >
                         {t("home.viewAll", "View all")}
-                    </button>
+                    </Link>
                 </div>
 
                 {/* Filters */}

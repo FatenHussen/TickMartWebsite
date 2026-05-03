@@ -1,6 +1,7 @@
 import FlashSaleBadge from "@/shared/component/slider/core/FlashSaleBadge";
 import { mapPageSlugToRoute } from "@/utils/routeMapper";
 import { useNavigate } from "react-router-dom";
+import { useTheme } from "@/context/ThemeContext";
 import type { SectionSeeMore } from "../types";
 
 type HomeFlashSale = {
@@ -22,13 +23,24 @@ export default function HomeFlashSaleBanner({
     isRTL,
 }: HomeFlashSaleBannerProps) {
     const navigate = useNavigate();
+    const { theme } = useTheme();
+    const isDarkTheme = theme === "dark";
+    const bannerTextColor = isDarkTheme
+        ? "var(--color-text, var(--color-text-primary))"
+        : flashSale.textColor;
+    const bannerMainColor = isDarkTheme
+        ? "var(--color-main)"
+        : flashSale.mainColor;
+    const bannerSecondColor = isDarkTheme
+        ? "var(--color-api-second)"
+        : flashSale.secondColor;
 
     return (
         <div
-            className="relative mt-4 overflow-hidden rounded-3xl p-4 shadow-xl sm:p-5"
+            className="relative overflow-hidden rounded-3xl p-4 shadow-xl sm:p-5"
             style={{
-                color: flashSale.textColor,
-                background: `linear-gradient(to left, ${flashSale.mainColor}, ${flashSale.secondColor})`,
+                color: bannerTextColor,
+                background: `linear-gradient(to left, ${bannerMainColor}, ${bannerSecondColor})`,
             }}
         >
             <div
@@ -63,9 +75,9 @@ export default function HomeFlashSaleBanner({
                     }}
                     className="relative z-10 rounded-xl border px-4 py-2 text-sm font-semibold transition hover:opacity-90"
                     style={{
-                        borderColor: `${flashSale.textColor}66`,
-                        backgroundColor: `${flashSale.textColor}22`,
-                        color: flashSale.textColor,
+                        borderColor: `${bannerTextColor}66`,
+                        backgroundColor: `${bannerTextColor}22`,
+                        color: bannerTextColor,
                     }}
                 >
                     {isRTL ? "عرض الكل" : "View all"}
@@ -74,8 +86,8 @@ export default function HomeFlashSaleBanner({
             <div className="relative z-10 mt-4">
                 <FlashSaleBadge
                     endDate={flashSale.endDate}
-                    mainColor={flashSale.mainColor}
-                    secondColor={flashSale.secondColor}
+                    mainColor={bannerMainColor}
+                    secondColor={bannerSecondColor}
                 />
             </div>
         </div>

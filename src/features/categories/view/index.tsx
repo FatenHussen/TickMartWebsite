@@ -1,6 +1,18 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useTheme } from "@/context/ThemeContext";
+import { useAppSettings } from "@/features/account/hooks/useAppSettings";
+import { useSections } from "@/features/home/hooks/useSections";
+import { pickHomeSectionBySeeMorePageSlug } from "@/features/home/lib/homeStaticSectionSurface";
+import { getSectionCardSurfaceColor } from "@/shared/component/sections/sectionCardVariant";
+import { cn } from "@/shared/lib/utils";
+import { isPaletteComplete, resolveApiPaletteForTheme } from "@/shared/lib/themeColors";
+import {
+    categoriesPageRootStyle,
+    resolveCategoriesApiDarkSurface,
+    resolveCategoriesDarkSurfaceFromSettingsPalette,
+} from "../lib/categoriesApiDarkSurface";
 import CategoriesLayout from "../layout/CategoriesLayout";
 import CategoriesSidebar from "../components/CategoriesSidebar";
 import ProductsHeader from "../components/ProductsHeader";
@@ -40,6 +52,33 @@ function mapSortToApi(sortBy: string): {
 
 export default function CategoriesView() {
     const { t } = useTranslation();
+    const { theme } = useTheme();
+    const isDarkTheme = theme === "dark";
+    const { data: settings } = useAppSettings();
+    const { data: homeSections } = useSections("home");
+    const headlineSection = useMemo(
+        () => pickHomeSectionBySeeMorePageSlug(homeSections, "categories"),
+        [homeSections],
+    );
+    const sectionDarkSurface = useMemo(
+        () => resolveCategoriesApiDarkSurface(headlineSection, isDarkTheme),
+        [headlineSection, isDarkTheme],
+    );
+    const settingsPaletteForCategories = useMemo(
+        () =>
+            isDarkTheme
+                ? resolveApiPaletteForTheme("dark", settings?.color, settings?.dark_color)
+                : undefined,
+        [isDarkTheme, settings?.color, settings?.dark_color],
+    );
+    const settingsCategoriesSurface = useMemo(() => {
+        if (!settingsPaletteForCategories || !isPaletteComplete(settingsPaletteForCategories)) {
+            return null;
+        }
+        return resolveCategoriesDarkSurfaceFromSettingsPalette(settingsPaletteForCategories);
+    }, [settingsPaletteForCategories]);
+    /** Home section colors win; otherwise dark mode uses `settingsApi` palette. */
+    const categoriesDarkSurface = sectionDarkSurface ?? settingsCategoriesSurface;
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const preselectedCategoryId = searchParams.get("category");
@@ -108,6 +147,12 @@ export default function CategoriesView() {
             readProductColor(product, "second") ??
             readCategoryColor(selectedCategory, "second") ??
             themeGradientColors?.second;
+
+        if (isDarkTheme) {
+            const start = main ?? second ?? "var(--color-main)";
+            const end = second ?? main ?? "var(--color-api-second)";
+            return `linear-gradient(145deg, color-mix(in srgb, ${start} 38%, #020617) 0%, color-mix(in srgb, ${start} 22%, #0f172a) 40%, color-mix(in srgb, ${end} 26%, #0f172a) 72%, color-mix(in srgb, ${end} 36%, #020617) 100%)`;
+        }
 
         if (!main && !second) return undefined;
         const start = main ?? second;
@@ -217,6 +262,64 @@ export default function CategoriesView() {
     }, [categories]);
 
     const subcategories = selectedCategory?.children ?? [];
+
+    const sidebarTitleColors = useMemo(() => {
+        if (!headlineSection || isDarkTheme) {
+            return { main: null as string | null, second: null as string | null };
+        }
+        const main =
+            headlineSection.main_color?.trim() ||
+            headlineSection.background_color?.trim() ||
+            null;
+        const second =
+            headlineSection.second_color?.trim() ||
+            getSectionCardSurfaceColor(headlineSection)?.trim() ||
+            null;
+        return { main, second };
+    }, [headlineSection, isDarkTheme]);
+
+    const sidebarTitleGradientColors = useMemo(() => {
+        if (categoriesDarkSurface) {
+            return { main: categoriesDarkSurface.main, second: categoriesDarkSurface.second };
+        }
+        return sidebarTitleColors;
+    }, [categoriesDarkSurface, sidebarTitleColors]);
+
+    const productsHighlightColors = useMemo(() => {
+        if (isDarkTheme) {
+            if (categoriesDarkSurface) {
+                return { main: categoriesDarkSurface.main, second: categoriesDarkSurface.second };
+            }
+            return {
+                main: "var(--color-main)" as const,
+                second: "var(--color-api-second)" as const,
+            };
+        }
+        if (showAllCategories) {
+            if (!headlineSection) {
+                return { main: null as string | null, second: null as string | null };
+            }
+            const main =
+                headlineSection.main_color?.trim() ||
+                headlineSection.background_color?.trim() ||
+                null;
+            const second =
+                headlineSection.second_color?.trim() ||
+                getSectionCardSurfaceColor(headlineSection)?.trim() ||
+                null;
+            if (main || second) {
+                return { main: main ?? second, second: second ?? main };
+            }
+            return { main: null as string | null, second: null as string | null };
+        }
+        const main = readCategoryColor(selectedCategory, "main");
+        const second = readCategoryColor(selectedCategory, "second");
+        if (main || second) {
+            return { main: main ?? second ?? null, second: second ?? main ?? null };
+        }
+        return { main: null as string | null, second: null as string | null };
+    }, [isDarkTheme, showAllCategories, headlineSection, selectedCategory, categoriesDarkSurface]);
+
     const subcategoryNavItems = [
         {
             id: 0,
@@ -239,6 +342,10 @@ export default function CategoriesView() {
             onSubcategorySelect={handleSubcategorySelect}
             onShowAllCategories={handleShowAllCategories}
             isLoading={categoriesLoading}
+            title={headlineSection?.name?.trim() || undefined}
+            titleMainColor={sidebarTitleGradientColors.main}
+            titleSecondColor={sidebarTitleGradientColors.second}
+            apiSurface={categoriesDarkSurface}
             categoryTypeFilter={categoryTypeFilter}
             onCategoryTypeFilterChange={setCategoryTypeFilter}
             minPrice={minPrice}
@@ -250,8 +357,17 @@ export default function CategoriesView() {
         />
     );
 
+    const pageRootStyle = categoriesDarkSurface ? categoriesPageRootStyle(categoriesDarkSurface) : undefined;
+
     return (
-        <div className="bg-custom-light min-h-screen">
+        <div
+            className={cn(
+                "min-h-screen",
+                !categoriesDarkSurface &&
+                    (isDarkTheme ? "bg-slate-950 text-slate-100" : "bg-custom-light"),
+            )}
+            style={pageRootStyle}
+        >
             <CategoriesLayout sidebar={sidebar} sidebarPosition="left">
                 <div className="space-y-6">
                     {/* <HeroBanner
@@ -265,9 +381,26 @@ export default function CategoriesView() {
                     /> */}
 
                     {subcategoryNavItems.length > 0 && (
-                        <div className="flex justify-start rounded-3xl border border-primary-light/15 bg-gradient-to-r from-blue-off via-blue-50/50 to-custom-card p-5 shadow-sm">
+                        <div
+                            className={cn(
+                                "flex justify-start rounded-3xl border p-5 shadow-sm",
+                                categoriesDarkSurface
+                                    ? "border-solid"
+                                    : "border-primary-light/15 bg-gradient-to-r from-blue-off via-blue-50/50 to-custom-card",
+                            )}
+                            style={
+                                categoriesDarkSurface
+                                    ? {
+                                          backgroundColor: categoriesDarkSurface.cardBackground,
+                                          borderColor: categoriesDarkSurface.cardBorder,
+                                          color: categoriesDarkSurface.mutedColor,
+                                      }
+                                    : undefined
+                            }
+                        >
                             <CategoryTopNav
                                 categories={subcategoryNavItems}
+                                apiSurface={categoriesDarkSurface}
                                 onCategoryClick={(subcategoryId) => {
                                     if (subcategoryId === 0) {
                                         setShowAllCategories(false);
@@ -293,6 +426,9 @@ export default function CategoriesView() {
                                 : selectedCategory?.name || ""
                         }
                         subcategoryName={showAllCategories ? undefined : selectedSubcategory?.name}
+                        highlightMainColor={productsHighlightColors.main}
+                        highlightSecondColor={productsHighlightColors.second}
+                        apiSurface={categoriesDarkSurface}
                         sortBy={sortBy}
                         onSortChange={setSortBy}
                         freeDeliveryOnly={freeDeliveryOnly}
@@ -360,8 +496,26 @@ export default function CategoriesView() {
                             {hasNextPage && <div ref={observerTarget} className="h-10" />}
                         </>
                     ) : (
-                        <div className="flex h-64 items-center justify-center rounded-2xl border border-primary-light/15 bg-gradient-to-br from-custom-card to-blue-50/35">
-                            <p className="text-custom-secondary">
+                        <div
+                            className={cn(
+                                "flex h-64 items-center justify-center rounded-2xl border",
+                                !categoriesDarkSurface &&
+                                    "border-primary-light/15 bg-gradient-to-br from-custom-card to-blue-50/35",
+                            )}
+                            style={
+                                categoriesDarkSurface
+                                    ? {
+                                          backgroundColor: categoriesDarkSurface.cardBackground,
+                                          borderColor: categoriesDarkSurface.cardBorder,
+                                          color: categoriesDarkSurface.mutedColor,
+                                      }
+                                    : undefined
+                            }
+                        >
+                            <p
+                                className={cn(!categoriesDarkSurface && "text-custom-secondary")}
+                                style={categoriesDarkSurface ? { color: categoriesDarkSurface.pageColor } : undefined}
+                            >
                                 {t(
                                     "categories.noProducts",
                                     "No products found in this category",

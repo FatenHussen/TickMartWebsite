@@ -11,11 +11,14 @@ export interface AppSettingsData {
  welcome?: { image?: string[]; text?: string };
  login?: { image?: string; link?: string };
  contact?: AppSettingsContact;
- color?: {
+ color?: AppSettingsColorPalette;
+ dark_color?: AppSettingsColorPalette;
+}
+
+export interface AppSettingsColorPalette {
  main_color?: string;
  text_color?: string;
  second_color?: string;
- };
 }
 
 export interface AppSettingsResponse {

@@ -76,13 +76,18 @@ export default function BrandCard({
                 }
             }}
             className={cn(
-                "group relative z-0 flex h-full flex-col overflow-hidden rounded-2xl bg-white",
+                "group relative z-0 flex h-full flex-col overflow-hidden rounded-2xl",
+                "border border-[color-mix(in_srgb,var(--color-primary)_10%,var(--color-border-primary))]",
+                "bg-[var(--color-bg-card)]",
+                /* Dark: no frame — soft float + whisper of API main/second (glow only) */
+                "dark:border-0",
+                "dark:bg-[linear-gradient(165deg,color-mix(in_srgb,var(--color-main)_14%,var(--color-bg-card))_0%,color-mix(in_srgb,var(--color-text)_5%,var(--color-bg-card))_44%,color-mix(in_srgb,var(--color-api-second)_12%,var(--color-bg-card))_100%)]",
                 "translate-y-0 transform-gpu will-change-transform [backface-visibility:hidden]",
                 "shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_20px_-4px_rgba(0,0,0,0.08),0_18px_40px_-12px_rgba(0,0,0,0.12)]",
-                "dark:shadow-[0_2px_8px_rgba(0,0,0,0.35),0_16px_36px_-8px_rgba(0,0,0,0.45)]",
+                "dark:shadow-[0_16px_40px_-14px_rgba(0,0,0,0.92),0_0_36px_-12px_color-mix(in_srgb,var(--color-main)_14%,transparent),0_0_56px_-18px_color-mix(in_srgb,var(--color-api-second)_9%,transparent)]",
                 "transition-[transform,box-shadow] duration-[450ms] [transition-timing-function:cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none motion-reduce:hover:translate-y-0",
                 "hover:-translate-y-1 hover:shadow-[0_6px_16px_rgba(0,0,0,0.08),0_20px_40px_-8px_rgba(0,0,0,0.16),0_32px_64px_-16px_rgba(0,0,0,0.2)]",
-                "dark:hover:shadow-[0_10px_28px_rgba(0,0,0,0.5),0_28px_56px_-8px_rgba(0,0,0,0.6)]",
+                "dark:hover:shadow-[0_22px_48px_-14px_rgba(0,0,0,0.94),0_0_44px_-10px_color-mix(in_srgb,var(--color-main)_20%,transparent),0_0_72px_-16px_color-mix(in_srgb,var(--color-api-second)_12%,transparent)]",
                 onClick && "cursor-pointer",
                 className,
             )}
@@ -115,14 +120,16 @@ export default function BrandCard({
                     ))}
                 </div>
             )}
-            <div className="flex w-full shrink-0 flex-col items-center bg-white px-4 pb-3 pt-4 dark:bg-bg-primary">
+            <div className="flex w-full shrink-0 flex-col items-stretch bg-[color-mix(in_srgb,var(--color-primary)_6%,var(--color-bg-card))] px-0 pb-3 pt-4 dark:bg-[linear-gradient(125deg,color-mix(in_srgb,var(--color-main)_18%,var(--color-bg-card))_0%,color-mix(in_srgb,var(--color-api-second)_16%,var(--color-bg-card))_100%)]">
                 <div
                     className={cn(
-                        "relative w-full max-w-[200px] shrink-0 overflow-hidden rounded-xl bg-custom-card sm:max-w-none",
-                        "shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_4px_16px_-2px_rgba(0,0,0,0.08)]",
-                        "dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_6px_20px_-4px_rgba(0,0,0,0.35)]",
-                        "transition-[box-shadow] duration-[450ms] [transition-timing-function:cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none group-hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.45),0_8px_22px_-2px_rgba(0,0,0,0.1)]",
-                        "dark:group-hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_10px_28px_-4px_rgba(0,0,0,0.45)]",
+                        "relative w-full shrink-0 overflow-hidden rounded-xl bg-custom-card",
+                        /* Logo well: lift with API text tint so dark/black marks stay readable */
+                        "dark:bg-[linear-gradient(180deg,color-mix(in_srgb,var(--color-text)_14%,var(--color-bg-card))_0%,color-mix(in_srgb,var(--color-api-second)_16%,var(--color-bg-card))_55%,color-mix(in_srgb,var(--color-main)_12%,var(--color-bg-card))_100%)]",
+                        "shadow-[inset_0_1px_0_color-mix(in_srgb,var(--color-primary)_22%,white),0_4px_16px_-2px_rgba(0,0,0,0.08)]",
+                        "dark:shadow-[inset_0_1px_0_color-mix(in_srgb,var(--color-text)_10%,transparent),0_6px_22px_-10px_rgba(0,0,0,0.55)]",
+                        "transition-[box-shadow] duration-[450ms] [transition-timing-function:cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none group-hover:shadow-[inset_0_1px_0_color-mix(in_srgb,var(--color-primary)_28%,white),0_8px_22px_-2px_rgba(0,0,0,0.1)]",
+                        "dark:group-hover:shadow-[inset_0_1px_0_color-mix(in_srgb,var(--color-text)_14%,transparent),0_10px_28px_-10px_rgba(0,0,0,0.62)]",
                         imageFrameClass,
                     )}
                 >
@@ -131,23 +138,22 @@ export default function BrandCard({
                         alt={name}
                         effect=""
                         wrapperClassName="absolute inset-0 block h-full w-full overflow-hidden"
-                        className="h-full w-full object-contain object-center p-3"
+                        className="h-full w-full object-contain object-center"
                     />
                 </div>
             </div>
 
             <div
-                className="flex min-h-0 w-full flex-1 flex-col items-center px-4 pb-4 pt-3 dark:bg-bg-tertiary"
+                className={cn(
+                    "flex min-h-0 w-full flex-1 flex-col items-center px-4 pb-4 pt-3",
+                    !surfaceColor &&
+                        "bg-[color-mix(in_srgb,var(--color-primary)_9%,var(--color-bg-card))] dark:bg-[linear-gradient(180deg,color-mix(in_srgb,var(--color-api-second)_20%,var(--color-bg-card))_0%,color-mix(in_srgb,var(--color-text)_6%,var(--color-bg-card))_52%,color-mix(in_srgb,var(--color-main)_16%,var(--color-bg-card))_100%)]",
+                )}
                 style={
-                    surfaceColor
-                        ? { backgroundColor: surfaceColor }
-                        : {
-                              background:
-                                  "color-mix(in srgb, var(--color-primary) 9%, #fff8f0)",
-                          }
+                    surfaceColor ? { backgroundColor: surfaceColor } : undefined
                 }
             >
-                <h3 className="mb-2 w-full text-center text-base font-bold text-stone-900 dark:text-custom-primary">
+                <h3 className="mb-2 w-full text-center text-base font-bold text-[var(--color-text-primary)] dark:text-[var(--color-text)]">
                     {name}
                 </h3>
 
@@ -155,12 +161,19 @@ export default function BrandCard({
                     <Rating
                         rating={rating}
                         size="sm"
-                        className="gap-1 [&>span:first-child]:text-yellow-500 [&>span:last-child]:font-medium [&>span:last-child]:text-stone-900 dark:[&>span:last-child]:text-custom-primary"
+                        className="gap-1 [&>span:first-child]:text-yellow-500 [&>span:last-child]:font-medium [&>span:last-child]:text-[var(--color-text-primary)] dark:[&>span:last-child]:text-[var(--color-text)]"
                     />
                 </div>
 
                 {showOrders && (
-                    <p className="mt-2 text-center text-xs text-stone-500 dark:text-custom-secondary">
+                    <p
+                        className={cn(
+                            "mt-2 text-center text-xs",
+                            surfaceColor
+                                ? "text-white"
+                                : "text-[var(--color-text-muted)] dark:text-white/90",
+                        )}
+                    >
                         {t("brands.ordersCount", {
                             count: ordersCount,
                         })}
@@ -180,6 +193,8 @@ export default function BrandCard({
                                     onClick={(e) => e.stopPropagation()}
                                     className={cn(
                                         "w-full justify-center text-xs font-semibold",
+                                        "[&_.ab-track_.ab-row:first-child]:text-[var(--color-text-primary)] [&_.ab-track_.ab-row:last-child]:text-white",
+                                        "dark:[&_.ab-track_.ab-row:first-child]:text-[var(--color-text)] dark:[&_.ab-track_.ab-row:last-child]:text-white/90",
                                         b.className,
                                     )}
                                     note={{ primary: text, secondary: text }}
@@ -202,7 +217,8 @@ export default function BrandCard({
                                 onClick?.();
                             }}
                             className={cn(
-                                "rounded-xl border-2 border-white/25 bg-gradient-to-b from-primary to-primary/90 py-2.5 text-sm font-semibold shadow-md ring-1 ring-black/5 transition duration-300 ease-linear hover:brightness-105 dark:border-white/15 dark:ring-white/10",
+                                "rounded-xl border-2 border-[color-mix(in_srgb,white_28%,var(--color-primary))] bg-gradient-to-b from-[var(--color-main)] to-[color-mix(in_srgb,var(--color-main)_78%,var(--color-api-second))] py-2.5 text-sm font-semibold text-white shadow-md ring-1 ring-black/5 transition duration-300 ease-linear hover:brightness-105",
+                                "dark:border-[color-mix(in_srgb,var(--color-primary)_40%,transparent)] dark:from-[var(--color-primary-light)] dark:to-[var(--color-main)] dark:shadow-[0_1px_0_color-mix(in_srgb,var(--color-api-second)_35%,transparent)_inset,0_10px_32px_-6px_rgba(0,0,0,0.55)] dark:ring-2 dark:ring-[color-mix(in_srgb,var(--color-primary)_22%,transparent)] dark:hover:brightness-110",
                                 footerBadgeClass,
                             )}
                         >

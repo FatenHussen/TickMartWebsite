@@ -72,7 +72,7 @@ export default function AttributeSelector({
  isSelected
  ? activeColor ==="teal"
  ?"bg-primary-light text-white"
- :"bg-gray-800 text-white"
+ :"bg-gray-800 text-white dark:bg-[var(--color-main)] dark:text-[var(--color-text)]"
  :"bg-custom-tertiary text-custom-primary hover:bg-custom-muted",
  isDisabled &&"opacity-30 cursor-not-allowed"
  )}

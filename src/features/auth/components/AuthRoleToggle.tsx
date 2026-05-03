@@ -14,7 +14,7 @@ function AuthRoleToggle({ role, setRole, t }: AuthRoleToggleProps) {
  onClick={() => setRole("customer")}
  className={`flex-1 rounded-xl py-2.5 px-5 text-sm font-medium transition-all w-3xs ${
  role ==="customer"
- ?"bg-primary text-white"
+ ?"bg-primary text-[var(--color-text-inverse)]"
  :"bg-custom-card border border-primary text-primary hover:bg-primary/5"
  }`}
  >
@@ -25,7 +25,7 @@ function AuthRoleToggle({ role, setRole, t }: AuthRoleToggleProps) {
  onClick={() => setRole("seller")}
  className={`flex-1 rounded-xl py-2.5 px-5 text-sm font-medium transition-all w-3xs ${
  role ==="seller"
- ?"bg-primary text-white"
+ ?"bg-primary text-[var(--color-text-inverse)]"
  :"bg-custom-card border border-primary text-primary hover:bg-primary/5"
  }`}
  >

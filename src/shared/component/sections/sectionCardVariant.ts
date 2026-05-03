@@ -1,6 +1,21 @@
 import type { Section, SectionCardVariant } from "@/features/home/types";
 import { DISPLAY_TYPE } from "@/features/home/types";
 
+/**
+ * Dark-mode row behind home API sliders — flat `color-mix` (no gradient).
+ * Uses theme `--color-main` from API.
+ */
+export function getDarkSectionBackground(): string {
+    return "color-mix(in srgb, var(--color-main) 22%, #0a0c12)";
+}
+
+/**
+ * Dark card surface inside those rows — tinted with `--color-api-second`.
+ */
+export function getDarkCardSurface(): string {
+    return "color-mix(in srgb, var(--color-api-second) 20%, #15171f)";
+}
+
 export type SectionSliderPreset = {
     slidesPerView: number;
     breakpoints: {

@@ -136,7 +136,7 @@ export default function BookServiceModal({ open, onClose, service, shopId }: Pro
                     </label>
                     <DatePicker
                         selected={date}
-                        onChange={(d) => setDate(d)}
+                        onChange={(d: Date | null) => setDate(d)}
                         minDate={today}
                         filterDate={isDayOpen}
                         locale={datepickerLocale}

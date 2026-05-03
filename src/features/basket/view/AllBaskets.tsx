@@ -159,8 +159,8 @@ export default function AllBaskets() {
                     </div>
 
                     {basketsError ? (
-                        <div className="mt-8 flex items-center justify-center h-64 bg-custom-secondary rounded-2xl">
-                            <p className="text-custom-secondary">{t("baskets.failedToLoad")}</p>
+                        <div className="basket-sidebar-info mt-8 flex items-center justify-center h-64 rounded-2xl">
+                            <p className="text-custom-primary">{t("baskets.failedToLoad")}</p>
                         </div>
                     ) : (
                         <div>
@@ -216,8 +216,8 @@ export default function AllBaskets() {
                             </div>
 
                             {!isBasketsLoading && allBaskets.length === 0 && (
-                                <div className="mt-8 flex items-center justify-center h-64 bg-custom-secondary rounded-2xl">
-                                    <p className="text-custom-secondary">{t("baskets.noBasketsFound")}</p>
+                                <div className="basket-sidebar-info mt-8 flex items-center justify-center h-64 rounded-2xl">
+                                    <p className="text-custom-primary">{t("baskets.noBasketsFound")}</p>
                                 </div>
                             )}
 

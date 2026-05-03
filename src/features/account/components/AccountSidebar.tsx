@@ -350,8 +350,8 @@ export default function AccountSidebar({
 
   /* LTR: rounded left edge removed + shadow right; RTL: opposite */
   const sidebarEdge = isRTL
-    ? "lg:rounded-r-none lg:border-r-0 lg:shadow-[-8px_0_32px_-12px_rgba(0,0,0,0.08)]"
-    : "lg:rounded-l-none lg:border-l-0 lg:shadow-[8px_0_32px_-12px_rgba(0,0,0,0.08)]";
+    ? "lg:rounded-r-none lg:border-r-0 lg:shadow-[-8px_0_32px_-12px_color-mix(in_srgb,var(--color-main)_18%,transparent)]"
+    : "lg:rounded-l-none lg:border-l-0 lg:shadow-[8px_0_32px_-12px_color-mix(in_srgb,var(--color-main)_18%,transparent)]";
 
   const collapseIcon = isCollapsed
     ? isRTL
@@ -370,14 +370,9 @@ export default function AccountSidebar({
         "max-lg:rounded-2xl max-lg:shadow-lg max-lg:shadow-black/5",
         sidebarEdge,
         "transition-[width] duration-300 ease-in-out motion-reduce:transition-none",
-        isCollapsed ? "w-[72px]" : "w-full"
+        isCollapsed ? "w-[72px]" : "w-full",
+        "border border-[var(--color-border-primary)] bg-[var(--color-bg-card)]"
       )}
-      style={{
-        backgroundColor: "var(--color-bg-card)",
-        borderWidth: 1,
-        borderStyle: "solid",
-        borderColor: "var(--color-border-primary)",
-      }}
     >
       {/* ── Header ── */}
       <div
@@ -387,7 +382,7 @@ export default function AccountSidebar({
         )}
         style={{
           background:
-            "linear-gradient(135deg, var(--color-gradient-from) 0%, var(--color-gradient-to) 100%)",
+            "linear-gradient(135deg, var(--color-api-second) 0%, color-mix(in srgb, var(--color-api-second) 70%, var(--color-main)) 55%, var(--color-main) 100%)",
         }}
       >
         {/* Glassmorphism overlay */}
@@ -471,9 +466,9 @@ export default function AccountSidebar({
           aria-label={t(isCollapsed ? "common.expandSidebar" : "common.collapseSidebar")}
           className={cn(
             "absolute bottom-0 translate-y-1/2 p-1.5 rounded-full z-10",
-            "bg-white/95 text-gray-500 hover:text-gray-800 hover:bg-white",
-            "shadow-md ring-2 ring-white/40 transition-all duration-200 hover:scale-105 active:scale-95",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-2",
+            "bg-[color-mix(in_srgb,var(--color-bg-card)_92%,white)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-card)]",
+            "shadow-md ring-2 ring-white/25 transition-all duration-200 hover:scale-105 active:scale-95",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg-card)]",
             isRTL ? "left-3" : "right-3"
           )}
         >
@@ -521,10 +516,9 @@ export default function AccountSidebar({
       {/* ── Footer: logout + delete ── */}
       <div
         className={cn(
-          "shrink-0 border-t pb-3 pt-2",
+          "shrink-0 border-t border-[var(--color-border-primary)] pb-3 pt-2",
           isCollapsed ? "px-1 space-y-1" : "px-3 space-y-0.5"
         )}
-        style={{ borderColor: "var(--color-border-primary)" }}
       >
         <ul>
           <DestructiveItem

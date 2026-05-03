@@ -4,11 +4,14 @@ import Slider from"./Slider";
 
 type SliderSectionProps<T extends { id: number | string }> = {
   title?: string;
+  titleMainColor?: string | null;
+  titleSecondColor?: string | null;
   flashSaleEndDate?: string | null;
   flashSaleMainColor?: string | null;
   flashSaleSecondColor?: string | null;
   viewAllLabel?: string;
   onViewAllClick?: () => void;
+  viewAllButtonClassName?: string;
   items: T[];
   renderItem: (item: T) => ReactNode;
   breakpoints?: {
@@ -40,11 +43,14 @@ const defaultBreakpoints = {
 
 export default function SliderSection<T extends { id: number | string }>({
   title,
+  titleMainColor,
+  titleSecondColor,
   flashSaleEndDate,
   flashSaleMainColor,
   flashSaleSecondColor,
   viewAllLabel,
   onViewAllClick,
+  viewAllButtonClassName,
   items,
   renderItem,
   breakpoints = defaultBreakpoints,
@@ -72,11 +78,14 @@ export default function SliderSection<T extends { id: number | string }>({
   return (
     <Slider
       title={title}
+      titleMainColor={titleMainColor}
+      titleSecondColor={titleSecondColor}
       flashSaleEndDate={flashSaleEndDate}
       flashSaleMainColor={flashSaleMainColor}
       flashSaleSecondColor={flashSaleSecondColor}
       viewAllLabel={viewAllLabel}
       onViewAll={onViewAllClick}
+      viewAllButtonClassName={viewAllButtonClassName}
       breakpoints={breakpoints}
       className={className}
       slideClassName={slideClassName}

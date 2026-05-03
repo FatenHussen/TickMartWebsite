@@ -49,8 +49,8 @@ export default function ChangePassword() {
  <div className="space-y-8">
  <div className="text-center">
  <div className="flex items-center justify-center gap-2 mb-6">
- <div className="w-10 h-10 bg-cyan-500 rounded-full flex items-center justify-center">
- <span className="text-white text-xl">🌀</span>
+ <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-main)]">
+ <span className="text-xl text-[var(--color-text-inverse)]">🌀</span>
  </div>
  <span className="text-xl font-bold text-custom-primary">
  Tikmart

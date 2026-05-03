@@ -35,7 +35,10 @@ import {
     getSectionCardVariant,
     getSliderPresetForSection,
     getSectionCardSurfaceColor,
+    getDarkSectionBackground,
+    getDarkCardSurface,
 } from "./sectionCardVariant";
+import { useTheme } from "@/context/ThemeContext";
 
 function getFlashSaleEndDate(endDate?: string | null): string | null {
     if (!endDate) return null;
@@ -45,10 +48,19 @@ function getFlashSaleEndDate(endDate?: string | null): string | null {
     return Number.isFinite(parsed) ? normalized : null;
 }
 
-function getFlashSaleColors(section: Section): {
+function getFlashSaleColors(
+    section: Section,
+    isDarkTheme: boolean
+): {
     mainColor: string | null;
     secondColor: string | null;
 } {
+    if (isDarkTheme) {
+        return {
+            mainColor: "var(--color-main)",
+            secondColor: "var(--color-api-second)",
+        };
+    }
     return {
         mainColor: section.main_color ?? section.background_color ?? null,
         secondColor:
@@ -264,6 +276,8 @@ export default function ApiSectionsRenderer({
 }: ApiSectionsRendererProps) {
     const navigate = useNavigate();
     const { t } = useTranslation();
+    const { theme } = useTheme();
+    const isDarkTheme = theme === "dark";
     const authenticated = useAuthStore((s) => s.authenticated);
     const { data: favoriteProducts = [] } = useFavorites("product", false);
     const { data: favoriteRecipes = [] } = useFavorites("recipe", false);
@@ -344,6 +358,7 @@ export default function ApiSectionsRenderer({
                 <LazySection key={section.id} eager={index < 2}>
                     <SectionByDisplayType
                         section={section}
+                        isDarkTheme={isDarkTheme}
                         onViewAll={() => handleViewAll(section)}
                         onItemClick={(item) => handleItemClick(section, item)}
                         t={t}
@@ -377,6 +392,7 @@ export default function ApiSectionsRenderer({
 
 type SectionByDisplayTypeProps = {
     section: Section;
+    isDarkTheme: boolean;
     onViewAll: () => void;
     onItemClick: (item: SectionItem) => void;
     t: (key: string) => string;
@@ -397,6 +413,7 @@ type SectionByDisplayTypeProps = {
 
 function SectionByDisplayType({
     section,
+    isDarkTheme,
     onViewAll,
     onItemClick,
     t,
@@ -433,6 +450,7 @@ function SectionByDisplayType({
             return (
                 <ProductSection
                     section={section}
+                    isDarkTheme={isDarkTheme}
                     showViewAll={showViewAll}
                     onViewAll={onViewAll}
                     onItemClick={onItemClick}
@@ -449,6 +467,7 @@ function SectionByDisplayType({
             return (
                 <ShopSection
                     section={section}
+                    isDarkTheme={isDarkTheme}
                     showViewAll={showViewAll}
                     onViewAll={onViewAll}
                     onItemClick={onItemClick}
@@ -465,6 +484,7 @@ function SectionByDisplayType({
             return (
                 <BasketSection
                     section={section}
+                    isDarkTheme={isDarkTheme}
                     showViewAll={showViewAll}
                     onViewAll={onViewAll}
                     onItemClick={onItemClick}
@@ -481,6 +501,7 @@ function SectionByDisplayType({
             return (
                 <BrandSection
                     section={section}
+                    isDarkTheme={isDarkTheme}
                     showViewAll={showViewAll}
                     onViewAll={onViewAll}
                     onItemClick={onItemClick}
@@ -496,6 +517,7 @@ function SectionByDisplayType({
             return (
                 <RecipeSection
                     section={section}
+                    isDarkTheme={isDarkTheme}
                     showViewAll={showViewAll}
                     onViewAll={onViewAll}
                     onItemClick={onItemClick}
@@ -518,6 +540,7 @@ function SectionByDisplayType({
 
 type SectionProps = {
     section: Section;
+    isDarkTheme?: boolean;
     showViewAll: boolean | any;
     onViewAll: () => void;
     onItemClick: (item: SectionItem) => void;
@@ -558,7 +581,7 @@ function BannerSection({
                     <div
                         className={`${innerMax} mb-4 flex items-center justify-between`}
                     >
-                        <h2 className="text-2xl font-bold text-custom-primary">
+                        <h2 className="text-2xl font-bold text-custom-primary dark:text-[color:var(--color-text,var(--color-text-primary))]">
                             {section.name}
                         </h2>
                         <button
@@ -586,7 +609,7 @@ function BannerSection({
         <div className={innerMax}>
             {showViewAll && section.name && (
                 <div className="mb-4 flex items-center justify-between">
-                    <h2 className="text-2xl font-bold text-custom-primary">
+                    <h2 className="text-2xl font-bold text-custom-primary dark:text-[color:var(--color-text,var(--color-text-primary))]">
                         {section.name}
                     </h2>
                     <button
@@ -608,6 +631,7 @@ function BannerSection({
 
 function ProductSection({
     section,
+    isDarkTheme = false,
     showViewAll,
     onViewAll,
     onItemClick,
@@ -623,9 +647,9 @@ function ProductSection({
         section.display_type_id,
         cardVariant
     );
-    const surfaceColor = getSectionCardSurfaceColor(section);
+    const surfaceColor = isDarkTheme ? getDarkCardSurface() : getSectionCardSurfaceColor(section);
     const flashSaleEndDate = getFlashSaleEndDate(section.end_date);
-    const { mainColor, secondColor } = getFlashSaleColors(section);
+    const { mainColor, secondColor } = getFlashSaleColors(section, isDarkTheme);
 
     return (
         <SliderSection
@@ -639,7 +663,7 @@ function ProductSection({
             slidesPerView={sliderPreset.slidesPerView}
             breakpoints={sliderPreset.breakpoints}
             spaceBetween={sliderPreset.spaceBetween}
-            sectionBackgroundColor={section.background_color ?? null}
+            sectionBackgroundColor={isDarkTheme ? getDarkSectionBackground() : (section.background_color ?? null)}
             edgeToEdgeSectionBackground={edgeToEdgeSectionBackgrounds}
             className={sectionClassName}
             removeVerticalSpacing={removeSectionVerticalSpacing}
@@ -780,6 +804,7 @@ function ProductSection({
 
 function RecipeSection({
     section,
+    isDarkTheme = false,
     showViewAll,
     onViewAll,
     onItemClick,
@@ -795,9 +820,9 @@ function RecipeSection({
         section.display_type_id,
         cardVariant
     );
-    const surfaceColor = getSectionCardSurfaceColor(section);
+    const surfaceColor = isDarkTheme ? getDarkCardSurface() : getSectionCardSurfaceColor(section);
     const flashSaleEndDate = getFlashSaleEndDate(section.end_date);
-    const { mainColor, secondColor } = getFlashSaleColors(section);
+    const { mainColor, secondColor } = getFlashSaleColors(section, isDarkTheme);
 
     return (
         <SliderSection
@@ -811,7 +836,7 @@ function RecipeSection({
             slidesPerView={sliderPreset.slidesPerView}
             breakpoints={sliderPreset.breakpoints}
             spaceBetween={sliderPreset.spaceBetween}
-            sectionBackgroundColor={section.background_color ?? null}
+            sectionBackgroundColor={isDarkTheme ? getDarkSectionBackground() : (section.background_color ?? null)}
             edgeToEdgeSectionBackground={edgeToEdgeSectionBackgrounds}
             className={sectionClassName}
             removeVerticalSpacing={removeSectionVerticalSpacing}
@@ -941,6 +966,7 @@ function RecipeSection({
 
 function BasketSection({
     section,
+    isDarkTheme = false,
     showViewAll,
     onViewAll,
     onItemClick,
@@ -956,9 +982,9 @@ function BasketSection({
         section.display_type_id,
         cardVariant
     );
-    const surfaceColor = getSectionCardSurfaceColor(section);
+    const surfaceColor = isDarkTheme ? getDarkCardSurface() : getSectionCardSurfaceColor(section);
     const flashSaleEndDate = getFlashSaleEndDate(section.end_date);
-    const { mainColor, secondColor } = getFlashSaleColors(section);
+    const { mainColor, secondColor } = getFlashSaleColors(section, isDarkTheme);
 
     return (
         <SliderSection
@@ -972,7 +998,7 @@ function BasketSection({
             slidesPerView={sliderPreset.slidesPerView}
             breakpoints={sliderPreset.breakpoints}
             spaceBetween={sliderPreset.spaceBetween}
-            sectionBackgroundColor={section.background_color ?? null}
+            sectionBackgroundColor={isDarkTheme ? getDarkSectionBackground() : (section.background_color ?? null)}
             edgeToEdgeSectionBackground={edgeToEdgeSectionBackgrounds}
             className={sectionClassName}
             removeVerticalSpacing={removeSectionVerticalSpacing}
@@ -1015,9 +1041,9 @@ function BasketSection({
                             )}
                             layout={cardVariant}
                             surfaceColor={surfaceColor}
-                            mainColor={item.main_color ?? null}
-                            secondColor={item.second_color ?? null}
-                            textColor={item.text_color ?? null}
+                            mainColor={isDarkTheme ? null : (item.main_color ?? null)}
+                            secondColor={isDarkTheme ? null : (item.second_color ?? null)}
+                            textColor={isDarkTheme ? null : (item.text_color ?? null)}
                             isFavorite={isFav}
                             t={t}
                             onClick={() => onItemClick(item)}
@@ -1056,9 +1082,9 @@ function BasketSection({
                         )}
                         layout={cardVariant}
                         surfaceColor={surfaceColor}
-                        mainColor={(data.main_color as string) ?? null}
-                        secondColor={(data.second_color as string) ?? null}
-                        textColor={(data.text_color as string) ?? null}
+                        mainColor={isDarkTheme ? null : ((data.main_color as string) ?? null)}
+                        secondColor={isDarkTheme ? null : ((data.second_color as string) ?? null)}
+                        textColor={isDarkTheme ? null : ((data.text_color as string) ?? null)}
                         isFavorite={isFav}
                         t={t}
                         onClick={() => onItemClick(item)}
@@ -1073,6 +1099,7 @@ function BasketSection({
 
 function ShopSection({
     section,
+    isDarkTheme = false,
     showViewAll,
     onViewAll,
     onItemClick,
@@ -1088,9 +1115,9 @@ function ShopSection({
         section.display_type_id,
         cardVariant
     );
-    const surfaceColor = getSectionCardSurfaceColor(section);
+    const surfaceColor = isDarkTheme ? getDarkCardSurface() : getSectionCardSurfaceColor(section);
     const flashSaleEndDate = getFlashSaleEndDate(section.end_date);
-    const { mainColor, secondColor } = getFlashSaleColors(section);
+    const { mainColor, secondColor } = getFlashSaleColors(section, isDarkTheme);
 
     return (
         <SliderSection
@@ -1104,7 +1131,7 @@ function ShopSection({
             slidesPerView={sliderPreset.slidesPerView}
             breakpoints={sliderPreset.breakpoints}
             spaceBetween={sliderPreset.spaceBetween}
-            sectionBackgroundColor={section.background_color ?? null}
+            sectionBackgroundColor={isDarkTheme ? getDarkSectionBackground() : (section.background_color ?? null)}
             edgeToEdgeSectionBackground={edgeToEdgeSectionBackgrounds}
             className={sectionClassName}
             removeVerticalSpacing={removeSectionVerticalSpacing}
@@ -1146,6 +1173,7 @@ function ShopSection({
 
 function BrandSection({
     section,
+    isDarkTheme = false,
     showViewAll,
     onViewAll,
     onItemClick,
@@ -1160,14 +1188,16 @@ function BrandSection({
         section.display_type_id,
         cardVariant
     );
-    const surfaceColor =
-        getSectionCardSurfaceColor(section) ??
-        brandDefaultsWhenApiMissing?.cardSurface ??
-        null;
+    const surfaceColor = isDarkTheme
+        ? getDarkCardSurface()
+        : (getSectionCardSurfaceColor(section) ??
+            brandDefaultsWhenApiMissing?.cardSurface ??
+            null);
     const flashSaleEndDate = getFlashSaleEndDate(section.end_date);
-    const { mainColor, secondColor } = getFlashSaleColors(section);
-    const sectionBgFallback =
-        brandDefaultsWhenApiMissing?.sectionBackground ?? "var(--color-api-second)";
+    const { mainColor, secondColor } = getFlashSaleColors(section, isDarkTheme);
+    const sectionBgFallback = isDarkTheme
+        ? getDarkSectionBackground()
+        : (brandDefaultsWhenApiMissing?.sectionBackground ?? "var(--color-api-second)");
 
     return (
         <SliderSection
@@ -1182,7 +1212,7 @@ function BrandSection({
             breakpoints={sliderPreset.breakpoints}
             spaceBetween={sliderPreset.spaceBetween}
             sectionBackgroundColor={
-                section.background_color ?? sectionBgFallback
+                isDarkTheme ? sectionBgFallback : (section.background_color ?? sectionBgFallback)
             }
             edgeToEdgeSectionBackground={edgeToEdgeSectionBackgrounds}
             className={sectionClassName}

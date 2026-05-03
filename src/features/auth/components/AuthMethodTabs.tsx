@@ -17,15 +17,15 @@ export default function AuthMethodTabs({
  const { t } = useTranslation();
 
  return (
- <div className="border-b border-slate-200 flex gap-8 text-sm font-medium mb-5 transition-colors">
+ <div className="mb-5 flex gap-8 border-b border-custom-primary text-sm font-medium transition-colors">
  <Button
  type="button"
  variant="ghost"
  onClick={() => onChange("email")}
- className={`pb-2 -mb-px rounded-none border-b-2 transition-all ${
+ className={`-mb-px rounded-none border-b-2 pb-2 transition-all ${
  value ==="email"
- ?"text-primary dark:text-cyan-400 border-primary dark:border-cyan-400"
- :"text-slate-400 hover:text-slate-600 border-transparent"
+ ?"border-[var(--color-main)] text-[var(--color-main)]"
+ :"border-transparent text-custom-tertiary hover:text-custom-secondary"
  }`}
  >
  {t("auth.emailAddress")}
@@ -34,10 +34,10 @@ export default function AuthMethodTabs({
  type="button"
  variant="ghost"
  onClick={() => onChange("phone")}
- className={`pb-2 -mb-px rounded-none border-b-2 transition-all ${
+ className={`-mb-px rounded-none border-b-2 pb-2 transition-all ${
  value ==="phone"
- ?"text-primary dark:text-cyan-400 border-primary dark:border-cyan-400"
- :"text-slate-400 hover:text-slate-600 border-transparent"
+ ?"border-[var(--color-main)] text-[var(--color-main)]"
+ :"border-transparent text-custom-tertiary hover:text-custom-secondary"
  }`}
  >
  {t("auth.phoneNumber")}

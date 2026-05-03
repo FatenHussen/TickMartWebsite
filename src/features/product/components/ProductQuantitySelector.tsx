@@ -37,7 +37,7 @@ export default function ProductQuantitySelector({
                     disabled={quantity <= min}
                     className={cn(
                         "flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg border-2",
-                        "border-[color-mix(in_srgb,var(--color-api-second)_42%,var(--color-border-primary))] bg-white text-primary",
+                        "border-[color-mix(in_srgb,var(--color-api-second)_42%,var(--color-border-primary))] bg-white dark:bg-[color-mix(in_srgb,var(--color-main)_18%,#13151c)] text-primary",
                         "transition-colors hover:border-[var(--color-api-second)]/80",
                         "hover:bg-[color-mix(in_srgb,var(--color-api-second)_10%,var(--color-bg-card))]",
                         "disabled:cursor-not-allowed disabled:opacity-40"
@@ -57,7 +57,7 @@ export default function ProductQuantitySelector({
                     disabled={max !== undefined && quantity >= max}
                     className={cn(
                         "flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg border-2",
-                        "border-[color-mix(in_srgb,var(--color-api-second)_42%,var(--color-border-primary))] bg-white text-primary",
+                        "border-[color-mix(in_srgb,var(--color-api-second)_42%,var(--color-border-primary))] bg-white dark:bg-[color-mix(in_srgb,var(--color-main)_18%,#13151c)] text-primary",
                         "transition-colors hover:border-[var(--color-api-second)]/80",
                         "hover:bg-[color-mix(in_srgb,var(--color-api-second)_10%,var(--color-bg-card))]",
                         "disabled:cursor-not-allowed disabled:opacity-40"

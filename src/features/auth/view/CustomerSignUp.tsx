@@ -25,7 +25,7 @@ export default function CustomerSignUp({ role, setRole }: CustomerSignUpProps) {
     const { t } = useTranslation();
     const { mutate: registerUser, isPending } = useRegister();
     const selectClasses =
-        "w-full appearance-none rounded-lg border border-[#E4F0FB] bg-[linear-gradient(180deg,#E4F0FB_0%,#E5F3FF_100%)] px-4 py-2.5 pe-10 text-sm text-custom-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors";
+        "w-full appearance-none rounded-lg border border-custom-secondary bg-custom-card px-4 py-2.5 pe-10 text-sm text-custom-primary transition-colors focus:border-[var(--color-main)] focus:outline-none focus:ring-2 focus:ring-[color-mix(in_srgb,var(--color-main)_22%,transparent)]";
     const disabledSelectClasses =
         `${selectClasses} disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-custom-light`;
 
@@ -310,7 +310,7 @@ export default function CustomerSignUp({ role, setRole }: CustomerSignUpProps) {
                     <label className="flex items-start gap-2.5 cursor-pointer">
                         <input
                             type="checkbox"
-                            className="mt-0.5 h-4 w-4 rounded border-custom-secondary text-primary dark:text-cyan-400 focus:ring-primary"
+                            className="mt-0.5 h-4 w-4 rounded border-custom-secondary text-primary focus:ring-primary"
                             {...register("agree", {
                                 validate: (v) => v || t("validation.acceptTerms"),
                             })}
@@ -319,14 +319,14 @@ export default function CustomerSignUp({ role, setRole }: CustomerSignUpProps) {
                             {t("auth.agreeToTerms")}{""}
                             <Link
                                 to="/terms"
-                                className="text-primary dark:text-cyan-400 font-medium hover:underline"
+                                className="text-primary font-medium hover:underline"
                             >
                                 {t("auth.termsOfService")}
                             </Link>{""}
                             {t("auth.and")}{""}
                             <Link
                                 to="/privacy"
-                                className="text-primary dark:text-cyan-400 font-medium hover:underline"
+                                className="text-primary font-medium hover:underline"
                             >
                                 {t("auth.privacyPolicy")}
                             </Link>
@@ -353,7 +353,7 @@ export default function CustomerSignUp({ role, setRole }: CustomerSignUpProps) {
                             {t("common.alreadyHaveAccount")}{" "}
                             <Link
                                 to={paths.auth.jwt.signIn}
-                                className="text-primary dark:text-cyan-400 font-medium hover:underline"
+                                className="text-primary font-medium hover:underline"
                             >
                                 {t("common.login")}
                             </Link>
@@ -362,7 +362,7 @@ export default function CustomerSignUp({ role, setRole }: CustomerSignUpProps) {
                             {t("common.or")}{" "}
                             <Link
                                 to={paths.client.home}
-                                className="text-primary dark:text-cyan-400 font-medium hover:underline"
+                                className="text-primary font-medium hover:underline"
                             >
                                 {t("auth.continueAsGuest")}
                             </Link>

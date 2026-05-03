@@ -13,29 +13,38 @@ export default function DeleteAccount() {
     const deleteAccount = useDeleteAccount();
 
     return (
-        <div className="p-6" dir={isRTL ? "rtl" : "ltr"}>
-            <h2 className="text-xl font-bold text-custom-primary mb-2">
-                {t("account.settings.deleteAccount")}
-            </h2>
-            <p className="text-sm text-custom-secondary mb-6">
-                {t("account.settings.deleteAccountDesc")}
-            </p>
+        <div
+            className="relative overflow-hidden rounded-3xl border border-[color-mix(in_srgb,var(--color-error)_22%,var(--color-border-primary))] bg-[linear-gradient(135deg,var(--color-bg-card)_0%,color-mix(in_srgb,var(--color-error)_8%,var(--color-bg-card))_100%)] p-6 shadow-[0_18px_44px_-22px_color-mix(in_srgb,var(--color-error)_35%,transparent)]"
+            dir={isRTL ? "rtl" : "ltr"}
+        >
+            <div
+                className="pointer-events-none absolute -end-16 -top-20 h-44 w-44 rounded-full bg-[var(--color-error)] opacity-[0.12] blur-3xl"
+                aria-hidden
+            />
+            <div className="relative">
+                <h2 className="text-xl font-bold text-custom-primary mb-2">
+                    {t("account.settings.deleteAccount")}
+                </h2>
+                <p className="text-sm text-custom-secondary mb-6 leading-relaxed max-w-xl">
+                    {t("account.settings.deleteAccountDesc")}
+                </p>
 
-            <Button
-                type="button"
-                variant="danger"
-                size="lg"
-                onClick={() => setShowConfirm(true)}
-                className="text-white rounded-xl"
-            >
-                {t("account.settings.deleteAccount")}
-            </Button>
+                <Button
+                    type="button"
+                    variant="danger"
+                    size="lg"
+                    onClick={() => setShowConfirm(true)}
+                    className="text-white rounded-xl shadow-[0_10px_24px_-12px_color-mix(in_srgb,var(--color-error)_55%,transparent)]"
+                >
+                    {t("account.settings.deleteAccount")}
+                </Button>
+            </div>
 
             <BasePopup
                 isOpen={showConfirm}
                 onClose={() => setShowConfirm(false)}
                 icon={
-                    <div className="w-20 h-20 rounded-full bg-red-500 flex items-center justify-center shadow-lg">
+                    <div className="w-20 h-20 rounded-full bg-[var(--color-error)] flex items-center justify-center shadow-[0_10px_28px_-10px_color-mix(in_srgb,var(--color-error)_55%,transparent)] ring-4 ring-[color-mix(in_srgb,var(--color-error)_18%,transparent)]">
                         <MdDeleteForever className="w-10 h-10 text-white" />
                     </div>
                 }

@@ -36,11 +36,11 @@ const ThumbnailButton = memo(function ThumbnailButton({
    type="button"
    onClick={() => onSelect(index)}
    className={cn(
-    "group relative shrink-0 overflow-hidden rounded-xl bg-slate-100 ring-1 transition-all duration-300 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900/30",
+    "group relative shrink-0 overflow-hidden rounded-xl bg-slate-100 dark:bg-[color-mix(in_srgb,var(--color-api-second)_14%,#10121a)] ring-1 transition-all duration-300 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900/30 dark:focus-visible:ring-[color-mix(in_srgb,var(--color-main)_45%,transparent)]",
     "h-16 w-16 sm:h-[72px] sm:w-[72px]",
     isSelected
-     ?"scale-105 ring-2 ring-slate-900 shadow-sm"
-     :"ring-slate-200 hover:-translate-y-0.5 hover:ring-slate-300 hover:shadow-sm"
+     ?"scale-105 ring-2 ring-slate-900 dark:ring-[color-mix(in_srgb,var(--color-main)_45%,transparent)] shadow-sm"
+     :"ring-slate-200 dark:ring-[color-mix(in_srgb,var(--color-main)_22%,#1f2230)] hover:-translate-y-0.5 hover:ring-slate-300 dark:hover:ring-[color-mix(in_srgb,var(--color-api-second)_30%,#22253a)] hover:shadow-sm"
    )}
    aria-label={`Thumbnail ${index + 1}`}
    aria-pressed={isSelected}
@@ -57,7 +57,7 @@ const ThumbnailButton = memo(function ThumbnailButton({
    <span
     className={cn(
      "absolute inset-0 transition-colors duration-300",
-     isSelected ?"bg-slate-900/5":"bg-transparent group-hover:bg-slate-900/5"
+     isSelected ?"bg-slate-900/5 dark:bg-[color-mix(in_srgb,var(--color-main)_18%,transparent)]":"bg-transparent group-hover:bg-slate-900/5 dark:group-hover:bg-[color-mix(in_srgb,var(--color-main)_14%,transparent)]"
     )}
    />
   </button>
@@ -131,7 +131,7 @@ export default function ProductImageGallery({
  return (
  <div className={cn("flex flex-col gap-4", className)}>
  {/* Main Image */}
- <div className="relative w-full overflow-hidden rounded-2xl bg-slate-100">
+ <div className="relative w-full overflow-hidden rounded-2xl bg-slate-100 dark:bg-[color-mix(in_srgb,var(--color-api-second)_14%,#10121a)]">
  <div className="aspect-[1/1] w-full">
   <div className="relative h-full w-full">
    <AnimatePresence mode="wait" initial={false}>
@@ -164,9 +164,9 @@ export default function ProductImageGallery({
  size="sm"
  aria-label="Share product"
  onClick={onShare}
- className="h-10 w-10 rounded-xl bg-custom-card/95 p-0 shadow-sm ring-1 ring-slate-200 hover:bg-custom-card"
+ className="h-10 w-10 rounded-xl bg-custom-card/95 dark:bg-[color-mix(in_srgb,var(--color-main)_22%,#0e1017)]/90 p-0 shadow-sm ring-1 ring-slate-200 dark:ring-[color-mix(in_srgb,var(--color-api-second)_28%,transparent)] hover:bg-custom-card dark:hover:bg-[color-mix(in_srgb,var(--color-main)_28%,#0e1017)]"
  >
- <HiShare className="h-5 w-5 text-slate-700"/>
+ <HiShare className="h-5 w-5 text-slate-700 dark:text-[var(--color-text)]"/>
  </Button>
  )}
 
@@ -176,7 +176,7 @@ export default function ProductImageGallery({
  onToggle={onToggleFavorite}
  size="md"
  ariaLabel="Toggle favorite"
- className="rounded-xl bg-custom-card/95 shadow-sm ring-1 ring-slate-200 hover:bg-custom-card border-0"
+ className="rounded-xl bg-custom-card/95 dark:bg-[color-mix(in_srgb,var(--color-main)_22%,#0e1017)]/90 shadow-sm ring-1 ring-slate-200 dark:ring-[color-mix(in_srgb,var(--color-api-second)_28%,transparent)] hover:bg-custom-card dark:hover:bg-[color-mix(in_srgb,var(--color-main)_28%,#0e1017)] border-0"
  />
  )}
  </div>
@@ -190,10 +190,10 @@ export default function ProductImageGallery({
  <button
  type="button"
  onClick={handlePreviousThumbnails}
- className="absolute left-0 z-10 grid h-9 w-9 place-items-center rounded-xl bg-custom-card shadow-sm ring-1 ring-slate-200 hover:bg-slate-50"
+ className="absolute left-0 z-10 grid h-9 w-9 place-items-center rounded-xl bg-custom-card dark:bg-[color-mix(in_srgb,var(--color-main)_18%,#13151c)] shadow-sm ring-1 ring-slate-200 dark:ring-[color-mix(in_srgb,var(--color-api-second)_28%,transparent)] hover:bg-slate-50 dark:hover:bg-[color-mix(in_srgb,var(--color-api-second)_18%,#10121a)]"
  aria-label="Previous thumbnails"
  >
- <HiChevronLeft className="h-5 w-5 text-slate-700"/>
+ <HiChevronLeft className="h-5 w-5 text-slate-700 dark:text-[var(--color-text)]"/>
  </button>
  )}
 
@@ -220,10 +220,10 @@ export default function ProductImageGallery({
  <button
  type="button"
  onClick={handleNextThumbnails}
- className="absolute right-0 z-10 grid h-9 w-9 place-items-center rounded-xl bg-custom-card shadow-sm ring-1 ring-slate-200 hover:bg-slate-50"
+ className="absolute right-0 z-10 grid h-9 w-9 place-items-center rounded-xl bg-custom-card dark:bg-[color-mix(in_srgb,var(--color-main)_18%,#13151c)] shadow-sm ring-1 ring-slate-200 dark:ring-[color-mix(in_srgb,var(--color-api-second)_28%,transparent)] hover:bg-slate-50 dark:hover:bg-[color-mix(in_srgb,var(--color-api-second)_18%,#10121a)]"
  aria-label="Next thumbnails"
  >
- <HiChevronRight className="h-5 w-5 text-slate-700"/>
+ <HiChevronRight className="h-5 w-5 text-slate-700 dark:text-[var(--color-text)]"/>
  </button>
  )}
  </div>

@@ -71,7 +71,7 @@ export default function ShopVariantsPreview({
                         selectable && !outOfStock && "cursor-pointer",
                         selectable && isSelected
                             ? "border-primary bg-[color-mix(in_srgb,var(--color-primary)_8%,var(--color-bg-card))] shadow-md ring-2 ring-primary/35 dark:bg-[color-mix(in_srgb,var(--color-primary)_12%,var(--color-bg-surface))]"
-                            : "border-custom-primary/60 bg-custom-secondary/40",
+                            : "border-custom-primary/60 bg-custom-secondary/40 dark:border-[color-mix(in_srgb,var(--color-main)_22%,#1f2230)] dark:bg-[color-mix(in_srgb,var(--color-api-second)_18%,#10121a)]",
                         selectable &&
                             !isSelected &&
                             !outOfStock &&

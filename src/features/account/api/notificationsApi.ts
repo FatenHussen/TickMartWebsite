@@ -24,6 +24,7 @@ export interface NotificationsListParams {
   read?: boolean;
   is_fixed?: boolean;
   page?: number;
+  target_page?: string;
 }
 
 export interface NotificationsPaginationMeta {
@@ -63,6 +64,7 @@ export const _NotificationsApi = {
     if (params?.read !== undefined) searchParams.set("read", params.read ? "1" : "0");
     if (params?.is_fixed !== undefined) searchParams.set("is_fixed", "1");
     if (params?.page !== undefined) searchParams.set("page", String(params.page));
+    if (params?.target_page) searchParams.set("target_page", params.target_page);
     const query = searchParams.toString();
     const url = query ? `${apiRoutes.notifications.list}?${query}` : apiRoutes.notifications.list;
     const res = await _axios.get<NotificationsListResponse>(url);

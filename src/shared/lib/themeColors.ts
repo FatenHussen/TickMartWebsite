@@ -1,65 +1,89 @@
 import type { AppSettingsColorPalette } from "@/features/account/api/settingsApi";
-import { lighten, darken, withAlpha } from "./colorUtils";
+import { lighten, darken, withAlpha, shade, tint, mixHex } from "./colorUtils";
 
 /** CSS variable name → value */
 export type CSSVariableMap = Record<string, string>;
 
 /**
- * Surfaces, borders, and tints aligned with `src/index.css` @theme.
- * Intentionally not driven by API `second_color` so page backgrounds stay stable.
+ * Light-mode page chrome from API `main_color` / `second_color`
+ * (tints toward white so contrast stays readable).
  */
-const FIXED_LIGHT_SURFACE: CSSVariableMap = {
-  "--color-bg": "#ffffff",
-  "--color-blue-off": "#e4f0fb",
-  "--color-blue-very-light": "#e5f3ff",
-  "--color-blue-border": "#eff6ff",
-  "--color-bg-primary": "#ffffff",
-  "--color-bg-secondary": "#e4f0fb",
-  "--color-bg-tertiary": "#f3f4f6",
-  "--color-bg-hover": "#e4f0fb",
-  "--color-bg-active": "#e0f7fa",
-  "--color-bg-light": "#f8fafc",
-  "--color-bg-card": "#ffffff",
-  "--color-bg-muted": "#f3f4f6",
-  "--color-bg-surface": "#ffffff",
-  "--color-bg-input": "#ffffff",
-  "--color-bg-accent-soft": "#e5f3ff",
-  "--color-text-inverse": "#ffffff",
-  "--color-border-primary": "#e4f0fb",
-  "--color-border-secondary": "#d1d5db",
-  "--color-border-light": "#e5e7eb",
-};
+export function buildApiTintedLightSurfaces(main: string, second: string): CSSVariableMap {
+  return {
+    "--color-bg": tint(main, 0.97),
+    "--color-blue-off": tint(main, 0.88),
+    "--color-blue-very-light": tint(main, 0.9),
+    "--color-blue-border": tint(main, 0.93),
+    "--color-bg-primary": tint(main, 0.985),
+    "--color-bg-secondary": tint(main, 0.88),
+    "--color-bg-tertiary": tint(second, 0.92),
+    "--color-bg-hover": tint(main, 0.86),
+    "--color-bg-active": withAlpha(main, 0.14),
+    "--color-bg-light": tint(main, 0.92),
+    "--color-bg-card": tint(main, 0.993),
+    "--color-bg-muted": tint(second, 0.95),
+    "--color-bg-surface": tint(main, 0.99),
+    "--color-bg-input": tint(main, 0.995),
+    "--color-bg-accent-soft": withAlpha(second, 0.1),
+    "--color-text-inverse": "#ffffff",
+    "--color-border-primary": withAlpha(main, 0.22),
+    "--color-border-secondary": withAlpha(second, 0.18),
+    "--color-border-light": tint(main, 0.78),
+    "--color-overlay-brand": withAlpha(darken(main, 12), 0.5),
+    "--color-overlay-brand-light": withAlpha(darken(main, 12), 0.25),
+  };
+}
 
-const FIXED_DARK_SURFACE: CSSVariableMap = {
-  "--color-bg": "#1e293b",
-  "--color-blue-off": "#1a2332",
-  "--color-blue-very-light": "#1e293b",
-  "--color-blue-border": "#334155",
-  "--color-bg-primary": "#1e293b",
-  "--color-bg-secondary": "#1a2332",
-  "--color-bg-tertiary": "#0f172a",
-  "--color-bg-hover": "#334155",
-  "--color-bg-active": "#1e3a5f",
-  "--color-bg-light": "#334155",
-  "--color-bg-card": "#1e293b",
-  "--color-bg-muted": "#334155",
-  "--color-bg-surface": "#1e293b",
-  "--color-bg-input": "#1e293b",
-  "--color-bg-accent-soft": "#1a2332",
-  "--color-text-inverse": "#1a1a1a",
-  "--color-border-primary": "#334155",
-  "--color-border-secondary": "#475569",
-  "--color-border-light": "#334155",
-  "--color-overlay-brand": withAlpha("#1e293b", 0.7),
-  "--color-overlay-brand-light": withAlpha("#1e293b", 0.4),
-};
+/**
+ * Dark-mode page chrome from API `main_color` / `second_color`
+ * (deep `shade` / alpha mixes — same idea as account dark scope).
+ */
+export function buildApiTintedDarkSurfaces(main: string, second: string): CSSVariableMap {
+  const bgRoot = shade(main, 0.88);
+  const bgPrimary = shade(main, 0.85);
+  const bgSecondary = shade(second, 0.82);
+  const bgTertiary = shade(main, 0.92);
+  /** Cards: blend API `main` + `second` (dark only — see `buildApiTintedLightSurfaces` for light). */
+  const cardMain = shade(main, 0.82);
+  const cardSecond = shade(second, 0.8);
+  const bgCard = mixHex(cardMain, cardSecond, 0.36);
+  const bgLight = shade(main, 0.8);
+  const bgHover = shade(main, 0.7);
+  const bgActive = shade(main, 0.6);
+  const bgMuted = shade(second, 0.86);
+  const bgAccentSoft = withAlpha(second, 0.16);
+
+  return {
+    "--color-bg": bgRoot,
+    "--color-blue-off": bgSecondary,
+    "--color-blue-very-light": bgPrimary,
+    "--color-blue-border": withAlpha(main, 0.22),
+    "--color-bg-primary": bgPrimary,
+    "--color-bg-secondary": bgSecondary,
+    "--color-bg-tertiary": bgTertiary,
+    "--color-bg-hover": bgHover,
+    "--color-bg-active": bgActive,
+    "--color-bg-light": bgLight,
+    "--color-bg-card": bgCard,
+    "--color-bg-muted": bgMuted,
+    "--color-bg-surface": bgPrimary,
+    "--color-bg-input": shade(main, 0.9),
+    "--color-bg-accent-soft": bgAccentSoft,
+    "--color-text-inverse": shade(main, 0.95),
+    "--color-border-primary": withAlpha(main, 0.18),
+    "--color-border-secondary": withAlpha(second, 0.22),
+    "--color-border-light": withAlpha(main, 0.12),
+    "--color-overlay-brand": withAlpha(shade(main, 0.7), 0.7),
+    "--color-overlay-brand-light": withAlpha(shade(main, 0.7), 0.4),
+  };
+}
 
 /**
  * Derive a full light-mode palette from API colours.
  *
  *   main (main_color) → brand / accent / primary
  *   text (text_color) → body text tokens
- *   Backgrounds → fixed design tokens (see FIXED_LIGHT_SURFACE), not `second_color`.
+ *   Surfaces / borders → tinted from `main_color` + `second_color` (see `buildApiTintedLightSurfaces`).
  */
 export function buildLightPalette(colors: AppSettingsColorPalette): CSSVariableMap {
   const main = colors.main_color!;
@@ -83,7 +107,7 @@ export function buildLightPalette(colors: AppSettingsColorPalette): CSSVariableM
     // ── Derived brand shades ──
     "--color-blue-light": lighten(main, 12),
 
-    ...FIXED_LIGHT_SURFACE,
+    ...buildApiTintedLightSurfaces(main, second),
 
     // ── Text (ALL based on text_color directly) ──
     "--color-text-primary": text,
@@ -119,10 +143,6 @@ export function buildLightPalette(colors: AppSettingsColorPalette): CSSVariableM
     "--color-gradient-from": lighten(main, 8),
     "--color-gradient-to": darken(main, 12),
 
-    // ── Overlay ──
-    "--color-overlay-brand": withAlpha(darken(main, 12), 0.5),
-    "--color-overlay-brand-light": withAlpha(darken(main, 12), 0.25),
-
     // ── Shadow (from main_color) ──
     "--color-shadow": withAlpha(main, 0.1),
     "--color-shadow-strong": withAlpha(main, 0.18),
@@ -136,7 +156,7 @@ export function buildLightPalette(colors: AppSettingsColorPalette): CSSVariableM
 /**
  * Derive a full dark-mode palette from API `dark_color`.
  *
- * Backgrounds use FIXED_DARK_SURFACE (same idea as light mode).
+ * Surfaces / borders use `buildApiTintedDarkSurfaces` from API `main_color` / `second_color`.
  */
 export function buildDarkPalette(colors: AppSettingsColorPalette): CSSVariableMap {
   const main = colors.main_color!;
@@ -159,14 +179,14 @@ export function buildDarkPalette(colors: AppSettingsColorPalette): CSSVariableMa
     // ── Derived brand shades ──
     "--color-blue-light": lighten(main, 12),
 
-    ...FIXED_DARK_SURFACE,
+    ...buildApiTintedDarkSurfaces(main, second),
 
     // ── Text (ALL based on text_color directly) ──
     "--color-text-primary": text,
-    "--color-text-secondary": darken(text, 8),
-    "--color-text-tertiary": darken(text, 16),
+    "--color-text-secondary": withAlpha(text, 0.88),
+    "--color-text-tertiary": withAlpha(text, 0.72),
     "--color-text-heading": text,
-    "--color-text-muted": darken(text, 12),
+    "--color-text-muted": withAlpha(text, 0.78),
 
     // ── Borders ──
     "--color-border-accent": darken(main, 8),
@@ -234,4 +254,23 @@ export function isPaletteComplete(p?: AppSettingsColorPalette): p is AppSettings
   text_color: string;
 } {
   return Boolean(p?.main_color && p?.text_color);
+}
+
+/**
+ * Which API palette should drive CSS variables for the active UI theme.
+ * In **dark** mode, uses `dark_color` when complete; otherwise falls back to
+ * `color` so `buildDarkPalette` still receives API main/text (fixes empty theme
+ * when the backend omits or partially fills `dark_color`).
+ */
+export function resolveApiPaletteForTheme(
+  theme: "light" | "dark",
+  lightPalette?: AppSettingsColorPalette,
+  darkPalette?: AppSettingsColorPalette,
+): AppSettingsColorPalette | undefined {
+  if (theme === "light") {
+    return isPaletteComplete(lightPalette) ? lightPalette : undefined;
+  }
+  if (isPaletteComplete(darkPalette)) return darkPalette;
+  if (isPaletteComplete(lightPalette)) return lightPalette;
+  return undefined;
 }

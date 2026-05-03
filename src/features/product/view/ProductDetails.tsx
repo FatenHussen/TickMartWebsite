@@ -565,17 +565,17 @@ function ProductDetails() {
 
     if (isLoading) {
         return (
-            <div className="bg-custom-primary min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-light"></div>
+            <div className="flex min-h-screen items-center justify-center bg-custom-primary dark:bg-[color-mix(in_srgb,var(--color-main)_18%,#13151c)]">
+                <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-t-2 border-primary-light dark:border-b-[color-mix(in_srgb,var(--color-main)_45%,transparent)] dark:border-t-[color-mix(in_srgb,var(--color-main)_45%,transparent)]" />
             </div>
         );
     }
 
     if (error || !product) {
         return (
-            <div className="bg-custom-primary min-h-screen flex items-center justify-center">
+            <div className="flex min-h-screen items-center justify-center bg-custom-primary dark:bg-[color-mix(in_srgb,var(--color-main)_18%,#13151c)]">
                 <div className="text-center">
-                    <p className="text-custom-primary text-lg">
+                    <p className="text-lg text-custom-primary dark:text-[var(--color-text)]">
                         {t("product.notFound", "Product not found")}
                     </p>
                 </div>
@@ -624,7 +624,7 @@ function ProductDetails() {
         product.available_shops.length > 0;
 
     return (
-        <div className="bg-custom-primary">
+        <div className="bg-custom-primary dark:bg-[color-mix(in_srgb,var(--color-main)_18%,#13151c)]">
             <div className="page-container py-8" dir={isRTL ? "rtl" : "ltr"}>
                 <div className="grid grid-cols-1 gap-24 lg:grid-cols-2">
                     {/* Left – Product Images */}
@@ -697,7 +697,7 @@ function ProductDetails() {
                         {/* Food: Special instructions textarea */}
                         {isFood && (
                             <div className="flex flex-col gap-2">
-                                <label className="text-sm font-semibold text-text-primary">
+                                <label className="text-sm font-semibold text-text-primary dark:text-[var(--color-text)]">
                                     {t("product.specialInstructions", "Special instructions")}
                                 </label>
                                 <textarea
@@ -708,7 +708,7 @@ function ProductDetails() {
                                         "Any special requests..."
                                     )}
                                     rows={3}
-                                    className="w-full resize-none rounded-lg border border-custom-primary bg-custom-primary px-4 py-3 text-sm text-custom-primary placeholder-gray-400 outline-none transition-colors focus:border-primary-light focus:ring-1 focus:ring-primary-light"
+                                    className="w-full resize-none rounded-lg border border-custom-primary bg-custom-primary px-4 py-3 text-sm text-custom-primary placeholder-gray-400 outline-none transition-colors focus:border-primary-light focus:ring-1 focus:ring-primary-light dark:border-[color-mix(in_srgb,var(--color-main)_22%,#1f2230)] dark:bg-[color-mix(in_srgb,var(--color-main)_18%,#13151c)] dark:text-[var(--color-text)] dark:placeholder:text-[color-mix(in_srgb,var(--color-text)_55%,transparent)] dark:focus:border-[var(--color-main)] dark:focus:ring-[color-mix(in_srgb,var(--color-main)_45%,transparent)]"
                                 />
                             </div>
                         )}
@@ -739,7 +739,7 @@ function ProductDetails() {
                             product.category_details &&
                             product.category_details.length > 0 && (
                                 <div className="">
-                                    <h3 className="mb-3 border-b-2 border-primary/20 pb-2 text-lg font-semibold text-primary">
+                                    <h3 className="mb-3 border-b-2 border-primary/20 pb-2 text-lg font-semibold text-primary dark:border-[color-mix(in_srgb,var(--color-main)_22%,transparent)] dark:text-[var(--color-text)]">
                                         {t(
                                             "product.categoryDetails",
                                             "Category Details"
@@ -756,7 +756,7 @@ function ProductDetails() {
                             product.extra_details &&
                             product.extra_details.length > 0 && (
                                 <div className="mt-4">
-                                    <h3 className="mb-3 border-b-2 border-primary/20 pb-2 text-lg font-semibold text-primary">
+                                    <h3 className="mb-3 border-b-2 border-primary/20 pb-2 text-lg font-semibold text-primary dark:border-[color-mix(in_srgb,var(--color-main)_22%,transparent)] dark:text-[var(--color-text)]">
                                         {t("product.details", "Details")}
                                     </h3>
                                     <ExtraDetailsTable
@@ -832,12 +832,12 @@ function ProductDetails() {
                                 <button
                                     type="button"
                                     onClick={() => setRatingModalOpen(true)}
-                                    className="px-4 py-2 rounded-lg bg-[var(--color-api-second)] hover:bg-[var(--color-api-second-hover)] text-white font-medium text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2"
+                                    className="rounded-lg bg-[var(--color-api-second)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--color-api-second-hover)] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 dark:text-[var(--color-text)]"
                                 >
                                     {t("account.myReviews.rateProduct", "قيم هذا المنتج")}
                                 </button>
                             ) : (
-                                <p className="text-sm text-custom-secondary">
+                                <p className="text-sm text-custom-secondary dark:text-[color-mix(in_srgb,var(--color-text)_82%,transparent)]">
                                     {canRateData.reason_ar || canRateData.reason ||
                                         t("account.myReviews.mustPurchaseToRate", "يجب شراء هذا المنتج قبل تقييمه")}
                                 </p>
@@ -846,7 +846,7 @@ function ProductDetails() {
                     )}
                     {isRatingsLoading ? (
                         <div className="mt-10 flex justify-center py-8">
-                            <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary-light" />
+                            <div className="h-10 w-10 animate-spin rounded-full border-b-2 border-t-2 border-primary-light dark:border-b-[color-mix(in_srgb,var(--color-main)_45%,transparent)] dark:border-t-[color-mix(in_srgb,var(--color-main)_45%,transparent)]" />
                         </div>
                     ) : (
                         <ProductReviews
@@ -867,7 +867,7 @@ function ProductDetails() {
                             className={cn(
                                 "flex h-14 w-14 items-center justify-center rounded-2xl shadow-inner",
                                 "bg-gradient-to-br from-primary/25 via-[color-mix(in_srgb,var(--color-api-second)_18%,var(--color-bg-card))] to-primary/20",
-                                "text-primary ring-2 ring-primary/30 dark:ring-primary/20"
+                                "text-primary ring-2 ring-primary/30 dark:from-[color-mix(in_srgb,var(--color-main)_22%,#0e1017)] dark:via-[color-mix(in_srgb,var(--color-api-second)_18%,#10121a)] dark:to-[color-mix(in_srgb,var(--color-main)_18%,#13151c)] dark:text-[var(--color-text)] dark:ring-[color-mix(in_srgb,var(--color-main)_45%,transparent)]"
                             )}
                         >
                             <HiEye className="h-8 w-8" aria-hidden />
@@ -887,12 +887,12 @@ function ProductDetails() {
                               )
                     }
                     maxWidth="xl"
-                    backdropClassName="pv-modal-backdrop bg-gradient-to-br from-slate-950/80 via-[color-mix(in_srgb,var(--color-primary)_12%,#0f172a)] to-slate-900/80 backdrop-blur-md"
+                    backdropClassName="pv-modal-backdrop bg-gradient-to-br from-slate-950/80 via-[color-mix(in_srgb,var(--color-primary)_12%,#0f172a)] to-slate-900/80 backdrop-blur-md dark:from-[color-mix(in_srgb,var(--color-main)_88%,transparent)] dark:via-[color-mix(in_srgb,var(--color-main)_35%,#0c0e14)] dark:to-[color-mix(in_srgb,var(--color-api-second)_82%,transparent)]"
                     className={cn(
                         "pv-modal-panel border-0",
                         "bg-gradient-to-b from-white via-white to-slate-50/95",
                         "shadow-[0_28px_90px_-20px_color-mix(in_srgb,var(--color-primary)_32%,transparent)]",
-                        "ring-2 ring-primary/25 dark:from-slate-900 dark:via-slate-950 dark:to-slate-950 dark:ring-primary/20"
+                        "ring-2 ring-primary/25 dark:from-[color-mix(in_srgb,var(--color-main)_18%,#13151c)] dark:via-[color-mix(in_srgb,var(--color-api-second)_18%,#10121a)] dark:to-[color-mix(in_srgb,var(--color-main)_22%,#0e1017)] dark:ring-primary/20"
                     )}
                     contentClassName="!pt-14 text-start max-h-[78vh] overflow-y-auto !px-6 !pb-6"
                     actions={
@@ -956,7 +956,7 @@ function ProductDetails() {
                                 className={cn(
                                     "-mx-1 flex items-center gap-2 overflow-hidden rounded-xl px-3 py-2",
                                     "bg-gradient-to-r from-primary/12 via-[color-mix(in_srgb,var(--color-api-second)_10%,transparent)] to-transparent",
-                                    "text-xs font-semibold uppercase tracking-[0.2em] text-primary dark:text-primary/90"
+                                    "text-xs font-semibold uppercase tracking-[0.2em] text-primary dark:from-[color-mix(in_srgb,var(--color-main)_18%,transparent)] dark:via-[color-mix(in_srgb,var(--color-api-second)_14%,transparent)] dark:text-[var(--color-text)]"
                                 )}
                             >
                                 <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary shadow-[0_0_10px_var(--color-shadow-accent)]" />
@@ -966,7 +966,7 @@ function ProductDetails() {
                             {isBoughtWithPreviewLoading && (
                                 <div className="flex flex-col items-center justify-center gap-3 py-14">
                                     <div className="h-12 w-12 animate-spin rounded-full border-2 border-b-2 border-t-2 border-primary/80 border-t-transparent" />
-                                    <p className="text-sm text-custom-secondary">
+                                    <p className="text-sm text-custom-secondary dark:text-[color-mix(in_srgb,var(--color-text)_82%,transparent)]">
                                         {t(
                                             "product.quickViewLoadingHint",
                                             "Fetching photos, prices & variants…"
@@ -984,7 +984,7 @@ function ProductDetails() {
                             )}
                             {boughtWithPreview && !isBoughtWithPreviewLoading && (
                                 <>
-                                    <div className="group relative overflow-hidden rounded-2xl shadow-xl ring-1 ring-black/5 dark:ring-white/10">
+                                    <div className="group relative overflow-hidden rounded-2xl shadow-xl ring-1 ring-black/5 dark:ring-[color-mix(in_srgb,var(--color-text)_14%,transparent)]">
                                         <div className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-t from-black/35 via-transparent to-transparent" />
                                         <img
                                             src={
@@ -1038,7 +1038,7 @@ function ProductDetails() {
                                                 </p>
                                             )}
                                     </div>
-                                    <div className="rounded-2xl border border-custom-primary/15 bg-gradient-to-br from-custom-secondary/50 to-transparent p-4 dark:from-slate-800/50">
+                                    <div className="rounded-2xl border border-custom-primary/15 bg-gradient-to-br from-custom-secondary/50 to-transparent p-4 dark:from-[color-mix(in_srgb,var(--color-api-second)_18%,#10121a)] dark:border-[color-mix(in_srgb,var(--color-main)_18%,transparent)]">
                                         <ProductDescription
                                             description={
                                                 boughtWithPreview.description
@@ -1064,11 +1064,11 @@ function ProductDetails() {
                                             onSelect={
                                                 setPreviewSelectedShopVariantId
                                             }
-                                            className="rounded-2xl border border-primary/20 bg-[color-mix(in_srgb,var(--color-api-second)_8%,var(--color-bg-card))] p-4 dark:bg-[color-mix(in_srgb,var(--color-primary)_8%,var(--color-bg-surface))]"
+                                            className="rounded-2xl border border-primary/20 bg-[color-mix(in_srgb,var(--color-api-second)_8%,var(--color-bg-card))] p-4 dark:border-[color-mix(in_srgb,var(--color-main)_22%,transparent)] dark:bg-[color-mix(in_srgb,var(--color-api-second)_18%,#10121a)]"
                                         />
                                     )}
-                                    <div className="rounded-xl border border-custom-primary/20 bg-custom-secondary/30 px-3 py-2">
-                                        <p className="mb-2 text-xs font-medium text-custom-secondary">
+                                    <div className="rounded-xl border border-custom-primary/20 bg-custom-secondary/30 px-3 py-2 dark:border-[color-mix(in_srgb,var(--color-main)_22%,#1f2230)] dark:bg-[color-mix(in_srgb,var(--color-api-second)_18%,#10121a)]">
+                                        <p className="mb-2 text-xs font-medium text-custom-secondary dark:text-[color-mix(in_srgb,var(--color-text)_82%,transparent)]">
                                             {t("product.quantity", "Quantity")}
                                         </p>
                                         <ProductQuantitySelector
@@ -1099,7 +1099,7 @@ function ProductDetails() {
                     contentClassName="text-left max-h-[60vh] overflow-y-auto"
                 >
                     {selectedIcon?.description && (
-                        <p className="whitespace-pre-wrap text-sm leading-relaxed text-custom-primary">
+                        <p className="whitespace-pre-wrap text-sm leading-relaxed text-custom-primary dark:text-[var(--color-text)]">
                             {selectedIcon.description}
                         </p>
                     )}

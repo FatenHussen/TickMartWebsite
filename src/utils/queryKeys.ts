@@ -421,7 +421,7 @@ export const queryKeys = {
  },
  notifications: {
  all: () => ["notifications"] as const,
- list: (params?: { read?: boolean; page?: number }) =>
+ list: (params?: { read?: boolean; page?: number; target_page?: string }) =>
  params ? (["notifications","list", params] as const) : (["notifications","list"] as const),
  },
 

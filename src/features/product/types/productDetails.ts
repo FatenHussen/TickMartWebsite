@@ -46,10 +46,17 @@ export interface CategoryDetail {
  value: string;
 }
 
+/** API may return a plain string or `{ ar, en }` */
+export type LocalizedOrString =
+    | string
+    | { ar?: string | null; en?: string | null }
+    | null
+    | undefined;
+
 export interface ExtraDetail {
  id: number;
- key: string;
- value: string;
+ key: LocalizedOrString;
+ value: LocalizedOrString;
  price?: number;
 }
 

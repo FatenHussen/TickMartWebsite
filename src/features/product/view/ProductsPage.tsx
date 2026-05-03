@@ -85,6 +85,28 @@ export default function ProductsPage() {
         mapToOption: (shop) => ({ value: shop.id, label: shop.name }),
     });
 
+    const numericCategoryOptions = useMemo(
+        () =>
+            categoryOptions
+                .filter((opt): opt is { value: number; label: string } => typeof opt.value === "number")
+                .map((opt) => ({ value: opt.value, label: opt.label })),
+        [categoryOptions]
+    );
+    const numericBrandOptions = useMemo(
+        () =>
+            brandOptions
+                .filter((opt): opt is { value: number; label: string } => typeof opt.value === "number")
+                .map((opt) => ({ value: opt.value, label: opt.label })),
+        [brandOptions]
+    );
+    const numericShopOptions = useMemo(
+        () =>
+            shopOptions
+                .filter((opt): opt is { value: number; label: string } => typeof opt.value === "number")
+                .map((opt) => ({ value: opt.value, label: opt.label })),
+        [shopOptions]
+    );
+
     const listFilters = useMemo(() => {
         const { page: _p, per_page: _pp, ...rest } = applied;
         return rest;
@@ -174,9 +196,9 @@ export default function ProductsPage() {
             onDraftChange={setDraft}
             onApply={applyFilters}
             onClear={clearFilters}
-            categoryOptions={categoryOptions}
-            brandOptions={brandOptions}
-            shopOptions={shopOptions}
+            categoryOptions={numericCategoryOptions}
+            brandOptions={numericBrandOptions}
+            shopOptions={numericShopOptions}
             onCategoryScroll={handleCatScroll}
             onBrandScroll={handleBrandScroll}
             onShopScroll={handleShopScroll}
@@ -187,13 +209,16 @@ export default function ProductsPage() {
     );
 
     return (
-        <div className="min-h-screen w-full min-w-0 bg-custom-primary" dir={isRTL ? "rtl" : "ltr"}>
+        <div
+            className="min-h-screen w-full min-w-0 bg-custom-primary dark:bg-[color-mix(in_srgb,var(--color-main)_18%,#13151c)]"
+            dir={isRTL ? "rtl" : "ltr"}
+        >
             <div className="page-container w-full min-w-0 py-6 sm:py-8">
                 <div className="mb-4 sm:mb-6">
-                    <h1 className="text-xl font-bold text-custom-primary sm:text-2xl">
+                    <h1 className="text-xl font-bold text-custom-primary dark:text-[var(--color-text)] sm:text-2xl">
                         {t("productsListing.title", "Products")}
                     </h1>
-                    <p className="mt-2 text-sm text-custom-secondary">
+                    <p className="mt-2 text-sm text-custom-secondary dark:text-[color-mix(in_srgb,var(--color-text)_82%,transparent)]">
                         {t(
                             "productsListing.subtitle",
                             "Browse products and refine results with filters."
@@ -211,7 +236,9 @@ export default function ProductsPage() {
                 >
                     <div className="w-full min-w-0">
                         <div className="mb-3 sm:mb-4">
-                            <p className="text-xs text-custom-secondary sm:text-sm">{resultsLabel}</p>
+                            <p className="text-xs text-custom-secondary dark:text-[color-mix(in_srgb,var(--color-text)_82%,transparent)] sm:text-sm">
+                                {resultsLabel}
+                            </p>
                         </div>
 
                         {isLoading && products.length === 0 ? (
@@ -244,8 +271,8 @@ export default function ProductsPage() {
                                 )}
                             </>
                         ) : (
-                            <div className="flex items-center justify-center h-64 bg-custom-light rounded-2xl">
-                                <p className="text-custom-secondary">
+                            <div className="flex h-64 items-center justify-center rounded-2xl border border-transparent bg-custom-light dark:border-[color-mix(in_srgb,var(--color-main)_22%,#1f2230)] dark:bg-[color-mix(in_srgb,var(--color-api-second)_18%,#10121a)]">
+                                <p className="text-custom-secondary dark:text-[color-mix(in_srgb,var(--color-text)_82%,transparent)]">
                                     {t("home.noProductsFound", "No products found")}
                                 </p>
                             </div>

@@ -85,7 +85,7 @@ function getStatusSubtitleKey(status: ActiveOrderStatus): string {
 
 function getStageIcon(
   stage: ActiveOrderStatus,
-  state: "completed" | "active" | "upcoming"
+  state: "completed" | "active" | "upcoming",
 ) {
   if (state === "completed") {
     return (
@@ -99,7 +99,7 @@ function getStageIcon(
   const color =
     state === "active"
       ? "text-white"
-      : "text-stone-400 dark:text-custom-tertiary";
+      : "text-stone-400";
   const size = "h-5 w-5 sm:h-6 sm:w-6";
 
   switch (stage) {
@@ -155,6 +155,7 @@ export default function OrderTrackingCard({ order }: OrderTrackingCardProps) {
       <div
         key={stage}
         className="relative flex min-w-0 flex-1 flex-col items-center"
+        data-step-state={state}
       >
         {/* Connector to next step */}
         {!isLast && (
@@ -229,10 +230,8 @@ export default function OrderTrackingCard({ order }: OrderTrackingCardProps) {
         >
           <p
             className={cn(
-              "text-center text-[11px] font-bold sm:text-xs",
-              isUpcoming
-              ? "text-stone-500 dark:text-custom-tertiary"
-              : "text-custom-primary"
+              "info-home-step-title text-center text-[11px] font-bold sm:text-xs",
+              isUpcoming ? "text-stone-500" : "text-custom-primary",
             )}
           >
             {stage === "pending" && t("home.pending")}
@@ -242,10 +241,8 @@ export default function OrderTrackingCard({ order }: OrderTrackingCardProps) {
           </p>
           <p
             className={cn(
-              "mt-0.5 line-clamp-2 text-center text-[10px] leading-tight sm:text-[11px]",
-              isUpcoming
-                ? "text-stone-500 dark:text-custom-tertiary"
-                : "text-custom-secondary"
+              "info-home-step-sub mt-0.5 line-clamp-2 text-center text-[10px] leading-tight sm:text-[11px]",
+              isUpcoming ? "text-stone-500" : "text-custom-secondary",
             )}
           >
             {stage === "pending" && t("home.orderReceived")}
@@ -260,13 +257,17 @@ export default function OrderTrackingCard({ order }: OrderTrackingCardProps) {
 
   return (
     <div
-      className="relative overflow-hidden rounded-3xl border border-amber-200/90 bg-gradient-to-br from-[#FFF8EF] via-[#FFF3E0] to-[#FFE8CC] p-4 shadow-[0_8px_32px_-8px_color-mix(in_srgb,var(--color-primary)_25%,transparent)] animate-card-enter sm:p-6 dark:border-white/10 dark:from-bg-tertiary dark:via-bg-tertiary dark:to-bg-primary dark:shadow-none dark:ring-1 dark:ring-white/10"
+      className={cn(
+        "relative overflow-hidden rounded-3xl border border-amber-200/90 bg-gradient-to-br from-[#FFF8EF] via-[#FFF3E0] to-[#FFE8CC] p-4 shadow-[0_8px_32px_-8px_color-mix(in_srgb,var(--color-primary)_25%,transparent)] animate-card-enter sm:p-6",
+        "dark:border-white/[0.07] dark:shadow-[0_24px_60px_-22px_rgba(0,0,0,0.5),inset_0_1px_0_0_rgba(255,255,255,0.05)] dark:ring-1 dark:ring-white/[0.06]",
+        "dark:bg-[radial-gradient(110%_75%_at_100%_-5%,color-mix(in_srgb,var(--color-primary)_12%,transparent)_0%,transparent_55%),radial-gradient(95%_65%_at_0%_105%,color-mix(in_srgb,var(--color-api-second)_10%,transparent)_0%,transparent_52%),linear-gradient(168deg,color-mix(in_srgb,var(--color-bg-card)_100%,#080808)_0%,var(--color-bg-primary)_48%,var(--color-bg-tertiary)_100%)]",
+      )}
       dir={isRTL ? "rtl" : "ltr"}
     >
       {/* Decorative gradient blobs */}
       <div
         aria-hidden
-        className="pointer-events-none absolute -top-20 -right-20 h-52 w-52 rounded-full opacity-25 blur-3xl"
+        className="pointer-events-none absolute -top-20 -right-20 h-56 w-56 rounded-full opacity-25 blur-[44px] dark:opacity-[0.28]"
         style={{
           background:
             "radial-gradient(circle, var(--color-gradient-from) 0%, transparent 70%)",
@@ -274,7 +275,7 @@ export default function OrderTrackingCard({ order }: OrderTrackingCardProps) {
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute -bottom-24 -left-16 h-48 w-48 rounded-full opacity-20 blur-3xl"
+        className="pointer-events-none absolute -bottom-24 -left-16 h-52 w-52 rounded-full opacity-20 blur-[44px] dark:opacity-[0.24]"
         style={{
           background:
             "radial-gradient(circle, var(--color-gradient-to) 0%, transparent 70%)",
@@ -293,8 +294,8 @@ export default function OrderTrackingCard({ order }: OrderTrackingCardProps) {
           >
             <BsReceipt className="h-5 w-5 text-white" />
           </div>
-          <div className="min-w-0 flex-1 rounded-full border border-white/80 bg-white px-4 py-2.5 shadow-inner shadow-stone-200/60 dark:border-border-secondary dark:bg-bg-tertiary">
-            <p className="truncate text-center text-sm font-bold text-stone-900 sm:text-base dark:text-custom-primary">
+          <div className="min-w-0 flex-1 rounded-full border border-white/80 bg-white px-4 py-2.5 shadow-inner shadow-stone-200/60 transition-shadow duration-500 ease-out dark:border-white/[0.08] dark:bg-[linear-gradient(180deg,color-mix(in_srgb,var(--color-bg-tertiary)_94%,var(--color-bg-primary)_6%)_0%,color-mix(in_srgb,var(--color-bg-primary)_90%,#0a0a0a)_100%)] dark:shadow-[inset_0_2px_12px_rgba(0,0,0,0.28),inset_0_1px_0_0_rgba(255,255,255,0.055)]">
+            <p className="info-home-order-pill-text truncate text-center text-sm font-bold text-stone-900 sm:text-base">
               {t("orders.order")} #{orderDisplay}
             </p>
           </div>
@@ -303,14 +304,14 @@ export default function OrderTrackingCard({ order }: OrderTrackingCardProps) {
         {showTrackOrderButton && (
           <Link
             to={trackOrderUrl}
-            className="group inline-flex shrink-0 items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-white shadow-md transition-all hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 sm:px-4 sm:py-3 sm:text-base"
+            className="group inline-flex shrink-0 items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-white shadow-md transition-all duration-300 ease-out hover:shadow-lg hover:brightness-[1.03] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-offset-2 sm:px-4 sm:py-3 sm:text-base dark:shadow-[0_6px_22px_-10px_color-mix(in_srgb,var(--color-primary)_32%,transparent)] dark:hover:shadow-[0_10px_28px_-8px_color-mix(in_srgb,var(--color-primary)_40%,transparent)]"
             style={{
               background:
                 "linear-gradient(135deg, var(--color-gradient-from) 0%, var(--color-gradient-to) 100%)",
             }}
             aria-label={t("home.trackOrder")}
           >
-            <span className="flex h-6 w-6 items-center justify-center rounded-md bg-white/20 backdrop-blur-sm transition-transform group-hover:scale-110 sm:h-7 sm:w-7">
+            <span className="flex h-6 w-6 items-center justify-center rounded-md bg-white/20 backdrop-blur-sm transition-transform duration-300 ease-out group-hover:scale-110 sm:h-7 sm:w-7">
               <MapPin
                 className="h-4 w-4 transition-transform group-hover:-translate-y-0.5"
                 strokeWidth={2.25}
@@ -325,20 +326,22 @@ export default function OrderTrackingCard({ order }: OrderTrackingCardProps) {
       </div>
 
       {/* Clock + status */}
-      <div className="relative mb-4 flex items-center gap-2 text-stone-600 dark:text-custom-secondary">
+      <div className="info-home-order-status-row relative mb-4 flex items-center gap-2 text-stone-600">
         <FiClock
-          className="h-4 w-4 shrink-0 text-[var(--color-primary)]"
+          className="info-home-order-clock h-4 w-4 shrink-0"
           aria-hidden
         />
         <p className="min-w-0 flex-1 truncate text-xs font-medium sm:text-sm">
-          <span className="font-bold text-[var(--color-primary)]">
+          <span className="info-home-order-status-accent font-bold">
             {currentStatus === "pending" && t("home.pending")}
             {currentStatus === "preparing" && t("home.preparing")}
             {currentStatus === "out_for_delivery" && t("home.outForDeliveryTitle")}
             {currentStatus === "delivered" && t("home.delivered")}
           </span>
-          <span className="mx-1.5 text-stone-400 dark:text-custom-tertiary">·</span>
-          <span className="text-stone-600 dark:text-custom-secondary">
+          <span className="info-home-order-status-sep mx-1.5 text-stone-400">
+            ·
+          </span>
+          <span className="info-home-order-status-rest text-stone-600">
             {isDelivered
               ? t(statusSubtitleKey)
               : t("home.estimatedDeliveryShort")}
@@ -347,7 +350,7 @@ export default function OrderTrackingCard({ order }: OrderTrackingCardProps) {
       </div>
 
       {/* Stepper card */}
-      <div className="relative rounded-2xl border border-white/70 bg-white/75 p-4 shadow-inner shadow-stone-200/40 backdrop-blur-sm dark:border-border-secondary dark:bg-bg-primary/30 sm:p-5">
+      <div className="relative rounded-2xl border border-white/70 bg-white/75 p-4 shadow-inner shadow-stone-200/40 backdrop-blur-sm dark:border-white/[0.06] dark:bg-[linear-gradient(168deg,color-mix(in_srgb,var(--color-bg-primary)_48%,transparent)_0%,color-mix(in_srgb,var(--color-bg-card)_32%,transparent)_100%)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.045)] dark:backdrop-blur-xl sm:p-5">
         <div className="flex items-start justify-between gap-1 sm:gap-2">
           {STAGES.map((stage, idx) => renderStage(stage, idx))}
         </div>

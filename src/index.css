@@ -6,8 +6,19 @@
 
 @import "leaflet/dist/leaflet.css";
 
-body {
-  /* background-color: var(--color-blue-off); */
+/**
+ * Theme canvas: `--color-bg-*` switch with `.dark` on `<html>` (ThemeContext).
+ * Without this, short pages / overscroll show the browser default behind the app.
+ */
+html {
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+}
+
+body,
+#root {
+  min-height: 100dvh;
+  background-color: var(--color-bg-primary);
 }
 
 /* Approx. Navbar height (both rows). Account sidebar column height = 100dvh minus this. */
@@ -57,6 +68,10 @@ body {
   --color-accent-primary-hover: #0099b8;
   --color-accent-light: #4cdaf6;
   --color-accent-light-bg: #e0f7fa;
+
+  /* API palette mirrors (overwritten when settings load) */
+  --color-main: var(--color-primary);
+  --color-api-second: var(--color-primary-light);
 
   /* Brand gradient + accents (API `main_color` overrides via themeColors; static fallbacks) */
   --color-gradient-from: var(--color-primary-light);
@@ -137,6 +152,9 @@ body {
       --color-accent-primary-hover: #00aed1;
       --color-accent-light: #00aed1;
       --color-accent-light-bg: #1e3a5f;
+
+      --color-main: var(--color-primary);
+      --color-api-second: var(--color-primary-light);
 
       --color-gradient-from: var(--color-primary-light);
       --color-gradient-to: var(--color-primary);
@@ -239,31 +257,142 @@ body {
   }
 
   /**
-   * Navbar: vertical brand wash (top → bottom), like Tickmart reference:
-   * saturated `--color-primary` at top → pale peach/cream at bottom (API `main_color`).
-   * Lower nav row sits on the lightest band.
+   * Brands listing (`/brands`): page canvas from settings palette — no flat white flash.
+   * Dark: soft radial glows using API `main_color` / `second_color` (CSS vars from ThemeContext).
    */
-  .bg-gradient-navbar {
-    background: linear-gradient(
-      180deg,
-      var(--color-primary) 0%,
-      color-mix(in srgb, var(--color-primary) 78%, #ffffff) 22%,
-      color-mix(in srgb, var(--color-primary) 42%, #ffffff) 48%,
-      color-mix(in srgb, var(--color-primary) 18%, #fffef8) 78%,
-      color-mix(in srgb, var(--color-primary) 7%, #fffbf5) 100%
-    );
-    box-shadow: 0 2px 10px -6px var(--color-shadow-accent);
+  .brands-page-canvas {
+    background-color: var(--color-bg-primary);
   }
 
-  .dark .bg-gradient-navbar {
+  html:not(.dark) .brands-page-canvas {
+    background-image: linear-gradient(
+      180deg,
+      color-mix(
+          in srgb,
+          var(--color-main, var(--color-primary)) 5%,
+          var(--color-bg-primary)
+        )
+        0%,
+      var(--color-bg-primary) 48%,
+      color-mix(
+          in srgb,
+          var(--color-api-second, var(--color-primary-light)) 4%,
+          var(--color-bg-primary)
+        )
+        100%
+    );
+  }
+
+  html.dark .brands-page-canvas {
+    background-image: radial-gradient(
+        ellipse 130% 85% at 50% -32%,
+        color-mix(
+            in srgb,
+            var(--color-main, var(--color-primary)) 28%,
+            transparent
+          )
+          0%,
+        transparent 56%
+      ),
+      radial-gradient(
+        ellipse 90% 65% at 108% 38%,
+        color-mix(
+            in srgb,
+            var(--color-api-second, var(--color-primary-light)) 18%,
+            transparent
+          )
+          0%,
+        transparent 54%
+      ),
+      radial-gradient(
+        ellipse 80% 60% at -8% 78%,
+        color-mix(
+            in srgb,
+            var(--color-main, var(--color-primary)) 14%,
+            transparent
+          )
+          0%,
+        transparent 52%
+      );
+  }
+
+  /**
+   * Navbar: main + secondary brand colours.
+   * Light: warm main gradient → pale cream; sub-row is off-white with a hint of main.
+   * Dark: deep bar with main/second glow; sub-row slightly lifted for link contrast.
+   */
+  .navbar-surface-top {
+    --navbar-main: var(--color-main, var(--color-primary));
+    --navbar-second: var(--color-api-second, var(--color-primary-light));
     background: linear-gradient(
       180deg,
-      color-mix(in srgb, var(--color-primary) 55%, var(--color-bg-card)) 0%,
-      color-mix(in srgb, var(--color-primary) 28%, var(--color-bg-card)) 40%,
-      color-mix(in srgb, var(--color-primary) 12%, var(--color-bg-card)) 72%,
-      var(--color-bg-card) 100%
+      var(--navbar-main) 0%,
+      color-mix(in srgb, var(--navbar-main) 32%, white) 42%,
+      color-mix(in srgb, var(--navbar-second) 14%, white) 100%
     );
-    box-shadow: 0 2px 12px -8px color-mix(in srgb, var(--color-primary) 35%, transparent);
+    box-shadow: 0 2px 14px -8px color-mix(in srgb, var(--navbar-main) 35%, transparent);
+  }
+
+  .dark .navbar-surface-top {
+    --navbar-main: var(--color-main, var(--color-primary));
+    --navbar-second: var(--color-api-second, var(--color-primary-light));
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--navbar-main) 42%, #0f172a) 0%,
+      color-mix(in srgb, var(--navbar-second) 22%, #1e293b) 52%,
+      #1a2332 100%
+    );
+    box-shadow: 0 2px 16px -6px color-mix(in srgb, var(--navbar-main) 28%, transparent);
+  }
+
+  .navbar-surface-sub {
+    --navbar-main: var(--color-main, var(--color-primary));
+    --navbar-second: var(--color-api-second, var(--color-primary-light));
+    background-color: color-mix(
+      in srgb,
+      var(--navbar-main) 7%,
+      color-mix(in srgb, var(--navbar-second) 5%, white)
+    );
+  }
+
+  .dark .navbar-surface-sub {
+    background-color: color-mix(
+      in srgb,
+      var(--navbar-second) 12%,
+      #1e293b
+    );
+  }
+
+  .navbar-divider {
+    border-color: color-mix(
+      in srgb,
+      var(--color-main, var(--color-primary)) 22%,
+      transparent
+    );
+  }
+
+  .dark .navbar-divider {
+    border-color: color-mix(
+      in srgb,
+      var(--color-main, var(--color-primary)) 35%,
+      transparent
+    );
+  }
+
+  .navbar-bottom-edge {
+    border-color: color-mix(
+      in srgb,
+      var(--color-main, var(--color-primary)) 28%,
+      transparent
+    );
+  }
+
+  .dark .navbar-bottom-edge {
+    border-color: color-mix(
+      in srgb,
+      var(--color-api-second, var(--color-primary-light)) 32%,
+      transparent
+    );
   }
 
   /* Text Colors */
@@ -316,6 +445,275 @@ body {
   .bg-blue-off {
     background-color: var(--color-blue-off);
   }
+
+  /**
+   * Store pages (StoreDetails, SearchResults, ShopDetails): replace fixed
+   * white/sky/blue/red tokens with API palette mixes from `--color-main` /
+   * `--color-api-second`. Light keeps the soft frosted-card feel; dark gets a
+   * polished, brand-tinted look with subtle inner highlight + glow.
+   */
+  .store-filters-panel {
+    background-image: linear-gradient(
+      135deg,
+      var(--color-bg-card) 0%,
+      color-mix(in srgb, var(--color-main, var(--color-primary)) 6%, var(--color-bg-card)) 50%,
+      color-mix(in srgb, var(--color-api-second, var(--color-primary-light)) 5%, var(--color-bg-card)) 100%
+    );
+    border: 1px solid color-mix(in srgb, var(--color-main, var(--color-primary)) 16%, transparent);
+    box-shadow: 0 8px 22px -14px color-mix(in srgb, var(--color-main, var(--color-primary)) 38%, transparent);
+  }
+  .dark .store-filters-panel {
+    background-image: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--color-main, var(--color-primary)) 14%, var(--color-bg-card)) 0%,
+      var(--color-bg-card) 55%,
+      color-mix(in srgb, var(--color-api-second, var(--color-primary-light)) 12%, var(--color-bg-card)) 100%
+    );
+    border-color: color-mix(in srgb, var(--color-main, var(--color-primary)) 30%, transparent);
+    box-shadow:
+      0 12px 32px -16px color-mix(in srgb, var(--color-main, var(--color-primary)) 50%, transparent),
+      inset 0 1px 0 0 color-mix(in srgb, var(--color-api-second, var(--color-primary-light)) 22%, transparent);
+  }
+
+  .store-clear-btn {
+    background-color: color-mix(in srgb, var(--color-bg-card) 80%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-main, var(--color-primary)) 25%, transparent);
+    color: var(--color-primary);
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  }
+  .store-clear-btn:hover {
+    background-color: var(--color-bg-card);
+    border-color: color-mix(in srgb, var(--color-main, var(--color-primary)) 45%, transparent);
+  }
+  .dark .store-clear-btn {
+    background-color: color-mix(in srgb, var(--color-main, var(--color-primary)) 18%, var(--color-bg-card));
+    border-color: color-mix(in srgb, var(--color-main, var(--color-primary)) 38%, transparent);
+    color: var(--color-text-primary);
+  }
+  .dark .store-clear-btn:hover {
+    background-color: color-mix(in srgb, var(--color-api-second, var(--color-primary-light)) 22%, var(--color-bg-card));
+    border-color: color-mix(in srgb, var(--color-api-second, var(--color-primary-light)) 55%, transparent);
+  }
+
+  .store-input {
+    background-color: var(--color-bg-card);
+    color: var(--color-text-primary);
+    border: 1px solid color-mix(in srgb, var(--color-main, var(--color-primary)) 22%, transparent);
+    box-shadow: 0 1px 2px 0 color-mix(in srgb, var(--color-main, var(--color-primary)) 8%, transparent);
+    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .store-input::placeholder {
+    color: var(--color-text-tertiary);
+  }
+  .store-input:focus,
+  .store-input:focus-visible {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-main, var(--color-primary)) 18%, transparent);
+  }
+  .dark .store-input {
+    background-color: color-mix(in srgb, var(--color-main, var(--color-primary)) 10%, var(--color-bg-card));
+    border-color: color-mix(in srgb, var(--color-main, var(--color-primary)) 32%, transparent);
+    box-shadow: inset 0 1px 0 0 color-mix(in srgb, var(--color-api-second, var(--color-primary-light)) 12%, transparent);
+  }
+  .dark .store-input:focus,
+  .dark .store-input:focus-visible {
+    background-color: color-mix(in srgb, var(--color-main, var(--color-primary)) 16%, var(--color-bg-card));
+    border-color: color-mix(in srgb, var(--color-api-second, var(--color-primary-light)) 60%, transparent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-api-second, var(--color-primary-light)) 25%, transparent);
+  }
+
+  .store-tab-pill {
+    background-color: var(--color-bg-card);
+    color: var(--color-text-secondary);
+    border: 1px solid color-mix(in srgb, var(--color-main, var(--color-primary)) 18%, transparent);
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+  .store-tab-pill:hover {
+    border-color: color-mix(in srgb, var(--color-main, var(--color-primary)) 40%, transparent);
+    color: var(--color-text-primary);
+  }
+  .store-tab-pill.is-active {
+    background-image: linear-gradient(
+      135deg,
+      var(--color-main, var(--color-primary)),
+      var(--color-api-second, var(--color-primary-light))
+    );
+    color: var(--color-text-inverse);
+    border-color: transparent;
+    box-shadow: 0 6px 18px -8px color-mix(in srgb, var(--color-main, var(--color-primary)) 50%, transparent);
+  }
+  .dark .store-tab-pill {
+    background-color: color-mix(in srgb, var(--color-main, var(--color-primary)) 10%, var(--color-bg-card));
+    border-color: color-mix(in srgb, var(--color-main, var(--color-primary)) 26%, transparent);
+  }
+  .dark .store-tab-pill:hover {
+    background-color: color-mix(in srgb, var(--color-main, var(--color-primary)) 18%, var(--color-bg-card));
+    border-color: color-mix(in srgb, var(--color-api-second, var(--color-primary-light)) 50%, transparent);
+  }
+  .dark .store-tab-pill.is-active {
+    box-shadow:
+      0 10px 28px -8px color-mix(in srgb, var(--color-main, var(--color-primary)) 65%, transparent),
+      inset 0 1px 0 0 color-mix(in srgb, white 22%, transparent);
+  }
+
+  .store-results-card {
+    background-color: var(--color-bg-card);
+    border: 1px solid var(--color-border-primary);
+  }
+  .dark .store-results-card {
+    background-color: var(--color-bg-card);
+    border-color: color-mix(in srgb, var(--color-main, var(--color-primary)) 18%, transparent);
+    box-shadow:
+      0 8px 26px -16px color-mix(in srgb, var(--color-main, var(--color-primary)) 45%, transparent),
+      inset 0 1px 0 0 color-mix(in srgb, var(--color-api-second, var(--color-primary-light)) 10%, transparent);
+  }
+
+  /* Discount badge: red on light, brand-tinted gradient with glow in dark. */
+  .store-discount-badge {
+    background-color: var(--color-error);
+    color: #ffffff;
+  }
+  .dark .store-discount-badge {
+    background-image: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--color-error) 70%, var(--color-main, var(--color-primary))),
+      color-mix(in srgb, var(--color-error) 55%, var(--color-api-second, var(--color-primary-light)))
+    );
+    color: var(--color-text-inverse, #ffffff);
+    box-shadow: 0 4px 14px -4px color-mix(in srgb, var(--color-error) 55%, transparent);
+  }
+
+  /**
+   * Basket pages sidebar (AllBaskets) — visual parity with CategoriesSidebar.
+   * Cards: soft brand-tinted gradient (light) / deep main+second mix (dark).
+   * Pills: active state uses main→second gradient; hover lifts via brand alpha.
+   */
+  .basket-sidebar-card {
+    background-image: linear-gradient(
+      180deg,
+      var(--color-bg-card) 0%,
+      color-mix(in srgb, var(--color-main, var(--color-primary)) 6%, var(--color-bg-card)) 100%
+    );
+    border: 1px solid color-mix(in srgb, var(--color-main, var(--color-primary)) 14%, transparent);
+    box-shadow: 0 4px 18px -10px color-mix(in srgb, var(--color-main, var(--color-primary)) 28%, transparent);
+  }
+  .dark .basket-sidebar-card {
+    background-image: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--color-main, var(--color-primary)) 14%, var(--color-bg-card)) 0%,
+      var(--color-bg-card) 60%,
+      color-mix(in srgb, var(--color-api-second, var(--color-primary-light)) 12%, var(--color-bg-card)) 100%
+    );
+    border-color: color-mix(in srgb, var(--color-main, var(--color-primary)) 28%, transparent);
+    box-shadow:
+      0 12px 30px -16px color-mix(in srgb, var(--color-main, var(--color-primary)) 50%, transparent),
+      inset 0 1px 0 0 color-mix(in srgb, var(--color-api-second, var(--color-primary-light)) 18%, transparent);
+  }
+
+  .basket-sidebar-title {
+    color: var(--color-text-heading);
+    letter-spacing: -0.01em;
+  }
+  .basket-sidebar-title::before {
+    content: "";
+    display: inline-block;
+    width: 4px;
+    height: 1em;
+    margin-inline-end: 0.5rem;
+    border-radius: 2px;
+    background-image: linear-gradient(
+      180deg,
+      var(--color-main, var(--color-primary)),
+      var(--color-api-second, var(--color-primary-light))
+    );
+    vertical-align: -0.15em;
+  }
+  .dark .basket-sidebar-title {
+    color: #ffffff;
+  }
+
+  .basket-sidebar-pill {
+    background-color: color-mix(in srgb, var(--color-main, var(--color-primary)) 4%, var(--color-bg-card));
+    color: var(--color-text-primary);
+    border: 1px solid color-mix(in srgb, var(--color-main, var(--color-primary)) 12%, transparent);
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease,
+      box-shadow 0.2s ease, transform 0.2s ease;
+  }
+  .basket-sidebar-pill:hover {
+    background-color: color-mix(in srgb, var(--color-main, var(--color-primary)) 10%, var(--color-bg-card));
+    border-color: color-mix(in srgb, var(--color-main, var(--color-primary)) 30%, transparent);
+  }
+  .basket-sidebar-pill.is-active {
+    background-image: linear-gradient(
+      135deg,
+      var(--color-main, var(--color-primary)),
+      var(--color-api-second, var(--color-primary-light))
+    );
+    color: #ffffff;
+    border-color: transparent;
+    box-shadow: 0 8px 22px -10px color-mix(in srgb, var(--color-main, var(--color-primary)) 55%, transparent);
+  }
+  .dark .basket-sidebar-pill {
+    background-color: color-mix(in srgb, var(--color-main, var(--color-primary)) 12%, var(--color-bg-card));
+    border-color: color-mix(in srgb, var(--color-main, var(--color-primary)) 24%, transparent);
+  }
+  .dark .basket-sidebar-pill:hover {
+    background-color: color-mix(in srgb, var(--color-main, var(--color-primary)) 22%, var(--color-bg-card));
+    border-color: color-mix(in srgb, var(--color-api-second, var(--color-primary-light)) 50%, transparent);
+  }
+  .dark .basket-sidebar-pill.is-active {
+    box-shadow:
+      0 12px 30px -10px color-mix(in srgb, var(--color-main, var(--color-primary)) 65%, transparent),
+      inset 0 1px 0 0 color-mix(in srgb, white 22%, transparent);
+  }
+
+  .basket-sidebar-input {
+    background-color: var(--color-bg-card);
+    color: var(--color-text-primary);
+    border: 1px solid color-mix(in srgb, var(--color-main, var(--color-primary)) 18%, transparent);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  }
+  .basket-sidebar-input::placeholder {
+    color: var(--color-text-tertiary);
+  }
+  .basket-sidebar-input:focus,
+  .basket-sidebar-input:focus-visible {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-main, var(--color-primary)) 18%, transparent);
+  }
+  .dark .basket-sidebar-input {
+    background-color: color-mix(in srgb, var(--color-main, var(--color-primary)) 10%, var(--color-bg-card));
+    border-color: color-mix(in srgb, var(--color-main, var(--color-primary)) 28%, transparent);
+  }
+  .dark .basket-sidebar-input:focus,
+  .dark .basket-sidebar-input:focus-visible {
+    background-color: color-mix(in srgb, var(--color-main, var(--color-primary)) 16%, var(--color-bg-card));
+    border-color: color-mix(in srgb, var(--color-api-second, var(--color-primary-light)) 60%, transparent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-api-second, var(--color-primary-light)) 25%, transparent);
+  }
+
+  .basket-sidebar-info {
+    background-image: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--color-main, var(--color-primary)) 8%, var(--color-bg-card)) 0%,
+      color-mix(in srgb, var(--color-api-second, var(--color-primary-light)) 6%, var(--color-bg-card)) 100%
+    );
+    border: 1px solid color-mix(in srgb, var(--color-main, var(--color-primary)) 16%, transparent);
+    color: var(--color-text-secondary);
+  }
+  .dark .basket-sidebar-info {
+    background-image: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--color-main, var(--color-primary)) 18%, var(--color-bg-card)) 0%,
+      color-mix(in srgb, var(--color-api-second, var(--color-primary-light)) 14%, var(--color-bg-card)) 100%
+    );
+    border-color: color-mix(in srgb, var(--color-api-second, var(--color-primary-light)) 30%, transparent);
+    box-shadow: inset 0 1px 0 0 color-mix(in srgb, var(--color-api-second, var(--color-primary-light)) 18%, transparent);
+  }
+
   /* Gradient Border - Note: border-image doesn't work with border-radius */
   .border-summary {
     border: 1px solid transparent;
@@ -429,6 +827,102 @@ body {
       color: #93c5fd;
     }
   }
+}
+
+/**
+ * Home info cards (PointsRewards + OrderTracking): **unlayered** so these beat
+ * Tailwind `dark:text-*` utilities. Dark: primary copy = API `--color-text-primary`
+ * (settings `text_color` on scoped section); secondary/supporting = white.
+ */
+.home-info-cards-scope .info-home-order-clock,
+.home-info-cards-scope .info-home-order-status-accent {
+  color: var(--color-primary);
+}
+
+.dark .home-info-cards-scope .info-home-tile-title {
+  color: rgba(255, 255, 255, 0.88);
+  letter-spacing: 0.01em;
+}
+
+.dark .home-info-cards-scope .info-home-tile-value {
+  color: var(--color-text-primary);
+}
+
+.dark .home-info-cards-scope .info-home-tile-desc {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.dark .home-info-cards-scope .info-home-order-pill-text {
+  color: var(--color-text-primary);
+}
+
+/* Icon: solid brand highlight (clear on dark; avoids background-clip on SVG). */
+.dark .home-info-cards-scope .info-home-order-clock {
+  color: color-mix(in srgb, var(--color-gradient-from) 72%, var(--color-text-primary) 28%);
+}
+
+.dark .home-info-cards-scope .info-home-order-status-accent {
+  color: color-mix(in srgb, var(--color-gradient-from) 65%, var(--color-text-primary) 35%);
+}
+
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  .dark .home-info-cards-scope .info-home-tile-value,
+  .dark .home-info-cards-scope .info-home-order-pill-text {
+    color: transparent;
+    -webkit-background-clip: text;
+    background-clip: text;
+    background-image: linear-gradient(
+      118deg,
+      var(--color-gradient-from) 0%,
+      color-mix(in srgb, var(--color-text-primary) 88%, white 12%) 38%,
+      color-mix(in srgb, var(--color-text-primary) 82%, var(--color-gradient-from) 18%) 62%,
+      var(--color-gradient-to) 100%
+    );
+  }
+
+  .dark .home-info-cards-scope .info-home-order-status-accent {
+    color: transparent;
+    -webkit-background-clip: text;
+    background-clip: text;
+    background-image: linear-gradient(
+      124deg,
+      var(--color-gradient-from) 0%,
+      color-mix(in srgb, var(--color-text-primary) 86%, var(--color-gradient-from) 14%) 40%,
+      color-mix(in srgb, var(--color-text-primary) 80%, white 8%) 72%,
+      var(--color-gradient-to) 100%
+    );
+  }
+}
+
+.dark .home-info-cards-scope .info-home-order-status-sep {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.dark .home-info-cards-scope .info-home-order-status-rest {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.dark .home-info-cards-scope .info-home-order-status-row {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.dark .home-info-cards-scope [data-step-state="active"] .info-home-step-title,
+.dark .home-info-cards-scope [data-step-state="completed"] .info-home-step-title {
+  color: var(--color-text-primary);
+}
+
+.dark .home-info-cards-scope [data-step-state="active"] .info-home-step-sub,
+.dark .home-info-cards-scope [data-step-state="completed"] .info-home-step-sub {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.dark .home-info-cards-scope [data-step-state="upcoming"] .info-home-step-title,
+.dark .home-info-cards-scope [data-step-state="upcoming"] .info-home-step-sub {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.dark .home-info-cards-scope [data-step-state="upcoming"] .relative.z-10 svg {
+  color: rgba(255, 255, 255, 0.62);
 }
 
 /* AnimatedButton - Creative Animation */
@@ -854,7 +1348,7 @@ body {
 /* Card entrance */
 @keyframes card-enter {
   0% {
-    transform: translateY(8px);
+    transform: translateY(10px);
     opacity: 0;
   }
   100% {
@@ -864,7 +1358,7 @@ body {
 }
 
 .animate-card-enter {
-  animation: card-enter 0.45s ease-out both;
+  animation: card-enter 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 @media (prefers-reduced-motion: reduce) {

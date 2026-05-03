@@ -3,6 +3,9 @@ import { HiCheckCircle, HiGift } from "react-icons/hi2";
 import AuthHeader from "@/features/auth/components/AuthHeader";
 import AuthPromoPanel from "@/features/auth/components/AuthPromoPanel";
 import AuthFormCard from "@/features/auth/components/AuthFormCard";
+import { useAuthDarkScopeStyle } from "@/features/auth/hooks/useAuthDarkScopeStyle";
+import { useTheme } from "@/context/ThemeContext";
+import { cn } from "@/shared/lib/utils";
 
 export type LeftPanelVariant = "promo" | "image" | "signup" | "custom" | "none";
 
@@ -64,6 +67,9 @@ export default function AuthLayout({
     formCardClassName = "",
     maxWidth = "576",
 }: AuthLayoutProps) {
+    const authDarkScopeStyle = useAuthDarkScopeStyle();
+    const { theme } = useTheme();
+
     const renderLeftPanel = () => {
         if (leftPanel === "none") return null;
 
@@ -108,7 +114,7 @@ export default function AuthLayout({
 
         if (leftPanel === "signup") {
             return (
-                <aside className="relative hidden lg:flex min-h-[400px] lg:min-h-screen overflow-hidden items-center justify-center bg-[#22BDE9] px-8 py-12">
+                <aside className="relative hidden lg:flex min-h-[400px] lg:min-h-screen overflow-hidden items-center justify-center bg-gradient-to-br from-[var(--color-main)] via-[color-mix(in_srgb,var(--color-api-second)_28%,var(--color-main))] to-[color-mix(in_srgb,var(--color-api-second)_42%,var(--color-main))] px-8 py-12">
                     <div className="flex w-full max-w-[446px] flex-col items-center gap-9">
                         <div className="w-full overflow-hidden rounded-[18px]">
                             {illustration ? (
@@ -123,18 +129,17 @@ export default function AuthLayout({
                         </div>
 
                         <div
-                            className="w-full rounded-[20px] bg-white px-8 py-10 text-[#2A2A2A]"
-                            style={{ boxShadow: "0px 20px 45px rgba(0, 0, 0, 0.14)" }}
+                            className="w-full rounded-[20px] border border-[var(--color-border-accent-light)] bg-custom-card px-8 py-10 text-custom-primary shadow-[0_20px_45px_var(--color-shadow)]"
                         >
-                            <h2 className="mb-7 text-[28px] font-bold leading-[1.2] tracking-[-0.02em]">
+                            <h2 className="mb-7 text-[28px] font-bold leading-[1.2] tracking-[-0.02em] text-custom-primary">
                                 {title}
                             </h2>
                             {features.length > 0 && (
                                 <ul className="space-y-5">
                                     {features.map((item, index) => (
                                         <li key={index} className="flex items-center gap-4">
-                                            <HiCheckCircle className="h-7 w-7 flex-shrink-0 text-[#22BDE9]" />
-                                            <span className="text-[18px] font-medium leading-[1.45]">
+                                            <HiCheckCircle className="h-7 w-7 flex-shrink-0 text-[var(--color-main)]" />
+                                            <span className="text-[18px] font-medium leading-[1.45] text-custom-primary">
                                                 {item}
                                             </span>
                                         </li>
@@ -146,8 +151,7 @@ export default function AuthLayout({
                         {(ctaLabel || helper) && (
                             <button
                                 type="button"
-                                className="flex min-h-[106px] w-full max-w-[257px] items-center justify-between rounded-[18px] bg-[#FFD426] px-6 py-5 text-left text-[#2A2A2A] transition-all hover:brightness-95"
-                                style={{ boxShadow: "0px 12px 28px rgba(0, 0, 0, 0.18)" }}
+                                className="flex min-h-[106px] w-full max-w-[257px] items-center justify-between rounded-[18px] bg-[var(--color-api-second)] px-6 py-5 text-left text-custom-primary shadow-[0_12px_28px_var(--color-shadow-strong)] transition-opacity hover:opacity-90"
                             >
                                 <div className="flex flex-col gap-1">
                                     {ctaLabel && (
@@ -161,7 +165,7 @@ export default function AuthLayout({
                                         </span>
                                     )}
                                 </div>
-                                <HiGift className="h-9 w-9 flex-shrink-0 text-white" />
+                                <HiGift className="h-9 w-9 flex-shrink-0 text-[var(--color-text-inverse)]" />
                             </button>
                         )}
                     </div>
@@ -173,7 +177,13 @@ export default function AuthLayout({
     };
 
     return (
-        <div className="min-h-screen flex flex-col bg-custom-card">
+        <div
+            className={cn(
+                "min-h-screen flex flex-col bg-custom-card text-custom-primary",
+                theme === "dark" && "dark",
+            )}
+            style={authDarkScopeStyle}
+        >
             <AuthHeader />
             <div
                 className={`relative flex-1 grid min-h-0 ${leftPanel === "none" ? "lg:grid-cols-1" : "lg:grid-cols-2"
@@ -181,7 +191,7 @@ export default function AuthLayout({
             >
                 {renderLeftPanel()}
 
-                <main className="flex items-center justify-center px-4 md:px-6 lg:px-8 py-8 lg:py-10 bg-custom-card">
+                <main className="flex flex-1 items-center justify-center bg-gradient-to-b from-[var(--color-bg-primary)] to-[color-mix(in_srgb,var(--color-api-second)_12%,var(--color-bg-secondary))] px-4 py-8 md:px-6 lg:px-8 lg:py-10">
                     <div className={`w-full ${MAX_WIDTH_CLASS[maxWidth]}`}>
                         {useFormCard ? (
                             <AuthFormCard className={formCardClassName}>{children}</AuthFormCard>

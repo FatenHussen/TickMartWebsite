@@ -278,7 +278,7 @@ export default function SubscriptionBasketDetails({
                             {discount > 0 && (
                                 <div>
                                     <span className="text-custom-secondary">{t("baskets.discount")}:</span>
-                                    <span className="font-bold text-red-600 ml-2">-${discount.toFixed(2)}</span>
+                                    <span className="font-bold text-[var(--color-error)] ml-2">-${discount.toFixed(2)}</span>
                                 </div>
                             )}
                             <div>

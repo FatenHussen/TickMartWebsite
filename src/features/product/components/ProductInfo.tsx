@@ -123,7 +123,7 @@ export default function ProductInfo({
                             <span className="text-gray">{sold.toLocaleString()} Sold</span>
                         )}
                         {sold !== undefined && rating !== undefined && (
-                            <span className="text-[#D7A800]">|</span>
+                            <span className="text-[#D7A800] dark:text-[color-mix(in_srgb,#D7A800_72%,var(--color-text))]">|</span>
                         )}
                         {rating !== undefined && <Rating rating={rating} size="md" />}
                     </div>

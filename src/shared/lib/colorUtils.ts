@@ -130,3 +130,15 @@ export function shade(hex: string, ratio: number): string {
     b: b * (1 - ratio),
   });
 }
+
+/** Linear RGB mix: `amountB = 0` → `a`, `1` → `b`. */
+export function mixHex(a: string, b: string, amountB: number): string {
+  const A = hexToRgb(a);
+  const B = hexToRgb(b);
+  const t = Math.max(0, Math.min(1, amountB));
+  return rgbToHex({
+    r: A.r + (B.r - A.r) * t,
+    g: A.g + (B.g - A.g) * t,
+    b: A.b + (B.b - A.b) * t,
+  });
+}

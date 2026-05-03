@@ -126,7 +126,7 @@ export default function NavbarSearch({
                         "Search products and stores..."
                     }
                     className={cn(
-                        "h-11 w-full rounded-[12px] border border-primary/35 bg-white text-sm leading-none text-custom-primary shadow-none transition-colors dark:bg-custom-card placeholder:text-text-tertiary focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15",
+                        "h-11 w-full rounded-full border border-primary/35 bg-white text-sm leading-none text-custom-primary shadow-none transition-colors dark:bg-custom-card placeholder:text-text-tertiary focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15",
                         isRTL ? "pr-12 pl-[42px]" : "pl-[42px] pr-12",
                         inputClassName
                     )}

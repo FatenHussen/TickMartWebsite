@@ -7,7 +7,6 @@ import CheckoutAddressSection from "../components/CheckoutAddressSection";
 import CheckoutPaymentSection from "../components/CheckoutPaymentSection";
 import CheckoutOrderSummary from "../components/CheckoutOrderSummary";
 import CheckoutProgressIndicator from "@/shared/component/CheckoutProgressIndicator";
-import OrderFlowHeader from "@/shared/component/OrderFlowHeader";
 import { useAddresses } from "@/features/account/hooks/useAddress";
 import { useOrderPreview } from "../hooks/useOrderPreview";
 import { useCartStore } from "@/store/cart";

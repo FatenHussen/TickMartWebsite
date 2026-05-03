@@ -1,6 +1,22 @@
 import { useTranslation } from "react-i18next";
 import { cn } from "@/shared/lib/utils";
-import type { ExtraDetail } from "../types/productDetails";
+import type { ExtraDetail, LocalizedOrString } from "../types/productDetails";
+
+function resolveLocalizedOrString(
+    value: LocalizedOrString | number,
+    language: string
+): string {
+    if (value == null) return "";
+    if (typeof value === "string") return value;
+    if (typeof value === "number") return String(value);
+    if (typeof value === "object") {
+        const isArabic = language.toLowerCase().startsWith("ar");
+        return (
+            (isArabic ? value.ar : value.en) ?? value.en ?? value.ar ?? ""
+        );
+    }
+    return "";
+}
 
 export interface ExtraDetailsTableProps {
     details: ExtraDetail[];
@@ -20,7 +36,7 @@ export default function ExtraDetailsTable({
     selectedIds = [],
     onToggle,
 }: ExtraDetailsTableProps) {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
 
     if (!details || details.length === 0) {
         return null;
@@ -98,10 +114,16 @@ export default function ExtraDetailsTable({
                                     </td>
                                 )}
                                 <td className="px-4 py-3 text-sm font-medium text-custom-secondary w-1/3">
-                                    {detail.key}
+                                    {resolveLocalizedOrString(
+                                        detail.key,
+                                        i18n.language
+                                    )}
                                 </td>
                                 <td className="px-4 py-3 text-sm text-custom-primary">
-                                    {detail.value}
+                                    {resolveLocalizedOrString(
+                                        detail.value,
+                                        i18n.language
+                                    )}
                                 </td>
                                 {hasPriceColumn && (
                                     <td className="px-4 py-3 text-sm text-custom-primary">

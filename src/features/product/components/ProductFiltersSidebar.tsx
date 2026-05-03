@@ -49,7 +49,7 @@ type ProductFiltersSidebarProps = {
 
 function FieldLabel({ children }: { children: ReactNode }) {
     return (
-        <span className="mb-1.5 block text-xs font-medium text-slate-600">{children}</span>
+        <span className="mb-1.5 block text-xs font-medium text-slate-600 dark:text-[color-mix(in_srgb,var(--color-text)_82%,transparent)]">{children}</span>
     );
 }
 
@@ -97,16 +97,17 @@ export default function ProductFiltersSidebar({
 
     const inputCls = cn(
         "w-full rounded-lg border border-sky-200/90 bg-white/80 px-3 py-2.5 text-sm text-slate-800",
-        "placeholder:text-slate-400 outline-none transition-colors",
-        "focus:border-[#00ACC1] focus:ring-2 focus:ring-[#00ACC1]/20"
+        "dark:border-[color-mix(in_srgb,var(--color-main)_22%,#1f2230)] dark:bg-[color-mix(in_srgb,var(--color-main)_18%,#13151c)] dark:text-[var(--color-text)]",
+        "placeholder:text-slate-400 dark:placeholder:text-[color-mix(in_srgb,var(--color-text)_55%,transparent)] outline-none transition-colors",
+        "focus:border-[#00ACC1] focus:ring-2 focus:ring-[#00ACC1]/20 dark:focus:border-[var(--color-main)] dark:focus:ring-[color-mix(in_srgb,var(--color-main)_45%,transparent)]"
     );
 
     const selectCls = cn(inputCls, "cursor-pointer");
 
     const checkboxCls =
-        "mt-0.5 h-4 w-4 shrink-0 rounded border-sky-300 text-[#00ACC1] focus:ring-[#00ACC1]/30";
+        "mt-0.5 h-4 w-4 shrink-0 rounded border-sky-300 text-[#00ACC1] focus:ring-[#00ACC1]/30 dark:border-[color-mix(in_srgb,var(--color-main)_30%,#1f2230)] dark:text-[var(--color-main)] dark:focus:ring-[color-mix(in_srgb,var(--color-main)_45%,transparent)]";
 
-    const row = "flex cursor-pointer items-start gap-3 text-sm text-slate-800";
+    const row = "flex cursor-pointer items-start gap-3 text-sm text-slate-800 dark:text-[var(--color-text)]";
 
     return (
         <div
@@ -114,6 +115,7 @@ export default function ProductFiltersSidebar({
                 "w-full min-w-0 max-w-full rounded-[12px] p-4 sm:p-6",
                 "lg:max-w-[320px]",
                 "bg-gradient-to-b from-[#E4F0FB] to-[#E5F3FF]",
+                "dark:from-[color-mix(in_srgb,var(--color-main)_18%,#13151c)] dark:to-[color-mix(in_srgb,var(--color-api-second)_18%,#10121a)]",
                 "shadow-[0_1px_2px_0_rgba(0,0,0,0.05)]"
             )}
         >
@@ -164,7 +166,7 @@ export default function ProductFiltersSidebar({
                         error={attributesError}
                     />
                 ) : (
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-slate-500 dark:text-[color-mix(in_srgb,var(--color-text)_70%,transparent)]">
                         {t(
                             "productsListing.selectCategoryForAttributes",
                             "Select a category to filter by size, color, and other attributes."
@@ -348,7 +350,7 @@ export default function ProductFiltersSidebar({
                     </select>
                 </div>
 
-                <div className="space-y-2.5 border-t border-sky-200/60 pt-2">
+                <div className="space-y-2.5 border-t border-sky-200/60 dark:border-[color-mix(in_srgb,var(--color-main)_22%,#1f2230)] pt-2">
                     <label className={row}>
                         <input
                             type="checkbox"
@@ -407,14 +409,14 @@ export default function ProductFiltersSidebar({
                     <button
                         type="button"
                         onClick={onApply}
-                        className="w-full rounded-xl bg-[#00ACC1] py-3 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-[0.96]"
+                        className="w-full rounded-xl bg-[#00ACC1] dark:bg-[var(--color-main)] py-3 text-sm font-semibold text-white dark:text-[var(--color-text)] shadow-sm transition-opacity hover:opacity-[0.96]"
                     >
                         {t("productsListing.applyFilters", "Apply filters")}
                     </button>
                     <button
                         type="button"
                         onClick={onClear}
-                        className="w-full py-2 text-center text-sm font-semibold text-[#00838F] hover:underline"
+                        className="w-full py-2 text-center text-sm font-semibold text-[#00838F] dark:text-[var(--color-api-second)] hover:underline"
                     >
                         {t("productsListing.clearAll", "Clear all")}
                     </button>

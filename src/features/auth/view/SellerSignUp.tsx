@@ -151,7 +151,7 @@ export default function SellerSignUp({ role, setRole }: SellerSignUpProps) {
  };
 
  const selectClasses =
-"w-full appearance-none rounded-lg border border-[#E4F0FB] bg-[linear-gradient(180deg,#E4F0FB_0%,#E5F3FF_100%)] px-4 py-2.5 pe-10 text-sm text-custom-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors";
+"w-full appearance-none rounded-lg border border-custom-secondary bg-custom-card px-4 py-2.5 pe-10 text-sm text-custom-primary transition-colors focus:border-[var(--color-main)] focus:outline-none focus:ring-2 focus:ring-[color-mix(in_srgb,var(--color-main)_22%,transparent)]";
  const disabledSelectClasses =
  `${selectClasses} disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-custom-light`;
 

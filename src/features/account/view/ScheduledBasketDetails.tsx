@@ -299,24 +299,30 @@ export default function ScheduledBasketDetails() {
  }
 
  return (
- <div dir={isRTL ?"rtl":"ltr"}>
+ <div dir={isRTL ?"rtl":"ltr"} className="space-y-4">
  {/* Basket Header */}
- <div className="bg-custom-card rounded-lg shadow-sm p-4 mb-4">
- <div className="flex items-center justify-between mb-3">
+ <div
+ className="relative overflow-hidden rounded-2xl border border-[color-mix(in_srgb,var(--color-api-second)_22%,var(--color-border-primary))] bg-[linear-gradient(135deg,var(--color-bg-card)_0%,color-mix(in_srgb,var(--color-api-second)_8%,var(--color-bg-card))_100%)] p-5 shadow-[0_10px_30px_-18px_color-mix(in_srgb,var(--color-api-second)_45%,transparent)]"
+ >
+ <div
+ className="pointer-events-none absolute -end-16 -top-20 h-40 w-40 rounded-full bg-[var(--color-api-second)] opacity-[0.1] blur-3xl"
+ aria-hidden
+ />
+ <div className="relative flex items-center justify-between mb-3">
  <div className="flex items-center gap-3 flex-wrap">
  {/* Editable Name */}
  <input
  type="text"
  value={basketName}
  onChange={(e) => setEditedName(e.target.value)}
- className="text-lg font-bold text-custom-primary border-b-2 border-transparent hover:border-custom-secondary focus:border-cyan-500 focus:outline-none bg-transparent transition-colors px-1 py-0.5"
+ className="text-lg font-bold text-custom-primary border-b-2 border-transparent hover:border-[color-mix(in_srgb,var(--color-api-second)_45%,transparent)] focus:border-[var(--color-api-second)] focus:outline-none bg-transparent transition-colors px-1 py-0.5"
  />
  {/* Active Badge */}
  <span
- className={`px-3 py-1 text-xs font-medium rounded-full ${
+ className={`px-3 py-1 text-xs font-medium rounded-full ring-1 ring-inset ${
  basket.is_active
- ?"bg-green-100 text-green-700"
- :"bg-custom-tertiary text-custom-secondary"
+ ?"bg-[color-mix(in_srgb,var(--color-success)_18%,var(--color-bg-card))] text-[var(--color-success)] ring-[color-mix(in_srgb,var(--color-success)_35%,transparent)]"
+ :"bg-custom-tertiary text-custom-secondary ring-[var(--color-border-primary)]"
  }`}
  >
  {basket.is_active
@@ -324,7 +330,7 @@ export default function ScheduledBasketDetails() {
  : t("baskets.paused")}
  </span>
  {basket.category && (
- <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">
+ <span className="px-3 py-1 bg-[color-mix(in_srgb,var(--color-main)_15%,var(--color-bg-card))] text-[var(--color-main)] ring-1 ring-inset ring-[color-mix(in_srgb,var(--color-main)_30%,transparent)] text-xs font-medium rounded-full">
  {basket.category}
  </span>
  )}
@@ -334,16 +340,16 @@ export default function ScheduledBasketDetails() {
  <button
  type="button"
  onClick={() => setDeletePopupOpen(true)}
- className="flex items-center gap-1.5 text-sm text-red-500 hover:text-red-600 transition"
+ className="flex items-center gap-1.5 text-sm text-[var(--color-error)] hover:text-[var(--color-error-light)] transition"
  >
  <HiTrash className="w-4 h-4"/>
  {t("baskets.deleteBasket")}
  </button>
  </div>
 
- <div className="flex items-center gap-6 text-sm text-custom-secondary">
+ <div className="relative flex items-center gap-6 text-sm text-custom-secondary">
  <div className="flex items-center gap-2">
- <span className="font-semibold text-cyan-600">
+ <span className="font-semibold text-[var(--color-api-second)]">
  {productItems.length}
  </span>
  <span>{t("checkout.items")}</span>
@@ -378,10 +384,10 @@ export default function ScheduledBasketDetails() {
 
  {/* Schedule Info (reflects selected schedule from dropdown) */}
  {effectiveSchedule && (
- <div className="bg-custom-card rounded-lg shadow-sm p-4 mb-4">
+ <div className="rounded-2xl border border-[var(--color-border-primary)] bg-custom-card p-4 shadow-sm">
  <div className="flex items-center gap-3">
- <div className="w-8 h-8 rounded-full bg-cyan-100 flex items-center justify-center shrink-0">
- <HiCalendar className="w-4 h-4 text-cyan-600"/>
+ <div className="w-10 h-10 rounded-full bg-[color-mix(in_srgb,var(--color-api-second)_18%,var(--color-bg-card))] ring-1 ring-inset ring-[color-mix(in_srgb,var(--color-api-second)_35%,transparent)] flex items-center justify-center shrink-0">
+ <HiCalendar className="w-5 h-5 text-[var(--color-api-second)]"/>
  </div>
  <div>
  <h4 className="font-semibold text-custom-primary">
@@ -391,7 +397,7 @@ export default function ScheduledBasketDetails() {
  {t("baskets.every")} {effectiveSchedule.interval_days}{""}
  {t("baskets.days")}
  {effectiveSchedule.discount_value > 0 && (
- <span className="text-green-600 font-medium">
+ <span className="text-[var(--color-success)] font-medium">
  {""}
  &bull; {effectiveSchedule.discount_value}
  {effectiveSchedule.discount_type ==="percentage"
@@ -407,9 +413,9 @@ export default function ScheduledBasketDetails() {
  )}
 
  {/* Pricing Info */}
- <div className="bg-custom-card rounded-lg shadow-sm p-4 mb-4">
+ <div className="rounded-2xl border border-[var(--color-border-primary)] bg-custom-card p-4 shadow-sm">
  <div className="flex items-center justify-between text-sm mb-2">
- <div className="flex items-center gap-4">
+ <div className="flex items-center gap-4 flex-wrap">
  <div>
  <span className="text-custom-secondary">{t("baskets.subtotal")}:</span>
  <span className="font-bold text-custom-primary ml-2">
@@ -422,7 +428,7 @@ export default function ScheduledBasketDetails() {
  <span className="text-custom-secondary">
  {t("baskets.scheduleDiscount")}:
  </span>
- <span className="font-bold text-red-600 ml-2">
+ <span className="font-bold text-[var(--color-error)] ml-2">
  -{currencySymbol}
  {scheduleDiscountAmount.toFixed(2)}
  </span>
@@ -430,7 +436,7 @@ export default function ScheduledBasketDetails() {
  )}
  <div>
  <span className="text-custom-secondary">{t("baskets.total")}:</span>
- <span className="font-bold text-cyan-600 text-lg ml-2">
+ <span className="font-bold text-[var(--color-api-second)] text-lg ml-2">
  {currencySymbol}
  {totalAfterDiscount.toFixed(2)}
  </span>
@@ -438,7 +444,7 @@ export default function ScheduledBasketDetails() {
  </div>
  </div>
  {scheduleDiscountAmount > 0 && effectiveSchedule && (
- <p className="text-sm text-green-600 font-medium">
+ <p className="text-sm text-[var(--color-success)] font-medium">
  {t("baskets.youSave")} {currencySymbol}
  {scheduleDiscountAmount.toFixed(2)} (
  {effectiveSchedule.discount_value}
@@ -461,9 +467,9 @@ export default function ScheduledBasketDetails() {
  </div>
 
  {/* Summary Section */}
- <div className="bg-cyan-50 dark:bg-cyan-900/20 border-2 border-cyan-200 dark:border-cyan-800 rounded-lg p-4 mb-6">
+ <div className="rounded-2xl border-2 border-[color-mix(in_srgb,var(--color-api-second)_28%,var(--color-border-primary))] bg-[color-mix(in_srgb,var(--color-api-second)_8%,var(--color-bg-card))] p-4 shadow-[0_8px_24px_-16px_color-mix(in_srgb,var(--color-api-second)_35%,transparent)]">
  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
- <div className="flex items-center gap-6">
+ <div className="flex items-center gap-6 flex-wrap">
  <span className="font-bold text-custom-primary">
  {t("baskets.orderSummary")}
  </span>
@@ -477,13 +483,13 @@ export default function ScheduledBasketDetails() {
  </span>
  </div>
  </div>
- <div className="flex items-center gap-4">
+ <div className="flex items-center gap-4 flex-wrap">
  <div className={isRTL ?"text-left":"text-right"}>
  <div className="text-sm text-custom-secondary">
  {t("baskets.subtotal")}: {currencySymbol}
  {subtotalBeforeDiscount.toFixed(2)}
  </div>
- <div className="text-lg font-bold text-cyan-600">
+ <div className="text-lg font-bold text-[var(--color-api-second)]">
  {t("baskets.total")}: {currencySymbol}
  {totalAfterDiscount.toFixed(2)}
  </div>
@@ -492,7 +498,7 @@ export default function ScheduledBasketDetails() {
  {availableExtras.length > 0 && (
  <Button
  onClick={() => setShowExtrasPopup(true)}
- className="flex items-center gap-2 bg-cyan-500 hover:bg-cyan-600 text-white px-4 py-2 rounded-lg text-sm font-medium shrink-0"
+ className="flex items-center gap-2 !bg-[var(--color-api-second)] hover:!bg-[var(--color-api-second-hover)] !text-white px-4 py-2 rounded-lg text-sm font-medium shrink-0 shadow-[0_6px_18px_-10px_color-mix(in_srgb,var(--color-api-second)_55%,transparent)]"
  >
  <HiPlus className="w-4 h-4"/>
  {t("baskets.addMoreItems")}
@@ -500,7 +506,7 @@ export default function ScheduledBasketDetails() {
  )}
  <Button
  onClick={() => setShowAddProductModal(true)}
- className="flex items-center gap-2 bg-cyan-500 hover:bg-cyan-600 text-white px-4 py-2 rounded-lg text-sm font-medium shrink-0"
+ className="flex items-center gap-2 !bg-[var(--color-api-second)] hover:!bg-[var(--color-api-second-hover)] !text-white px-4 py-2 rounded-lg text-sm font-medium shrink-0 shadow-[0_6px_18px_-10px_color-mix(in_srgb,var(--color-api-second)_55%,transparent)]"
  >
  <HiPlus className="w-4 h-4"/>
  {t("baskets.addProduct")}
@@ -511,11 +517,11 @@ export default function ScheduledBasketDetails() {
  </div>
 
  {/* Save Button */}
- <div className="flex justify-center">
+ <div className="flex justify-center pt-2">
  <Button
  onClick={handleSave}
  disabled={updateMutation.isPending}
- className="bg-cyan-500 hover:bg-cyan-600 text-white px-12 py-3 text-lg font-semibold rounded-lg w-full md:w-auto"
+ className="!bg-[var(--color-api-second)] hover:!bg-[var(--color-api-second-hover)] !text-white px-12 py-3 text-lg font-semibold rounded-xl w-full md:w-auto shadow-[0_10px_28px_-14px_color-mix(in_srgb,var(--color-api-second)_55%,transparent)]"
  size="lg"
  >
  {updateMutation.isPending
@@ -534,7 +540,7 @@ export default function ScheduledBasketDetails() {
  actions={
  <Button
  onClick={() => setShowExtrasPopup(false)}
- className="w-full bg-cyan-500 hover:bg-cyan-600 text-white"
+ className="w-full !bg-[var(--color-api-second)] hover:!bg-[var(--color-api-second-hover)] !text-white"
  size="lg"
  >
  {t("common.close")}
@@ -551,7 +557,7 @@ export default function ScheduledBasketDetails() {
  {availableExtras.map((extra) => (
  <div
  key={extra.id}
- className="flex items-center gap-4 p-3 border border-custom-primary rounded-xl hover:border-cyan-300 dark:hover:border-cyan-600 hover:bg-cyan-50/50 dark:hover:bg-cyan-900/20 transition cursor-pointer group"
+ className="flex items-center gap-4 p-3 border border-[var(--color-border-primary)] rounded-xl hover:border-[color-mix(in_srgb,var(--color-api-second)_50%,transparent)] hover:bg-[color-mix(in_srgb,var(--color-api-second)_10%,var(--color-bg-card))] transition cursor-pointer group"
  onClick={() => handleAddExtra(extra)}
  >
  <img
@@ -570,12 +576,12 @@ export default function ScheduledBasketDetails() {
  .join(",")}
  </span>
  )}
- <p className="text-sm font-bold text-cyan-600 mt-1">
+ <p className="text-sm font-bold text-[var(--color-api-second)] mt-1">
  {extra.unit_price.toFixed(2)}
  </p>
  </div>
  <button
- className="w-9 h-9 rounded-full bg-cyan-500 hover:bg-cyan-600 text-white flex items-center justify-center shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+ className="w-9 h-9 rounded-full bg-[var(--color-api-second)] hover:bg-[var(--color-api-second-hover)] text-white flex items-center justify-center shrink-0 opacity-0 group-hover:opacity-100 transition-opacity shadow-[0_4px_14px_-6px_color-mix(in_srgb,var(--color-api-second)_55%,transparent)]"
  onClick={(e) => {
  e.stopPropagation();
  handleAddExtra(extra);

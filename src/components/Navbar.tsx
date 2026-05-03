@@ -41,8 +41,9 @@ import { cn } from "@/shared/lib/utils";
 
 /** Keep in sync with `.page-container` in `index.css`. */
 const HEADER_MAX = "page-container";
+/** White pill + brand (main) icons on the gradient bar; `primary` follows API main colour. */
 const ICON_CIRCLE =
-    "flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/90 bg-white text-secondary shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-[background-color,box-shadow] hover:bg-white hover:shadow-[0_2px_6px_rgba(0,0,0,0.1)] dark:text-primary-dark";
+    "flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-primary/25 bg-white text-primary shadow-[0_1px_4px_rgba(0,0,0,0.08)] transition-[background-color,box-shadow,color] hover:bg-primary/5 hover:shadow-[0_2px_8px_rgba(0,0,0,0.1)] dark:border-primary/35 dark:bg-[color:color-mix(in_srgb,white_10%,#1e293b)] dark:text-primary dark:hover:bg-primary/15";
 
 export default function Navbar() {
     const { isRTL, language, toggleLanguage } = useLanguage();
@@ -228,7 +229,8 @@ export default function Navbar() {
 
     return (
         <div className="w-full bg-custom-card" dir={isRTL ? "rtl" : "ltr"}>
-            <div className="w-full bg-gradient-navbar">
+            <header className="w-full">
+                <div className="navbar-surface-top w-full">
                 <div className={`${HEADER_MAX} overflow-x-hidden`}>
                     <div className="flex min-h-[60px] min-w-0 items-center gap-3 py-3 sm:min-h-[64px] sm:gap-4 md:min-h-[72px] lg:gap-6 xl:gap-8 2xl:gap-10">
                         <div className="flex min-w-0 shrink-0 items-center gap-5 lg:gap-6 xl:gap-8">
@@ -257,14 +259,14 @@ export default function Navbar() {
                                 <button
                                     type="button"
                                     onClick={() => setShowLocationDropdown(!showLocationDropdown)}
-                                    className="flex w-full items-center gap-2 rounded-lg px-1 py-0.5 text-start transition-colors hover:bg-white/15"
+                                    className="flex w-full items-center gap-2 rounded-lg px-1 py-0.5 text-start transition-colors hover:bg-[color:color-mix(in_srgb,var(--color-main)_10%,transparent)]"
                                 >
-                                    <HiLocationMarker className="h-5 w-5 shrink-0 text-black" />
+                                    <HiLocationMarker className="h-5 w-5 shrink-0 text-custom-primary" />
                                     <div className="flex min-w-0 flex-1 flex-col items-start">
-                                        <span className="text-[11px] font-normal leading-tight text-black/85">
+                                        <span className="text-[11px] font-normal leading-tight text-custom-secondary">
                                             {t("navbar.deliveringTo")}
                                         </span>
-                                        <span className="w-full truncate text-sm font-semibold text-black">
+                                        <span className="w-full truncate text-sm font-semibold text-custom-primary">
                                             {addressesLoading
                                                 ? t("common.loading")
                                                 : deliveryAddressDisplay ||
@@ -272,19 +274,19 @@ export default function Navbar() {
                                                 "Add address"}
                                         </span>
                                     </div>
-                                    <HiChevronDown className="h-4 w-4 shrink-0 text-black/60" />
+                                    <HiChevronDown className="h-4 w-4 shrink-0 text-custom-secondary" />
                                 </button>
                             ) : (
                                 <Link
                                     to={paths.auth.jwt.signIn}
-                                    className="flex w-full items-center gap-2 rounded-lg px-1 py-0.5 text-start transition-colors hover:bg-white/15"
+                                    className="flex w-full items-center gap-2 rounded-lg px-1 py-0.5 text-start transition-colors hover:bg-[color:color-mix(in_srgb,var(--color-main)_10%,transparent)]"
                                 >
-                                    <HiLocationMarker className="h-5 w-5 shrink-0 text-black" />
+                                    <HiLocationMarker className="h-5 w-5 shrink-0 text-custom-primary" />
                                     <div className="flex min-w-0 flex-1 flex-col items-start">
-                                        <span className="text-[11px] font-normal leading-tight text-black/85">
+                                        <span className="text-[11px] font-normal leading-tight text-custom-secondary">
                                             {t("navbar.deliveringTo")}
                                         </span>
-                                        <span className="w-full truncate text-sm font-semibold text-black">
+                                        <span className="w-full truncate text-sm font-semibold text-custom-primary">
                                             {t("common.login") || "Login"}
                                         </span>
                                     </div>
@@ -301,7 +303,7 @@ export default function Navbar() {
                                             {t("navbar.addNewAddress") || "Add new address"}
                                         </Link>
                                         {addresses.length === 0 ? (
-                                            <p className="text-sm text-gray-light py-2">
+                                            <p className="text-sm text-custom-secondary py-2">
                                                 {t("navbar.noAddresses") || "No addresses yet"}
                                             </p>
                                         ) : (
@@ -350,7 +352,7 @@ export default function Navbar() {
                             aria-label={t("home.searchProducts") || "Search"}
                             onClick={() => setIsMobileMenuOpen(true)}
                         >
-                            <HiSearch className="h-6 w-6 text-secondary dark:text-primary-dark" />
+                            <HiSearch className="h-6 w-6" />
                         </button>
 
                         <div className="flex shrink-0 items-center gap-3 sm:gap-3 lg:gap-3">
@@ -379,7 +381,7 @@ export default function Navbar() {
                                 to={paths.client.cart}
                                 className={cn(ICON_CIRCLE, "relative lg:hidden")}
                             >
-                                <HiShoppingCart className="h-6 w-6 text-secondary dark:text-primary-dark" />
+                                <HiShoppingCart className="h-6 w-6" />
                                 {cartCount > 0 && (
                                     <span className="absolute -top-0.5 -right-0.5 flex min-w-[18px] items-center justify-center rounded-full bg-amber-400 px-1 text-xs font-bold text-custom-primary">
                                         {cartCount > 99 ? "99+" : cartCount}
@@ -389,7 +391,7 @@ export default function Navbar() {
                             {!authenticated && (
                                 <Link
                                     to={paths.auth.jwt.signIn}
-                                    className="hidden items-center gap-2 rounded-lg bg-white px-3 py-2 text-sm font-semibold text-primary-light shadow-sm transition-colors hover:bg-white/90 sm:flex lg:px-4 lg:text-base"
+                                    className="hidden items-center gap-2 rounded-xl border border-primary/25 bg-white px-3 py-2 text-sm font-semibold text-primary shadow-sm transition-colors hover:bg-primary/5 sm:flex lg:px-4 lg:text-base dark:border-primary/35 dark:bg-[color:color-mix(in_srgb,white_8%,#1e293b)] dark:text-primary"
                                 >
                                     <HiLogin className="h-5 w-5 shrink-0" />
                                     <span className="hidden xl:inline">
@@ -502,9 +504,9 @@ export default function Navbar() {
                                 }
                             >
                                 {theme === "dark" ? (
-                                    <HiSun className="h-5 w-5 text-secondary dark:text-primary-dark" />
+                                    <HiSun className="h-5 w-5" />
                                 ) : (
-                                    <HiMoon className="h-5 w-5 text-secondary dark:text-primary-dark" />
+                                    <HiMoon className="h-5 w-5" />
                                 )}
                             </button>
                             <button
@@ -516,8 +518,8 @@ export default function Navbar() {
                                 )}
                                 aria-label={t("navbar.language") || "Language"}
                             >
-                                <HiGlobe className="h-[17px] w-[17px] shrink-0 text-secondary dark:text-primary-dark" />
-                                <span className="text-[9px] font-bold leading-tight tracking-tight text-secondary dark:text-primary-dark">
+                                <HiGlobe className="h-[17px] w-[17px] shrink-0" />
+                                <span className="text-[9px] font-bold leading-tight tracking-tight">
                                     {language === "en" ? "AR" : "EN"}
                                 </span>
                             </button>
@@ -528,20 +530,22 @@ export default function Navbar() {
                                 aria-label={t("navbar.menu") || "Menu"}
                             >
                                 {isMobileMenuOpen ? (
-                                    <HiX className="h-6 w-6 text-secondary dark:text-primary-dark" />
+                                    <HiX className="h-6 w-6" />
                                 ) : (
-                                    <HiMenu className="h-6 w-6 text-secondary dark:text-primary-dark" />
+                                    <HiMenu className="h-6 w-6" />
                                 )}
                             </button>
                         </div>
                     </div>
                 </div>
+                </div>
 
                 <hr
-                    className="m-0 hidden w-full border-0 border-t-2 border-primary/45 dark:border-primary/40 lg:block"
+                    className="navbar-divider m-0 hidden w-full border-0 border-t lg:block"
                     aria-hidden
                 />
 
+                <div className="navbar-surface-sub hidden w-full lg:block">
                 <div className={`${HEADER_MAX} overflow-x-hidden`}>
                     <div className="hidden min-w-0 items-center justify-between gap-4 py-3 lg:flex">
                         <nav
@@ -599,12 +603,13 @@ export default function Navbar() {
                         )}
                     </div>
                 </div>
+                </div>
 
                 <hr
-                    className="m-0 w-full border-0 border-b-2 border-primary/50 dark:border-primary/45"
+                    className="navbar-bottom-edge m-0 w-full border-0 border-b-2"
                     aria-hidden
                 />
-            </div>
+            </header>
 
             {/* Mobile Menu */}
             {isMobileMenuOpen && (
@@ -681,7 +686,7 @@ export default function Navbar() {
                                         >
                                             <HiLocationMarker className="text-primary-light w-5 h-5 shrink-0" />
                                             <div className="flex flex-col items-start flex-1 min-w-0">
-                                                <span className="text-xs text-gray-light">
+                                                <span className="text-xs text-custom-secondary">
                                                     {t("navbar.deliveringTo")}
                                                 </span>
                                                 <span className="text-sm font-medium text-custom-primary truncate w-full">
@@ -692,7 +697,7 @@ export default function Navbar() {
                                                         "Add address"}
                                                 </span>
                                             </div>
-                                            <HiChevronDown className="text-gray-light w-4 h-4 shrink-0" />
+                                            <HiChevronDown className="text-custom-secondary w-4 h-4 shrink-0" />
                                         </button>
                                         {showLocationDropdown && (
                                             <div className="mt-2 bg-custom-card rounded-lg border border-gray-bold">
@@ -705,7 +710,7 @@ export default function Navbar() {
                                                         {t("navbar.addNewAddress") || "Add new address"}
                                                     </Link>
                                                     {addresses.length === 0 ? (
-                                                        <p className="text-sm text-gray-light py-2">
+                                                        <p className="text-sm text-custom-secondary py-2">
                                                             {t("navbar.noAddresses") || "No addresses yet"}
                                                         </p>
                                                     ) : (
@@ -747,7 +752,7 @@ export default function Navbar() {
                                     >
                                         <HiLocationMarker className="text-primary-light w-5 h-5 shrink-0" />
                                         <div className="flex flex-col items-start flex-1 min-w-0">
-                                            <span className="text-xs text-gray-light">
+                                            <span className="text-xs text-custom-secondary">
                                                 {t("navbar.deliveringTo")}
                                             </span>
                                             <span className="text-sm font-medium text-custom-primary truncate w-full">
@@ -799,7 +804,7 @@ export default function Navbar() {
                                 {authenticated && accountItems.length > 0 && (
                                     <>
                                         <div className="px-4 py-2 mt-4 border-t border-custom-primary">
-                                            <div className="text-xs font-semibold text-gray-light uppercase mb-3">
+                                            <div className="text-xs font-semibold text-custom-secondary uppercase mb-3">
                                                 {t("navbar.account")}
                                             </div>
                                             <div className="space-y-1 rounded-xl bg-primary-light/5 p-2">

@@ -84,11 +84,14 @@ export default function ProductReviews({
         if (!totalReviewsCount) return 0;
         return (count / totalReviewsCount) * 100;
     };
+    /** Surfaces + accents follow `settingsApi` palettes via root CSS vars (`ThemeContext`). */
     const reviewAccentStyle = useMemo(
         () =>
             ({
                 "--review-accent": reviewBorderColor?.trim() || "var(--color-api-second)",
                 "--review-main": reviewMainColor?.trim() || "var(--color-main)",
+                "--review-surface": "var(--color-bg-card)",
+                "--review-text": "var(--color-text)",
             }) as CSSProperties,
         [reviewBorderColor, reviewMainColor]
     );
@@ -106,7 +109,9 @@ export default function ProductReviews({
                     key={s}
                     className={cn(
                         size,
-                        s <= Math.round(value) ? "text-amber-400" : "text-slate-200"
+                        s <= Math.round(value)
+                            ? "text-amber-400"
+                            : "text-slate-200 dark:text-[color-mix(in_srgb,var(--review-text)_18%,transparent)]"
                     )}
                 >
                     ★
@@ -122,14 +127,14 @@ export default function ProductReviews({
             </h2>
 
             {/* TOP SUMMARY BOX (one box like the image) */}
-            <div className="relative overflow-hidden rounded-3xl border-2 border-[color-mix(in_srgb,var(--review-main)_38%,var(--review-accent)_62%)] bg-[linear-gradient(130deg,color-mix(in_srgb,var(--review-main)_6%,white)_0%,color-mix(in_srgb,var(--review-accent)_7%,white)_45%,color-mix(in_srgb,var(--review-main)_4%,var(--review-accent)_5%)_100%)] p-6 ring-1 ring-[color-mix(in_srgb,var(--review-main)_22%,var(--review-accent)_38%)] shadow-[0_24px_70px_-24px_color-mix(in_srgb,var(--review-accent)_52%,transparent),0_16px_42px_-26px_color-mix(in_srgb,var(--review-main)_52%,transparent)]">
-                <div className="pointer-events-none absolute -top-12 -right-10 h-40 w-40 rounded-full bg-[color-mix(in_srgb,var(--review-accent)_22%,white)] blur-2xl" />
-                <div className="pointer-events-none absolute -bottom-12 -left-10 h-40 w-40 rounded-full bg-[color-mix(in_srgb,var(--review-main)_20%,white)] blur-2xl" />
-                <div className="pointer-events-none absolute inset-x-8 top-3 h-12 rounded-full bg-white/25 blur-xl" />
+            <div className="relative overflow-hidden rounded-3xl border-2 border-[color-mix(in_srgb,var(--review-main)_38%,var(--review-accent)_62%)] bg-[linear-gradient(130deg,color-mix(in_srgb,var(--review-main)_6%,var(--review-surface))_0%,color-mix(in_srgb,var(--review-accent)_7%,var(--review-surface))_45%,color-mix(in_srgb,var(--review-main)_4%,var(--review-accent)_5%)_100%)] p-6 ring-1 ring-[color-mix(in_srgb,var(--review-main)_22%,var(--review-accent)_38%)] shadow-[0_24px_70px_-24px_color-mix(in_srgb,var(--review-accent)_52%,transparent),0_16px_42px_-26px_color-mix(in_srgb,var(--review-main)_52%,transparent)]">
+                <div className="pointer-events-none absolute -top-12 -right-10 h-40 w-40 rounded-full bg-[color-mix(in_srgb,var(--review-accent)_22%,var(--review-surface))] blur-2xl" />
+                <div className="pointer-events-none absolute -bottom-12 -left-10 h-40 w-40 rounded-full bg-[color-mix(in_srgb,var(--review-main)_20%,var(--review-surface))] blur-2xl" />
+                <div className="pointer-events-none absolute inset-x-8 top-3 h-12 rounded-full bg-white/25 blur-xl dark:bg-[color-mix(in_srgb,var(--review-text)_8%,transparent)]" />
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
                     {/* Left: average rating ring */}
                     <div className="lg:col-span-4">
-                        <div className="flex items-center gap-5 rounded-2xl border border-[color-mix(in_srgb,var(--review-accent)_42%,transparent)] bg-custom-primary/65 p-4 shadow-[0_16px_38px_-22px_color-mix(in_srgb,var(--review-accent)_68%,transparent),inset_0_1px_0_rgba(255,255,255,0.2)] backdrop-blur-sm">
+                        <div className="flex items-center gap-5 rounded-2xl border border-[color-mix(in_srgb,var(--review-accent)_42%,transparent)] bg-custom-primary/65 p-4 shadow-[0_16px_38px_-22px_color-mix(in_srgb,var(--review-accent)_68%,transparent),inset_0_1px_0_rgba(255,255,255,0.2)] backdrop-blur-sm dark:shadow-[0_16px_38px_-22px_color-mix(in_srgb,var(--review-accent)_68%,transparent),inset_0_1px_0_color-mix(in_srgb,var(--review-text)_10%,transparent)]">
                             {/* ring */}
                             <div className="relative grid h-16 w-16 place-items-center rounded-full bg-gradient-to-br from-amber-100 to-amber-300/40 ring-4 ring-amber-300/50 dark:from-amber-500/20 dark:to-amber-300/10">
                                 <span className="text-lg font-bold text-text-primary">
@@ -149,7 +154,7 @@ export default function ProductReviews({
 
                     {/* Right: distribution bars */}
                     <div className="lg:col-span-8">
-                        <div className="space-y-3 rounded-2xl border border-[color-mix(in_srgb,var(--review-accent)_38%,transparent)] bg-custom-primary/65 p-4 shadow-[0_16px_34px_-22px_color-mix(in_srgb,var(--review-accent)_62%,transparent),inset_0_1px_0_rgba(255,255,255,0.2)] backdrop-blur-sm">
+                        <div className="space-y-3 rounded-2xl border border-[color-mix(in_srgb,var(--review-accent)_38%,transparent)] bg-custom-primary/65 p-4 shadow-[0_16px_34px_-22px_color-mix(in_srgb,var(--review-accent)_62%,transparent),inset_0_1px_0_rgba(255,255,255,0.2)] backdrop-blur-sm dark:shadow-[0_16px_34px_-22px_color-mix(in_srgb,var(--review-accent)_62%,transparent),inset_0_1px_0_color-mix(in_srgb,var(--review-text)_10%,transparent)]">
                             {[5, 4, 3, 2, 1].map((r) => {
                                 const count =
                                     ratingDistribution[String(r) as keyof RatingDistribution] ??
@@ -188,7 +193,7 @@ export default function ProductReviews({
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
                 {/* Left: Filter */}
                 <div className="lg:col-span-3">
-                    <div className="sticky top-24 rounded-3xl border-2 border-[color-mix(in_srgb,var(--review-main)_38%,var(--review-accent)_62%)] bg-white p-5 ring-1 ring-[color-mix(in_srgb,var(--review-main)_22%,var(--review-accent)_38%)] shadow-[0_22px_52px_-24px_color-mix(in_srgb,var(--review-accent)_52%,transparent),0_14px_32px_-22px_color-mix(in_srgb,var(--review-main)_45%,transparent)]">
+                    <div className="sticky top-24 rounded-3xl border-2 border-[color-mix(in_srgb,var(--review-main)_38%,var(--review-accent)_62%)] bg-custom-card p-5 ring-1 ring-[color-mix(in_srgb,var(--review-main)_22%,var(--review-accent)_38%)] shadow-[0_22px_52px_-24px_color-mix(in_srgb,var(--review-accent)_52%,transparent),0_14px_32px_-22px_color-mix(in_srgb,var(--review-main)_45%,transparent)]">
                         <h3 className="mb-4 text-sm font-bold text-text-primary">
                             {t("product.reviewsFilter")}
                         </h3>
@@ -214,7 +219,7 @@ export default function ProductReviews({
                                         className={cn(
                                             "flex items-center justify-between gap-2 rounded-xl px-2.5 py-2 text-xs text-text-primary cursor-pointer font-normal transition-all",
                                             selectedRatings.includes(rating)
-                                                ? "bg-amber-50 text-text-primary dark:bg-amber-500/20"
+                                                ? "bg-amber-50 text-text-primary dark:bg-[color-mix(in_srgb,var(--review-accent)_24%,var(--review-surface))]"
                                                 : "bg-custom-primary/50 hover:bg-custom-secondary/30"
                                         )}
                                     >
@@ -242,7 +247,7 @@ export default function ProductReviews({
 
                 {/* Right: Review list */}
                 <div className="lg:col-span-9">
-                    <div className="rounded-3xl border-2 border-[color-mix(in_srgb,var(--review-main)_38%,var(--review-accent)_62%)] bg-white p-6 ring-1 ring-[color-mix(in_srgb,var(--review-main)_22%,var(--review-accent)_38%)] shadow-[0_24px_60px_-24px_color-mix(in_srgb,var(--review-accent)_50%,transparent),0_16px_36px_-24px_color-mix(in_srgb,var(--review-main)_48%,transparent)] before:pointer-events-none before:absolute before:inset-0 before:rounded-3xl before:p-[1px]  relative">
+                    <div className="relative rounded-3xl border-2 border-[color-mix(in_srgb,var(--review-main)_38%,var(--review-accent)_62%)] bg-custom-card p-6 ring-1 ring-[color-mix(in_srgb,var(--review-main)_22%,var(--review-accent)_38%)] shadow-[0_24px_60px_-24px_color-mix(in_srgb,var(--review-accent)_50%,transparent),0_16px_36px_-24px_color-mix(in_srgb,var(--review-main)_48%,transparent)] before:pointer-events-none before:absolute before:inset-0 before:rounded-3xl before:p-[1px]">
                         <h3 className="mb-5 text-sm font-bold text-text-primary">
                             {t("product.reviewLists")}
                         </h3>
@@ -251,7 +256,7 @@ export default function ProductReviews({
                             {filteredReviews.map((review) => (
                                 <div
                                     key={review.id}
-                                    className="rounded-2xl border border-[color-mix(in_srgb,var(--review-main)_35%,var(--review-accent)_65%)] bg-white p-4 shadow-[0_16px_30px_-20px_color-mix(in_srgb,var(--review-accent)_42%,transparent),0_10px_24px_-18px_color-mix(in_srgb,var(--review-main)_38%,transparent),inset_0_1px_0_rgba(255,255,255,0.75)] transition-all hover:-translate-y-0.5 hover:border-[color-mix(in_srgb,var(--review-main)_35%,var(--review-accent)_85%)] hover:bg-white hover:shadow-[0_24px_42px_-20px_color-mix(in_srgb,var(--review-accent)_65%,transparent),0_14px_30px_-20px_color-mix(in_srgb,var(--review-main)_52%,transparent)]"
+                                    className="rounded-2xl border border-[color-mix(in_srgb,var(--review-main)_35%,var(--review-accent)_65%)] bg-custom-card p-4 shadow-[0_16px_30px_-20px_color-mix(in_srgb,var(--review-accent)_42%,transparent),0_10px_24px_-18px_color-mix(in_srgb,var(--review-main)_38%,transparent),inset_0_1px_0_rgba(255,255,255,0.75)] transition-all hover:-translate-y-0.5 hover:border-[color-mix(in_srgb,var(--review-main)_35%,var(--review-accent)_85%)] hover:bg-custom-card hover:shadow-[0_24px_42px_-20px_color-mix(in_srgb,var(--review-accent)_65%,transparent),0_14px_30px_-20px_color-mix(in_srgb,var(--review-main)_52%,transparent)] dark:shadow-[0_16px_30px_-20px_color-mix(in_srgb,var(--review-accent)_42%,transparent),0_10px_24px_-18px_color-mix(in_srgb,var(--review-main)_38%,transparent),inset_0_1px_0_color-mix(in_srgb,var(--review-text)_8%,transparent)] dark:hover:shadow-[0_24px_42px_-20px_color-mix(in_srgb,var(--review-accent)_65%,transparent),0_14px_30px_-20px_color-mix(in_srgb,var(--review-main)_52%,transparent),inset_0_1px_0_color-mix(in_srgb,var(--review-text)_10%,transparent)]"
                                 >
                                     <div className="mb-2 flex items-center justify-between gap-3">
                                         <StarsRow value={review.rating} size="text-base" />
@@ -293,7 +298,7 @@ export default function ProductReviews({
 
                             {isFetchingNextPage && (
                                 <div className="flex justify-center py-4">
-                                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary-light" />
+                                    <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-t-2 border-primary-light dark:border-b-[color-mix(in_srgb,var(--review-main)_42%,transparent)] dark:border-t-[color-mix(in_srgb,var(--review-main)_42%,transparent)]" />
                                 </div>
                             )}
                         </div>

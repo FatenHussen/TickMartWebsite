@@ -15,6 +15,7 @@ import {
   applyCSSVariables,
   clearCSSVariables,
   isPaletteComplete,
+  resolveApiPaletteForTheme,
 } from "@/shared/lib/themeColors";
 import type { CSSVariableMap } from "@/shared/lib/themeColors";
 
@@ -52,7 +53,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [isApiThemeApplied, setIsApiThemeApplied] = useState(false);
 
   const prevVarsRef = useRef<CSSVariableMap>({});
-  const transitionTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const transitionTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
   const isFirstRenderRef = useRef(true);
 
   useLayoutEffect(() => {
@@ -76,7 +79,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, [theme]);
 
   useEffect(() => {
-    const palette = theme === "dark" ? darkPalette : lightPalette;
+    const palette = resolveApiPaletteForTheme(theme, lightPalette, darkPalette);
 
     if (!isPaletteComplete(palette)) {
       if (Object.keys(prevVarsRef.current).length) {

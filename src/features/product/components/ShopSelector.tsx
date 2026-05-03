@@ -28,7 +28,7 @@ export default function ShopSelector({
                     <select
                         value={selectedShopId}
                         onChange={(e) => onShopChange(Number(e.target.value))}
-                        className="min-w-[170px] appearance-none rounded-full border border-[#E7EEF3] bg-[#F8FBFD] py-2 pl-4 pr-9 text-sm font-medium text-[#495666] outline-none transition-colors focus:border-[#B8DDEA] cursor-pointer"
+                        className="min-w-[170px] appearance-none rounded-full border border-[#E7EEF3] dark:border-[color-mix(in_srgb,var(--color-main)_22%,#1f2230)] bg-[#F8FBFD] dark:bg-[color-mix(in_srgb,var(--color-main)_18%,#13151c)] py-2 pl-4 pr-9 text-sm font-medium text-[#495666] dark:text-[var(--color-text)] outline-none transition-colors focus:border-[#B8DDEA] dark:focus:border-[color-mix(in_srgb,var(--color-api-second)_45%,transparent)] cursor-pointer"
                     >
                         {shops.map((shop) => (
                             <option key={shop.id} value={shop.id}>
@@ -36,7 +36,7 @@ export default function ShopSelector({
                             </option>
                         ))}
                     </select>
-                    <HiChevronDown className="pointer-events-none absolute right-3 h-4 w-4 text-[#7C8A97]" />
+                    <HiChevronDown className="pointer-events-none absolute right-3 h-4 w-4 text-[#7C8A97] dark:text-[color-mix(in_srgb,var(--color-text)_70%,transparent)]" />
                 </div>
                 {/* Hidden – keeps selectedShop in scope to avoid unused var */}
                 {selectedShop && null}
