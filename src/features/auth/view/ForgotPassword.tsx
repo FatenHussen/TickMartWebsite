@@ -35,7 +35,8 @@ export default function ForgotPassword() {
  leftImageSrc="/images/auth/changePassword.jpg"
  leftImageAlt=""
  leftImageHeight="100vh"
- maxWidth="md"
+ useFormCard
+ maxWidth="auth"
  >
  <div className="space-y-6">
  <div className="text-center mb-10">

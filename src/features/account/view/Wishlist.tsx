@@ -1,14 +1,15 @@
-import { useState, useMemo } from"react";
-import { useTranslation } from"react-i18next";
-import { useLanguage } from"@/context/LanguageContext";
-import { useAuthStore } from"@/store/auth";
-import { useAllFavorites, useToggleFavorite } from"../hooks/useFavorites";
-import { useQueryClient } from"@tanstack/react-query";
-import { queryKeys } from"@/utils/queryKeys";
-import WishlistFilters from"../components/WishlistFilters";
-import type { WishlistTypeFilter } from"../components/WishlistFilters";
-import WishlistProductCard from"../components/WishlistProductCard";
-import type { FavoriteType } from"../types";
+import { useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
+import { useLanguage } from "@/context/LanguageContext";
+import { useAuthStore } from "@/store/auth";
+import { useAllFavorites, useToggleFavorite } from "../hooks/useFavorites";
+import { useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/utils/queryKeys";
+import { PremiumInlineLoader } from "@/shared/component/loading";
+import WishlistFilters from "../components/WishlistFilters";
+import type { WishlistTypeFilter } from "../components/WishlistFilters";
+import WishlistProductCard from "../components/WishlistProductCard";
+import type { FavoriteType } from "../types";
 
 export default function Wishlist() {
  const { t } = useTranslation();
@@ -66,7 +67,7 @@ export default function Wishlist() {
  return (
  <div dir={isRTL ?"rtl":"ltr"}>
  <WishlistHeader />
- <div className="py-14 text-center text-custom-secondary">
+ <div className="py-14 text-center text-custom-secondary dark:text-[#A1A1AA]">
  {t("wishlist.loginRequired")}
  </div>
  </div>
@@ -92,10 +93,10 @@ export default function Wishlist() {
 
  {isLoading ? (
  <div className="flex justify-center py-16">
- <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"/>
+ <PremiumInlineLoader size="md" />
  </div>
  ) : filteredItems.length === 0 ? (
- <div className="py-14 text-center text-custom-secondary">
+ <div className="py-14 text-center text-custom-secondary dark:text-[#A1A1AA]">
  {t("wishlist.noItemsFound")}
  </div>
  ) : (
@@ -118,10 +119,10 @@ function WishlistHeader() {
  const { t } = useTranslation();
  return (
  <div className="mb-6">
- <h1 className="text-2xl font-bold text-custom-primary mb-1">
+ <h1 className="mb-1 text-2xl font-bold text-custom-primary dark:text-[#FFFFFF]">
  {t("wishlist.title")}
  </h1>
- <p className="text-sm text-custom-secondary">
+ <p className="text-sm text-custom-secondary dark:text-[#A1A1AA]">
  {t("wishlist.description")}
  </p>
  </div>

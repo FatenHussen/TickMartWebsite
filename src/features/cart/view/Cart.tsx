@@ -29,8 +29,9 @@ import { _ScheduledBasketApi } from "@/features/account/api/scheduledBasketApi";
 import { queryKeys } from "@/utils/queryKeys";
 import type { OrderSummary, OrderPreviewItemPrice, OrderPreviewOrderItem } from "../types";
 import { toNum } from "../utils";
-import { matchPreviewOrderItem } from "../utils/enrichCartItems";
+import { assignPreviewOrderItemsToCart } from "../utils/enrichCartItems";
 import { mapPreviewToCartSummary } from "../utils/orderSummary";
+import { ScreenPromotions } from "@/features/promotions";
 
 function parseSubtotal(s: string): number {
     return parseFloat(String(s).replace(/[^0-9.]/g, "")) || 0;
@@ -221,6 +222,15 @@ export default function Cart() {
         return m;
     }, [preview?.orderItems]);
 
+    const previewOrderItemByCartId = useMemo(
+        () =>
+            assignPreviewOrderItemsToCart(
+                items,
+                preview?.orderItems as OrderPreviewOrderItem[] | undefined
+            ),
+        [items, preview?.orderItems]
+    );
+
     const summaryStatus: "loading" | "no-address" | "ready" =
         items.length === 0
             ? "ready"
@@ -348,6 +358,8 @@ export default function Cart() {
                     </div>
                 )}
 
+                <ScreenPromotions pageSlug="cart" placement="top" className="mb-6" />
+
                 {isCartEmpty ? (
                     /* Creative empty cart — uses theme tokens */
                     <div className="flex justify-center items-center min-h-[60vh]">
@@ -402,7 +414,7 @@ export default function Cart() {
                                             />
                                         </svg>
                                     </div>
-                                    <h2 className="text-xl font-bold text-[color:var(--color-text)] mb-2">
+                                    <h2 className="text-xl font-bold text-custom-primary mb-2">
                                         {t("cart.yourCartIsEmpty")}
                                     </h2>
                                     <p className="text-sm text-custom-secondary mb-8 max-w-xs mx-auto leading-relaxed">
@@ -475,10 +487,7 @@ export default function Cart() {
                             {/* Cart Items */}
                             <div className="bg-cart-items space-y-5 rounded-[24px] p-6">
                                 {items.map((item) => {
-                                    const orderItem = matchPreviewOrderItem(
-                                        item,
-                                        preview?.orderItems as OrderPreviewOrderItem[] | undefined
-                                    );
+                                    const orderItem = previewOrderItemByCartId.get(item.id);
                                     const previewPriceForItem = orderItem
                                         ? (() => {
                                               const priceBefore = toNum(orderItem.price);
@@ -492,12 +501,17 @@ export default function Cart() {
                                               };
                                           })()
                                         : undefined;
+                                    const previewSubtotalFormatted =
+                                        orderItem?.subtotal != null
+                                            ? formatPrice(toNum(orderItem.subtotal))
+                                            : undefined;
                                     return (
                                         <CartItemCard
                                             key={item.id}
                                             item={item}
                                             previewPrices={previewPricesMap}
                                             previewPrice={previewPriceForItem}
+                                            previewSubtotal={previewSubtotalFormatted}
                                             displayName={orderItem?.product_name}
                                             displayVariant={orderItem?.variant}
                                             freeQuantity={item.shop_product_variant_id != null ? freeItemsByVariant.get(item.shop_product_variant_id) : undefined}
@@ -522,6 +536,8 @@ export default function Cart() {
                                         cartItems={items}
                                     />
                                 )}
+
+                            <ScreenPromotions pageSlug="cart" placement="bottom" />
 
                             {/* Action Buttons */}
                             <div
@@ -554,7 +570,7 @@ export default function Cart() {
                                     <Button
                                         variant="outline"
                                         onClick={handleUpdateCart}
-                                        className="h-12 w-full md:min-w-[150px] rounded-xl px-4 sm:px-6 text-sm font-medium !bg-custom-card !border !border-custom-primary !text-[color:var(--color-text)] hover:!border-[color:color-mix(in_srgb,var(--color-main)_35%,transparent)] hover:!bg-custom-hover transition-colors"
+                                        className="h-12 w-full md:min-w-[150px] rounded-xl px-4 sm:px-6 text-sm font-medium !bg-custom-card !border !border-custom-primary !text-custom-primary hover:!border-[color:color-mix(in_srgb,var(--color-main)_35%,transparent)] hover:!bg-custom-hover transition-colors"
                                     >
                                         {t("cart.updateCart")}
                                     </Button>

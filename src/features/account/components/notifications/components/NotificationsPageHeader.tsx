@@ -19,13 +19,13 @@ export function NotificationsPageHeader({
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-2xl",
-        "bg-[linear-gradient(135deg,color-mix(in_srgb,var(--color-bg-card)_88%,var(--color-api-second))_0%,var(--color-bg-card)_48%,color-mix(in_srgb,var(--color-bg-card)_94%,var(--color-main))_100%)]",
-        "p-4 shadow-sm sm:p-5",
+        "account-shell relative overflow-hidden rounded-2xl border border-[var(--color-border-primary)]",
+        "bg-[linear-gradient(135deg,color-mix(in_srgb,var(--color-bg-card)_92%,var(--color-api-second))_0%,var(--color-bg-card)_55%,color-mix(in_srgb,var(--color-bg-card)_96%,var(--color-main))_100%)]",
+        "p-4 shadow-[0_4px_24px_-8px_var(--color-shadow)] sm:p-5",
       )}
     >
       <div
-        className="pointer-events-none absolute -end-10 -top-12 h-36 w-36 rounded-full bg-[var(--color-api-second)] opacity-[0.12] blur-2xl"
+        className="pointer-events-none absolute -end-10 -top-12 h-36 w-36 rounded-full bg-[var(--color-api-second)] opacity-[0.10] blur-2xl dark:opacity-[0.04]"
         aria-hidden
       />
       <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

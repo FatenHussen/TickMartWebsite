@@ -2,6 +2,7 @@ import { useMemo, useState, type CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
 import { HiChevronUp, HiChevronDown } from "react-icons/hi";
 import { cn } from "@/shared/lib/utils";
+import { PremiumInlineLoader } from "@/shared/component/loading";
 import Label from "@/shared/ui/Label";
 
 export type Review = {
@@ -298,7 +299,7 @@ export default function ProductReviews({
 
                             {isFetchingNextPage && (
                                 <div className="flex justify-center py-4">
-                                    <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-t-2 border-primary-light dark:border-b-[color-mix(in_srgb,var(--review-main)_42%,transparent)] dark:border-t-[color-mix(in_srgb,var(--review-main)_42%,transparent)]" />
+                                    <PremiumInlineLoader size="sm" />
                                 </div>
                             )}
                         </div>

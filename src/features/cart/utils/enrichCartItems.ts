@@ -1,29 +1,66 @@
 import type { CartItem, OrderPreviewOrderItem, OrderPreviewResponse } from "../types";
 import { toNum } from "../utils";
+import { extrasSignature } from "./cartExtras";
 
-/** Stable key for matching cart extras to preview order lines */
-export function extrasSignature(extras?: number[]): string {
-  if (!extras?.length) return "";
-  return [...extras].sort((a, b) => a - b).join(",");
-}
-
-/** Match preview order item to cart line (variant + optional extras) */
-export function matchPreviewOrderItem(
-  cartItem: CartItem,
+/**
+ * Map each cart line to one preview `orderItems` row (one-to-one).
+ * When the same variant appears on multiple lines, `find()`-only matching
+ * always returns the first API row; we consume rows so qty/extras align.
+ */
+export function assignPreviewOrderItemsToCart(
+  cartItems: CartItem[],
   orderItems: OrderPreviewOrderItem[] | undefined
-): OrderPreviewOrderItem | undefined {
-  if (!orderItems?.length || cartItem.shop_product_variant_id == null) return undefined;
-  const sameVariant = orderItems.filter(
-    (it) => it.shop_product_variant_id === cartItem.shop_product_variant_id
-  );
-  if (sameVariant.length === 0) return undefined;
-  if (sameVariant.length === 1) return sameVariant[0];
-  const sig = extrasSignature(cartItem.extras);
-  return (
-    sameVariant.find(
-      (it) => extrasSignature(it.extras) === sig
-    ) ?? sameVariant[0]
-  );
+): Map<CartItem["id"], OrderPreviewOrderItem> {
+  const out = new Map<CartItem["id"], OrderPreviewOrderItem>();
+  if (!orderItems?.length) return out;
+
+  const used = new Set<number>();
+  const nextIndex = (predicate: (it: OrderPreviewOrderItem, i: number) => boolean): number => {
+    for (let i = 0; i < orderItems.length; i++) {
+      if (used.has(i)) continue;
+      if (predicate(orderItems[i]!, i)) return i;
+    }
+    return -1;
+  };
+
+  for (const cartItem of cartItems) {
+    if (cartItem.shop_product_variant_id == null) continue;
+
+    const vid = cartItem.shop_product_variant_id;
+    const q = Number(cartItem.quantity);
+    const sig = extrasSignature(cartItem.extras);
+
+    let idx = nextIndex(
+      (it) =>
+        it.shop_product_variant_id === vid &&
+        Number(it.quantity) === q &&
+        extrasSignature(it.extras) === sig
+    );
+
+    if (idx === -1) {
+      idx = nextIndex(
+        (it) => it.shop_product_variant_id === vid && Number(it.quantity) === q
+      );
+    }
+
+    if (idx === -1) {
+      idx = nextIndex(
+        (it) =>
+          it.shop_product_variant_id === vid && extrasSignature(it.extras) === sig
+      );
+    }
+
+    if (idx === -1) {
+      idx = nextIndex((it) => it.shop_product_variant_id === vid);
+    }
+
+    if (idx !== -1) {
+      used.add(idx);
+      out.set(cartItem.id, orderItems[idx]!);
+    }
+  }
+
+  return out;
 }
 
 /** Build preview prices map from orderItems (price = before, price_after_discount = after) */
@@ -90,10 +127,12 @@ export function enrichCartItemsWithPreview(
     );
   });
 
+  const previewByCartId = assignPreviewOrderItemsToCart(items, previewOrderItems);
+
   return items.map((item) => {
     const orderItem =
       item.shop_product_variant_id != null
-        ? matchPreviewOrderItem(item, previewOrderItems) ??
+        ? previewByCartId.get(item.id) ??
           orderItemsByVariant.get(item.shop_product_variant_id)
         : undefined;
     const previewPrices =

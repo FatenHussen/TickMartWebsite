@@ -253,15 +253,19 @@ export default function MyOrders() {
  ];
 
  return (
- <div className="space-y-6"dir={isRTL ?"rtl":"ltr"}>
- <div className="mb-8">
- <h1 className="text-2xl font-bold text-text-primary mb-2">
- {t("orders.myOrders")}
- </h1>
- <p className="text-text-secondary text-sm">
- {t("orders.myOrdersDescription")}
- </p>
- </div>
+ <div className="space-y-6" dir={isRTL ? "rtl" : "ltr"}>
+      <section className="account-shell relative overflow-hidden rounded-2xl border border-[var(--color-border-primary)] bg-[var(--color-bg-card)] p-6 shadow-[0_4px_24px_-8px_var(--color-shadow)] dark:shadow-[0_8px_40px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.04)]">
+        <span className="pointer-events-none absolute -end-16 -top-16 h-44 w-44 rounded-full bg-[var(--color-api-second)] opacity-10 blur-3xl" aria-hidden />
+        <span className="pointer-events-none absolute -bottom-12 -start-10 h-36 w-36 rounded-full bg-[var(--color-main)] opacity-[0.07] blur-3xl" aria-hidden />
+        <div className="relative">
+          <h1 className="text-2xl font-bold text-custom-primary mb-1.5">
+            {t("orders.myOrders")}
+          </h1>
+          <p className="text-custom-secondary text-sm">
+            {t("orders.myOrdersDescription")}
+          </p>
+        </div>
+      </section>
 
  <div className="flex flex-col lg:flex-row gap-4 mb-6">
  <div className="flex-1">
@@ -272,7 +276,7 @@ export default function MyOrders() {
  value={searchQuery}
  onChange={(e) => setSearchQuery(e.target.value)}
  placeholder={t("orders.searchPlaceholder")}
- className="w-full pl-10 pr-4 py-3 rounded-xl border border-custom-primary bg-custom-card text-custom-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+ className="w-full pl-10 pr-4 py-3 rounded-xl border border-[var(--color-border-primary)] bg-[var(--color-bg-card)] text-custom-primary focus:outline-none focus:ring-2 focus:ring-[var(--color-border-accent)] focus:border-transparent"
  />
  </div>
  </div>
@@ -280,7 +284,7 @@ export default function MyOrders() {
  <select
  value={sortBy}
  onChange={(e) => setSortBy(e.target.value)}
- className="px-4 py-3 rounded-xl border border-custom-primary bg-custom-card text-custom-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+ className="px-4 py-3 rounded-xl border border-[var(--color-border-primary)] bg-[var(--color-bg-card)] text-custom-primary focus:outline-none focus:ring-2 focus:ring-[var(--color-border-accent)] focus:border-transparent"
  >
  {sortOptions.map((option) => (
  <option key={option.value} value={option.value}>
@@ -297,10 +301,10 @@ export default function MyOrders() {
  key={filter.value}
  onClick={() => setActiveFilter(filter.value)}
  className={cn(
-"px-4 py-2 rounded-lg text-sm font-medium transition-all",
- activeFilter === filter.value
- ?"bg-primary text-white"
- :"bg-custom-card text-text-secondary border border-custom-primary hover:border-primary",
+   "px-4 py-2 rounded-lg text-sm font-medium transition-all",
+   activeFilter === filter.value
+     ? "bg-[var(--color-api-second)] text-white shadow-sm"
+     : "bg-[var(--color-bg-card)] text-custom-secondary border border-[var(--color-border-primary)] hover:border-[var(--color-border-accent)] hover:text-custom-primary",
  )}
  >
  {filter.label}

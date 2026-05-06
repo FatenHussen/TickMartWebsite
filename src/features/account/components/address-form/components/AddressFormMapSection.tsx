@@ -23,18 +23,18 @@ export function AddressFormMapSection({
     return (
         <div className="space-y-3">
             <div className="flex items-center gap-2">
-                <HiLocationMarker className="h-5 w-5 shrink-0 text-primary" />
+                <HiLocationMarker className="h-5 w-5 shrink-0 text-primary dark:text-[color-mix(in_srgb,var(--color-main)_75%,#a1a1aa)]" />
                 <label className="text-sm font-medium text-custom-primary">
                     {t("account.addAddress.locationOnMap")}
                 </label>
             </div>
             <div className="relative">
-                <HiSearch className="absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-custom-tertiary" />
+                <HiSearch className="absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-custom-tertiary dark:text-[#71717A]" />
                 <input
                     type="text"
                     placeholder={t("account.addAddress.searchLocationPlaceholder")}
                     readOnly
-                    className="w-full rounded-xl border border-custom-secondary bg-custom-light py-2.5 pr-4 pl-10 text-sm text-custom-secondary"
+                    className="w-full rounded-xl border border-custom-secondary bg-custom-light py-2.5 pr-4 pl-10 text-sm text-custom-secondary dark:border-[rgba(255,255,255,0.06)] dark:bg-[rgba(255,255,255,0.04)] dark:text-[#A1A1AA]"
                 />
             </div>
             <LocationPickerMap
@@ -45,7 +45,7 @@ export function AddressFormMapSection({
             <button
                 type="button"
                 onClick={onUseCurrentLocation}
-                className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-custom-secondary py-2.5 text-sm font-medium text-custom-secondary transition-colors hover:border-primary hover:text-primary"
+                className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-custom-secondary py-2.5 text-sm font-medium text-custom-secondary transition-all duration-300 hover:border-primary hover:text-primary dark:border-[rgba(255,255,255,0.08)] dark:text-[#A1A1AA] dark:hover:border-[color-mix(in_srgb,var(--color-main)_45%,transparent)] dark:hover:bg-[color-mix(in_srgb,var(--color-main)_8%,transparent)] dark:hover:text-[color-mix(in_srgb,var(--color-main)_82%,#FFFFFF)]"
             >
                 <svg
                     className="h-5 w-5"
@@ -68,7 +68,7 @@ export function AddressFormMapSection({
                 </svg>
                 {t("account.addAddress.useCurrentLocation")}
             </button>
-            <p className="text-xs text-custom-secondary">
+            <p className="text-xs text-custom-secondary dark:text-[#71717A]">
                 {t("account.addAddress.pinnedLocation")}: {latNum?.toFixed(4)}°
                 {latNum >= 0 ? "N" : "S"}, {lngNum?.toFixed(4)}°
                 {lngNum >= 0 ? "E" : "W"}

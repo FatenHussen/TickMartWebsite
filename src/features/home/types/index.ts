@@ -251,6 +251,7 @@ export const DISPLAY_TYPE = {
  PRODUCT: 2,
  SHOP: 3,
  BASKET: 4,
+ SCHEDULED_BASKET: 5,
  BRAND: 6,
  RECIPE: 7,
 } as const;

@@ -10,10 +10,10 @@ interface PaymentMethodOptionCardProps {
 }
 
 const selectedRowClassName =
-    "border-[var(--color-api-second)] shadow-sm bg-[color-mix(in_srgb,var(--color-api-second)_14%,var(--color-bg-card))]";
+    "border-[var(--color-api-second)] shadow-sm bg-[color-mix(in_srgb,var(--color-api-second)_12%,var(--color-bg-card))] dark:border-[var(--color-border-accent)] dark:bg-[color-mix(in_srgb,var(--color-api-second)_8%,rgba(16,17,20,0.9))] dark:shadow-[0_4px_20px_-8px_color-mix(in_srgb,var(--color-api-second)_18%,transparent)]";
 
 const unselectedRowClassName =
-    "border-custom-primary bg-custom-card hover:border-[color-mix(in_srgb,var(--color-api-second)_38%,var(--color-border-primary))]";
+    "border-[var(--color-border-primary)] bg-[var(--color-bg-card)] hover:border-[var(--color-border-accent-light)] hover:bg-[color-mix(in_srgb,var(--color-api-second)_4%,var(--color-bg-card))]";
 
 export function PaymentMethodOptionCard({
     method,
@@ -29,7 +29,7 @@ export function PaymentMethodOptionCard({
     return (
         <div
             className={cn(
-                "cursor-pointer rounded-2xl border-2 p-4 transition-all",
+                "cursor-pointer rounded-2xl border p-4 transition-all",
                 isSelected ? selectedRowClassName : unselectedRowClassName,
             )}
             onClick={handleRowClick}

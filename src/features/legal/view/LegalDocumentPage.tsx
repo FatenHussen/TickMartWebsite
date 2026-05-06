@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContext";
 import { ExpandableHtmlContent } from "@/shared/ui/ExpandableText";
 import { cn } from "@/shared/lib/utils";
+import { PremiumInlineLoader } from "@/shared/component/loading";
 import { enhanceLegalDocumentHtml } from "../utils/enhanceLegalDocumentHtml";
 import type { LegalDocumentData } from "../types";
 
@@ -50,7 +51,7 @@ export default function LegalDocumentPage({
                 className="min-h-[60vh] flex items-center justify-center"
                 dir={isRTL ? "rtl" : "ltr"}
             >
-                <div className="animate-spin rounded-full h-12 w-12 border-2 border-primary border-t-transparent" />
+                <PremiumInlineLoader size="lg" />
             </div>
         );
     }

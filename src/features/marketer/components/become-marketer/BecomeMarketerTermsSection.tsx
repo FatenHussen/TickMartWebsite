@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import type { LegalDocumentData } from "@/features/legal/types";
 import { API_SECOND_CTA_CLASS } from "@/features/marketer/constants/apiSecondClasses";
+import { PremiumInlineLoader } from "@/shared/component/loading";
 
 interface BecomeMarketerTermsSectionProps {
     termsData: LegalDocumentData | null | undefined;
@@ -35,7 +36,7 @@ export function BecomeMarketerTermsSection({
         <div className="overflow-hidden rounded-xl border border-custom-primary bg-custom-card shadow-lg">
             {isLoading ? (
                 <div className="flex justify-center py-16">
-                    <div className="h-10 w-10 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                    <PremiumInlineLoader size="md" />
                 </div>
             ) : termsLoadError ? (
                 <p className="px-6 py-8 text-center text-error">{termsErrorMessage(termsLoadError)}</p>

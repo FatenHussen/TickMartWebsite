@@ -112,7 +112,7 @@ export default function CartSummary({
                 <div className="p-4 sm:p-6 space-y-4">
                     <div className="flex items-center gap-2.5">
                         <SummaryIcon />
-                        <h2 className="text-lg font-bold text-[color:var(--color-text)]">
+                        <h2 className="text-lg font-bold text-custom-primary">
                             {t("checkout.orderSummary")}
                         </h2>
                     </div>
@@ -143,7 +143,7 @@ export default function CartSummary({
                 {/* Header */}
                 <div className="flex items-center gap-2.5">
                     <SummaryIcon />
-                    <h2 className="text-lg font-bold text-[color:var(--color-text)]">
+                    <h2 className="text-lg font-bold text-custom-primary">
                         {t("checkout.orderSummary")}
                     </h2>
                 </div>
@@ -278,7 +278,7 @@ export default function CartSummary({
 
                 {/* Total */}
                 <div className="flex items-baseline justify-between">
-                    <span className="text-base font-bold text-[color:var(--color-text)]">
+                    <span className="text-base font-bold text-custom-primary">
                         {t("orders.total", "Total")}
                     </span>
                     <span className="text-2xl font-extrabold text-[color:var(--color-main)] tabular-nums">
@@ -314,7 +314,7 @@ export default function CartSummary({
                         >
                             <HiGift className="w-5 h-5" />
                         </span>
-                        <p className="text-sm font-medium text-[color:var(--color-text)]">
+                        <p className="text-sm font-medium text-custom-primary">
                             {t(
                                 "cart.pointsEarned",
                                 "You'll earn {{points}} points from this order.",
@@ -357,7 +357,7 @@ export default function CartSummary({
                     />
                     <span>
                         {t("cart.estimatedDelivery", "Estimated delivery:")}{" "}
-                        <span className="font-semibold text-[color:var(--color-text)]">
+                        <span className="font-semibold text-custom-primary">
                             Today, 2–4 PM
                         </span>
                     </span>
@@ -436,7 +436,7 @@ function PriceRow({ label, value, tone }: PriceRowProps) {
         <div className="flex items-center justify-between gap-3">
             <span className="text-custom-secondary">{label}</span>
             <span
-                className="font-semibold text-[color:var(--color-text)] tabular-nums"
+                className="font-semibold text-custom-primary tabular-nums"
                 style={colorVar ? { color: colorVar } : undefined}
             >
                 {value}
@@ -486,7 +486,7 @@ function FreeDeliveryProgress({
     return (
         <div className="bg-custom-card rounded-2xl p-4 border border-custom-primary shadow-sm">
             <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-semibold text-[color:var(--color-text)]">
+                <span className="text-sm font-semibold text-custom-primary">
                     {t(
                         "cart.freeDeliveryProgress",
                         "Free delivery progress",

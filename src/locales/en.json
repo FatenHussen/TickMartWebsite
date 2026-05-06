@@ -35,6 +35,7 @@
     "optional": "Optional",
     "upload": "Upload",
     "subscriptionFailed": "Subscription failed",
+    "noPaymentMethods": "No payment methods available",
     "complaintSubmitted": "Complaint submitted",
     "toggleTheme": "Toggle theme",
     "failedToSubmitComplaint": "Failed to submit complaint",
@@ -162,7 +163,13 @@
     "commercialRegisterDate": "Commercial Register Date",
     "enterCommercialRegisterDate": "Enter commercial register date",
     "enterStoreCountry": "Enter store country",
-    "enterStoreCity": "Enter store city"
+    "enterStoreCity": "Enter store city",
+    "sellerRegisterKindShop": "Shop",
+    "sellerRegisterKindServiceProvider": "Service provider",
+    "isRestaurant": "This store is a restaurant",
+    "serviceTypesHeading": "Service categories",
+    "serviceTypesHint": "Select the types of services you offer (required for service providers).",
+    "serviceTypesEmpty": "No service types are available at the moment. Please try again later."
   },
   "affiliateWelcome": {
     "heroBadge": "Your workspace",
@@ -171,7 +178,11 @@
     "pickQuickAction": "Pick a quick action below to get started.",
     "yourCurrentLocation": "Your current location",
     "quickActions": "Quick actions",
+    "quickActionsKicker": "Interactive",
+    "quickActionsHint": "Drag the card stack, or let it advance on its own.",
+    "quickActionsDeckLabel": "Swipe the deck",
     "goToHome": "Go to home",
+    "openAction": "Open",
     "createNewOrder": "Create new order",
     "trackMyOrder": "Track my order",
     "notifications": "Notifications",
@@ -195,7 +206,8 @@
     "codeMinLength": "At least 4 digits",
     "selectGovernorate": "Please select a governorate",
     "selectCity": "Please select a city",
-    "acceptTerms": "You must accept the terms"
+    "acceptTerms": "You must accept the terms",
+    "selectServiceTypes": "Please select at least one service category"
   },
   "home": {
     "freshGroceries": "Fresh Groceries Delivered",
@@ -414,11 +426,17 @@
     "categoryDetailValue": "Value",
     "extraDetailKey": "Key",
     "extraDetailValue": "Value",
+    "extraDetailQuantity": "Quantity",
+    "extraDetailMinQtyHint": "Min: {{n}}",
+    "decreaseQuantity": "Decrease quantity",
+    "increaseQuantity": "Increase quantity",
     "check": "Select",
     "price": "Price",
     "free": "Free",
     "specialInstructions": "Special instructions",
     "specialInstructionsPlaceholder": "Any special requests...",
+    "lineItemNote": "Note for this item",
+    "lineItemNotePlaceholder": "Optional instructions for this product (e.g. packaging, preparation)",
     "mostOrdered": "Most ordered",
     "freeDelivery": "Free delivery",
     "filters": {
@@ -1091,6 +1109,9 @@
       "perYears": " /{{count}} years"
     },
     "currentPlan": "Current Plan",
+    "statusPending": "Pending",
+    "selectPaymentMethod": "Select a payment method",
+    "awaitingPaymentVia": "Awaiting payment via {{method}}",
     "subscribe": "Subscribe",
     "cancelSubscription": "Cancel subscription",
     "cancelSubscriptionSuccess": "Subscription cancelled successfully",
@@ -1144,6 +1165,13 @@
     "infoText": "You can change or cancel your package any time from your account settings.",
     "viewAll": "View all subscription packages",
     "maybeLater": "Maybe later"
+  },
+  "promotions": {
+    "regionLabel": "Active promotions",
+    "offerBadge": "Offer",
+    "eyebrow": "Rewards & perks",
+    "subtitle": "Curated offers running right now",
+    "stackHint": "Explore each perk — some combine at checkout."
   },
   "wishlist": {
     "title": "Wishlist",

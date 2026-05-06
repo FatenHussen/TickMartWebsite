@@ -75,7 +75,7 @@ export default function WishlistProductCard({
  const topBadge = item.top_badges?.[0] ?? item.budges?.[0];
 
  return (
- <div className="bg-custom-card rounded-2xl overflow-hidden border border-custom-primary hover:shadow-lg transition-shadow group flex flex-col h-full">
+ <div className="group flex h-full flex-col overflow-hidden rounded-3xl border border-custom-primary bg-custom-card transition-all duration-300 hover:shadow-lg dark:border-[rgba(255,255,255,0.06)] dark:bg-[rgba(16,17,20,0.75)] dark:shadow-[0_12px_40px_-20px_rgba(0,0,0,0.62)] dark:backdrop-blur-sm dark:hover:border-[rgba(255,255,255,0.09)] dark:hover:shadow-[0_20px_52px_-24px_rgba(0,0,0,0.72)]">
  <div className="relative aspect-[4/3] overflow-hidden">
  <Link to={detailPath} className="block h-full">
  <img
@@ -159,7 +159,7 @@ export default function WishlistProductCard({
  {item.has_free_delivery && (
  <button
  type="button"
- className="w-full mt-1 py-1.5 rounded-lg text-xs font-semibold bg-primary text-white text-center"
+ className="mt-1 w-full rounded-lg bg-primary py-1.5 text-center text-xs font-semibold text-white dark:shadow-[0_8px_22px_-12px_color-mix(in_srgb,var(--color-main)_42%,transparent)] dark:ring-1 dark:ring-white/[0.08]"
  >
  {t("wishlist.freeDelivery")}
  </button>

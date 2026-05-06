@@ -1,0 +1,75 @@
+/* Affiliate welcome — ambient canvas + decorative motion (respects reduced motion) */
+
+@keyframes affiliate-welcome-drift-a {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  33% {
+    transform: translate(4%, -6%) rotate(3deg);
+  }
+  66% {
+    transform: translate(-3%, 4%) rotate(-2deg);
+  }
+}
+
+@keyframes affiliate-welcome-drift-b {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(-5%, 5%) scale(1.08);
+  }
+}
+
+@keyframes affiliate-welcome-drift-c {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: translate(0, 0);
+  }
+  50% {
+    opacity: 0.75;
+    transform: translate(3%, -3%);
+  }
+}
+
+@keyframes affiliate-welcome-hero-glow {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
+
+.affiliate-welcome-blob-a {
+  animation: affiliate-welcome-drift-a 22s ease-in-out infinite;
+}
+
+.affiliate-welcome-blob-b {
+  animation: affiliate-welcome-drift-b 28s ease-in-out infinite;
+}
+
+.affiliate-welcome-blob-c {
+  animation: affiliate-welcome-drift-c 16s ease-in-out infinite;
+}
+
+.affiliate-welcome-hero-glow {
+  animation: affiliate-welcome-hero-glow 8s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .affiliate-welcome-blob-a,
+  .affiliate-welcome-blob-b,
+  .affiliate-welcome-blob-c,
+  .affiliate-welcome-hero-glow {
+    animation: none;
+  }
+
+  .affiliate-welcome-blob-c {
+    opacity: 0.55;
+  }
+}

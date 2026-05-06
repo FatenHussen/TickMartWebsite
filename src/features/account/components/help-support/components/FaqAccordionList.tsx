@@ -34,8 +34,8 @@ export function FaqAccordionList({
     if (faqs.length === 0) {
         return (
             <div className="space-y-2 mb-8">
-                <div className="rounded-2xl bg-gradient-to-br from-custom-light/90 via-blue-off/[0.25] to-[var(--color-api-second)]/[0.06] px-6 py-14 text-center shadow-inner dark:from-custom-card dark:via-custom-card dark:to-[var(--color-api-second)]/[0.05]">
-                    <p className="text-sm leading-relaxed text-custom-secondary">
+                <div className="rounded-2xl bg-gradient-to-br from-custom-light/90 via-blue-off/[0.25] to-[var(--color-api-second)]/[0.06] px-6 py-14 text-center shadow-inner dark:border dark:border-[rgba(255,255,255,0.06)] dark:bg-[rgba(255,255,255,0.03)] dark:shadow-none">
+                    <p className="text-sm leading-relaxed text-custom-secondary dark:text-[#A1A1AA]">
                         {hasActiveSearch ? emptySearchMessage : emptyCategoryMessage}
                     </p>
                 </div>
@@ -53,8 +53,8 @@ export function FaqAccordionList({
                         className={cn(
                             "group overflow-hidden rounded-2xl transition-all duration-200",
                             isOpen
-                                ? "bg-custom-card shadow-xl shadow-[color-mix(in_srgb,var(--color-primary)_14%,transparent)]"
-                                : "bg-gradient-to-br from-custom-light/70 to-blue-off/[0.2] shadow-sm hover:shadow-lg hover:shadow-primary/[0.08] dark:from-custom-card/80 dark:to-primary/[0.05]"
+                                ? "bg-custom-card shadow-xl shadow-[color-mix(in_srgb,var(--color-primary)_14%,transparent)] dark:border dark:border-[rgba(255,255,255,0.08)] dark:bg-[rgba(16,17,20,0.85)] dark:shadow-[0_16px_44px_-20px_rgba(0,0,0,0.65),0_0_0_1px_color-mix(in_srgb,var(--color-main)_12%,transparent)]"
+                                : "bg-gradient-to-br from-custom-light/70 to-blue-off/[0.2] shadow-sm hover:shadow-lg hover:shadow-primary/[0.08] dark:border dark:border-[rgba(255,255,255,0.06)] dark:bg-[rgba(255,255,255,0.03)] dark:hover:border-[rgba(255,255,255,0.09)] dark:hover:shadow-[0_12px_36px_-18px_rgba(0,0,0,0.55)]",
                         )}
                     >
                         <button
@@ -64,19 +64,19 @@ export function FaqAccordionList({
                                 "w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left transition-colors",
                                 HELP_FOCUS_RING,
                                 isOpen
-                                    ? "bg-gradient-to-r from-primary/[0.1] via-primary/[0.05] to-[var(--color-api-second)]/[0.12]"
-                                    : "hover:bg-custom-tertiary/75"
+                                    ? "bg-gradient-to-r from-primary/[0.1] via-primary/[0.05] to-[var(--color-api-second)]/[0.12] dark:bg-[color-mix(in_srgb,var(--color-main)_9%,rgba(255,255,255,0.02))]"
+                                    : "hover:bg-custom-tertiary/75 dark:hover:bg-[rgba(255,255,255,0.04)]",
                             )}
                         >
                             <span className="font-semibold text-custom-primary leading-snug">{faq.question}</span>
                             {isOpen ? (
-                                <ChevronUp className="w-5 h-5 shrink-0 text-primary" aria-hidden />
+                                <ChevronUp className="h-5 w-5 shrink-0 text-primary dark:text-[color-mix(in_srgb,var(--color-main)_72%,#a1a1aa)]" aria-hidden />
                             ) : (
-                                <ChevronDown className="w-5 h-5 shrink-0 text-custom-secondary group-hover:text-primary/80" aria-hidden />
+                                <ChevronDown className="h-5 w-5 shrink-0 text-custom-secondary group-hover:text-primary/80 dark:text-[#71717A] dark:group-hover:text-[color-mix(in_srgb,var(--color-main)_65%,#a1a1aa)]" aria-hidden />
                             )}
                         </button>
                         {isOpen && (
-                            <div className="bg-custom-light/60 px-4 py-4 text-custom-secondary text-sm leading-relaxed dark:bg-custom-card/80">
+                            <div className="bg-custom-light/60 px-4 py-4 text-sm leading-relaxed text-custom-secondary dark:border-t dark:border-[rgba(255,255,255,0.06)] dark:bg-[rgba(0,0,0,0.2)] dark:text-[#A1A1AA]">
                                 {faq.answer}
                             </div>
                         )}

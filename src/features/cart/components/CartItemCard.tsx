@@ -10,6 +10,8 @@ type CartItemCardProps = {
     previewPrices?: Map<number, { price: number; priceBeforeDiscount?: number }>;
     /** When set, overrides previewPrices lookup (e.g. same variant, different extras) */
     previewPrice?: { price: number; priceBeforeDiscount?: number };
+    /** Line subtotal from order preview (e.g. product × qty, before extras) */
+    previewSubtotal?: string | null;
     /** Product name from preview orderItems (takes precedence over item.name) */
     displayName?: string;
     /** Variant values from preview orderItems (e.g. ["#fc0303", "Medium"]) */
@@ -30,6 +32,7 @@ export default function CartItemCard({
     item,
     previewPrices,
     previewPrice,
+    previewSubtotal,
     displayName,
     displayVariant,
     freeQuantity = 0,
@@ -88,14 +91,14 @@ export default function CartItemCard({
 
     return (
         <div
-            className="relative rounded-3xl border border-[#4CDAF6] bg-[#F4F9FF] p-4 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.25)] md:p-5"
+            className="relative rounded-3xl border border-[var(--color-border-primary)] bg-gradient-to-br from-[color-mix(in_srgb,var(--color-main)_10%,white)] via-[color-mix(in_srgb,var(--color-main)_5%,color-mix(in_srgb,var(--color-api-second)_50%,white)))] to-[color-mix(in_srgb,var(--color-api-second)_11%,white)] p-4 text-[var(--color-text-primary)] shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--color-primary)_10%,transparent)] dark:from-[var(--color-bg-primary)] dark:via-[var(--color-bg-muted)] dark:to-[var(--color-bg-tertiary)] md:p-5"
             dir={isRTL ? "rtl" : "ltr"}
         >
             {/* Delete button - top right (hidden when canEditQuantity is false) */}
             {canEditQuantity && (
                 <button
                     onClick={() => onRemove(item.id)}
-                    className="absolute right-4 top-4 z-10 text-[#FF4D4F] transition-colors hover:text-red-600"
+                    className="absolute right-4 top-4 z-10 text-[var(--color-delete)] transition-colors hover:opacity-90"
                     aria-label="Remove item"
                 >
                     <HiTrash className="h-5 w-5" />
@@ -104,7 +107,7 @@ export default function CartItemCard({
 
             <div className={canEditQuantity ? "flex flex-col gap-4 pr-8 md:flex-row md:items-stretch md:gap-4" : "flex flex-col gap-4 md:flex-row md:items-stretch md:gap-4"}>
                 {/* Product Image */}
-                <div className="h-[126px] w-[126px] shrink-0 overflow-hidden rounded-2xl bg-white shadow-sm md:h-auto md:self-stretch">
+                <div className="h-[126px] w-[126px] shrink-0 overflow-hidden rounded-2xl bg-[var(--color-bg-input)] shadow-sm md:h-auto md:self-stretch">
                     {item.image ? (
                         <img
                             src={item.image}
@@ -120,7 +123,7 @@ export default function CartItemCard({
 
                 {/* Product Details - Middle Section */}
                 <div className="min-w-0 flex-1">
-                    <h3 className="mb-1 text-[17px] font-bold leading-7 text-[#1F2937]">
+                    <h3 className="mb-1 text-[17px] font-bold leading-7 text-custom-primary">
                         {displayName ?? item.name}
                     </h3>
                     {item.store && (
@@ -144,7 +147,7 @@ export default function CartItemCard({
                         </p>
                     )}
                     {item.description && (
-                        <p className="mb-3 text-sm leading-6 text-[#6B7280]">
+                        <p className="mb-3 text-sm leading-6 text-custom-secondary">
                             {item.description}
                         </p>
                     )}
@@ -156,8 +159,8 @@ export default function CartItemCard({
                                     key={`promotion-badge-${index}`}
                                     className={`rounded-full px-3 py-1 text-sm font-medium leading-5 ${
                                         index % 2 === 0
-                                            ? "bg-[#DDF8E8] text-[#16A34A]"
-                                            : "bg-[#FDE8D0] text-[#FF5A1F]"
+                                            ? "bg-[color-mix(in_srgb,var(--color-success)_14%,var(--color-bg-card))] text-[var(--color-success)] dark:bg-emerald-950/55 dark:text-emerald-300"
+                                            : "bg-[color-mix(in_srgb,var(--color-warning)_16%,var(--color-bg-card))] text-[var(--color-warning-dark)] dark:bg-amber-950/45 dark:text-amber-300"
                                     }`}
                                 >
                                     {resolveLocalizedText(badge)}
@@ -170,22 +173,28 @@ export default function CartItemCard({
                     <div className="space-y-1">
                         <div className="flex items-end gap-2">
                             {displayOriginalPrice && (
-                                <span className="text-[14px] font-medium leading-5 text-[#9CA3AF] line-through">
+                                <span className="text-[14px] font-medium leading-5 text-custom-tertiary line-through">
                                     {displayOriginalPrice}
                                 </span>
                             )}
-                            <span className="text-[36px] font-extrabold leading-none text-[#111827] md:text-[40px]">
+                            <span className="text-[36px] font-extrabold leading-none text-custom-primary md:text-[40px]">
                                 {displayPrice}
                             </span>
                         </div>
+                        {previewSubtotal != null && previewSubtotal !== "" && (
+                            <p className="text-sm text-custom-secondary">
+                                {t("cart.subtotal", "Subtotal")}:{" "}
+                                <span className="font-semibold text-custom-primary">{previewSubtotal}</span>
+                            </p>
+                        )}
                         <div>
                             {displayOriginalSubtotal != null ? (
-                                <span className="text-sm font-semibold text-[#16A34A]">
+                                <span className="text-sm font-semibold text-[var(--color-success)]">
                                     {t("cart.youSave", "You save")}{" "}
                                     {formatPrice((originalSubtotal ?? 0) - priceNum * item.quantity)}
                                 </span>
                             ) : (
-                                <span className="text-sm font-semibold text-[#16A34A]">
+                                <span className="text-sm font-semibold text-[var(--color-success)]">
                                     {item.savingsText || ""}
                                 </span>
                             )}
@@ -196,24 +205,24 @@ export default function CartItemCard({
                 {/* Quantity Selector and Save for Later - Right Section */}
                 <div className="flex shrink-0 flex-col items-end justify-center gap-4 md:min-w-[210px]">
                     {/* Quantity Selector */}
-                    <div className="flex items-center rounded-full border border-[#E5E7EB] bg-white shadow-sm">
+                    <div className="flex items-center rounded-full border border-[var(--color-border-primary)] bg-[var(--color-bg-input)] shadow-sm">
                         <button
                             type="button"
                             onClick={canEditQuantity ? handleDecrease : undefined}
                             disabled={!canEditQuantity}
-                            className={canEditQuantity ? "p-3 text-[#64748B] transition-colors hover:bg-[#F8FAFC]" : "cursor-not-allowed p-3 opacity-50"}
+                            className={canEditQuantity ? "p-3 text-custom-secondary transition-colors hover:bg-[var(--color-bg-hover)]" : "cursor-not-allowed p-3 opacity-50"}
                             aria-label="Decrease quantity"
                         >
                             <HiMinus className="h-4 w-4" />
                         </button>
-                        <span className="min-w-[2.5rem] px-3 py-2 text-center text-2xl font-semibold leading-none text-[#111827]">
+                        <span className="min-w-[2.5rem] px-3 py-2 text-center text-2xl font-semibold leading-none text-custom-primary">
                             {item.quantity}
                         </span>
                         <button
                             type="button"
                             onClick={canEditQuantity ? handleIncrease : undefined}
                             disabled={!canEditQuantity}
-                            className={canEditQuantity ? "p-3 text-[#64748B] transition-colors hover:bg-[#F8FAFC]" : "cursor-not-allowed p-3 opacity-50"}
+                            className={canEditQuantity ? "p-3 text-custom-secondary transition-colors hover:bg-[var(--color-bg-hover)]" : "cursor-not-allowed p-3 opacity-50"}
                             aria-label="Increase quantity"
                         >
                             <HiPlus className="h-4 w-4" />

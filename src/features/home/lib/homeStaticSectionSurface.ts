@@ -1,5 +1,4 @@
 import type { CSSProperties } from "react";
-import { getDarkSectionBackground } from "@/shared/component/sections/sectionCardVariant";
 import type { Section } from "../types";
 
 export function pickHomeSectionBySeeMorePageSlug(
@@ -22,8 +21,7 @@ type HomeStaticRowOptions = {
 };
 
 /**
- * Flat home row surface (no gradient) — matches `ApiSectionsRenderer` sliders:
- * dark: `getDarkSectionBackground()`, light: optional API `background_color`, else `bg-custom-card`.
+ * Flat home row surface — dark: neutral #0B0B0C foundation, light: optional API `background_color` else `bg-custom-card`.
  */
 export function homeStaticSectionRowSurface(
     isDarkTheme: boolean,
@@ -44,8 +42,13 @@ export function homeStaticSectionRowSurface(
         .filter(Boolean)
         .join(" ");
 
+    /** Dark: stepped band vs page `#050505` — readable separation without tint drift */
     const style: CSSProperties | undefined = isDarkTheme
-        ? { backgroundColor: getDarkSectionBackground() }
+        ? {
+              backgroundColor: "#0B0B0C",
+              boxShadow:
+                  "inset 0 1px 0 0 rgba(255,255,255,0.085), inset 0 -1px 0 0 rgba(0,0,0,0.35)",
+          }
         : trimmed
           ? { backgroundColor: trimmed }
           : undefined;

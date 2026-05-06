@@ -7,11 +7,11 @@ import { useSections } from "@/features/home/hooks/useSections";
 import { pickHomeSectionBySeeMorePageSlug } from "@/features/home/lib/homeStaticSectionSurface";
 import { getSectionCardSurfaceColor } from "@/shared/component/sections/sectionCardVariant";
 import { cn } from "@/shared/lib/utils";
-import { isPaletteComplete, resolveApiPaletteForTheme } from "@/shared/lib/themeColors";
+import { resolveApiPaletteForTheme } from "@/shared/lib/themeColors";
 import {
+    buildCategoriesLuxuryDarkSurface,
     categoriesPageRootStyle,
-    resolveCategoriesApiDarkSurface,
-    resolveCategoriesDarkSurfaceFromSettingsPalette,
+    resolveCategoriesDarkAccents,
 } from "../lib/categoriesApiDarkSurface";
 import CategoriesLayout from "../layout/CategoriesLayout";
 import CategoriesSidebar from "../components/CategoriesSidebar";
@@ -60,10 +60,6 @@ export default function CategoriesView() {
         () => pickHomeSectionBySeeMorePageSlug(homeSections, "categories"),
         [homeSections],
     );
-    const sectionDarkSurface = useMemo(
-        () => resolveCategoriesApiDarkSurface(headlineSection, isDarkTheme),
-        [headlineSection, isDarkTheme],
-    );
     const settingsPaletteForCategories = useMemo(
         () =>
             isDarkTheme
@@ -71,14 +67,16 @@ export default function CategoriesView() {
                 : undefined,
         [isDarkTheme, settings?.color, settings?.dark_color],
     );
-    const settingsCategoriesSurface = useMemo(() => {
-        if (!settingsPaletteForCategories || !isPaletteComplete(settingsPaletteForCategories)) {
-            return null;
-        }
-        return resolveCategoriesDarkSurfaceFromSettingsPalette(settingsPaletteForCategories);
-    }, [settingsPaletteForCategories]);
-    /** Home section colors win; otherwise dark mode uses `settingsApi` palette. */
-    const categoriesDarkSurface = sectionDarkSurface ?? settingsCategoriesSurface;
+    /** Fixed luxury dark foundation + API accents (never raw API on large surfaces). */
+    const categoriesDarkSurface = useMemo(() => {
+        if (!isDarkTheme) return null;
+        const { main, second } = resolveCategoriesDarkAccents(
+            headlineSection,
+            settingsPaletteForCategories,
+            true,
+        );
+        return buildCategoriesLuxuryDarkSurface(main, second);
+    }, [isDarkTheme, headlineSection, settingsPaletteForCategories]);
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const preselectedCategoryId = searchParams.get("category");
@@ -151,7 +149,7 @@ export default function CategoriesView() {
         if (isDarkTheme) {
             const start = main ?? second ?? "var(--color-main)";
             const end = second ?? main ?? "var(--color-api-second)";
-            return `linear-gradient(145deg, color-mix(in srgb, ${start} 38%, #020617) 0%, color-mix(in srgb, ${start} 22%, #0f172a) 40%, color-mix(in srgb, ${end} 26%, #0f172a) 72%, color-mix(in srgb, ${end} 36%, #020617) 100%)`;
+            return `linear-gradient(168deg, color-mix(in srgb, ${start} 6%, #121316) 0%, #0e0e10 42%, color-mix(in srgb, ${end} 5%, #111114) 100%)`;
         }
 
         if (!main && !second) return undefined;
@@ -286,10 +284,10 @@ export default function CategoriesView() {
     }, [categoriesDarkSurface, sidebarTitleColors]);
 
     const productsHighlightColors = useMemo(() => {
+        if (isDarkTheme && categoriesDarkSurface) {
+            return { main: categoriesDarkSurface.main, second: categoriesDarkSurface.second };
+        }
         if (isDarkTheme) {
-            if (categoriesDarkSurface) {
-                return { main: categoriesDarkSurface.main, second: categoriesDarkSurface.second };
-            }
             return {
                 main: "var(--color-main)" as const,
                 second: "var(--color-api-second)" as const,
@@ -318,7 +316,13 @@ export default function CategoriesView() {
             return { main: main ?? second ?? null, second: second ?? main ?? null };
         }
         return { main: null as string | null, second: null as string | null };
-    }, [isDarkTheme, showAllCategories, headlineSection, selectedCategory, categoriesDarkSurface]);
+    }, [
+        isDarkTheme,
+        showAllCategories,
+        headlineSection,
+        selectedCategory,
+        categoriesDarkSurface,
+    ]);
 
     const subcategoryNavItems = [
         {
@@ -357,19 +361,26 @@ export default function CategoriesView() {
         />
     );
 
-    const pageRootStyle = categoriesDarkSurface ? categoriesPageRootStyle(categoriesDarkSurface) : undefined;
+    const pageRootStyle =
+        isDarkTheme && categoriesDarkSurface
+            ? categoriesPageRootStyle(categoriesDarkSurface)
+            : undefined;
 
     return (
         <div
             className={cn(
                 "min-h-screen",
-                !categoriesDarkSurface &&
-                    (isDarkTheme ? "bg-slate-950 text-slate-100" : "bg-custom-light"),
+                !isDarkTheme && "bg-custom-light",
+                isDarkTheme && !categoriesDarkSurface && "text-custom-primary",
             )}
             style={pageRootStyle}
         >
-            <CategoriesLayout sidebar={sidebar} sidebarPosition="left">
-                <div className="space-y-6">
+            <CategoriesLayout
+                sidebar={sidebar}
+                sidebarPosition="left"
+                gapClassName={categoriesDarkSurface ? "gap-8 lg:gap-10" : undefined}
+            >
+                <div className={cn("space-y-6", categoriesDarkSurface && "lg:space-y-8")}>
                     {/* <HeroBanner
                         title={t("categories.springCollection", "Spring Collection 2024")}
                         subtitle={t(
@@ -383,10 +394,10 @@ export default function CategoriesView() {
                     {subcategoryNavItems.length > 0 && (
                         <div
                             className={cn(
-                                "flex justify-start rounded-3xl border p-5 shadow-sm",
+                                "flex justify-start rounded-3xl border p-5 shadow-[0_8px_32px_-12px_rgba(0,0,0,0.55)] backdrop-blur-xl",
                                 categoriesDarkSurface
                                     ? "border-solid"
-                                    : "border-primary-light/15 bg-gradient-to-r from-blue-off via-blue-50/50 to-custom-card",
+                                    : "border-primary-light/15 bg-gradient-to-r from-blue-off via-blue-50/50 to-custom-card shadow-sm",
                             )}
                             style={
                                 categoriesDarkSurface
@@ -394,6 +405,8 @@ export default function CategoriesView() {
                                           backgroundColor: categoriesDarkSurface.cardBackground,
                                           borderColor: categoriesDarkSurface.cardBorder,
                                           color: categoriesDarkSurface.mutedColor,
+                                          backdropFilter: "blur(20px)",
+                                          WebkitBackdropFilter: "blur(20px)",
                                       }
                                     : undefined
                             }
@@ -438,14 +451,14 @@ export default function CategoriesView() {
                     />
 
                     {productsLoading && products.length === 0 ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-7 lg:grid-cols-3 lg:gap-8">
                             {Array.from({ length: 6 }).map((_, i) => (
                                 <ProductCardSkeleton key={`skeleton-${i}`} />
                             ))}
                         </div>
                     ) : products.length > 0 ? (
                         <>
-                            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-7 lg:grid-cols-3 lg:gap-8">
                                 {products.map((product) => (
                                     <ProductCard
                                         key={product.id}
@@ -479,6 +492,7 @@ export default function CategoriesView() {
                                         )}
                                         deliveryInfo={t("home.freeDelivery", "Free Delivery")}
                                         surfaceGradient={buildProductSurfaceGradient(product)}
+                                        categoriesLuxuryListing={Boolean(categoriesDarkSurface)}
                                         t={t}
                                         onClick={handleProductClick}
                                     />
@@ -486,7 +500,7 @@ export default function CategoriesView() {
                             </div>
 
                             {isFetchingNextPage && (
-                                <div className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                                <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-7 lg:grid-cols-3 lg:gap-8">
                                     {Array.from({ length: 3 }).map((_, i) => (
                                         <ProductCardSkeleton key={`loading-${i}`} />
                                     ))}
@@ -498,7 +512,7 @@ export default function CategoriesView() {
                     ) : (
                         <div
                             className={cn(
-                                "flex h-64 items-center justify-center rounded-2xl border",
+                                "flex h-64 items-center justify-center rounded-3xl border backdrop-blur-xl",
                                 !categoriesDarkSurface &&
                                     "border-primary-light/15 bg-gradient-to-br from-custom-card to-blue-50/35",
                             )}
@@ -514,7 +528,11 @@ export default function CategoriesView() {
                         >
                             <p
                                 className={cn(!categoriesDarkSurface && "text-custom-secondary")}
-                                style={categoriesDarkSurface ? { color: categoriesDarkSurface.pageColor } : undefined}
+                                style={
+                                    categoriesDarkSurface
+                                        ? { color: categoriesDarkSurface.mutedColor }
+                                        : undefined
+                                }
                             >
                                 {t(
                                     "categories.noProducts",

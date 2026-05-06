@@ -1,8 +1,8 @@
 import type { CSSProperties } from "react";
 
-/** Dark home shell — uses API theme vars (`--color-main`, `--color-api-second`). */
+/** Dark home shell — API colors used only as ultra-subtle ambient glows, foundation is near-black. */
 export const HOME_ROOT_DARK_BACKGROUND =
-    "radial-gradient(at 0% 0%, color-mix(in srgb, var(--color-main) 45%, black) 0%, transparent 55%), radial-gradient(at 100% 100%, color-mix(in srgb, var(--color-api-second) 38%, black) 0%, transparent 55%), linear-gradient(180deg, color-mix(in srgb, var(--color-main) 18%, #07090f) 0%, color-mix(in srgb, var(--color-api-second) 14%, #050709) 100%)";
+    "radial-gradient(ellipse 100% 55% at 12% -5%, color-mix(in srgb, var(--color-main) 8%, transparent) 0%, transparent 65%), radial-gradient(ellipse 80% 40% at 90% 105%, color-mix(in srgb, var(--color-api-second) 6%, transparent) 0%, transparent 65%), #050505";
 
 export const HOME_ROOT_LIGHT_BACKGROUND_COLOR = "#FFF9F5";
 

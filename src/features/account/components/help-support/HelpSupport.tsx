@@ -30,9 +30,9 @@ export default function HelpSupport() {
     return (
         <div dir={isRTL ? "rtl" : "ltr"} className="relative space-y-10">
             <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden" aria-hidden>
-                <div className="absolute -right-20 -top-28 h-[22rem] w-[22rem] rounded-full bg-gradient-to-br from-primary/25 via-primary/[0.12] to-transparent blur-3xl dark:from-primary/30" />
-                <div className="absolute -bottom-28 -left-20 h-80 w-80 rounded-full bg-gradient-to-tr from-[var(--color-api-second)]/20 via-[var(--color-api-second)]/10 to-transparent blur-3xl" />
-                <div className="absolute left-1/3 top-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-gradient-to-r from-sky-400/[0.07] via-primary/[0.06] to-[var(--color-api-second)]/[0.08] blur-3xl dark:from-sky-400/10" />
+                <div className="absolute -right-20 -top-28 h-[22rem] w-[22rem] rounded-full bg-gradient-to-br from-primary/25 via-primary/[0.12] to-transparent blur-3xl dark:from-[color-mix(in_srgb,var(--color-main)_12%,transparent)] dark:via-[color-mix(in_srgb,var(--color-main)_5%,transparent)] dark:to-transparent" />
+                <div className="absolute -bottom-28 -left-20 h-80 w-80 rounded-full bg-gradient-to-tr from-[var(--color-api-second)]/20 via-[var(--color-api-second)]/10 to-transparent blur-3xl dark:from-[color-mix(in_srgb,var(--color-api-second)_8%,transparent)] dark:via-[color-mix(in_srgb,var(--color-api-second)_4%,transparent)] dark:to-transparent" />
+                <div className="absolute left-1/3 top-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-gradient-to-r from-sky-400/[0.07] via-primary/[0.06] to-[var(--color-api-second)]/[0.08] blur-3xl dark:from-transparent dark:via-[color-mix(in_srgb,var(--color-main)_4%,transparent)] dark:to-[color-mix(in_srgb,var(--color-api-second)_5%,transparent)]" />
             </div>
             <HelpCenterSection
                 selectedCategoryId={faqPanel.selectedCategoryId}

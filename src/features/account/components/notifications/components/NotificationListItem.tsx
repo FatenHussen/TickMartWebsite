@@ -30,7 +30,7 @@ export function NotificationListItem({
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-api-second)]/35 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg-card)]",
         isRTL && "text-right",
         isUnread &&
-          "bg-[linear-gradient(120deg,color-mix(in_srgb,var(--color-api-second)_10%,var(--color-bg-card))_0%,var(--color-bg-card)_55%)] shadow-[0_4px_20px_-8px_color-mix(in_srgb,var(--color-api-second)_35%,transparent)] dark:bg-[linear-gradient(120deg,color-mix(in_srgb,var(--color-api-second)_16%,var(--color-bg-card))_0%,var(--color-bg-card)_60%)]",
+          "bg-[linear-gradient(120deg,color-mix(in_srgb,var(--color-api-second)_8%,var(--color-bg-card))_0%,var(--color-bg-card)_55%)] shadow-[0_4px_20px_-8px_color-mix(in_srgb,var(--color-api-second)_20%,transparent)] dark:shadow-[0_4px_20px_-8px_rgba(0,0,0,0.4)]",
       )}
     >
       <span

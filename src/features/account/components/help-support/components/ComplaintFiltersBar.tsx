@@ -24,9 +24,9 @@ export function ComplaintFiltersBar({
         HELP_FOCUS_RING
     );
     const chipInactive =
-        "bg-custom-tertiary/85 text-custom-primary hover:bg-primary/[0.1] dark:hover:bg-primary/14";
+        "bg-custom-tertiary/85 text-custom-primary hover:bg-primary/[0.1] dark:bg-[rgba(255,255,255,0.04)] dark:text-[#A1A1AA] dark:hover:bg-[color-mix(in_srgb,var(--color-main)_10%,transparent)] dark:hover:text-[#FFFFFF]";
     const chipActive =
-        "bg-gradient-to-r from-primary to-primary-dark text-white shadow-lg shadow-primary/25";
+        "bg-gradient-to-r from-primary to-primary-dark text-white shadow-lg shadow-primary/25 dark:from-[var(--color-api-second)] dark:to-[var(--color-api-second-hover)] dark:shadow-[0_8px_28px_-12px_color-mix(in_srgb,var(--color-api-second)_38%,transparent)] dark:ring-1 dark:ring-white/[0.08]";
 
     return (
         <div className="mb-4 flex flex-wrap items-center gap-2">

@@ -16,10 +16,10 @@ export function FaqSearchField({ value, onChange, placeholder, isRTL }: FaqSearc
 
     return (
         <div className="relative mb-6">
-            <div className="relative rounded-2xl bg-gradient-to-br from-custom-light via-custom-light to-blue-off/[0.45] shadow-lg shadow-primary/[0.08] dark:from-custom-card dark:via-custom-card dark:to-primary/[0.04]">
+            <div className="relative rounded-2xl bg-gradient-to-br from-custom-light via-custom-light to-blue-off/[0.45] shadow-lg shadow-primary/[0.08] dark:border dark:border-[rgba(255,255,255,0.06)] dark:bg-[rgba(255,255,255,0.04)] dark:bg-none dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05),0_12px_36px_-18px_rgba(0,0,0,0.55)]">
                 <Search
                     className={cn(
-                        "pointer-events-none absolute top-1/2 z-[1] h-5 w-5 -translate-y-1/2 text-primary/55",
+                        "pointer-events-none absolute top-1/2 z-[1] h-5 w-5 -translate-y-1/2 text-primary/55 dark:text-[color-mix(in_srgb,var(--color-main)_48%,#71717A)]",
                         isRTL ? "right-3.5" : "left-3.5"
                     )}
                     aria-hidden
@@ -30,8 +30,8 @@ export function FaqSearchField({ value, onChange, placeholder, isRTL }: FaqSearc
                     onChange={handleChange}
                     placeholder={placeholder}
                     className={cn(
-                        "w-full rounded-2xl bg-transparent py-3.5 text-custom-primary",
-                        "placeholder:text-custom-tertiary/90",
+                        "w-full rounded-2xl bg-transparent py-3.5 text-custom-primary dark:text-[#FFFFFF]",
+                        "placeholder:text-custom-tertiary/90 dark:placeholder:text-[#71717A]",
                         HELP_FOCUS_RING,
                         isRTL ? "pr-11 pl-4" : "pl-11 pr-4"
                     )}

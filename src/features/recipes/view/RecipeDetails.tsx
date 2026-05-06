@@ -10,6 +10,7 @@ import FullBleedSection from "@/shared/component/FullBleedSection";
 import Rating from "@/shared/component/Rating";
 import Badge from "@/shared/component/Badge";
 import ProductReviews from "@/shared/component/ProductReviews";
+import { PremiumInlineLoader } from "@/shared/component/loading";
 import Button from "@/shared/ui/Button";
 import ProductItemsTable, { type ProductItemData } from "@/shared/component/table/ProductItemsTable";
 import {
@@ -238,7 +239,7 @@ export default function RecipeDetails() {
                 className="min-h-screen bg-custom-primary flex items-center justify-center"
                 dir={isRTL ? "rtl" : "ltr"}
             >
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-light"></div>
+                <PremiumInlineLoader size="lg" />
             </div>
         );
     }
@@ -697,7 +698,7 @@ export default function RecipeDetails() {
                 <div className="mt-10">
                     {isRatingsLoading ? (
                         <div className="flex justify-center py-8">
-                            <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-cyan-500" />
+                            <PremiumInlineLoader size="md" />
                         </div>
                     ) : (
                         <ProductReviews

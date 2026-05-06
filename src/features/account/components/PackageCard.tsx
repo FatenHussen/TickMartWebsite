@@ -1,16 +1,27 @@
 import { useTranslation } from "react-i18next";
-import { Check } from "lucide-react";
+import { Check, Clock } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
-import type { PackageApi } from "../types";
+import { useLanguage } from "@/context/LanguageContext";
+import type { PackageApi, SubscriptionPaymentMethod } from "../types";
 import {
   formatPackageDuration,
   formatPriceBillingSuffix,
 } from "../utils/formatPackageDuration";
 
+function resolveLocalizedName(
+  name: string | { ar: string; en: string },
+  lang: string,
+): string {
+  if (typeof name === "string") return name;
+  return lang === "ar" ? name.ar : name.en;
+}
+
 type PackageCardProps = {
   package: PackageApi;
   isCurrentPlan?: boolean;
   hasActiveSubscription?: boolean;
+  subscriptionStatus?: "active" | "pending" | string;
+  paymentMethod?: SubscriptionPaymentMethod;
   onSubscribe?: (packageId: number) => void;
   onCancel?: (packageId: number) => void;
   isCancelling?: boolean;
@@ -20,12 +31,16 @@ export default function PackageCard({
   package: pkg,
   isCurrentPlan = false,
   hasActiveSubscription = false,
+  subscriptionStatus,
+  paymentMethod,
   onSubscribe,
   onCancel,
   isCancelling = false,
 }: PackageCardProps) {
   const { t } = useTranslation();
+  const { language } = useLanguage();
 
+  const packageName = resolveLocalizedName(pkg.name, language);
   const priceDisplay =
     pkg.price_formatted ?? `${pkg.currency_symbol ?? ""}${pkg.price}`;
 
@@ -46,7 +61,7 @@ export default function PackageCard({
       className={cn(
         "relative flex h-full min-w-0 w-full flex-col overflow-hidden rounded-xl",
         isCurrentPlan
-          ? ""
+          ? "package-current-plan"
           : "border border-border-primary shadow-[var(--shadow-card-neutral)]",
       )}
       style={
@@ -130,22 +145,27 @@ export default function PackageCard({
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0 flex-1 text-start">
               <h3 className="text-lg font-bold leading-tight text-[var(--color-api-second)]">
-                {pkg.name}
+                {packageName}
               </h3>
               <p className="mt-1.5 text-sm leading-snug text-[var(--color-api-second)]/85">
                 {duration} {t("packages.durationSuffix")}
               </p>
             </div>
-            <span
-              className="shrink-0 rounded-lg bg-primary-light/35 px-3.5 py-1.5 text-center text-xs font-semibold leading-none text-[var(--color-api-second)] shadow-sm backdrop-blur-sm"
-            >
-              {t("packages.currentPlan")}
-            </span>
+            {subscriptionStatus === "pending" ? (
+              <span className="inline-flex shrink-0 items-center gap-1 rounded-lg bg-amber-400/20 px-3 py-1.5 text-xs font-semibold leading-none text-amber-700 shadow-sm backdrop-blur-sm dark:bg-amber-400/15 dark:text-amber-300">
+                <Clock className="h-3 w-3" />
+                {t("packages.statusPending")}
+              </span>
+            ) : (
+              <span className="shrink-0 rounded-lg bg-primary-light/35 px-3.5 py-1.5 text-center text-xs font-semibold leading-none text-[var(--color-api-second)] shadow-sm backdrop-blur-sm">
+                {t("packages.currentPlan")}
+              </span>
+            )}
           </div>
         ) : (
           <div className="text-start">
             <h3 className="text-lg font-bold leading-tight text-custom-primary">
-              {pkg.name}
+              {packageName}
             </h3>
             <p className="mt-1.5 text-sm leading-snug text-custom-secondary">
               {duration} {t("packages.durationSuffix")}
@@ -182,6 +202,22 @@ export default function PackageCard({
                   {pricePeriodSuffix}
                 </span>
               </div>
+
+              {subscriptionStatus === "pending" && paymentMethod && (
+                <div className="flex items-center gap-2 rounded-lg border border-amber-300/40 bg-amber-400/10 px-3 py-2 dark:border-amber-400/20 dark:bg-amber-400/10">
+                  {paymentMethod.icon ? (
+                    <img
+                      src={paymentMethod.icon}
+                      alt={paymentMethod.name}
+                      className="h-5 w-5 shrink-0 object-contain"
+                    />
+                  ) : null}
+                  <span className="text-xs font-medium text-amber-700 dark:text-amber-300">
+                    {t("packages.awaitingPaymentVia", { method: paymentMethod.name })}
+                  </span>
+                </div>
+              )}
+
               <button
                 type="button"
                 onClick={() => onCancel(pkg.id)}

@@ -130,7 +130,7 @@ export default function StoreDetails() {
 
     return (
         <div
-            className="min-h-screen bg-custom-primary"
+            className="min-h-screen "
             dir={isRTL ? "rtl" : "ltr"}
         >
             {bannerSections.length > 0 && (

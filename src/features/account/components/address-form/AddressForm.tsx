@@ -42,7 +42,7 @@ export default function AddressForm(props: AddressFormProps) {
 
             <form
                 onSubmit={addressForm.handleSubmit(addressForm.handleValidSubmit)}
-                className="space-y-6 border-t border-custom-primary/60 p-6 sm:p-8"
+                className="space-y-6 border-t border-custom-primary/60 p-6 sm:p-8 dark:border-white/[0.06]"
             >
                 <AddressFormLabelSection control={addressForm.control} errors={addressForm.errors} />
 

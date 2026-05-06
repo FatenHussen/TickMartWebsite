@@ -24,11 +24,11 @@ export default function ShopServiceCard({ service, onBook }: Props) {
     const isOpen = service.is_open_now ?? true;
 
     return (
-        <div className="rounded-2xl border border-primary-light/15 bg-custom-card p-4 sm:p-5 shadow-sm flex flex-col gap-3">
+        <div className="rounded-2xl border border-primary-light/15 bg-custom-card p-4 sm:p-5 shadow-sm flex flex-col gap-3 dark:border-white/10 dark:bg-slate-900/80">
             <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                     {typeName && (
-                        <span className="inline-block text-xs font-semibold text-primary-light bg-primary-light/10 rounded-full px-2.5 py-0.5 mb-2">
+                        <span className="inline-block text-xs font-semibold text-primary-light bg-primary-light/10 rounded-full px-2.5 py-0.5 mb-2 dark:bg-primary-light/20 dark:text-primary-light">
                             {typeName}
                         </span>
                     )}
@@ -43,8 +43,8 @@ export default function ShopServiceCard({ service, onBook }: Props) {
                 </div>
                 <span
                     className={`shrink-0 text-xs font-semibold rounded-full px-2.5 py-1 ${isOpen
-                        ? "bg-green-100 text-green-700"
-                        : "bg-gray-100 text-gray-600"
+                        ? "bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-300"
+                        : "bg-gray-100 text-gray-600 dark:bg-slate-700/70 dark:text-slate-200"
                         }`}
                 >
                     {isOpen

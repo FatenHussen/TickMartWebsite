@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import { Trash2, Calendar, Pencil, Pause, Play, ShoppingBag } from "lucide-react";
 import Button from "@/shared/ui/Button";
 import type { MyBasketListItem } from "../../../types/myBasket";
+import { cn } from "@/shared/lib/utils";
 import {
     CARD_BORDER_CLASS,
     PRIMARY_ACTION_BUTTON_CLASS,
@@ -92,7 +93,11 @@ export default function MyBasketCard({
 
     return (
         <div
-            className={`bg-[var(--color-bg-primary)] dark:bg-custom-card rounded-xl ${CARD_BORDER_CLASS} border p-5 md:p-6 shadow-sm hover:shadow-md transition-shadow`}
+            className={cn(
+                "rounded-3xl border bg-[var(--color-bg-primary)] p-5 shadow-sm transition-all duration-300 hover:shadow-md md:p-6",
+                CARD_BORDER_CLASS,
+                "dark:border-[rgba(255,255,255,0.06)] dark:bg-[rgba(16,17,20,0.75)] dark:shadow-[0_12px_40px_-20px_rgba(0,0,0,0.62)] dark:backdrop-blur-sm dark:hover:border-[rgba(255,255,255,0.09)] dark:hover:shadow-[0_18px_48px_-22px_rgba(0,0,0,0.72)]",
+            )}
         >
             <div className="flex items-start justify-between gap-3 mb-5">
                 <div className="flex items-center gap-3 min-w-0 flex-wrap">
@@ -100,11 +105,11 @@ export default function MyBasketCard({
                         <img
                             src={basket.image}
                             alt=""
-                            className="w-11 h-11 rounded-xl object-cover shrink-0 border border-border-accent-light dark:border-custom-primary"
+                            className="h-11 w-11 shrink-0 rounded-xl border border-border-accent-light object-cover dark:border-[rgba(255,255,255,0.08)]"
                         />
                     ) : (
                         <div
-                            className="w-11 h-11 rounded-xl shrink-0 flex items-center justify-center bg-[var(--color-ui-amber-50)] dark:bg-[color-mix(in_srgb,var(--color-ui-amber-900)_20%,transparent)] border border-border-accent-light dark:border-custom-primary"
+                            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border-accent-light bg-[var(--color-ui-amber-50)] dark:border-[rgba(255,255,255,0.08)] dark:bg-[color-mix(in_srgb,var(--color-ui-amber-900)_20%,transparent)]"
                             aria-hidden
                         >
                             <ShoppingBag className="w-6 h-6 text-[var(--color-ui-amber-800)]/80 dark:text-[color-mix(in_srgb,var(--color-ui-amber-200)_90%,transparent)]" />
@@ -165,7 +170,11 @@ export default function MyBasketCard({
             </div>
 
             <div
-                className={`flex flex-wrap items-center gap-3 pt-4 border-t ${CARD_BORDER_CLASS} dark:border-custom-primary`}
+                className={cn(
+                    "flex flex-wrap items-center gap-3 border-t pt-4 transition-colors duration-200",
+                    CARD_BORDER_CLASS,
+                    "dark:border-[rgba(255,255,255,0.06)]",
+                )}
             >
                 <Button
                     type="button"

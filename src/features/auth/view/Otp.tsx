@@ -5,6 +5,8 @@ import OTPInput from "react-otp-input";
 import type { InputHTMLAttributes } from "react";
 import Button from "@/shared/ui/Button";
 import AuthLayout from "@/features/auth/layout/Auth-Layout";
+import { useTheme } from "@/context/ThemeContext";
+import { cn } from "@/shared/lib/utils";
 import { useOtpStore } from "@/store/otp";
 import {
     useVerifyOtp,
@@ -18,6 +20,7 @@ const OTP_LENGTH = 5;
 
 export default function Otp() {
     const { t } = useTranslation();
+    const { theme } = useTheme();
     const navigate = useNavigate();
     const [code, setCode] = useState("");
     const [timer, setTimer] = useState<number>(60);
@@ -97,8 +100,20 @@ export default function Otp() {
     };
 
     const otpSidePanel = (
-        <div className="flex h-full w-full items-center justify-center bg-[var(--color-bg-secondary)] px-8">
-            <div className="w-full max-w-[340px] rounded-[18px] border border-custom-primary bg-custom-card p-10 shadow-[0_20px_45px_-8px_var(--color-shadow)]">
+        <div
+            className={cn(
+                "flex h-full w-full items-center justify-center px-8",
+                theme === "dark" ? "bg-[#0B0B0C]" : "bg-[var(--color-bg-secondary)]",
+            )}
+        >
+            <div
+                className={cn(
+                    "w-full max-w-[340px] rounded-3xl border p-10",
+                    theme === "dark"
+                        ? "border-[rgba(255,255,255,0.06)] bg-[rgba(16,17,20,0.55)] shadow-[0_24px_56px_-28px_rgba(0,0,0,0.6)] backdrop-blur-lg"
+                        : "rounded-[18px] border-custom-primary bg-custom-card shadow-[0_20px_45px_-8px_var(--color-shadow)]",
+                )}
+            >
                 <img
                     src="/images/auth/Vector.png"
                     alt="Tickmart"
@@ -109,7 +124,7 @@ export default function Otp() {
     );
 
     return (
-        <AuthLayout leftPanel="custom" leftContent={otpSidePanel} useFormCard maxWidth="576">
+        <AuthLayout leftPanel="custom" leftContent={otpSidePanel} useFormCard maxWidth="auth">
             <form onSubmit={handleSubmit} className="flex flex-col gap-8">
                 <div className="text-center space-y-2">
                     <h1 className="text-xl font-bold text-custom-primary">
@@ -118,7 +133,7 @@ export default function Otp() {
                     <p className="text-sm text-custom-secondary">
                         {t("auth.sentCodeTo")} {OTP_LENGTH}-digit
                     </p>
-                    <p className="text-sm font-medium text-primary">
+                    <p className="text-sm font-medium text-custom-primary">
                         {getMaskedContact()}
                     </p>
                 </div>
@@ -133,7 +148,12 @@ export default function Otp() {
                     renderInput={(props: InputHTMLAttributes<HTMLInputElement>) => (
                         <input
                             {...props}
-                            className="!w-12 h-12 rounded-lg border border-custom-secondary bg-custom-card text-center text-lg font-semibold text-custom-primary focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all [appearance:textfield]"
+                            className={cn(
+                                "!w-12 sm:!w-14 h-12 sm:h-14 rounded-xl border text-center text-lg font-semibold text-custom-primary transition-all duration-200 [appearance:textfield] focus:outline-none focus:ring-2",
+                                theme === "dark"
+                                    ? "border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.05)] focus:border-[color-mix(in_srgb,var(--color-main)_45%,transparent)] focus:ring-[color-mix(in_srgb,var(--color-main)_22%,transparent)]"
+                                    : "border-custom-secondary bg-custom-card focus:border-primary focus:ring-primary/20",
+                            )}
                         />
                     )}
                 />

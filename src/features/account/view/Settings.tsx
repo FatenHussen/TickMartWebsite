@@ -112,21 +112,20 @@ export default function Settings() {
     return (
         <div className="relative" dir={isRTL ? "rtl" : "ltr"}>
             <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden rounded-3xl">
-                <div className="absolute -top-28 start-1/2 h-60 w-[min(100%,32rem)] -translate-x-1/2 rounded-full bg-[radial-gradient(ellipse_at_center,color-mix(in_srgb,var(--color-api-second)_26%,transparent),transparent_72%)] blur-2xl" />
-                <div className="absolute -bottom-20 -end-14 h-44 w-44 rounded-full bg-[var(--color-api-second)] opacity-[0.1] blur-3xl" />
-                <div className="absolute top-1/3 -start-10 h-36 w-36 rounded-full bg-[var(--color-main)] opacity-[0.07] blur-3xl" />
+                <div className="absolute -top-28 start-1/2 h-60 w-[min(100%,32rem)] -translate-x-1/2 rounded-full bg-[radial-gradient(ellipse_at_center,color-mix(in_srgb,var(--color-api-second)_26%,transparent),transparent_72%)] blur-2xl dark:bg-[radial-gradient(ellipse_at_center,color-mix(in_srgb,var(--color-api-second)_10%,transparent),transparent_72%)]" />
+                <div className="absolute -bottom-20 -end-14 h-44 w-44 rounded-full bg-[var(--color-api-second)] opacity-[0.1] blur-3xl dark:opacity-[0.045]" />
+                <div className="absolute top-1/3 -start-10 h-36 w-36 rounded-full bg-[var(--color-main)] opacity-[0.07] blur-3xl dark:opacity-[0.035]" />
             </div>
 
             <div
                 className={cn(
-                    "relative overflow-hidden rounded-2xl border border-border-accent-light",
+                    "account-shell relative overflow-hidden rounded-3xl border border-[var(--color-border-primary)] transition-shadow duration-300",
                     "bg-[linear-gradient(145deg,color-mix(in_srgb,var(--color-bg-card)_95%,var(--color-api-second))_0%,var(--color-bg-card)_52%,color-mix(in_srgb,var(--color-main)_10%,var(--color-bg-card))_100%)]",
-                    "p-6 shadow-[0_14px_44px_-20px_color-mix(in_srgb,var(--color-api-second)_24%,transparent)] md:p-8",
-                    "dark:border-custom-primary/45 dark:bg-[linear-gradient(145deg,color-mix(in_srgb,var(--color-bg-card)_91%,var(--color-api-second))_0%,var(--color-bg-card)_58%)]",
+                    "p-6 shadow-[0_4px_24px_-8px_var(--color-shadow)] dark:border-[rgba(255,255,255,0.06)] dark:bg-[rgba(16,17,20,0.75)] dark:bg-none dark:shadow-[0_24px_72px_-28px_rgba(0,0,0,0.72),inset_0_1px_0_0_rgba(255,255,255,0.04)] dark:backdrop-blur-xl md:p-8",
                 )}
             >
                 <div
-                    className="pointer-events-none absolute -end-16 -top-20 h-40 w-40 rounded-full bg-[var(--color-api-second)] opacity-[0.12] blur-3xl"
+                    className="pointer-events-none absolute -end-16 -top-20 h-40 w-40 rounded-full bg-[var(--color-api-second)] opacity-[0.12] blur-3xl dark:opacity-[0.055]"
                     aria-hidden
                 />
 
@@ -136,18 +135,19 @@ export default function Settings() {
                             className={cn(
                                 "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl shadow-sm ring-1 ring-[color-mix(in_srgb,var(--color-api-second)_35%,transparent)]",
                                 "bg-[color-mix(in_srgb,var(--color-api-second)_18%,var(--color-bg-card))] text-[var(--color-api-second)]",
+                                "dark:bg-[color-mix(in_srgb,var(--color-api-second)_12%,rgba(255,255,255,0.04))] dark:text-[color-mix(in_srgb,var(--color-api-second)_75%,#a1a1aa)] dark:shadow-[0_0_24px_-8px_color-mix(in_srgb,var(--color-api-second)_22%,transparent)] dark:ring-[rgba(255,255,255,0.08)]",
                             )}
                         >
                             <SettingsIcon className="h-6 w-6" aria-hidden strokeWidth={1.75} />
                         </div>
                         <div>
-                            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--color-api-second)]">
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--color-api-second)] dark:text-[#71717A]">
                                 {t("account.settings.eyebrow", "Preferences")}
                             </p>
-                            <h1 className="mt-1 text-xl font-semibold text-custom-primary">
+                            <h1 className="mt-1 text-xl font-semibold text-custom-primary dark:text-[#FFFFFF]">
                                 {t("account.settings.title")}
                             </h1>
-                            <p className="mt-1 max-w-xl text-sm leading-relaxed text-custom-secondary">
+                            <p className="mt-1 max-w-xl text-sm leading-relaxed text-custom-secondary dark:text-[#A1A1AA]">
                                 {t(
                                     "account.settings.subtitle",
                                     "Choose your currency and review legal documents. Changes apply to your next session.",
@@ -160,8 +160,8 @@ export default function Settings() {
                 <div className="relative space-y-6">
                     <div
                         className={cn(
-                            "rounded-2xl border border-border-accent-light bg-custom-card/80 p-5 backdrop-blur-sm",
-                            "shadow-inner shadow-black/[0.02] dark:border-custom-primary/35 dark:bg-custom-card/90",
+                            "rounded-2xl border border-[var(--color-border-primary)] bg-custom-card/80 p-5 backdrop-blur-sm",
+                            "shadow-inner shadow-black/[0.02] dark:border-[rgba(255,255,255,0.06)] dark:bg-[rgba(255,255,255,0.03)]",
                         )}
                     >
                         <div className="space-y-2">
@@ -175,9 +175,9 @@ export default function Settings() {
                                     disabled={currencySelectDisabled}
                                     onScroll={handleCurrencyScroll}
                                     className={cn(
-                                        "w-full px-4 py-2.5 rounded-xl border border-custom-secondary",
+                                        "w-full rounded-xl border border-custom-secondary px-4 py-2.5",
                                         "bg-custom-card text-custom-primary",
-                                        "focus:outline-none focus:ring-2 focus:ring-[var(--color-api-second)]/45 focus:border-transparent",
+                                        "focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[var(--color-api-second)]/45 dark:border-[rgba(255,255,255,0.06)] dark:bg-[rgba(255,255,255,0.04)] dark:text-[#FFFFFF] dark:focus:ring-[color-mix(in_srgb,var(--color-main)_30%,transparent)]",
                                         "appearance-none cursor-pointer text-sm transition-shadow",
                                         "disabled:opacity-50 disabled:cursor-not-allowed",
                                         isRTL ? "pr-10" : "pl-4",
@@ -202,7 +202,7 @@ export default function Settings() {
                                 </select>
                                 <ChevronDown
                                     className={cn(
-                                        "pointer-events-none absolute top-1/2 h-5 w-5 -translate-y-1/2 text-[var(--color-api-second)] opacity-80",
+                                        "pointer-events-none absolute top-1/2 h-5 w-5 -translate-y-1/2 text-[var(--color-api-second)] opacity-80 dark:text-[color-mix(in_srgb,var(--color-api-second)_55%,#71717A)]",
                                         isRTL ? "left-3" : "right-3",
                                     )}
                                     aria-hidden
@@ -220,15 +220,15 @@ export default function Settings() {
                         </h2>
                         <div
                             className={cn(
-                                "rounded-2xl border border-dashed border-[color-mix(in_srgb,var(--color-api-second)_40%,var(--color-border-primary))]",
-                                "bg-[color-mix(in_srgb,var(--color-api-second)_6%,var(--color-bg-card))] p-4 dark:bg-[color-mix(in_srgb,var(--color-api-second)_10%,var(--color-bg-card))]",
+                                "rounded-2xl border border-dashed border-[var(--color-border-accent-light)]",
+                                "bg-[color-mix(in_srgb,var(--color-api-second)_6%,var(--color-bg-card))] p-4 dark:border-[rgba(255,255,255,0.08)] dark:bg-[rgba(255,255,255,0.03)]",
                             )}
                         >
                             <div className="space-y-2">
                                 <div>
                                     <Link
                                         to={paths.client.privacyPolicy}
-                                        className="text-sm font-medium text-[var(--color-main)] underline-offset-4 hover:text-[var(--color-api-second)] hover:underline"
+                                        className="text-sm font-medium text-[var(--color-main)] underline-offset-4 transition-colors hover:text-[var(--color-api-second)] hover:underline dark:text-[color-mix(in_srgb,var(--color-main)_82%,#FFFFFF)] dark:hover:text-[color-mix(in_srgb,var(--color-api-second)_88%,#FFFFFF)]"
                                     >
                                         {t("account.settings.privacy.viewPrivacyPolicy")}
                                     </Link>
@@ -236,7 +236,7 @@ export default function Settings() {
                                 <div>
                                     <Link
                                         to={paths.client.termsConditions}
-                                        className="text-sm font-medium text-[var(--color-main)] underline-offset-4 hover:text-[var(--color-api-second)] hover:underline"
+                                        className="text-sm font-medium text-[var(--color-main)] underline-offset-4 transition-colors hover:text-[var(--color-api-second)] hover:underline dark:text-[color-mix(in_srgb,var(--color-main)_82%,#FFFFFF)] dark:hover:text-[color-mix(in_srgb,var(--color-api-second)_88%,#FFFFFF)]"
                                     >
                                         {t("account.settings.privacy.viewTermsConditions")}
                                     </Link>
@@ -257,6 +257,7 @@ export default function Settings() {
                                 "px-6 py-2 text-sm font-medium rounded-xl",
                                 "border border-custom-secondary text-custom-primary",
                                 "hover:border-[color-mix(in_srgb,var(--color-api-second)_55%,var(--color-border-secondary))] hover:bg-[color-mix(in_srgb,var(--color-api-second)_8%,var(--color-bg-card))]",
+                                "dark:border-[rgba(255,255,255,0.08)] dark:text-[#A1A1AA] dark:hover:border-[rgba(255,255,255,0.14)] dark:hover:bg-[rgba(255,255,255,0.05)] dark:hover:text-[#FFFFFF]",
                                 "disabled:opacity-50 disabled:cursor-not-allowed",
                             )}
                         >
@@ -268,9 +269,9 @@ export default function Settings() {
                             disabled={!hasChanges}
                             className={cn(
                                 "px-6 py-2 text-sm font-medium rounded-xl shadow-md",
-                                "!text-white !bg-[var(--color-api-second)] hover:!bg-[var(--color-api-second-hover)]",
-                                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-main)]/35 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg-card)]",
-                                "shadow-[0_8px_24px_-12px_color-mix(in_srgb,var(--color-api-second)_45%,transparent)]",
+                                "!bg-[var(--color-api-second)] !text-white hover:!bg-[var(--color-api-second-hover)]",
+                                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-main)]/35 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg-card)] dark:focus-visible:ring-offset-[rgba(16,17,20,0.95)]",
+                                "shadow-[0_8px_24px_-12px_color-mix(in_srgb,var(--color-api-second)_45%,transparent)] dark:shadow-[0_14px_40px_-16px_color-mix(in_srgb,var(--color-api-second)_42%,transparent)] dark:ring-1 dark:ring-white/[0.06]",
                                 "disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none",
                             )}
                         >

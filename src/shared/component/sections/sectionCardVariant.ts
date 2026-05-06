@@ -2,18 +2,17 @@ import type { Section, SectionCardVariant } from "@/features/home/types";
 import { DISPLAY_TYPE } from "@/features/home/types";
 
 /**
- * Dark-mode row behind home API sliders — flat `color-mix` (no gradient).
- * Uses theme `--color-main` from API.
+ * Dark-mode row behind home API sliders — neutral near-black, no API color saturation.
  */
 export function getDarkSectionBackground(): string {
-    return "color-mix(in srgb, var(--color-main) 22%, #0a0c12)";
+    return "#0B0B0C";
 }
 
 /**
- * Dark card surface inside those rows — tinted with `--color-api-second`.
+ * Dark card surface inside section rows — neutral dark panel, API colors used only as accents elsewhere.
  */
 export function getDarkCardSurface(): string {
-    return "color-mix(in srgb, var(--color-api-second) 20%, #15171f)";
+    return "rgba(16,17,20,0.88)";
 }
 
 export type SectionSliderPreset = {
@@ -85,6 +84,7 @@ export function getSliderPresetForSection(
         case DISPLAY_TYPE.RECIPE:
         case DISPLAY_TYPE.SHOP:
         case DISPLAY_TYPE.BASKET:
+        case DISPLAY_TYPE.SCHEDULED_BASKET:
         case DISPLAY_TYPE.BRAND:
             return sliderPresetForCardVariant(variant);
         default:

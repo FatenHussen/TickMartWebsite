@@ -93,9 +93,9 @@ export default function BestSellersCard({
     return (
         <div
             className={cn(
-                "relative overflow-hidden rounded-2xl bg-custom-primary shadow-sm transition hover:shadow-md flex flex-col h-full",
-                "dark:bg-[color-mix(in_srgb,var(--color-main)_18%,#13151c)] dark:shadow-[0_2px_14px_-2px_rgba(0,0,0,0.5)] dark:hover:shadow-[0_18px_38px_-8px_rgba(0,0,0,0.6)]",
-                "dark:ring-1 dark:ring-[color-mix(in_srgb,var(--color-main)_22%,transparent)]",
+                "relative flex h-full flex-col overflow-hidden rounded-3xl bg-custom-primary shadow-sm transition hover:shadow-md",
+                "dark:bg-[var(--color-bg-card-elevated)] dark:shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_4px_28px_-10px_rgba(0,0,0,0.5)] dark:hover:shadow-[0_0_0_1px_rgba(255,255,255,0.09),0_14px_44px_-14px_rgba(0,0,0,0.62)]",
+                "dark:ring-1 dark:ring-white/[0.12]",
                 onClick && "cursor-pointer",
                 className
             )}
@@ -149,11 +149,11 @@ export default function BestSellersCard({
                 )}
 
                 {/* Rating badge (bottom-left) - White with yellow star */}
-                <div className="absolute left-3 bottom-3 z-10 rounded-lg bg-custom-card px-2.5 py-1 shadow-sm">
+                <div className="absolute bottom-3 left-3 z-10 rounded-full bg-custom-card px-2.5 py-1 shadow-sm ring-1 ring-black/[0.04] dark:bg-[rgba(16,17,20,0.92)] dark:ring-white/[0.08]">
                     <Rating
                         rating={rating}
                         size="sm"
-                        className="gap-1.5 [&>span:first-child]:text-yellow-500 [&>span:last-child]:font-semibold [&>span:last-child]:text-slate-800 dark:[&>span:last-child]:text-[var(--color-text)]"
+                        className="gap-1.5 [&>span:first-child]:text-yellow-500 [&>span:last-child]:font-semibold [&>span:last-child]:text-slate-800 dark:[&>span:last-child]:text-white"
                     />
                 </div>
 
@@ -172,15 +172,15 @@ export default function BestSellersCard({
             </div>
 
             {/* Info Section - light blue-gray, or API setting dark blend in dark mode */}
-            <div className="bg-[#E4F0FB] px-4 pb-4 pt-4 flex flex-col flex-1 dark:bg-[color-mix(in_srgb,var(--color-api-second)_20%,#10121a)] dark:border-t dark:border-[color-mix(in_srgb,var(--color-main)_18%,transparent)]">
+            <div className="flex flex-1 flex-col border-t border-transparent bg-[#E4F0FB] px-4 pb-4 pt-4 dark:border-white/[0.10] dark:bg-[color-mix(in_srgb,var(--color-bg-card-elevated)_92%,var(--color-bg-secondary)_8%)]">
                 {/* Product Name */}
-                <h3 className="text-base font-bold text-slate-900 line-clamp-2 dark:text-[var(--color-text)]">
+                <h3 className="line-clamp-2 text-base font-bold text-slate-900 dark:text-white">
                     {name}
                 </h3>
 
                 {/* Category */}
                 {category && (
-                    <p className="mt-1 line-clamp-1 text-xs text-slate-500 dark:text-white/90">
+                    <p className="mt-1 line-clamp-1 text-xs text-slate-500 dark:text-zinc-400">
                         {category}
                     </p>
                 )}
@@ -188,11 +188,11 @@ export default function BestSellersCard({
                 {/* Price Section */}
                 <div className="mt-3">
                     <div className="flex items-baseline gap-2">
-                        <span className="text-lg font-bold text-slate-900 dark:text-[var(--color-text)]">
+                        <span className="text-lg font-bold text-slate-900 dark:text-white">
                             {price}
                         </span>
                         {originalPrice && (
-                            <span className="text-sm text-slate-500 line-through dark:text-white/70 dark:decoration-white/40">
+                            <span className="text-sm text-slate-500 line-through dark:text-zinc-500 dark:decoration-zinc-600">
                                 {originalPrice}
                             </span>
                         )}
@@ -208,7 +208,7 @@ export default function BestSellersCard({
 
                 {/* Sold Quantity */}
                 {sold !== undefined && (
-                    <p className="mt-2 text-xs text-slate-500 dark:text-white/85">
+                    <p className="mt-2 text-xs text-slate-500 dark:text-zinc-500">
                         {sold.toLocaleString()} {t ? t("home.sold") : "Sold"}
                     </p>
                 )}
@@ -231,7 +231,7 @@ export default function BestSellersCard({
                                     onClick={(e) => e.stopPropagation()}
                                     className={cn(
                                         "w-full justify-center text-xs font-semibold",
-                                        "dark:[&_.ab-track_.ab-row:first-child]:text-[var(--color-text)] dark:[&_.ab-track_.ab-row:last-child]:text-white/90",
+                                        "dark:[&_.ab-track_.ab-row:first-child]:text-white dark:[&_.ab-track_.ab-row:last-child]:text-zinc-400",
                                         b.className
                                     )}
                                     note={{

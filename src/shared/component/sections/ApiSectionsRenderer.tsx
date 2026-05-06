@@ -10,6 +10,9 @@ import BasketCard from "../card/BasketCard";
 import ShopCard from "../card/ShopCard";
 import PromotionalBannerCard from "../banner/PromotionalBannerCard";
 import PromotionalHeroSlider from "../banner/PromotionalHeroSlider";
+import LazyImage from "@/shared/component/LazyImage";
+import FavoriteButton from "@/shared/component/FavoriteButton";
+import Button from "@/shared/ui/Button";
 import type {
     Section,
     SectionItem,
@@ -262,6 +265,7 @@ const DISPLAY_TYPES = {
     PRODUCT: 2,
     SHOP: 3,
     BASKET: 4,
+    SCHEDULED_BASKET: 5,
     BRAND: 6,
     RECIPE: 7,
 } as const;
@@ -352,9 +356,13 @@ export default function ApiSectionsRenderer({
         });
     };
 
+    const visibleSections = sections.filter(
+        (section) => Array.isArray(section.items) && section.items.length > 0
+    );
+
     return (
         <>
-            {sections.map((section, index) => (
+            {visibleSections.map((section, index) => (
                 <LazySection key={section.id} eager={index < 2}>
                     <SectionByDisplayType
                         section={section}
@@ -432,8 +440,9 @@ function SectionByDisplayType({
     onToggleShopFavorite,
 }: SectionByDisplayTypeProps) {
     const showViewAll = section.type === "api" && section.see_more;
+    const displayTypeId = Number(section.display_type_id);
 
-    switch (section.display_type_id) {
+    switch (displayTypeId) {
         case DISPLAY_TYPES.BANNER:
             return (
                 <BannerSection
@@ -481,6 +490,7 @@ function SectionByDisplayType({
             );
 
         case DISPLAY_TYPES.BASKET:
+        case DISPLAY_TYPES.SCHEDULED_BASKET:
             return (
                 <BasketSection
                     section={section}
@@ -560,6 +570,119 @@ type SectionPropsWithFavorites = SectionProps & {
     onToggleFavorite: (id: number, currentIsFavorite: boolean) => void;
 };
 
+type ScheduledBasketCardProps = {
+    item: BasketItem;
+    isFavorite: boolean;
+    t: (key: string) => string;
+    onClick: () => void;
+    onToggleFavorite: (id: number, currentIsFavorite: boolean) => void;
+};
+
+function ScheduledBasketCard({
+    item,
+    isFavorite,
+    t,
+    onClick,
+    onToggleFavorite,
+}: ScheduledBasketCardProps) {
+    const nextDelivery = item.next_delivery_date
+        ? new Date(item.next_delivery_date).toLocaleDateString()
+        : null;
+    const priceValue = item.final_price ?? item.price_after_discount ?? 0;
+    const originalPrice = item.original_price > 0 ? `${item.original_price}` : null;
+    const cta = t("home.openBasket") === "home.openBasket" ? "View Schedule" : t("home.openBasket");
+    const itemsLabel = t("baskets.items") === "baskets.items" ? "items" : t("baskets.items");
+    const deliveryLabel =
+        t("baskets.deliveryPrice") === "baskets.deliveryPrice"
+            ? "Delivery"
+            : t("baskets.deliveryPrice");
+    const nextDeliveryLabel =
+        t("baskets.nextDeliveryDate") === "baskets.nextDeliveryDate"
+            ? "Next delivery"
+            : t("baskets.nextDeliveryDate");
+
+    return (
+        <div
+            className="group relative flex h-full flex-col overflow-hidden rounded-3xl border border-emerald-200/70 bg-white shadow-[0_10px_30px_-18px_rgba(16,185,129,0.45)] transition-all duration-300 hover:-translate-y-1 dark:border-emerald-300/20 dark:bg-[var(--color-bg-card-elevated)]"
+            onClick={onClick}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") onClick();
+            }}
+        >
+            <div className="relative h-44 overflow-hidden rounded-t-3xl">
+                <LazyImage
+                    src={item.image}
+                    alt={item.title || item.name || ""}
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                    wrapperClassName="h-full w-full"
+                />
+                <div className="absolute inset-x-0 top-0 flex items-start justify-between p-3">
+                    <span className="rounded-full bg-emerald-600 px-3 py-1 text-xs font-semibold text-white">
+                        {nextDeliveryLabel}
+                    </span>
+                    <FavoriteButton
+                        isFavorite={isFavorite}
+                        onToggle={(e) => {
+                            e.stopPropagation();
+                            onToggleFavorite(item.id, isFavorite);
+                        }}
+                        size="md"
+                        ariaLabel="Toggle favorite"
+                    />
+                </div>
+            </div>
+
+            <div className="flex flex-1 flex-col gap-3 bg-gradient-to-b from-emerald-50/80 to-white p-4 dark:from-emerald-950/20 dark:to-[var(--color-bg-card-elevated)]">
+                <h3 className="line-clamp-2 text-lg font-bold text-custom-primary dark:text-white">
+                    {item.title || item.name || ""}
+                </h3>
+                <div className="grid grid-cols-2 gap-2 rounded-2xl bg-emerald-100/70 p-2 text-xs dark:bg-emerald-900/25">
+                    <div className="rounded-xl bg-white/70 p-2 text-custom-secondary dark:bg-black/20 dark:text-zinc-300">
+                        <div className="mb-1 text-[11px] opacity-80">{itemsLabel}</div>
+                        <div className="font-semibold">{item.items_count}</div>
+                    </div>
+                    <div className="rounded-xl bg-white/70 p-2 text-custom-secondary dark:bg-black/20 dark:text-zinc-300">
+                        <div className="mb-1 text-[11px] opacity-80">{deliveryLabel}</div>
+                        <div className="font-semibold">{item.delivery_price}</div>
+                    </div>
+                </div>
+
+                {nextDelivery && (
+                    <p className="text-sm font-medium text-emerald-700 dark:text-emerald-300">
+                        {nextDeliveryLabel}: {nextDelivery}
+                    </p>
+                )}
+
+                <div className="mt-auto flex items-end justify-between gap-2">
+                    <div>
+                        <div className="text-xl font-bold text-custom-primary dark:text-white">
+                            {priceValue}
+                        </div>
+                        {originalPrice && (
+                            <div className="text-sm text-custom-tertiary line-through dark:text-zinc-500">
+                                {originalPrice}
+                            </div>
+                        )}
+                    </div>
+                    <Button
+                        variant="primary"
+                        size="sm"
+                        className="rounded-xl px-4"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onClick();
+                        }}
+                    >
+                        {cta}
+                    </Button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 function BannerSection({
     section,
     showViewAll,
@@ -569,6 +692,8 @@ function BannerSection({
     skipInnerPageContainer,
 }: SectionProps) {
     const innerMax = skipInnerPageContainer ? "w-full" : "page-container";
+    const viewAllButtonClass =
+        "inline-flex items-center gap-1.5 rounded-full border border-primary-light/35 bg-primary-light/10 px-4 py-2 text-sm font-semibold text-primary-light transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary-light hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-light/40";
     // If only one item, show promotional banner with container
     if (section.items.length === 1) {
         const item = section.items[0];
@@ -586,9 +711,10 @@ function BannerSection({
                         </h2>
                         <button
                             onClick={onViewAll}
-                            className="text-primary-light hover:underline text-sm font-medium"
+                            className={viewAllButtonClass}
                         >
-                            عرض الكل
+                            {t("common.viewAll")}
+                            <span aria-hidden="true">{"->"}</span>
                         </button>
                     </div>
                 )}
@@ -614,9 +740,10 @@ function BannerSection({
                     </h2>
                     <button
                         onClick={onViewAll}
-                        className="text-primary-light hover:underline text-sm font-medium"
+                        className={viewAllButtonClass}
                     >
                         {t("common.viewAll")}
+                        <span aria-hidden="true">{"->"}</span>
                     </button>
                 </div>
             )}
@@ -978,8 +1105,9 @@ function BasketSection({
     onToggleFavorite,
 }: SectionPropsWithFavorites) {
     const cardVariant = getSectionCardVariant(section);
+    const displayTypeId = Number(section.display_type_id);
     const sliderPreset = getSliderPresetForSection(
-        section.display_type_id,
+        displayTypeId,
         cardVariant
     );
     const surfaceColor = isDarkTheme ? getDarkCardSurface() : getSectionCardSurfaceColor(section);
@@ -1004,6 +1132,8 @@ function BasketSection({
             removeVerticalSpacing={removeSectionVerticalSpacing}
             renderItem={(item) => {
                 if (isBasketItem(item)) {
+                    const isScheduledBasket =
+                        displayTypeId === DISPLAY_TYPES.SCHEDULED_BASKET;
                     const saveAmount =
                         item.saving > 0 ? `${t("baskets.save")} ${item.saving}` : undefined;
                     const savings =
@@ -1017,6 +1147,19 @@ function BasketSection({
                             ).toLocaleDateString()}`
                             : undefined;
                     const isFav = isFavoriteFor(item.id, item.is_favorite);
+
+                    if (isScheduledBasket) {
+                        return (
+                            <ScheduledBasketCard
+                                key={item.id}
+                                item={item}
+                                isFavorite={isFav}
+                                t={t}
+                                onClick={() => onItemClick(item)}
+                                onToggleFavorite={onToggleFavorite}
+                            />
+                        );
+                    }
 
                     return (
                         <BasketCard

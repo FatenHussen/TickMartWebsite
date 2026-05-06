@@ -19,7 +19,7 @@ const WISHLIST_TYPE_OPTIONS: { value: WishlistTypeFilter; labelKey: string }[] =
 ];
 
 const SELECT_CLASS =
-"appearance-none bg-custom-card border border-custom-primary rounded-lg px-4 py-2.5 pe-10 text-sm text-custom-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary cursor-pointer";
+    "appearance-none cursor-pointer rounded-lg border border-custom-primary bg-custom-card px-4 py-2.5 pe-10 text-sm text-custom-primary focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:border-[rgba(255,255,255,0.06)] dark:bg-[rgba(255,255,255,0.04)] dark:text-[#FFFFFF] dark:focus:border-[color-mix(in_srgb,var(--color-main)_40%,transparent)] dark:focus:ring-[color-mix(in_srgb,var(--color-main)_25%,transparent)]";
 
 type WishlistFiltersProps = {
  selectedType: WishlistTypeFilter;
@@ -68,7 +68,7 @@ export default function WishlistFilters({
  </option>
  ))}
  </select>
- <HiChevronDown className="absolute end-3 top-1/2 -translate-y-1/2 w-4 h-4 text-custom-tertiary pointer-events-none"/>
+ <HiChevronDown className="pointer-events-none absolute end-3 top-1/2 h-4 w-4 -translate-y-1/2 text-custom-tertiary dark:text-[#71717A]"/>
  </div>
  )}
 
@@ -90,7 +90,7 @@ export default function WishlistFilters({
  </option>
  ))}
  </select>
- <HiChevronDown className="absolute end-3 top-1/2 -translate-y-1/2 w-4 h-4 text-custom-tertiary pointer-events-none"/>
+ <HiChevronDown className="pointer-events-none absolute end-3 top-1/2 h-4 w-4 -translate-y-1/2 text-custom-tertiary dark:text-[#71717A]"/>
  </div>
  </div>
 
@@ -98,7 +98,7 @@ export default function WishlistFilters({
  <button
  type="button"
  onClick={onClearFilters}
- className="text-sm text-primary hover:text-primary/80 font-medium transition-colors shrink-0"
+ className="shrink-0 text-sm font-medium text-primary transition-colors duration-200 hover:text-primary/80 dark:text-[color-mix(in_srgb,var(--color-main)_78%,#FFFFFF)] dark:hover:text-[color-mix(in_srgb,var(--color-main)_92%,#FFFFFF)]"
  >
  {t("wishlist.clearFilters")}
  </button>
@@ -167,7 +167,7 @@ function ShopsFilterDropdown({ selectedShopId, onShopChange }: ShopsFilterDropdo
  <button
  type="button"
  onClick={() => setOpen((v) => !v)}
- className="flex items-center gap-2 bg-custom-card border border-custom-primary rounded-lg px-4 py-2.5 text-sm text-custom-primary hover:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors min-w-[140px] cursor-pointer"
+ className="flex min-w-[140px] cursor-pointer items-center gap-2 rounded-lg border border-custom-primary bg-custom-card px-4 py-2.5 text-sm text-custom-primary transition-colors duration-200 hover:border-primary/60 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:border-[rgba(255,255,255,0.06)] dark:bg-[rgba(255,255,255,0.04)] dark:text-[#FFFFFF] dark:hover:border-[color-mix(in_srgb,var(--color-main)_28%,transparent)] dark:focus:ring-[color-mix(in_srgb,var(--color-main)_22%,transparent)]"
  >
  <span className="flex-1 text-start truncate">{displayLabel}</span>
  <HiChevronDown
@@ -177,15 +177,15 @@ function ShopsFilterDropdown({ selectedShopId, onShopChange }: ShopsFilterDropdo
 
  {/* Dropdown list */}
  {open && (
- <div className="absolute top-full mt-1 start-0 z-50 min-w-[180px] max-h-56 overflow-y-auto bg-custom-card border border-custom-primary rounded-lg shadow-lg py-1">
+ <div className="absolute start-0 top-full z-50 mt-1 max-h-56 min-w-[180px] overflow-y-auto rounded-lg border border-custom-primary bg-custom-card py-1 shadow-lg dark:border-[rgba(255,255,255,0.08)] dark:bg-[rgba(16,17,20,0.96)] dark:shadow-[0_24px_48px_-16px_rgba(0,0,0,0.65)] dark:backdrop-blur-xl">
  {/*"All stores"option */}
  <button
  type="button"
  onClick={() => handleSelect("all")}
- className={`w-full text-start px-4 py-2 text-sm transition-colors hover:bg-primary/10 ${
+ className={`w-full px-4 py-2 text-start text-sm transition-colors hover:bg-primary/10 dark:hover:bg-[color-mix(in_srgb,var(--color-main)_10%,transparent)] ${
  selectedShopId ==="all"
- ?"text-primary font-semibold"
- :"text-custom-primary"
+ ?"font-semibold text-primary dark:text-[color-mix(in_srgb,var(--color-main)_85%,#FFFFFF)]"
+ :"text-custom-primary dark:text-[#E4E4E7]"
  }`}
  >
  {t("wishlist.allStores")}
@@ -197,10 +197,10 @@ function ShopsFilterDropdown({ selectedShopId, onShopChange }: ShopsFilterDropdo
  key={shop.id}
  type="button"
  onClick={() => handleSelect(shop.id)}
- className={`w-full text-start px-4 py-2 text-sm transition-colors hover:bg-primary/10 ${
+ className={`w-full px-4 py-2 text-start text-sm transition-colors hover:bg-primary/10 dark:hover:bg-[color-mix(in_srgb,var(--color-main)_10%,transparent)] ${
  selectedShopId === shop.id
- ?"text-primary font-semibold"
- :"text-custom-primary"
+ ?"font-semibold text-primary dark:text-[color-mix(in_srgb,var(--color-main)_85%,#FFFFFF)]"
+ :"text-custom-primary dark:text-[#E4E4E7]"
  }`}
  >
  {shop.name}

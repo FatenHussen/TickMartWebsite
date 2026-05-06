@@ -15,6 +15,7 @@ import CategoryStore from"../components/CategoryStore";
 import ShopServiceCard from"../components/ShopServiceCard";
 import BookServiceModal from"../components/BookServiceModal";
 import ProductCard from"@/shared/component/card/ProductCard";
+import { PremiumInlineLoader } from"@/shared/component/loading";
 import { convertShopDataToStoreMeta } from"../utils/shopDataConverter";
 import { mapActionPageSlugToRoute } from"@/utils/routeMapper";
 import type { ApiProduct } from"@/features/categories/types";
@@ -104,7 +105,7 @@ selected: selectedCategoryId === category.id,
  className="min-h-screen bg-custom-primary flex items-center justify-center"
  dir={isRTL ?"rtl":"ltr"}
  >
- <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-light"></div>
+ <PremiumInlineLoader size="lg" />
  </div>
  );
  }
@@ -172,7 +173,7 @@ onSelectCategory={setSelectedCategoryId}
  {isServiceProvider ? (
  isServicesLoading ? (
  <div className="mt-8 flex justify-center py-12">
- <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary-light"/>
+ <PremiumInlineLoader size="md" />
  </div>
  ) : services.length > 0 ? (
  <div className="mt-8">
@@ -198,7 +199,7 @@ onSelectCategory={setSelectedCategoryId}
  )
  ) : isProductsLoading ? (
  <div className="mt-8 flex justify-center py-12">
- <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary-light"/>
+ <PremiumInlineLoader size="md" />
  </div>
 ) : products.length > 0 ? (
  <div className="mt-8">
@@ -259,7 +260,7 @@ onSelectCategory={setSelectedCategoryId}
 </div>
 {isFetchingNextPage && (
 <div className="mt-6 flex justify-center py-4">
-<div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary-light"/>
+<PremiumInlineLoader size="sm" />
 </div>
 )}
 <div ref={observerTarget} className="h-10"/>

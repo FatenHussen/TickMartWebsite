@@ -27,13 +27,8 @@ type BrandCardWithRatingProps = {
     surfaceColor?: string | null;
 };
 
-/**
- * Creative API-setting dark surface — blends `--color-api-second` with a deep
- * near-black so brand cards in dark mode source from the API settings palette,
- * not per-section colors.
- */
-const DARK_SURFACE_FALLBACK =
-    "color-mix(in srgb, var(--color-api-second) 18%, #10121a)";
+/** Neutral translucent panel — matches home section cards; API colors stay as accents on CTAs. */
+const DARK_SURFACE_FALLBACK = "var(--color-bg-card-elevated)";
 
 export default function BrandCardWithRating({
     item,

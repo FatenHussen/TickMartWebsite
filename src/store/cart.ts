@@ -5,25 +5,40 @@ import type {
  CartType,
  OrderPreviewItem,
 } from"@/features/cart/types";
+import {
+ extrasLineKeyFromExtras,
+ normalizeCartExtras,
+} from"@/features/cart/utils/cartExtras";
+import { cartItemsToPreviewOrderItems } from"@/features/cart/utils/orderLinePayload";
 
 function formatPrice(value: number): string {
  return `£${value.toFixed(2)}`;
 }
 
-function extrasLineKey(extras?: number[]): string {
- if (!extras?.length) return "";
- return `-e-${[...extras].sort((a, b) => a - b).join("-")}`;
+/** Distinguish cart lines that share variant + extras but differ by note. */
+function noteLineSuffix(note?: string | null): string {
+ const s = typeof note === "string" ? note.trim() : "";
+ if (!s) return "";
+ let h = 0;
+ for (let i = 0; i < s.length; i++) {
+ h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
+ }
+ return `-n${(h >>> 0).toString(36)}`;
 }
 
 function getLineId(
- item: Pick<CartItem,"productId"|"variantId"|"shop_product_variant_id"|"extras">
+ item: Pick<
+ CartItem,
+ "productId"|"variantId"|"shop_product_variant_id"|"extras"|"note"
+ >
 ): string {
+ const nk = noteLineSuffix(item.note);
  if (item.shop_product_variant_id != null) {
- return `spv-${item.shop_product_variant_id}${extrasLineKey(item.extras)}`;
+ return `spv-${item.shop_product_variant_id}${extrasLineKeyFromExtras(item.extras)}${nk}`;
  }
  const pid = item.productId ?? 0;
  const vid = item.variantId ??"base";
- return `${pid}-${vid}`;
+ return `${pid}-${vid}${nk}`;
 }
 
 export interface AddRecipePayload {
@@ -76,10 +91,15 @@ export const useCartStore = create<CartStore>()(
  item: CartItem
  ):"success"|"wrong_cart_type"|"instant_delivery_mix"=> {
  const state = get();
+ const extrasNorm = normalizeCartExtras(item.extras);
+ const itemToAdd: CartItem = {
+ ...item,
+ extras: extrasNorm,
+ };
 
  if (state.items.length === 0) {
  set({
- items: [{ ...item }],
+ items: [{ ...itemToAdd }],
  cart_type:"default",
  recipe_id: undefined,
  admin_basket_id: undefined,
@@ -104,14 +124,14 @@ export const useCartStore = create<CartStore>()(
  }
 
  set((s) => {
- const lineId = getLineId(item);
+ const lineId = getLineId(itemToAdd);
  const existingIndex = s.items.findIndex((i) => getLineId(i) === lineId);
  if (existingIndex >= 0) {
  const existing = s.items[existingIndex];
  const num =
  existing.priceNumeric ??
  (parseFloat(String(existing.price).replace(/[^0-9.]/g,"")) || 0);
- const newQty = existing.quantity + item.quantity;
+ const newQty = existing.quantity + itemToAdd.quantity;
  const next = [...s.items];
  next[existingIndex] = {
  ...existing,
@@ -121,7 +141,7 @@ export const useCartStore = create<CartStore>()(
  };
  return { items: next };
  }
- return { items: [...s.items, item] };
+ return { items: [...s.items, itemToAdd] };
  });
  return"success";
  },
@@ -238,21 +258,8 @@ export const useCartStore = create<CartStore>()(
 
  getItems: () => get().items,
 
- getPreviewItems: (): OrderPreviewItem[] => {
- const s = get();
- return s.items
- .filter((i) => i.shop_product_variant_id != null)
- .map((i) => {
- const base: OrderPreviewItem = {
- shop_product_variant_id: i.shop_product_variant_id!,
- quantity: i.quantity,
- };
- if (i.extras?.length) {
- base.extras = [...i.extras];
- }
- return base;
- });
- },
+ getPreviewItems: (): OrderPreviewItem[] =>
+ cartItemsToPreviewOrderItems(get().items),
  }),
  {
  name:"cart-storage",

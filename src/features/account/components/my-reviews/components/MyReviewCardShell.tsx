@@ -18,20 +18,20 @@ export default function MyReviewCardShell({
         <article
             className={cn(
                 "group relative overflow-hidden rounded-2xl",
-                "bg-[linear-gradient(145deg,color-mix(in_srgb,var(--color-api-second)_14%,var(--color-bg-card))_0%,var(--color-bg-card)_42%,color-mix(in_srgb,var(--color-main)_12%,var(--color-bg-card))_100%)]",
-                "shadow-[0_12px_40px_-18px_color-mix(in_srgb,var(--color-api-second)_28%,transparent)]",
+                "bg-[linear-gradient(145deg,color-mix(in_srgb,var(--color-api-second)_10%,var(--color-bg-card))_0%,var(--color-bg-card)_48%,color-mix(in_srgb,var(--color-main)_8%,var(--color-bg-card))_100%)]",
+                "border border-[var(--color-border-primary)]",
+                "shadow-[0_4px_20px_-8px_rgba(0,0,0,0.15)] dark:shadow-[0_6px_24px_-6px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.04)]",
                 "transition-[transform,box-shadow] duration-300 ease-out",
-                "hover:-translate-y-0.5 hover:shadow-[0_18px_48px_-14px_color-mix(in_srgb,var(--color-api-second)_34%,transparent)]",
-                "dark:shadow-[0_12px_40px_-18px_color-mix(in_srgb,var(--color-api-second)_22%,transparent)]",
+                "hover:-translate-y-0.5 hover:shadow-[0_8px_32px_-8px_color-mix(in_srgb,var(--color-api-second)_18%,rgba(0,0,0,0.3))]",
                 className,
             )}
         >
             <div
-                className="pointer-events-none absolute -end-10 -top-14 h-36 w-36 rounded-full bg-[var(--color-api-second)] opacity-[0.11] blur-3xl transition-opacity duration-500 group-hover:opacity-[0.16]"
+                className="pointer-events-none absolute -end-10 -top-14 h-36 w-36 rounded-full bg-[var(--color-api-second)] opacity-[0.08] blur-3xl transition-opacity duration-500 group-hover:opacity-[0.12]"
                 aria-hidden
             />
             <div
-                className="pointer-events-none absolute -bottom-12 -start-8 h-28 w-40 rounded-full bg-[var(--color-main)] opacity-[0.06] blur-3xl"
+                className="pointer-events-none absolute -bottom-12 -start-8 h-28 w-40 rounded-full bg-[var(--color-main)] opacity-[0.05] blur-3xl"
                 aria-hidden
             />
 

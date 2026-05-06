@@ -129,7 +129,7 @@ export default function AllBaskets() {
     );
 
     return (
-        <div className="min-h-screen bg-custom-primary" dir={isRTL ? "rtl" : "ltr"}>
+        <div className="min-h-screen " dir={isRTL ? "rtl" : "ltr"}>
             {bannerSections.length > 0 && (
                 <div className="w-full">
                     <ApiSectionsRenderer sections={bannerSections} />

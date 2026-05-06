@@ -53,6 +53,7 @@ function buildAccountDarkVars(
   const second = palette.second_color ?? lighten(main, 14);
 
   return {
+    // API accent colors — kept original for buttons, active states, icons
     "--color-main": main,
     "--color-text": text,
     "--color-api-second": second,
@@ -62,46 +63,63 @@ function buildAccountDarkVars(
     "--color-primary-light": lighten(main, 14),
     "--color-primary-dark": darken(main, 8),
     "--color-secondary": second,
-
     "--color-blue-light": lighten(main, 10),
 
+    // Let base API-tinted surfaces run first, then override with fixed dark foundation
     ...buildApiTintedDarkSurfaces(main, second),
 
-    "--color-border-primary": withAlpha(main, 0.18),
-    "--color-border-secondary": withAlpha(second, 0.22),
-    "--color-border-light": withAlpha(main, 0.12),
-    "--color-border-accent": withAlpha(main, 0.45),
-    "--color-border-accent-light": withAlpha(main, 0.28),
+    // ── Fixed dark foundations (override API-tinted surfaces) ──────────────
+    "--color-bg-primary":   "#050505",
+    "--color-bg-secondary": "#0B0B0C",
+    "--color-bg-card":      "#101114",
+    "--color-bg-tertiary":  "#141418",
+    "--color-bg-hover":     "rgba(255,255,255,0.035)",
+    "--color-bg-active":    `color-mix(in srgb, ${main} 12%, transparent)`,
+    "--color-bg-input":     "#17181c",
+    "--color-bg-surface":   "#101114",
+    "--color-bg-muted":     "#0d0d10",
+
+    // Borders — neutral/subtle, NOT API-colored
+    "--color-border-primary":       "rgba(255,255,255,0.06)",
+    "--color-border-secondary":     "rgba(255,255,255,0.04)",
+    "--color-border-light":         "rgba(255,255,255,0.03)",
+    // Accent borders only for focused/active elements
+    "--color-border-accent":        withAlpha(main, 0.28),
+    "--color-border-accent-light":  withAlpha(main, 0.15),
     "--color-border-accent-strong": main,
 
-    "--color-text-primary": text,
-    "--color-text-secondary": withAlpha(text, 0.86),
-    "--color-text-tertiary": withAlpha(text, 0.66),
-    "--color-text-heading": text,
-    "--color-text-muted": withAlpha(text, 0.74),
+    // Text — fixed readable values, independent of API
+    "--color-text-primary":   "#FFFFFF",
+    "--color-text-secondary": "#A1A1AA",
+    "--color-text-tertiary":  "#71717A",
+    "--color-text-heading":   "#FFFFFF",
+    "--color-text-muted":     "#71717A",
+    "--color-text-inverse":   "#0a0a0a",
+    // ───────────────────────────────────────────────────────────────────────
 
-    "--color-accent-primary": main,
+    "--color-accent-primary":       main,
     "--color-accent-primary-hover": lighten(main, 6),
-    "--color-accent-light": lighten(main, 10),
-    "--color-accent-light-bg": withAlpha(main, 0.16),
+    "--color-accent-light":         lighten(main, 10),
+    "--color-accent-light-bg":      withAlpha(main, 0.12),
 
-    "--color-success": "#22c55e",
-    "--color-success-light": "#4ade80",
-    "--color-warning": "#fbbf24",
-    "--color-warning-dark": "#d97706",
-    "--color-error": "#f87171",
-    "--color-error-light": "#fca5a5",
-    "--color-status-error-bg": withAlpha("#f87171", 0.12),
-    "--color-discount": "#4ade80",
-    "--color-delete": "#f87171",
-    "--color-gold": "#fbbf24",
+    "--color-success":          "#22c55e",
+    "--color-success-light":    "#4ade80",
+    "--color-warning":          "#fbbf24",
+    "--color-warning-dark":     "#d97706",
+    "--color-error":            "#f87171",
+    "--color-error-light":      "#fca5a5",
+    "--color-status-error-bg":  withAlpha("#f87171", 0.1),
+    "--color-discount":         "#4ade80",
+    "--color-delete":           "#f87171",
+    "--color-gold":             "#fbbf24",
 
     "--color-gradient-from": main,
-    "--color-gradient-to": second,
+    "--color-gradient-to":   second,
 
-    "--color-shadow": withAlpha(main, 0.25),
-    "--color-shadow-strong": withAlpha(main, 0.35),
-    "--color-shadow-accent": withAlpha(second, 0.3),
+    // Shadows — dimmed, not API-color-saturated
+    "--color-shadow":        withAlpha(main, 0.1),
+    "--color-shadow-strong": withAlpha(main, 0.18),
+    "--color-shadow-accent": withAlpha(second, 0.12),
 
     "--color-calendar-selected": main,
   };

@@ -44,7 +44,8 @@ export default function ChangePassword() {
  <AuthLayout
  leftPanel="custom"
  leftContent={leftContent}
- maxWidth="md"
+ useFormCard
+ maxWidth="auth"
  >
  <div className="space-y-8">
  <div className="text-center">

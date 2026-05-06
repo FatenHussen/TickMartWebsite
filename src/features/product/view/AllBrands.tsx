@@ -72,7 +72,7 @@ export default function AllBrands() {
     };
 
     return (
-        <div className="brands-page-canvas min-h-screen" dir={isRTL ? "rtl" : "ltr"}>
+        <div className=" min-h-screen" dir={isRTL ? "rtl" : "ltr"}>
             {bannerSections.length > 0 && (
                 <div className="w-full">
                     <ApiSectionsRenderer

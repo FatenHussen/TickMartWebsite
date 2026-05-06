@@ -4,6 +4,7 @@ import { useTranslation } from"react-i18next";
 import { toast } from"sonner";
 import { useLanguage } from"@/context/LanguageContext";
 import { paths } from"@/app/routes/path/paths";
+import { PremiumInlineLoader } from "@/shared/component/loading";
 import { useSchedules } from"@/features/cart/hooks/useSchedules";
 import type { ScheduleItem } from"@/features/cart/types";
 import ProductItemsTable, {
@@ -270,7 +271,7 @@ export default function ScheduledBasketDetails() {
  return (
  <div dir={isRTL ?"rtl":"ltr"}>
  <div className="flex items-center justify-center py-14">
- <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+ <PremiumInlineLoader size="sm" />
  </div>
  </div>
  );
@@ -281,10 +282,10 @@ export default function ScheduledBasketDetails() {
  return (
  <div dir={isRTL ?"rtl":"ltr"}>
  <div className="text-center py-14">
- <h2 className="text-xl font-bold text-custom-primary mb-2">
+ <h2 className="mb-2 text-xl font-bold text-custom-primary dark:text-[#FFFFFF]">
  {t("baskets.basketNotFound")}
  </h2>
- <p className="text-custom-secondary mb-4">
+ <p className="mb-4 text-custom-secondary dark:text-[#A1A1AA]">
  {t("baskets.basketNotFoundDescription")}
  </p>
  <Button
@@ -302,10 +303,10 @@ export default function ScheduledBasketDetails() {
  <div dir={isRTL ?"rtl":"ltr"} className="space-y-4">
  {/* Basket Header */}
  <div
- className="relative overflow-hidden rounded-2xl border border-[color-mix(in_srgb,var(--color-api-second)_22%,var(--color-border-primary))] bg-[linear-gradient(135deg,var(--color-bg-card)_0%,color-mix(in_srgb,var(--color-api-second)_8%,var(--color-bg-card))_100%)] p-5 shadow-[0_10px_30px_-18px_color-mix(in_srgb,var(--color-api-second)_45%,transparent)]"
+ className="relative overflow-hidden rounded-3xl border border-[color-mix(in_srgb,var(--color-api-second)_22%,var(--color-border-primary))] bg-[linear-gradient(135deg,var(--color-bg-card)_0%,color-mix(in_srgb,var(--color-api-second)_8%,var(--color-bg-card))_100%)] p-5 shadow-[0_10px_30px_-18px_color-mix(in_srgb,var(--color-api-second)_45%,transparent)] transition-shadow duration-300 dark:border-[rgba(255,255,255,0.06)] dark:bg-[rgba(16,17,20,0.75)] dark:bg-none dark:shadow-[0_24px_64px_-28px_rgba(0,0,0,0.72),inset_0_1px_0_0_rgba(255,255,255,0.04)] dark:backdrop-blur-xl"
  >
  <div
- className="pointer-events-none absolute -end-16 -top-20 h-40 w-40 rounded-full bg-[var(--color-api-second)] opacity-[0.1] blur-3xl"
+ className="pointer-events-none absolute -end-16 -top-20 h-40 w-40 rounded-full bg-[var(--color-api-second)] opacity-[0.1] blur-3xl dark:opacity-[0.05]"
  aria-hidden
  />
  <div className="relative flex items-center justify-between mb-3">
@@ -315,7 +316,7 @@ export default function ScheduledBasketDetails() {
  type="text"
  value={basketName}
  onChange={(e) => setEditedName(e.target.value)}
- className="text-lg font-bold text-custom-primary border-b-2 border-transparent hover:border-[color-mix(in_srgb,var(--color-api-second)_45%,transparent)] focus:border-[var(--color-api-second)] focus:outline-none bg-transparent transition-colors px-1 py-0.5"
+ className="border-b-2 border-transparent bg-transparent px-1 py-0.5 text-lg font-bold text-custom-primary transition-colors hover:border-[color-mix(in_srgb,var(--color-api-second)_45%,transparent)] focus:border-[var(--color-api-second)] focus:outline-none dark:text-[#FFFFFF] dark:hover:border-[color-mix(in_srgb,var(--color-main)_35%,transparent)] dark:focus:border-[color-mix(in_srgb,var(--color-api-second)_55%,transparent)]"
  />
  {/* Active Badge */}
  <span
@@ -330,7 +331,7 @@ export default function ScheduledBasketDetails() {
  : t("baskets.paused")}
  </span>
  {basket.category && (
- <span className="px-3 py-1 bg-[color-mix(in_srgb,var(--color-main)_15%,var(--color-bg-card))] text-[var(--color-main)] ring-1 ring-inset ring-[color-mix(in_srgb,var(--color-main)_30%,transparent)] text-xs font-medium rounded-full">
+ <span className="rounded-full bg-[color-mix(in_srgb,var(--color-main)_15%,var(--color-bg-card))] px-3 py-1 text-xs font-medium text-[var(--color-main)] ring-1 ring-inset ring-[color-mix(in_srgb,var(--color-main)_30%,transparent)] dark:bg-[color-mix(in_srgb,var(--color-main)_12%,rgba(255,255,255,0.04))] dark:text-[color-mix(in_srgb,var(--color-main)_78%,#FFFFFF)] dark:ring-[color-mix(in_srgb,var(--color-main)_22%,transparent)]">
  {basket.category}
  </span>
  )}
@@ -349,7 +350,7 @@ export default function ScheduledBasketDetails() {
 
  <div className="relative flex items-center gap-6 text-sm text-custom-secondary">
  <div className="flex items-center gap-2">
- <span className="font-semibold text-[var(--color-api-second)]">
+ <span className="font-semibold text-[var(--color-api-second)] dark:text-[color-mix(in_srgb,var(--color-api-second)_72%,#a1a1aa)]">
  {productItems.length}
  </span>
  <span>{t("checkout.items")}</span>
@@ -384,10 +385,10 @@ export default function ScheduledBasketDetails() {
 
  {/* Schedule Info (reflects selected schedule from dropdown) */}
  {effectiveSchedule && (
- <div className="rounded-2xl border border-[var(--color-border-primary)] bg-custom-card p-4 shadow-sm">
+ <div className="rounded-3xl border border-[var(--color-border-primary)] bg-custom-card p-4 shadow-sm dark:border-[rgba(255,255,255,0.06)] dark:bg-[rgba(16,17,20,0.72)] dark:shadow-[0_12px_40px_-22px_rgba(0,0,0,0.55)]">
  <div className="flex items-center gap-3">
- <div className="w-10 h-10 rounded-full bg-[color-mix(in_srgb,var(--color-api-second)_18%,var(--color-bg-card))] ring-1 ring-inset ring-[color-mix(in_srgb,var(--color-api-second)_35%,transparent)] flex items-center justify-center shrink-0">
- <HiCalendar className="w-5 h-5 text-[var(--color-api-second)]"/>
+ <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--color-api-second)_18%,var(--color-bg-card))] ring-1 ring-inset ring-[color-mix(in_srgb,var(--color-api-second)_35%,transparent)] dark:bg-[color-mix(in_srgb,var(--color-api-second)_12%,rgba(255,255,255,0.04))] dark:ring-[rgba(255,255,255,0.08)]">
+ <HiCalendar className="h-5 w-5 text-[var(--color-api-second)] dark:text-[color-mix(in_srgb,var(--color-api-second)_65%,#a1a1aa)]"/>
  </div>
  <div>
  <h4 className="font-semibold text-custom-primary">
@@ -413,8 +414,8 @@ export default function ScheduledBasketDetails() {
  )}
 
  {/* Pricing Info */}
- <div className="rounded-2xl border border-[var(--color-border-primary)] bg-custom-card p-4 shadow-sm">
- <div className="flex items-center justify-between text-sm mb-2">
+ <div className="rounded-3xl border border-[var(--color-border-primary)] bg-custom-card p-4 shadow-sm dark:border-[rgba(255,255,255,0.06)] dark:bg-[rgba(16,17,20,0.72)] dark:shadow-[0_12px_40px_-22px_rgba(0,0,0,0.55)]">
+ <div className="mb-2 flex items-center justify-between text-sm">
  <div className="flex items-center gap-4 flex-wrap">
  <div>
  <span className="text-custom-secondary">{t("baskets.subtotal")}:</span>
@@ -436,7 +437,7 @@ export default function ScheduledBasketDetails() {
  )}
  <div>
  <span className="text-custom-secondary">{t("baskets.total")}:</span>
- <span className="font-bold text-[var(--color-api-second)] text-lg ml-2">
+ <span className="ml-2 text-lg font-bold text-[var(--color-api-second)] dark:text-[color-mix(in_srgb,var(--color-api-second)_78%,#FFFFFF)]">
  {currencySymbol}
  {totalAfterDiscount.toFixed(2)}
  </span>
@@ -467,7 +468,7 @@ export default function ScheduledBasketDetails() {
  </div>
 
  {/* Summary Section */}
- <div className="rounded-2xl border-2 border-[color-mix(in_srgb,var(--color-api-second)_28%,var(--color-border-primary))] bg-[color-mix(in_srgb,var(--color-api-second)_8%,var(--color-bg-card))] p-4 shadow-[0_8px_24px_-16px_color-mix(in_srgb,var(--color-api-second)_35%,transparent)]">
+ <div className="rounded-3xl border border-[rgba(255,255,255,0.08)] bg-[color-mix(in_srgb,var(--color-api-second)_8%,var(--color-bg-card))] p-4 shadow-[0_8px_24px_-16px_color-mix(in_srgb,var(--color-api-second)_35%,transparent)] dark:border-[rgba(255,255,255,0.06)] dark:bg-[rgba(255,255,255,0.03)] dark:shadow-[0_16px_48px_-24px_rgba(0,0,0,0.65),inset_0_0_0_1px_color-mix(in_srgb,var(--color-api-second)_14%,transparent)]">
  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
  <div className="flex items-center gap-6 flex-wrap">
  <span className="font-bold text-custom-primary">
@@ -489,7 +490,7 @@ export default function ScheduledBasketDetails() {
  {t("baskets.subtotal")}: {currencySymbol}
  {subtotalBeforeDiscount.toFixed(2)}
  </div>
- <div className="text-lg font-bold text-[var(--color-api-second)]">
+ <div className="text-lg font-bold text-[var(--color-api-second)] dark:text-[color-mix(in_srgb,var(--color-api-second)_78%,#FFFFFF)]">
  {t("baskets.total")}: {currencySymbol}
  {totalAfterDiscount.toFixed(2)}
  </div>
@@ -498,7 +499,7 @@ export default function ScheduledBasketDetails() {
  {availableExtras.length > 0 && (
  <Button
  onClick={() => setShowExtrasPopup(true)}
- className="flex items-center gap-2 !bg-[var(--color-api-second)] hover:!bg-[var(--color-api-second-hover)] !text-white px-4 py-2 rounded-lg text-sm font-medium shrink-0 shadow-[0_6px_18px_-10px_color-mix(in_srgb,var(--color-api-second)_55%,transparent)]"
+ className="flex shrink-0 items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium !bg-[var(--color-api-second)] !text-white shadow-[0_6px_18px_-10px_color-mix(in_srgb,var(--color-api-second)_55%,transparent)] hover:!bg-[var(--color-api-second-hover)] dark:shadow-[0_10px_28px_-14px_color-mix(in_srgb,var(--color-api-second)_42%,transparent)] dark:ring-1 dark:ring-white/[0.06]"
  >
  <HiPlus className="w-4 h-4"/>
  {t("baskets.addMoreItems")}
@@ -506,7 +507,7 @@ export default function ScheduledBasketDetails() {
  )}
  <Button
  onClick={() => setShowAddProductModal(true)}
- className="flex items-center gap-2 !bg-[var(--color-api-second)] hover:!bg-[var(--color-api-second-hover)] !text-white px-4 py-2 rounded-lg text-sm font-medium shrink-0 shadow-[0_6px_18px_-10px_color-mix(in_srgb,var(--color-api-second)_55%,transparent)]"
+ className="flex shrink-0 items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium !bg-[var(--color-api-second)] !text-white shadow-[0_6px_18px_-10px_color-mix(in_srgb,var(--color-api-second)_55%,transparent)] hover:!bg-[var(--color-api-second-hover)] dark:shadow-[0_10px_28px_-14px_color-mix(in_srgb,var(--color-api-second)_42%,transparent)] dark:ring-1 dark:ring-white/[0.06]"
  >
  <HiPlus className="w-4 h-4"/>
  {t("baskets.addProduct")}
@@ -521,7 +522,7 @@ export default function ScheduledBasketDetails() {
  <Button
  onClick={handleSave}
  disabled={updateMutation.isPending}
- className="!bg-[var(--color-api-second)] hover:!bg-[var(--color-api-second-hover)] !text-white px-12 py-3 text-lg font-semibold rounded-xl w-full md:w-auto shadow-[0_10px_28px_-14px_color-mix(in_srgb,var(--color-api-second)_55%,transparent)]"
+ className="w-full rounded-xl px-12 py-3 text-lg font-semibold !bg-[var(--color-api-second)] !text-white shadow-[0_10px_28px_-14px_color-mix(in_srgb,var(--color-api-second)_55%,transparent)] hover:!bg-[var(--color-api-second-hover)] md:w-auto dark:shadow-[0_14px_40px_-16px_color-mix(in_srgb,var(--color-api-second)_42%,transparent)] dark:ring-1 dark:ring-white/[0.06]"
  size="lg"
  >
  {updateMutation.isPending
@@ -540,7 +541,7 @@ export default function ScheduledBasketDetails() {
  actions={
  <Button
  onClick={() => setShowExtrasPopup(false)}
- className="w-full !bg-[var(--color-api-second)] hover:!bg-[var(--color-api-second-hover)] !text-white"
+ className="w-full !bg-[var(--color-api-second)] !text-white hover:!bg-[var(--color-api-second-hover)] dark:shadow-[0_12px_36px_-14px_color-mix(in_srgb,var(--color-api-second)_40%,transparent)] dark:ring-1 dark:ring-white/[0.06]"
  size="lg"
  >
  {t("common.close")}
@@ -557,7 +558,7 @@ export default function ScheduledBasketDetails() {
  {availableExtras.map((extra) => (
  <div
  key={extra.id}
- className="flex items-center gap-4 p-3 border border-[var(--color-border-primary)] rounded-xl hover:border-[color-mix(in_srgb,var(--color-api-second)_50%,transparent)] hover:bg-[color-mix(in_srgb,var(--color-api-second)_10%,var(--color-bg-card))] transition cursor-pointer group"
+ className="group flex cursor-pointer items-center gap-4 rounded-xl border border-[var(--color-border-primary)] p-3 transition hover:border-[color-mix(in_srgb,var(--color-api-second)_50%,transparent)] hover:bg-[color-mix(in_srgb,var(--color-api-second)_10%,var(--color-bg-card))] dark:border-[rgba(255,255,255,0.06)] dark:hover:border-[color-mix(in_srgb,var(--color-main)_28%,transparent)] dark:hover:bg-[rgba(255,255,255,0.04)]"
  onClick={() => handleAddExtra(extra)}
  >
  <img
@@ -581,7 +582,7 @@ export default function ScheduledBasketDetails() {
  </p>
  </div>
  <button
- className="w-9 h-9 rounded-full bg-[var(--color-api-second)] hover:bg-[var(--color-api-second-hover)] text-white flex items-center justify-center shrink-0 opacity-0 group-hover:opacity-100 transition-opacity shadow-[0_4px_14px_-6px_color-mix(in_srgb,var(--color-api-second)_55%,transparent)]"
+ className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--color-api-second)] text-white opacity-0 shadow-[0_4px_14px_-6px_color-mix(in_srgb,var(--color-api-second)_55%,transparent)] transition-opacity hover:bg-[var(--color-api-second-hover)] group-hover:opacity-100 dark:shadow-[0_8px_22px_-10px_color-mix(in_srgb,var(--color-api-second)_45%,transparent)] dark:ring-1 dark:ring-white/[0.08]"
  onClick={(e) => {
  e.stopPropagation();
  handleAddExtra(extra);

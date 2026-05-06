@@ -30,8 +30,8 @@ export function FaqCategoryTabList({
                             "px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200",
                             HELP_FOCUS_RING,
                             isSelected
-                                ? "bg-gradient-to-r from-primary to-primary-dark text-white shadow-lg shadow-primary/30"
-                                : "bg-custom-tertiary/90 text-custom-primary hover:bg-primary/[0.14] hover:text-primary dark:hover:bg-primary/18"
+                                ? "bg-gradient-to-r from-primary to-primary-dark text-white shadow-lg shadow-primary/30 dark:from-[var(--color-api-second)] dark:to-[var(--color-api-second-hover)] dark:shadow-[0_10px_32px_-14px_color-mix(in_srgb,var(--color-api-second)_40%,transparent)] dark:ring-1 dark:ring-white/[0.08]"
+                                : "bg-custom-tertiary/90 text-custom-primary hover:bg-primary/[0.14] hover:text-primary dark:bg-[rgba(255,255,255,0.04)] dark:text-[#A1A1AA] dark:hover:bg-[color-mix(in_srgb,var(--color-main)_10%,transparent)] dark:hover:text-[#FFFFFF]"
                         )}
                     >
                         {t(localeKey)}

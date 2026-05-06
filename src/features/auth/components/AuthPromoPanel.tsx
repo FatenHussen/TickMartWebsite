@@ -1,11 +1,21 @@
 import { useTranslation } from"react-i18next";
+import { useTheme } from"@/context/ThemeContext";
+import { cn } from"@/shared/lib/utils";
 
 /** Left panel with App Everything branding and logo. */
 export default function AuthPromoPanel() {
  const { t } = useTranslation();
+ const { theme } = useTheme();
 
  return (
- <aside className="hidden lg:flex flex-col overflow-auto bg-gradient-to-b from-[var(--color-bg-secondary)] via-[var(--color-bg-primary)] to-[color-mix(in_srgb,var(--color-api-second)_10%,var(--color-bg-primary))]">
+ <aside
+ className={cn(
+ "hidden lg:flex flex-col overflow-auto border-e",
+ theme ==="dark"
+ ?"border-[rgba(255,255,255,0.06)] bg-[#0B0B0C]"
+ :"border-transparent bg-gradient-to-b from-[var(--color-bg-secondary)] via-[var(--color-bg-primary)] to-[color-mix(in_srgb,var(--color-api-second)_10%,var(--color-bg-primary))]"
+ )}
+ >
  <div className="pt-10 pb-6 px-8 md:px-12">
  <div className="flex items-center gap-3">
  <div className="flex items-center justify-center text-[var(--color-main)]">
@@ -27,7 +37,14 @@ export default function AuthPromoPanel() {
 
  <div className="flex-1 flex flex-col items-center justify-center px-8 md:px-12 min-h-0">
  <div className="w-full max-w-sm">
- <div className="flex items-center justify-center overflow-hidden rounded-2xl border border-[var(--color-border-accent-light)] bg-custom-card p-8 shadow-[0_8px_32px_var(--color-shadow)]">
+ <div
+ className={cn(
+ "flex items-center justify-center overflow-hidden rounded-3xl border p-8",
+ theme ==="dark"
+ ?"border-[rgba(255,255,255,0.06)] bg-[rgba(16,17,20,0.55)] shadow-[0_24px_48px_-28px_rgba(0,0,0,0.6)] backdrop-blur-lg"
+ :"rounded-2xl border-[var(--color-border-accent-light)] bg-custom-card shadow-[0_8px_32px_var(--color-shadow)]"
+ )}
+ >
  <img
  src="/images/shared/logo.png"
  alt="Logo"

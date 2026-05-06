@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContext";
+import { PremiumInlineLoader } from "@/shared/component/loading";
 import DeleteBasketPopup from "../components/DeleteBasketPopup";
 import MyBasketCard from "../components/my-baskets/components/MyBasketCard";
 import MyBasketsHeader from "../components/my-baskets/components/MyBasketsHeader";
@@ -36,7 +37,7 @@ export default function MyBaskets() {
             <div dir={isRTL ? "rtl" : "ltr"}>
                 <MyBasketsHeader />
                 <div className="flex items-center justify-center py-14">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                    <PremiumInlineLoader size="sm" />
                 </div>
             </div>
         );
@@ -47,7 +48,7 @@ export default function MyBaskets() {
         return (
             <div dir={isRTL ? "rtl" : "ltr"}>
                 <MyBasketsHeader showDescription={false} />
-                <div className="py-14 text-center text-[var(--color-ui-red-500)]">
+                <div className="py-14 text-center text-[var(--color-ui-red-500)] dark:text-[color-mix(in_srgb,var(--color-error)_85%,#fca5a5)]">
                     {t("baskets.failedToLoad")}
                 </div>
             </div>
@@ -81,7 +82,7 @@ export default function MyBaskets() {
                     ))}
                 </div>
             ) : (
-                <div className="py-14 text-center text-custom-secondary">
+                <div className="py-14 text-center text-custom-secondary dark:text-[#A1A1AA]">
                     {t("baskets.noBasketsFound")}
                 </div>
             )}

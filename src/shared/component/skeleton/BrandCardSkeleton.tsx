@@ -1,4 +1,8 @@
-import { cn } from"../../lib/utils";
+import { cn } from"@/shared/lib/utils";
+import {
+ PremiumSkeletonBlock,
+ PremiumSkeletonCardShell,
+} from"@/shared/component/loading";
 
 type BrandCardSkeletonProps = {
  className?: string;
@@ -8,20 +12,27 @@ export default function BrandCardSkeleton({
  className,
 }: BrandCardSkeletonProps) {
  return (
- <div
+ <PremiumSkeletonCardShell
  className={cn(
-"bg-[#E4F0FB] rounded-xl p-6 shadow-sm flex flex-col items-center animate-pulse",
- className
+ "flex flex-col items-center rounded-xl p-6 dark:bg-[rgba(16,17,20,0.42)]",
+ className,
  )}
  >
- {/* Logo circle skeleton */}
- <div className="w-24 h-24 rounded-full bg-custom-hover mb-4"/>
-
- {/* Brand name skeleton */}
- <div className="h-4 w-24 bg-custom-hover rounded mb-2"/>
-
- {/* Rating skeleton */}
- <div className="h-3 w-16 bg-custom-hover rounded"/>
- </div>
+ <PremiumSkeletonBlock
+ tone="lightCard"
+ shimmer="light"
+ className="mb-4 h-24 w-24 rounded-full"
+ />
+ <PremiumSkeletonBlock
+ tone="lightCard"
+ shimmer="light"
+ className="mb-2 h-4 w-24"
+ />
+ <PremiumSkeletonBlock
+ tone="lightCard"
+ shimmer="light"
+ className="h-3 w-16"
+ />
+ </PremiumSkeletonCardShell>
  );
 }

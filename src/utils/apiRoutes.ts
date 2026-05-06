@@ -58,6 +58,19 @@ export const apiRoutes = {
     },
 
     /**
+     * CMS promotions (public — active promos, optionally scoped by page slug)
+     * GET /user/promotions?page_slug=...
+     */
+    promotions: {
+        list: (pageSlug?: string) => {
+            if (!pageSlug?.trim()) return `/user/promotions` as const;
+            const q = new URLSearchParams();
+            q.set("page_slug", pageSlug.trim());
+            return `/user/promotions?${q.toString()}` as const;
+        },
+    },
+
+    /**
     * FAQs endpoints (Help Center)
     * Requires type param. Returns { types: string[], faqs: { id, question, answer, type }[] }
     */
@@ -507,7 +520,7 @@ export const apiRoutes = {
         renew: "/user/renew" as const,
         benefits: "/user/subscription/benefits" as const,
         cancelSubscription: (packageId: number | string) =>
-            `/user/packages/${packageId}/cancel-subscription` as const,
+            `/user/cancel-subscription/${packageId}` as const,
     },
 
     /**
@@ -605,15 +618,28 @@ export const apiRoutes = {
     * Popup campaign endpoints (public — no auth required)
     */
     popups: {
-        active: (params?: { page_type?: string; current_url?: string }) => {
+        active: (params?: {
+            page_type?: string;
+            current_url?: string;
+            product_id?: number;
+            shop_id?: number;
+            recipe_id?: number;
+            basket_id?: number;
+        }) => {
             const p = new URLSearchParams();
             if (params?.page_type) p.set("page_type", params.page_type);
             if (params?.current_url) p.set("current_url", params.current_url);
+            if (params?.product_id != null) p.set("product_id", String(params.product_id));
+            if (params?.shop_id != null) p.set("shop_id", String(params.shop_id));
+            if (params?.recipe_id != null) p.set("recipe_id", String(params.recipe_id));
+            if (params?.basket_id != null) p.set("basket_id", String(params.basket_id));
             const qs = p.toString();
-            return `/popups/active${qs ? `?${qs}` : ""}` as const;
+            return `/popups/active${qs ? `?${qs}` : ""}`;
         },
-        trackView: (id: number) => `/popups/${id}/track-view` as const,
-        trackClick: (id: number) => `/popups/${id}/track-click` as const,
+        trackView: (id: number) => `/popups/${id}/track-view`,
+        trackClick: (id: number) => `/popups/${id}/track-click`,
+        trackDismiss: (id: number) => `/popups/${id}/track-dismiss`,
+        submitForm: (id: number) => `/popups/${id}/submit-form`,
     },
 
     /**

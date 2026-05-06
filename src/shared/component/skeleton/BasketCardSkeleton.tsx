@@ -1,4 +1,8 @@
-import { cn } from"../../lib/utils";
+import { cn } from"@/shared/lib/utils";
+import {
+ PremiumSkeletonBlock,
+ PremiumSkeletonCardShell,
+} from"@/shared/component/loading";
 
 type BasketCardSkeletonProps = {
  className?: string;
@@ -8,43 +12,31 @@ export default function BasketCardSkeleton({
  className,
 }: BasketCardSkeletonProps) {
  return (
- <div
- className={cn(
-"relative overflow-hidden rounded-2xl bg-custom-primary shadow-sm animate-pulse",
- className
- )}
- >
- {/* Image skeleton */}
- <div className="aspect-[4/3] bg-custom-hover relative">
- {/* Favorite icon skeleton */}
- <div className="absolute top-3 right-3 w-8 h-8 rounded-full bg-custom-hover"/>
+ <PremiumSkeletonCardShell className={cn("relative", className)}>
+ <div className="relative">
+ <PremiumSkeletonBlock
+ tone="inset"
+ className="aspect-[4/3] w-full rounded-none border-x-0 border-t-0"
+ />
+ <PremiumSkeletonBlock
+ tone="surface"
+ className="absolute right-3 top-3 h-8 w-8 rounded-full"
+ />
  </div>
 
- {/* Content skeleton */}
- <div className="p-4">
- {/* Title */}
- <div className="h-5 bg-custom-hover rounded mb-3 w-3/4"/>
-
- {/* Description */}
- <div className="h-4 bg-custom-hover rounded mb-2 w-full"/>
- <div className="h-4 bg-custom-hover rounded mb-3 w-2/3"/>
-
- {/* Price and save amount */}
- <div className="flex items-center gap-2 mb-3">
- <div className="h-6 w-20 bg-custom-hover rounded"/>
- <div className="h-4 w-16 bg-custom-hover rounded"/>
- <div className="h-4 w-16 bg-custom-hover rounded ml-auto"/>
+ <div className="space-y-3 p-4">
+ <PremiumSkeletonBlock className="h-5 w-3/4" />
+ <PremiumSkeletonBlock className="h-4 w-full" />
+ <PremiumSkeletonBlock className="h-4 w-2/3" />
+ <div className="mb-3 flex items-center gap-2">
+ <PremiumSkeletonBlock className="h-6 w-20" />
+ <PremiumSkeletonBlock className="h-4 w-16" />
+ <PremiumSkeletonBlock className="ml-auto h-4 w-16" />
  </div>
-
- {/* Savings */}
- <div className="h-4 w-32 bg-custom-hover rounded mb-3"/>
-
- {/* Offer ending date */}
- <div className="h-4 w-40 bg-custom-hover rounded mb-4"/>
-
- {/* Button */}
- <div className="h-10 w-full bg-custom-hover rounded-lg"/>
+ <PremiumSkeletonBlock className="h-4 w-32" />
+ <PremiumSkeletonBlock className="mb-4 h-4 w-40" />
+ <PremiumSkeletonBlock className="h-10 w-full rounded-lg" />
  </div>
- </div>
+ </PremiumSkeletonCardShell>
  );
 }

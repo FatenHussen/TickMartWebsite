@@ -13,6 +13,7 @@ import BrandHeader from "../components/BrandHeader";
 import ProductGrid from "../components/ProductGrid";
 import ProductCardSkeleton from "@/shared/component/skeleton/ProductCardSkeleton";
 import ProductReviews from "@/shared/component/ProductReviews";
+import { PremiumInlineLoader } from "@/shared/component/loading";
 import { RatingFormModal } from "@/features/account/components";
 import { useInfiniteScroll } from "@/shared/hooks/useInfiniteScroll";
 import type { Product } from "../types";
@@ -165,7 +166,7 @@ export default function BrandProducts() {
     if (isBrandLoading && !brandData) {
         return (
             <div className="min-h-screen bg-custom-primary flex items-center justify-center">
-                <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary-light" />
+                <PremiumInlineLoader size="md" />
             </div>
         );
     }
@@ -195,7 +196,7 @@ export default function BrandProducts() {
     }
 
     return (
-        <div className="min-h-screen bg-custom-primary" dir={isRTL ? "rtl" : "ltr"}>
+        <div className="min-h-screen " dir={isRTL ? "rtl" : "ltr"}>
             {bannerSections.length > 0 && (
                 <div className="w-full">
                     <ApiSectionsRenderer sections={bannerSections} />
@@ -282,7 +283,7 @@ export default function BrandProducts() {
                 <div className="mt-6">
                     {isRatingsLoading ? (
                         <div className="flex justify-center py-6">
-                            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-cyan-500" />
+                            <PremiumInlineLoader size="sm" />
                         </div>
                     ) : (
                         <ProductReviews

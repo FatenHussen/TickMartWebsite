@@ -59,7 +59,6 @@ export default function SignIn() {
             leftImageLink={loginSettings?.link}
             leftImageAlt={t("common.login")}
             useFormCard
-            maxWidth="576"
         >
             <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-8">
                 <div className="space-y-1.5">

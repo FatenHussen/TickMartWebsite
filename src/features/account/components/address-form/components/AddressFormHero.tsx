@@ -1,5 +1,8 @@
 import { Pencil, Plus } from "lucide-react";
-import { ADDRESS_FORM_HERO_BACKDROP_STYLE } from "../constants";
+import {
+    ADDRESS_FORM_HERO_BACKDROP_STYLE,
+    ADDRESS_PAGES_DARK_HERO_BACKDROP_STYLE,
+} from "../constants";
 
 type AddressFormHeroProps = {
     isEditMode: boolean;
@@ -11,14 +14,18 @@ export function AddressFormHero({ isEditMode, title, subtitle }: AddressFormHero
     return (
         <section className="relative overflow-hidden" aria-labelledby="address-form-title">
             <div
-                className="pointer-events-none absolute inset-0"
+                className="pointer-events-none absolute inset-0 dark:hidden"
                 style={ADDRESS_FORM_HERO_BACKDROP_STYLE}
             />
-            <div className="pointer-events-none absolute -right-12 top-1/2 h-48 w-48 -translate-y-1/2 rounded-full bg-[var(--color-main)] opacity-[0.11] blur-3xl" />
-            <div className="pointer-events-none absolute -left-8 bottom-0 h-36 w-36 rounded-full bg-[var(--color-api-second)] opacity-[0.18] blur-3xl" />
+            <div
+                className="pointer-events-none absolute inset-0 hidden dark:block"
+                style={ADDRESS_PAGES_DARK_HERO_BACKDROP_STYLE}
+            />
+            <div className="pointer-events-none absolute -right-12 top-1/2 h-48 w-48 -translate-y-1/2 rounded-full bg-[var(--color-main)] opacity-[0.11] blur-3xl dark:opacity-[0.055]" />
+            <div className="pointer-events-none absolute -left-8 bottom-0 h-36 w-36 rounded-full bg-[var(--color-api-second)] opacity-[0.18] blur-3xl dark:opacity-[0.07]" />
 
             <div className="relative flex min-w-0 flex-col gap-4 p-6 sm:p-8 sm:flex-row sm:items-start sm:gap-5">
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[var(--color-main)] to-[var(--color-primary-dark)] shadow-md ring-2 ring-white/25 dark:ring-white/10">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[var(--color-main)] to-[var(--color-primary-dark)] shadow-md ring-2 ring-white/25 dark:shadow-[0_0_28px_-6px_color-mix(in_srgb,var(--color-main)_28%,transparent)] dark:ring-white/[0.08]">
                     {isEditMode ? (
                         <Pencil className="h-7 w-7 text-white" aria-hidden />
                     ) : (

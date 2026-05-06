@@ -42,7 +42,12 @@ export function ComplaintsSection({
     return (
         <HelpSupportSectionCard>
             <HelpSupportSectionHeader
-                icon={<ClipboardList className="h-7 w-7 text-[var(--color-api-second)]" aria-hidden />}
+                icon={
+                    <ClipboardList
+                        className="h-7 w-7 text-[var(--color-api-second)] dark:text-[color-mix(in_srgb,var(--color-api-second)_70%,#a1a1aa)]"
+                        aria-hidden
+                    />
+                }
                 title={t("complaints.title")}
                 subtitle={t("complaints.trackManage")}
                 action={

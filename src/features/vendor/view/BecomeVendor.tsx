@@ -5,6 +5,7 @@ import { HiX, HiShoppingBag } from"react-icons/hi";
 import { paths } from"@/app/routes/path/paths";
 import { useTranslation } from"react-i18next";
 import { useTermsConditions } from"@/features/legal/hooks/useLegalDocument";
+import { PremiumInlineLoader } from"@/shared/component/loading";
 
 export default function BecomeVendor() {
  const { isRTL } = useLanguage();
@@ -47,7 +48,7 @@ export default function BecomeVendor() {
  <div className="bg-blue-off rounded-xl border border-primary-light/30 p-6 mb-8">
  {isLoading ? (
  <div className="flex justify-center py-12">
- <div className="animate-spin rounded-full h-10 w-10 border-2 border-primary-light border-t-transparent"/>
+ <PremiumInlineLoader size="md" />
  </div>
  ) : error ? (
  <p className="text-red-500 py-6 text-center">

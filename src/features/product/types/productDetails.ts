@@ -53,11 +53,19 @@ export type LocalizedOrString =
     | null
     | undefined;
 
+export interface ExtraDetailCategory {
+ id: number;
+ name: string;
+}
+
 export interface ExtraDetail {
  id: number;
  key: LocalizedOrString;
  value: LocalizedOrString;
+ /** Minimum selectable quantity for this extra (cannot go below). */
+ quantity?: number;
  price?: number;
+ category?: ExtraDetailCategory;
 }
 
 export interface ProductIcon {
@@ -119,6 +127,8 @@ export interface ProductDetailsData {
  price_after_discount: number;
  price_after_discount_formatted?: string;
  quantity: number;
+ /** Max units of the main product per order line (when returned by API). */
+ max_purchase_quantity?: number;
  sku: string;
  model: string;
  barcode: string;

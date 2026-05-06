@@ -12,6 +12,7 @@ import AffiliatePackagesPopup from "@/components/AffiliatePackagesPopup";
 import { useTheme } from "@/context/ThemeContext";
 import { getHomeRootSurfaceStyle } from "../lib/homeRootSurface";
 import { homeStaticSectionRowSurface } from "../lib/homeStaticSectionSurface";
+import { ScreenPromotions } from "@/features/promotions";
 
 const HAS_SEEN_POPUP_KEY = "hasSeenAffiliatePopup";
 
@@ -85,6 +86,8 @@ export default function Home() {
  /> */}
                 <InfoCards />
 
+                <ScreenPromotions pageSlug="home" placement="top" />
+
                 {homeFlashSale && (
                     <section
                         className={homeSectionBandSurface.className}
@@ -117,12 +120,14 @@ export default function Home() {
                 )}
 
                 <div className="min-w-0">
-                    <Categories />
+                    <Categories sectionPaddingClass="pt-4 pb-0 sm:pt-5 sm:pb-0" />
                 </div>
+
+                <ScreenPromotions pageSlug="home" placement="bottom" />
 
                 {afterSections.length > 0 && (
                     <section
-                        className={homeSectionBandSurface.className}
+                        className={`${homeSectionBandSurface.className} !pt-0`}
                         style={homeSectionBandSurface.style}
                     >
                         <div className="page-container min-w-0">

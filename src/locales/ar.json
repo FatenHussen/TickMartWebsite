@@ -35,6 +35,7 @@
     "optional": "اختياري",
     "upload": "رفع",
     "subscriptionFailed": "فشل الاشتراك",
+    "noPaymentMethods": "لا توجد طرق دفع متاحة",
     "complaintSubmitted": "تم إرسال الشكوى",
     "toggleTheme": "تبديل الوضع",
     "failedToSubmitComplaint": "فشل إرسال الشكوى",
@@ -162,7 +163,13 @@
     "commercialRegisterDate": "تاريخ السجل التجاري",
     "enterCommercialRegisterDate": "أدخل تاريخ السجل التجاري",
     "enterStoreCountry": "أدخل بلد المتجر",
-    "enterStoreCity": "أدخل مدينة المتجر"
+    "enterStoreCity": "أدخل مدينة المتجر",
+    "sellerRegisterKindShop": "متجر",
+    "sellerRegisterKindServiceProvider": "مقدم خدمة",
+    "isRestaurant": "هذا المتجر مطعم",
+    "serviceTypesHeading": "تصنيفات الخدمات",
+    "serviceTypesHint": "اختر أنواع الخدمات التي تقدمها (مطلوب لمقدمي الخدمة).",
+    "serviceTypesEmpty": "لا تتوفر تصنيفات خدمات حالياً. يرجى المحاولة لاحقاً."
   },
   "affiliateWelcome": {
     "heroBadge": "مساحتك",
@@ -171,7 +178,11 @@
     "pickQuickAction": "اختر إجراءاً سريعاً أدناه للبدء.",
     "yourCurrentLocation": "موقعك الحالي",
     "quickActions": "إجراءات سريعة",
+    "quickActionsKicker": "تفاعلي",
+    "quickActionsHint": "اسحب المكدس أو اترك التنقل تلقائياً.",
+    "quickActionsDeckLabel": "اسحب البطاقات",
     "goToHome": "الذهاب للرئيسية",
+    "openAction": "فتح",
     "createNewOrder": "إنشاء طلب جديد",
     "trackMyOrder": "تتبع طلبي",
     "notifications": "الإشعارات",
@@ -195,7 +206,8 @@
     "codeMinLength": "4 أرقام على الأقل",
     "selectGovernorate": "يرجى اختيار محافظة",
     "selectCity": "يرجى اختيار مدينة",
-    "acceptTerms": "يجب عليك قبول الشروط"
+    "acceptTerms": "يجب عليك قبول الشروط",
+    "selectServiceTypes": "يرجى اختيار تصنيف خدمة واحد على الأقل"
   },
   "home": {
     "freshGroceries": "بقالة طازجة يتم توصيلها",
@@ -414,11 +426,17 @@
     "categoryDetailValue": "القيمة",
     "extraDetailKey": "البند",
     "extraDetailValue": "القيمة",
+    "extraDetailQuantity": "الكمية",
+    "extraDetailMinQtyHint": "الحد الأدنى: {{n}}",
+    "decreaseQuantity": "تقليل الكمية",
+    "increaseQuantity": "زيادة الكمية",
     "check": "تحديد",
     "price": "السعر",
     "free": "مجاني",
     "specialInstructions": "تعليمات خاصة",
     "specialInstructionsPlaceholder": "أي طلبات خاصة...",
+    "lineItemNote": "ملاحظة لهذا المنتج",
+    "lineItemNotePlaceholder": "تعليمات اختيارية لهذا المنتج (مثل التعبئة أو التحضير)",
     "mostOrdered": "الأكثر طلباً",
     "freeDelivery": "توصيل مجاني",
     "filters": {
@@ -1091,6 +1109,9 @@
       "perYears": " /{{count}} سنوات"
     },
     "currentPlan": "الخطة الحالية",
+    "statusPending": "قيد الانتظار",
+    "selectPaymentMethod": "اختر طريقة الدفع",
+    "awaitingPaymentVia": "في انتظار الدفع عبر {{method}}",
     "subscribe": "اشترك",
     "cancelSubscription": "إلغاء الاشتراك",
     "cancelSubscriptionSuccess": "تم إلغاء الاشتراك بنجاح",
@@ -1150,6 +1171,13 @@
     "infoText": "يمكنك تغيير باقتك أو إلغاؤها في أي وقت من إعدادات حسابك.",
     "viewAll": "عرض جميع باقات الاشتراك",
     "maybeLater": "ربما لاحقاً"
+  },
+  "promotions": {
+    "regionLabel": "العروض النشطة",
+    "offerBadge": "عرض",
+    "eyebrow": "المكافآت والمزايا",
+    "subtitle": "عروض مختارة تعمل الآن",
+    "stackHint": "اطّلع على كل عرض — بعضها يُدمَج عند إتمام الطلب."
   },
   "wishlist": {
     "title": "المفضلة",

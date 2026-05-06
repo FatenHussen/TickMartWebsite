@@ -10,8 +10,14 @@ import {
     homeStaticSectionRowSurface,
     pickHomeSectionBySeeMorePageSlug,
 } from "../lib/homeStaticSectionSurface";
+import { PremiumInlineLoader } from "@/shared/component/loading";
 import { getSectionCardSurfaceColor } from "@/shared/component/sections/sectionCardVariant";
 import type { Category } from "../types";
+
+export type CategoriesProps = {
+    /** Overrides row vertical padding (e.g. `pb-0` when promotions sit flush underneath). */
+    sectionPaddingClass?: string;
+};
 
 const PLACEHOLDER_ICON =
     "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&h=400&fit=crop";
@@ -31,7 +37,9 @@ function readCategoryListColor(
     return undefined;
 }
 
-export default function Categories() {
+export default function Categories({
+    sectionPaddingClass,
+}: CategoriesProps = {}) {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const { theme } = useTheme();
@@ -45,9 +53,12 @@ export default function Categories() {
         () =>
             homeStaticSectionRowSurface(
                 isDarkTheme,
-                headlineSection?.background_color
+                headlineSection?.background_color,
+                sectionPaddingClass
+                    ? { paddingClass: sectionPaddingClass }
+                    : undefined
             ),
-        [isDarkTheme, headlineSection?.background_color]
+        [isDarkTheme, headlineSection?.background_color, sectionPaddingClass]
     );
 
     const sectionTitle =
@@ -78,7 +89,7 @@ export default function Categories() {
         return (
             <section className={rowClassName} style={rowStyle}>
                 <div className="page-container flex min-h-[120px] justify-center py-8">
-                    <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-custom-primary" />
+                    <PremiumInlineLoader size="sm" />
                 </div>
             </section>
         );
@@ -115,58 +126,62 @@ export default function Categories() {
                                 : undefined;
 
                         return (
-                        <button
-                            type="button"
-                            className="flex w-full flex-col items-center gap-3 bg-transparent transition-opacity hover:opacity-80"
-                            onClick={() =>
-                                navigate(
-                                    `${paths.client.categories}?category=${category.id}`
-                                )
-                            }
-                        >
-                            <div className="h-20 w-20 overflow-hidden rounded-full shadow-md transition-shadow hover:shadow-lg sm:h-24 sm:w-24 md:h-32 md:w-32">
-                                <img
-                                    src={category.icon || PLACEHOLDER_ICON}
-                                    alt={category.name}
-                                    className="h-full w-full object-cover"
-                                />
-                            </div>
-                            <span
-                                className={
-                                    labelGradient
-                                        ? "max-w-full text-center text-sm font-semibold bg-clip-text text-transparent"
-                                        : "max-w-full text-center text-sm font-semibold text-stone-900 dark:text-white"
-                                }
-                                style={
-                                    labelGradient
-                                        ? {
-                                              backgroundImage: labelGradient,
-                                              WebkitBackgroundClip: "text",
-                                              backgroundClip: "text",
-                                          }
-                                        : labelSolid
-                                          ? { color: labelSolid }
-                                          : undefined
+                            <button
+                                type="button"
+                                className="group flex w-full flex-col items-center gap-3 bg-transparent"
+                                onClick={() =>
+                                    navigate(`${paths.client.categories}?category=${category.id}`)
                                 }
                             >
-                                {category.name}
-                            </span>
-                        </button>
+                                {/* Circle image with dark hover glow */}
+                                <div className="relative">
+                                    {/* Ambient glow ring on hover — dark only */}
+                                    <div
+                                        className="absolute -inset-1 rounded-full opacity-0 transition-opacity duration-300 dark:group-hover:opacity-100"
+                                        style={{
+                                            background:
+                                                "radial-gradient(circle, color-mix(in srgb, var(--color-main) 40%, transparent) 0%, transparent 70%)",
+                                            filter: "blur(6px)",
+                                        }}
+                                    />
+                                    <div className="relative h-20 w-20 overflow-hidden rounded-full ring-1 ring-transparent transition-all duration-300 dark:ring-white/[0.08] dark:group-hover:ring-white/[0.14] dark:group-hover:shadow-[0_0_22px_-6px_color-mix(in_srgb,var(--color-main)_45%,transparent)] sm:h-24 sm:w-24 md:h-32 md:w-32">
+                                        <img
+                                            src={category.icon || PLACEHOLDER_ICON}
+                                            alt={category.name}
+                                            className="h-full w-full object-cover transition-transform duration-400 ease-out group-hover:scale-105"
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Label */}
+                                <span
+                                    className={
+                                        labelGradient
+                                            ? "max-w-full text-center text-sm font-semibold bg-clip-text text-transparent"
+                                            : "max-w-full text-center text-sm font-semibold text-stone-800 transition-colors duration-300 dark:text-[#A1A1AA] dark:group-hover:text-white"
+                                    }
+                                    style={
+                                        labelGradient
+                                            ? {
+                                                  backgroundImage: labelGradient,
+                                                  WebkitBackgroundClip: "text",
+                                                  backgroundClip: "text",
+                                              }
+                                            : labelSolid
+                                              ? { color: labelSolid }
+                                              : undefined
+                                    }
+                                >
+                                    {category.name}
+                                </span>
+                            </button>
                         );
                     }}
                     breakpoints={{
-                        640: {
-                            slidesPerView: 3.5,
-                        },
-                        768: {
-                            slidesPerView: 4.5,
-                        },
-                        1024: {
-                            slidesPerView: 6,
-                        },
-                        1280: {
-                            slidesPerView: 7,
-                        },
+                        640: { slidesPerView: 3.5 },
+                        768: { slidesPerView: 4.5 },
+                        1024: { slidesPerView: 6 },
+                        1280: { slidesPerView: 7 },
                     }}
                 />
             </div>

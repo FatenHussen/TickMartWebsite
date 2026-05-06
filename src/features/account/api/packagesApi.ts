@@ -23,18 +23,18 @@ export const packagesApi = {
  }
  },
 
- subscribe: async (packageId: number): Promise<{ status: boolean; message: string }> => {
+ subscribe: async (packageId: number, paymentMethodId: number): Promise<{ status: boolean; message: string }> => {
  const res = await _axios.post<{ status: boolean; message: string }>(
  apiRoutes.packages.subscribe,
- { package_id: packageId },
+ { package_id: packageId, payment_method_id: paymentMethodId },
  );
  return res.data;
  },
 
- renew: async (packageId: number): Promise<{ success: boolean; message: string }> => {
+ renew: async (packageId: number, paymentMethodId: number): Promise<{ success: boolean; message: string }> => {
  const res = await _axios.post<{ success: boolean; message: string }>(
  apiRoutes.packages.renew,
- { package_id: packageId },
+ { package_id: packageId, payment_method_id: paymentMethodId },
  );
  return res.data;
  },

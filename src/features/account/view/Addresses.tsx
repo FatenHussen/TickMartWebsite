@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/context/LanguageContext";
 import { cn } from "@/shared/lib/utils";
+import { PremiumInlineLoader } from "@/shared/component/loading";
 import { MapPin, Phone, Trash2, Plus } from "lucide-react";
 import { paths } from "@/app/routes/path/paths";
 import {
@@ -10,6 +11,10 @@ import {
     useSetDefaultAddress,
 } from "../hooks/useAddress";
 import { API_SECOND_BUTTON_CLASS } from "../components/profile/apiPaletteClasses";
+import {
+    ADDRESS_FORM_HERO_BACKDROP_STYLE,
+    ADDRESS_PAGES_DARK_HERO_BACKDROP_STYLE,
+} from "../components/address-form/constants";
 
 function resolveLocalized(value: unknown, lang: string): string {
     if (value == null) return "";
@@ -61,29 +66,24 @@ export default function Addresses() {
         <div className="relative space-y-6" dir={isRTL ? "rtl" : "ltr"}>
             {/* Hero header card */}
             <section
-                className="relative z-10 overflow-hidden rounded-3xl border border-custom-primary/80 bg-custom-card shadow-[0_24px_60px_-12px_color-mix(in_srgb,var(--color-main)_12%,transparent)]"
+                className="relative z-10 overflow-hidden rounded-3xl border border-custom-primary/80 bg-custom-card shadow-[0_24px_60px_-12px_color-mix(in_srgb,var(--color-main)_12%,transparent)] transition-shadow duration-300 dark:border-[rgba(255,255,255,0.06)] dark:bg-[rgba(16,17,20,0.75)] dark:shadow-[0_28px_88px_-32px_rgba(0,0,0,0.75),inset_0_1px_0_0_rgba(255,255,255,0.04)] dark:backdrop-blur-xl"
                 aria-labelledby="addresses-page-title"
             >
-                {/* Radial gradient overlay */}
                 <div
-                    className="pointer-events-none absolute inset-0 opacity-[0.97]"
-                    style={{
-                        background: `
-                            radial-gradient(ellipse 90% 80% at 0% 0%, color-mix(in srgb, var(--color-main) 28%, transparent), transparent 55%),
-                            radial-gradient(ellipse 72% 58% at 100% 0%, color-mix(in srgb, var(--color-api-second) 38%, transparent), transparent 52%),
-                            radial-gradient(ellipse 48% 42% at 82% 100%, color-mix(in srgb, var(--color-main) 17%, transparent), transparent 55%),
-                            linear-gradient(168deg, var(--color-bg-card) 0%, color-mix(in srgb, var(--color-bg-card) 90%, var(--color-api-second)) 100%)
-                        `,
-                    }}
+                    className="pointer-events-none absolute inset-0 opacity-[0.97] dark:hidden"
+                    style={ADDRESS_FORM_HERO_BACKDROP_STYLE}
                 />
-                {/* Decorative orbs */}
-                <div className="pointer-events-none absolute -right-12 top-1/2 h-48 w-48 -translate-y-1/2 rounded-full bg-[var(--color-main)] opacity-[0.11] blur-3xl" />
-                <div className="pointer-events-none absolute -left-8 bottom-0 h-36 w-36 rounded-full bg-[var(--color-api-second)] opacity-[0.18] blur-3xl" />
+                <div
+                    className="pointer-events-none absolute inset-0 hidden dark:block"
+                    style={ADDRESS_PAGES_DARK_HERO_BACKDROP_STYLE}
+                />
+                <div className="pointer-events-none absolute -right-12 top-1/2 h-48 w-48 -translate-y-1/2 rounded-full bg-[var(--color-main)] opacity-[0.11] blur-3xl dark:opacity-[0.055]" />
+                <div className="pointer-events-none absolute -left-8 bottom-0 h-36 w-36 rounded-full bg-[var(--color-api-second)] opacity-[0.18] blur-3xl dark:opacity-[0.07]" />
 
                 <div className="relative flex flex-col gap-6 p-6 sm:p-8 lg:flex-row lg:items-end lg:justify-between">
                     <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:gap-5">
                         {/* Icon */}
-                        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[var(--color-main)] to-[var(--color-primary-dark)] shadow-md ring-2 ring-white/25 dark:ring-white/10">
+                        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[var(--color-main)] to-[var(--color-primary-dark)] shadow-md ring-2 ring-white/25 dark:shadow-[0_0_28px_-6px_color-mix(in_srgb,var(--color-main)_28%,transparent)] dark:ring-white/[0.08]">
                             <MapPin className="h-7 w-7 text-white" aria-hidden />
                         </div>
                         <div className="min-w-0 space-y-1">
@@ -104,7 +104,10 @@ export default function Addresses() {
                         <button
                             type="button"
                             onClick={handleAddNewAddress}
-                            className={API_SECOND_BUTTON_CLASS}
+                            className={cn(
+                                API_SECOND_BUTTON_CLASS,
+                                "dark:shadow-[0_12px_36px_-18px_color-mix(in_srgb,var(--color-api-second)_35%,transparent)] dark:ring-1 dark:ring-white/[0.06]",
+                            )}
                         >
                             <Plus className="h-4 w-4 shrink-0" aria-hidden />
                             {t("account.addresses.addNewAddress")}
@@ -116,12 +119,12 @@ export default function Addresses() {
             {/* Address list */}
             {isLoading ? (
                 <div className="relative z-10 flex items-center justify-center py-16">
-                    <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary" />
+                    <PremiumInlineLoader size="md" />
                 </div>
             ) : addresses.length === 0 ? (
                 <div className="relative z-10 py-16 text-center">
-                    <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-custom-tertiary flex items-center justify-center">
-                        <MapPin className="w-10 h-10 text-custom-tertiary" />
+                    <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-custom-tertiary dark:bg-[rgba(255,255,255,0.04)] dark:ring-1 dark:ring-white/[0.06]">
+                        <MapPin className="h-10 w-10 text-custom-tertiary dark:text-[color-mix(in_srgb,var(--color-main)_42%,#71717A)]" />
                     </div>
                     <h3 className="text-lg font-semibold text-custom-primary mb-1">
                         {t("account.addresses.noAddresses")}
@@ -133,9 +136,11 @@ export default function Addresses() {
                         <div
                             key={address.id}
                             className={cn(
-                                "rounded-xl border p-5 sm:p-6 bg-custom-card transition-all hover:shadow-md",
+                                "rounded-3xl border bg-custom-card p-5 sm:p-6 transition-all duration-300 hover:shadow-md",
+                                "dark:border-[rgba(255,255,255,0.06)] dark:bg-[rgba(16,17,20,0.75)] dark:shadow-[0_10px_40px_-20px_rgba(0,0,0,0.65)] dark:backdrop-blur-sm",
+                                "dark:hover:border-[rgba(255,255,255,0.09)] dark:hover:shadow-[0_18px_48px_-22px_rgba(0,0,0,0.72)]",
                                 address.is_default
-                                    ? "border-primary-light shadow-sm bg-accent-light-bg dark:bg-bg-hover/50"
+                                    ? "border-primary-light bg-accent-light-bg shadow-sm dark:border-[color-mix(in_srgb,var(--color-main)_22%,transparent)] dark:bg-[color-mix(in_srgb,var(--color-main)_10%,rgba(16,17,20,0.85))] dark:shadow-[0_0_44px_-14px_color-mix(in_srgb,var(--color-main)_22%,transparent),inset_0_0_0_1px_color-mix(in_srgb,var(--color-main)_14%,transparent)]"
                                     : "border-custom-primary bg-custom-light/50",
                             )}
                         >
@@ -143,7 +148,7 @@ export default function Addresses() {
                                 {/* Left: address info */}
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2 mb-2">
-                                        <MapPin className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                                        <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary dark:text-[color-mix(in_srgb,var(--color-main)_70%,#a1a1aa)]" />
                                         <h3 className="text-base font-bold text-custom-primary">
                                             {address.label}
                                         </h3>
@@ -183,7 +188,7 @@ export default function Addresses() {
                                                 handleSetDefault(address)
                                             }
                                             disabled={setDefault.isPending}
-                                            className="text-sm font-medium text-primary hover:text-primary-dark hover:underline transition-colors"
+                                            className="text-sm font-medium text-primary transition-colors duration-200 hover:text-primary-dark hover:underline dark:text-[color-mix(in_srgb,var(--color-main)_78%,#FFFFFF)] dark:hover:text-[color-mix(in_srgb,var(--color-main)_92%,#FFFFFF)]"
                                         >
                                             {t(
                                                 "account.addresses.setAsDefault",
@@ -193,7 +198,7 @@ export default function Addresses() {
                                     <button
                                         type="button"
                                         onClick={() => handleEdit(address.id)}
-                                        className="text-sm font-medium text-custom-primary hover:text-custom-primary hover:underline transition-colors"
+                                        className="text-sm font-medium text-custom-primary transition-colors duration-200 hover:underline dark:text-[#A1A1AA] dark:hover:text-[#FFFFFF]"
                                     >
                                         {t("account.addresses.edit")}
                                     </button>

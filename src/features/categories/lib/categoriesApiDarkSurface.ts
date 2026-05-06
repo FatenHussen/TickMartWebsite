@@ -1,114 +1,85 @@
 import type { CSSProperties } from "react";
 import type { AppSettingsColorPalette } from "@/features/account/api/settingsApi";
 import type { Section } from "@/features/home/types";
-import { getSectionCardSurfaceColor } from "@/shared/component/sections/sectionCardVariant";
+import { isPaletteComplete } from "@/shared/lib/themeColors";
 
+/**
+ * Premium categories dark mode: fixed foundation (no raw API colors on large surfaces).
+ * API `main` / `second` are used only for accents, buttons, active states, glows.
+ */
 export type CategoriesApiDarkSurface = {
-    pageBackground: string;
+    /** Nested panels, filter chips (unselected) */
+    secondaryBackground: string;
     pageColor: string;
     mutedColor: string;
+    faintColor: string;
+    /** Glass card / sidebar shell */
     cardBackground: string;
     cardBorder: string;
     main: string;
     second: string;
 };
 
-function isGradient(value: string): boolean {
-    return /gradient/i.test(value);
-}
+const LUXURY = {
+    secondary: "#0B0B0C",
+    card: "rgba(16,17,20,0.72)",
+    border: "rgba(255,255,255,0.06)",
+    text: "#FFFFFF",
+    muted: "#A1A1AA",
+    faint: "#71717A",
+} as const;
 
 /**
- * When the app theme is dark and the home "categories" section supplies colors,
- * build surfaces for the categories page (background, cards, text) from API fields:
- * `main_color`, `second_color`, `text_color`, `background_color`, card background fields.
+ * Resolve API accent colors for dark categories chrome (section → settings → CSS vars).
  */
-export function resolveCategoriesApiDarkSurface(
+export function resolveCategoriesDarkAccents(
     section: Section | undefined,
+    settingsPalette: AppSettingsColorPalette | undefined,
     isDarkTheme: boolean,
-): CategoriesApiDarkSurface | null {
-    if (!isDarkTheme || !section) return null;
+): { main: string; second: string } {
+    const fallbackMain = "var(--color-main)";
+    const fallbackSecond = "var(--color-api-second)";
 
-    const main = section.main_color?.trim() || null;
-    const second = section.second_color?.trim() || null;
-    const text = section.text_color?.trim() || null;
-    const pageBg = section.background_color?.trim() || null;
-    const card =
-        getSectionCardSurfaceColor(section)?.trim() ||
-        section.background_crad_color?.trim() ||
-        null;
+    if (!isDarkTheme) {
+        return { main: fallbackMain, second: fallbackSecond };
+    }
 
-    if (!main && !second && !text && !pageBg && !card) return null;
+    const mainFromSection = section?.main_color?.trim();
+    const secondFromSection = section?.second_color?.trim();
 
-    const accent = main || second || "#6366f1";
-    const accent2 = (second || main || accent) as string;
-
-    const pageBackground = pageBg
-        ? pageBg
-        : `linear-gradient(165deg, color-mix(in srgb, ${accent} 52%, #020617) 0%, #020617 48%, color-mix(in srgb, ${accent2} 38%, #020617) 100%)`;
-
-    const pageColor =
-        text || `color-mix(in srgb, #f1f5f9 94%, ${accent})`;
-
-    const mutedColor = text
-        ? `color-mix(in srgb, ${text} 52%, #64748b)`
-        : `color-mix(in srgb, ${pageColor} 50%, #94a3b8)`;
-
-    const cardBackground =
-        card ||
-        `color-mix(in srgb, ${accent} 14%, #0f172a)`;
-
-    const cardBorder = `color-mix(in srgb, ${accent} 32%, transparent)`;
-
-    return {
-        pageBackground,
-        pageColor,
-        mutedColor,
-        cardBackground,
-        cardBorder,
-        main: accent,
-        second: accent2,
-    };
-}
-
-export function categoriesPageRootStyle(surface: CategoriesApiDarkSurface): CSSProperties {
-    const bg = surface.pageBackground;
-    if (isGradient(bg)) {
+    if (mainFromSection || secondFromSection) {
         return {
-            background: bg,
-            color: surface.pageColor,
+            main: mainFromSection || secondFromSection || fallbackMain,
+            second: secondFromSection || mainFromSection || fallbackSecond,
         };
     }
+
+    if (settingsPalette && isPaletteComplete(settingsPalette)) {
+        const m = settingsPalette.main_color!.trim();
+        const s = settingsPalette.second_color?.trim() || m;
+        return { main: m, second: s };
+    }
+
+    return { main: fallbackMain, second: fallbackSecond };
+}
+
+export function buildCategoriesLuxuryDarkSurface(main: string, second: string): CategoriesApiDarkSurface {
     return {
-        backgroundColor: bg,
-        color: surface.pageColor,
+        secondaryBackground: LUXURY.secondary,
+        pageColor: LUXURY.text,
+        mutedColor: LUXURY.muted,
+        faintColor: LUXURY.faint,
+        cardBackground: LUXURY.card,
+        cardBorder: LUXURY.border,
+        main,
+        second,
     };
 }
 
-/**
- * Dark categories chrome from app settings (`color` / `dark_color` via
- * `resolveApiPaletteForTheme`) when the home section does not supply section colors.
- * Surfaces are brand-tinted dark mixes only — no white stops.
- */
-export function resolveCategoriesDarkSurfaceFromSettingsPalette(
-    palette: AppSettingsColorPalette,
-): CategoriesApiDarkSurface | null {
-    const main = palette.main_color?.trim();
-    const text = palette.text_color?.trim();
-    if (!main || !text) return null;
-
-    const second = palette.second_color?.trim() || main;
-    const pageBackground = `linear-gradient(160deg, color-mix(in srgb, ${main} 44%, #020617) 0%, #030712 46%, color-mix(in srgb, ${second} 36%, #020617) 100%)`;
-    const mutedColor = `color-mix(in srgb, ${text} 52%, #64748b)`;
-    const cardBackground = `color-mix(in srgb, ${main} 12%, #0b1220)`;
-    const cardBorder = `color-mix(in srgb, ${main} 28%, transparent)`;
-
+/** Page chrome only — global shell (`app-layout-canvas`) provides the dark backdrop. */
+export function categoriesPageRootStyle(surface: CategoriesApiDarkSurface): CSSProperties {
     return {
-        pageBackground,
-        pageColor: text,
-        mutedColor,
-        cardBackground,
-        cardBorder,
-        main,
-        second,
+        backgroundColor: "transparent",
+        color: surface.pageColor,
     };
 }

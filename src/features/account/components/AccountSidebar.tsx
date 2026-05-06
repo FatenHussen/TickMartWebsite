@@ -371,7 +371,11 @@ export default function AccountSidebar({
         sidebarEdge,
         "transition-[width] duration-300 ease-in-out motion-reduce:transition-none",
         isCollapsed ? "w-[72px]" : "w-full",
-        "border border-[var(--color-border-primary)] bg-[var(--color-bg-card)]"
+        "border border-[var(--color-border-primary)] bg-[var(--color-bg-card)]",
+        // Creative full-sidebar gradient in dark mode only
+        "dark:border-white/[0.06]",
+        "dark:bg-[linear-gradient(160deg,color-mix(in_srgb,var(--color-api-second)_7%,#0d0d10)_0%,#0a0a0c_40%,#080808_100%)]",
+        "dark:shadow-[inset_-1px_0_0_rgba(255,255,255,0.04)]"
       )}
     >
       {/* ── Header ── */}
@@ -516,7 +520,7 @@ export default function AccountSidebar({
       {/* ── Footer: logout + delete ── */}
       <div
         className={cn(
-          "shrink-0 border-t border-[var(--color-border-primary)] pb-3 pt-2",
+          "shrink-0 border-t border-[var(--color-border-primary)] pb-3 pt-2 dark:border-white/10",
           isCollapsed ? "px-1 space-y-1" : "px-3 space-y-0.5"
         )}
       >

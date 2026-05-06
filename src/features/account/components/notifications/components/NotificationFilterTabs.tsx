@@ -18,7 +18,7 @@ export function NotificationFilterTabs({
   return (
     <div
       className={cn(
-        "flex flex-wrap items-center gap-2 rounded-2xl bg-custom-card/70 p-1.5 shadow-inner backdrop-blur-sm dark:bg-custom-card/50",
+        "account-shell flex flex-wrap items-center gap-2 rounded-2xl border border-[var(--color-border-primary)] bg-[var(--color-bg-card)] p-1.5 shadow-[0_2px_12px_-4px_var(--color-shadow)] backdrop-blur-sm",
       )}
       role="tablist"
       aria-label={t("account.notificationsPage.filterAriaLabel")}

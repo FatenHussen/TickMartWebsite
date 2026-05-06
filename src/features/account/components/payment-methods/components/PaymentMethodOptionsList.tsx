@@ -1,4 +1,5 @@
 import type { PaymentMethodOption } from "@/features/cart/types";
+import { PremiumInlineLoader } from "@/shared/component/loading";
 import { PaymentMethodOptionCard } from "./PaymentMethodOptionCard";
 
 interface PaymentMethodOptionsListProps {
@@ -21,7 +22,7 @@ export function PaymentMethodOptionsList({
     if (isLoading) {
         return (
             <div className="flex justify-center py-8">
-                <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary" />
+                <PremiumInlineLoader size="sm" />
             </div>
         );
     }

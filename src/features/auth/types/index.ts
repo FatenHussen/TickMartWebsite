@@ -243,6 +243,8 @@ export type SellerSignUpFormValues = {
  country: string;
  governorate: string;
  storeCity: string;
+ isRestaurant: boolean;
+ serviceTypeIds: number[];
 };
 
 export interface SellerRegisterPayload {
@@ -255,4 +257,10 @@ export interface SellerRegisterPayload {
  commercial_register_number: string;
  commercial_register_date: string;
  country: string;
+ /** Shop registration */
+ is_restaurant?: boolean;
+ /** When true, `service_type_ids` should be sent */
+ is_service_provider?: boolean;
+ /** Vendor service type ids (`vendor_service_types.id`), required when registering as service provider */
+ service_type_ids?: number[];
 }

@@ -8,6 +8,7 @@ import type {
  CartType,
  ActiveOrder,
  ActiveOrderResponse,
+ OrderPreviewOrderItem,
 } from"../types";
 import { toNum } from"../utils";
 
@@ -15,6 +16,73 @@ import { toNum } from"../utils";
 function toApiCartType(cartType: CartType): string {
  if (cartType ==="basket") return"admin_cart";
  return cartType;
+}
+
+/**
+ * Align preview JSON keys with what the app reads (snake_case vs camelCase,
+ * `order_items` vs `orderItems`, etc.).
+ */
+function aliasPreviewResponseKeys(r: Record<string, unknown>): void {
+ if (!Array.isArray(r.orderItems) && Array.isArray(r.order_items)) {
+ r.orderItems = r.order_items;
+ }
+ if (r.subtotal_before_discount == null && r.subtotalBeforeDiscount != null) {
+ r.subtotal_before_discount = r.subtotalBeforeDiscount;
+ }
+ if (r.subtotal_after_product_discount == null && r.subtotalAfterProductDiscount != null) {
+ r.subtotal_after_product_discount = r.subtotalAfterProductDiscount;
+ }
+ if (r.total_quantity == null && r.totalQuantity != null) {
+ r.total_quantity = r.totalQuantity;
+ }
+ if (r.total == null && r.totalAmount != null) {
+ r.total = r.totalAmount;
+ }
+ if (!Array.isArray(r.available_promotions) && Array.isArray(r.availablePromotions)) {
+ r.available_promotions = r.availablePromotions;
+ }
+ if (r.non_discount_promotions == null && r.nonDiscountPromotions != null) {
+ r.non_discount_promotions = r.nonDiscountPromotions;
+ }
+ if (!Array.isArray(r.excluded_items) && Array.isArray(r.excludedItems)) {
+ r.excluded_items = r.excludedItems;
+ }
+ if (r.automatic_promotions == null && r.automaticPromotions != null) {
+ r.automatic_promotions = r.automaticPromotions;
+ }
+}
+
+/** One preview line: accept snake_case or camelCase field names from the API */
+function normalizePreviewOrderItemRow(raw: unknown): OrderPreviewOrderItem {
+ const it = raw as Record<string, unknown>;
+ const shop_product_variant_id = Number(
+ it.shop_product_variant_id ?? it.shopProductVariantId ?? 0
+ );
+ const quantity = Number(it.quantity ?? 0);
+ const unit_price = it.unit_price ?? it.unitPrice;
+ const final_price = it.final_price ?? it.finalPrice;
+ const price = it.price ?? unit_price;
+ const price_after_discount = it.price_after_discount ?? final_price ?? price;
+
+ return {
+ shop_product_variant_id,
+ quantity,
+ product_name: (it.product_name ?? it.productName) as string | undefined,
+ product_image: (it.product_image ?? it.productImage) as string | undefined,
+ price: price as number | string,
+ unit_price: unit_price as number | string | undefined,
+ final_price: final_price as number | string | undefined,
+ product_discount: it.product_discount as number | string | undefined,
+ price_after_discount: price_after_discount as number | string | undefined,
+ subtotal: (it.subtotal ?? it.lineSubtotal) as number | string | undefined,
+ total: (it.total ?? it.lineTotal) as number | string | undefined,
+ extras_total: (it.extras_total ?? it.extrasTotal) as number | string | undefined,
+ variant: Array.isArray(it.variant) ? (it.variant as string[]) : undefined,
+ shop_name: (it.shop_name ?? it.shopName) as string | undefined,
+ image: (it.image ?? it.product_image ?? it.productImage) as string | undefined,
+ extras: (it.extras as OrderPreviewOrderItem["extras"]) ?? undefined,
+ note: it.note as string | undefined,
+ };
 }
 
 export const _OrderApi = {
@@ -62,6 +130,7 @@ export const _OrderApi = {
  // • NEW (new3/8+): discounts.basket + discounts.external, delivery nested as { price }
 
  const r = result as unknown as Record<string, unknown>;
+ aliasPreviewResponseKeys(r);
  const d = r.discounts as Record<string, unknown> | null | undefined;
  const isNewFormat = d != null && 'basket' in d; // new3/8+ format
  const isMidFormat = d != null && !isNewFormat; // intermediate format
@@ -226,16 +295,15 @@ export const _OrderApi = {
  }
  }
 
- // Normalize order items for API variants:
- // - legacy/new: price + price_after_discount
- // - alternate: unit_price + final_price
+ // Normalize order lines: unify keys, then price + price_after_discount
  if (Array.isArray(result.orderItems)) {
  result.orderItems = result.orderItems.map((item) => {
+ const o = normalizePreviewOrderItemRow(item);
  return {
- ...item,
- price: item.price ?? item.unit_price,
+ ...o,
+ price: o.price ?? o.unit_price,
  price_after_discount:
- item.price_after_discount ?? item.final_price ?? item.price ?? item.unit_price,
+ o.price_after_discount ?? o.final_price ?? o.price ?? o.unit_price,
  };
  });
  }

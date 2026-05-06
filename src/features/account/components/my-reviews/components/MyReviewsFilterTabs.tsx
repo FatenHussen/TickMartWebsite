@@ -23,7 +23,7 @@ export default function MyReviewsFilterTabs({
     return (
         <div
             className={cn(
-                "rounded-2xl bg-[linear-gradient(145deg,color-mix(in_srgb,var(--color-bg-card)_94%,var(--color-api-second))_0%,var(--color-bg-card)_100%)] p-3 shadow-md shadow-black/5 dark:shadow-black/20",
+                "account-shell rounded-2xl border border-[var(--color-border-primary)] bg-[var(--color-bg-card)] p-3 shadow-[0_2px_12px_-4px_var(--color-shadow)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.4)]",
             )}
         >
             <div

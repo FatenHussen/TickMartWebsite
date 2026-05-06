@@ -1,4 +1,8 @@
-import { cn } from"../../lib/utils";
+import { cn } from"@/shared/lib/utils";
+import {
+ PremiumSkeletonBlock,
+ PremiumSkeletonCardShell,
+} from"@/shared/component/loading";
 
 type RecipeCardSkeletonProps = {
  className?: string;
@@ -8,35 +12,24 @@ export default function RecipeCardSkeleton({
  className,
 }: RecipeCardSkeletonProps) {
  return (
- <div
- className={cn(
-"bg-custom-primary rounded-2xl border border-custom-secondary shadow-sm overflow-hidden animate-pulse",
- className
- )}
- >
- {/* Image skeleton */}
- <div className="aspect-[4/3] bg-custom-hover"/>
+ <PremiumSkeletonCardShell className={cn(className)}>
+ <PremiumSkeletonBlock
+ tone="inset"
+ className="aspect-[4/3] w-full rounded-none border-x-0 border-t-0"
+ />
 
- {/* Content skeleton */}
- <div className="p-4">
- {/* Title */}
- <div className="h-5 bg-custom-hover rounded mb-3 w-3/4"/>
-
- {/* Rating and orders */}
- <div className="flex items-center justify-between mb-3">
- <div className="h-4 w-16 bg-custom-hover rounded"/>
- <div className="h-4 w-20 bg-custom-hover rounded"/>
+ <div className="space-y-3 p-4">
+ <PremiumSkeletonBlock className="h-5 w-3/4" />
+ <div className="mb-3 flex items-center justify-between gap-2">
+ <PremiumSkeletonBlock className="h-4 w-16" />
+ <PremiumSkeletonBlock className="h-4 w-20" />
  </div>
-
- {/* Price */}
- <div className="flex items-center gap-2 mb-3">
- <div className="h-6 w-20 bg-custom-hover rounded"/>
- <div className="h-4 w-16 bg-custom-hover rounded"/>
+ <div className="mb-3 flex items-center gap-2">
+ <PremiumSkeletonBlock className="h-6 w-20" />
+ <PremiumSkeletonBlock className="h-4 w-16" />
  </div>
-
- {/* Button */}
- <div className="h-10 w-full bg-custom-hover rounded-lg"/>
+ <PremiumSkeletonBlock className="h-10 w-full rounded-lg" />
  </div>
- </div>
+ </PremiumSkeletonCardShell>
  );
 }

@@ -2,6 +2,7 @@ import type { RouteObject } from"react-router";
 import { lazy, Suspense } from"react";
 import Navbar from"@/components/Navbar";
 import AuthGuard from"@/app/routes/guards/AuthGuard";
+import { PremiumAppLoader } from"@/shared/component/loading";
 
 // Lazy load account components
 const AccountLayout = lazy(
@@ -38,24 +39,21 @@ const DeleteAccount = lazy(
  () => import("@/features/account/view/DeleteAccount"),
 );
 
-// Loading component
-const PageLoader = () => (
- <div className="flex items-center justify-center min-h-[400px]">
- <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
- </div>
-);
+const PageLoader = () => <PremiumAppLoader minHeight="min-h-[400px]" />;
 
 // Account page wrapper with auth guard
 const AccountPageWrapper = () => (
  <AuthGuard>
- <div className="min-h-screen flex flex-col">
+ <div className="app-layout-canvas flex min-h-screen flex-col">
+ <div className="app-layout-canvas-stack">
  <Navbar />
- <main className="flex-1 bg-custom-primary">
+ <main className="flex-1">
  <Suspense fallback={<PageLoader />}>
  <AccountLayout />
  </Suspense>
  </main>
  {/* <Footer /> */}
+ </div>
  </div>
  </AuthGuard>
 );

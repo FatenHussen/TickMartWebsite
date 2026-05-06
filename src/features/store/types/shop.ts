@@ -5,16 +5,19 @@ export interface LocalizedText {
  en?: string | null;
 }
 
+/** Vendor-services list API may return plain strings or localized objects */
+export type VendorServiceField = string | LocalizedText;
+
 export interface VendorServiceTypeItem {
  id: number;
- name: LocalizedText;
+ name: VendorServiceField;
  services: VendorServiceItem[];
 }
 
 export interface VendorServiceItem {
  id: number;
- name: LocalizedText;
- description?: LocalizedText | null;
+ name: VendorServiceField;
+ description?: VendorServiceField | null;
 }
 
 export interface VendorServicesResponse {

@@ -1,0 +1,41 @@
+/**
+ * Promotions strip — entrance + subtle shine (keeps motion lightweight).
+ */
+@keyframes promotions-strip-enter {
+    from {
+        opacity: 0;
+        transform: translateY(14px) scale(0.985);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes promotions-strip-shimmer {
+    0% {
+        transform: translateX(-130%) skewX(-12deg);
+    }
+    100% {
+        transform: translateX(130%) skewX(-12deg);
+    }
+}
+
+.promotions-strip-card {
+    animation: promotions-strip-enter 0.58s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.promotions-strip-card__shine {
+    animation: promotions-strip-shimmer 5.5s ease-in-out infinite;
+}
+
+.dark .promotions-strip-card__shine {
+    opacity: 0.08;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .promotions-strip-card,
+    .promotions-strip-card__shine {
+        animation: none !important;
+    }
+}

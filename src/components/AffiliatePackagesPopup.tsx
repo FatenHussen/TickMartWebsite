@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { HiX, HiInformationCircle } from "react-icons/hi";
 import { paths } from "@/app/routes/path/paths";
+import { PremiumInlineLoader } from "@/shared/component/loading";
 import type { PackageApi } from "@/features/account/types";
 import {
     formatPackageDuration,
@@ -96,7 +97,7 @@ export default function AffiliatePackagesPopup({
                     <div className="px-6 pb-4">
                         {isLoading ? (
                             <div className="flex justify-center py-8">
-                                <div className="animate-spin rounded-full h-10 w-10 border-2 border-primary border-t-transparent" />
+                                <PremiumInlineLoader size="md" />
                             </div>
                         ) : visiblePackages.length > 0 ? (
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">

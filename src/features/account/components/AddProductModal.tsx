@@ -10,6 +10,7 @@ import { _ProductsApi } from "@/features/home/api/products.service";
 import { _ProductApi } from "@/features/product/api/productApi";
 import { queryKeys } from "@/utils/queryKeys";
 import ShopVariantsPreview from "@/features/product/components/ShopVariantsPreview";
+import { PremiumInlineLoader } from "@/shared/component/loading";
 import type { ScheduledBasketDetail } from "../types/scheduledBasket";
 import type { ScheduledBasketExtraItem } from "../types/scheduledBasket";
 import type { UpdateScheduledBasketPayload } from "../types/scheduledBasket";
@@ -279,7 +280,7 @@ export default function AddProductModal({
                 <div className="space-y-4">
                     {detailsLoading ? (
                         <div className="flex justify-center py-12">
-                            <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary" />
+                            <PremiumInlineLoader size="sm" />
                         </div>
                     ) : (
                         <>
@@ -326,7 +327,7 @@ export default function AddProductModal({
                 >
                     {listLoading && products.length === 0 ? (
                         <div className="flex justify-center py-12">
-                            <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary" />
+                            <PremiumInlineLoader size="sm" />
                         </div>
                     ) : products.length === 0 ? (
                         <p className="py-8 text-center text-custom-secondary">
@@ -387,7 +388,7 @@ export default function AddProductModal({
                             </div>
                             {hasNextPage && isFetchingNextPage && (
                                 <div className="flex justify-center py-4">
-                                    <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-primary" />
+                                    <PremiumInlineLoader size="sm" />
                                 </div>
                             )}
                             <div ref={observerTarget} className="h-px w-full" aria-hidden />

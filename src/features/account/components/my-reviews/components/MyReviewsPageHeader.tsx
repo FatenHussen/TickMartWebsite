@@ -8,9 +8,9 @@ export default function MyReviewsPageHeader() {
     return (
         <div
             className={cn(
-                "relative mb-2 overflow-hidden rounded-2xl",
-                "bg-[linear-gradient(135deg,color-mix(in_srgb,var(--color-bg-card)_88%,var(--color-api-second))_0%,var(--color-bg-card)_48%,color-mix(in_srgb,var(--color-bg-card)_94%,var(--color-main))_100%)]",
-                "p-4 shadow-sm sm:p-5",
+                "account-shell relative mb-2 overflow-hidden rounded-2xl border border-[var(--color-border-primary)]",
+                "bg-[linear-gradient(135deg,color-mix(in_srgb,var(--color-bg-card)_92%,var(--color-api-second))_0%,var(--color-bg-card)_55%,color-mix(in_srgb,var(--color-bg-card)_96%,var(--color-main))_100%)]",
+                "p-4 shadow-[0_4px_24px_-8px_var(--color-shadow)] sm:p-5",
             )}
         >
             <div

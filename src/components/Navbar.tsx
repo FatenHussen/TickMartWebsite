@@ -41,9 +41,9 @@ import { cn } from "@/shared/lib/utils";
 
 /** Keep in sync with `.page-container` in `index.css`. */
 const HEADER_MAX = "page-container";
-/** White pill + brand (main) icons on the gradient bar; `primary` follows API main colour. */
+/** Light: white pill + brand icons. Dark: glass chip; API colour on icon + hover glow only. */
 const ICON_CIRCLE =
-    "flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-primary/25 bg-white text-primary shadow-[0_1px_4px_rgba(0,0,0,0.08)] transition-[background-color,box-shadow,color] hover:bg-primary/5 hover:shadow-[0_2px_8px_rgba(0,0,0,0.1)] dark:border-primary/35 dark:bg-[color:color-mix(in_srgb,white_10%,#1e293b)] dark:text-primary dark:hover:bg-primary/15";
+    "flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-primary/25 bg-white text-primary shadow-[0_1px_4px_rgba(0,0,0,0.08)] transition-[background-color,box-shadow,color,transform] duration-300 ease-out hover:bg-primary/5 hover:shadow-[0_2px_8px_rgba(0,0,0,0.1)] dark:border-white/[0.08] dark:bg-white/[0.05] dark:text-primary dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_6px_28px_-12px_rgba(0,0,0,0.55)] dark:backdrop-blur-md dark:hover:bg-[color-mix(in_srgb,var(--color-main)_13%,transparent)] dark:hover:shadow-[0_0_32px_-12px_color-mix(in_srgb,var(--color-main)_28%,transparent),inset_0_1px_0_0_rgba(255,255,255,0.08)]";
 
 export default function Navbar() {
     const { isRTL, language, toggleLanguage } = useLanguage();
@@ -178,7 +178,8 @@ export default function Navbar() {
 
     const navLinkClass = (active: boolean) =>
         cn(
-            "inline-flex items-center border-b-2 pb-0.5 text-sm font-medium transition-colors whitespace-nowrap shrink-0 px-0.5",
+            "navbar-premium-nav-link inline-flex items-center border-b-2 pb-0.5 text-sm font-medium transition-colors whitespace-nowrap shrink-0 px-2 py-1",
+            active && "navbar-premium-nav-link--active",
             active
                 ? "border-primary text-primary"
                 : "border-transparent text-text-secondary hover:text-primary",
@@ -228,7 +229,7 @@ export default function Navbar() {
     ];
 
     return (
-        <div className="w-full bg-custom-card" dir={isRTL ? "rtl" : "ltr"}>
+        <div className="w-full bg-custom-card dark:bg-transparent" dir={isRTL ? "rtl" : "ltr"}>
             <header className="w-full">
                 <div className="navbar-surface-top w-full">
                 <div className={`${HEADER_MAX} overflow-x-hidden`}>
@@ -259,14 +260,14 @@ export default function Navbar() {
                                 <button
                                     type="button"
                                     onClick={() => setShowLocationDropdown(!showLocationDropdown)}
-                                    className="flex w-full items-center gap-2 rounded-lg px-1 py-0.5 text-start transition-colors hover:bg-[color:color-mix(in_srgb,var(--color-main)_10%,transparent)]"
+                                    className="flex w-full items-center gap-2 rounded-lg px-1 py-0.5 text-start transition-colors hover:bg-[color:color-mix(in_srgb,var(--color-main)_10%,transparent)] dark:hover:bg-[color-mix(in_srgb,var(--color-main)_10%,transparent)]"
                                 >
-                                    <HiLocationMarker className="h-5 w-5 shrink-0 text-custom-primary" />
+                                    <HiLocationMarker className="h-5 w-5 shrink-0 text-custom-primary dark:text-primary" />
                                     <div className="flex min-w-0 flex-1 flex-col items-start">
-                                        <span className="text-[11px] font-normal leading-tight text-custom-secondary">
+                                        <span className="text-[11px] font-normal leading-tight text-custom-secondary dark:text-[#A1A1AA]">
                                             {t("navbar.deliveringTo")}
                                         </span>
-                                        <span className="w-full truncate text-sm font-semibold text-custom-primary">
+                                        <span className="w-full truncate text-sm font-semibold text-custom-primary dark:text-white">
                                             {addressesLoading
                                                 ? t("common.loading")
                                                 : deliveryAddressDisplay ||
@@ -274,19 +275,19 @@ export default function Navbar() {
                                                 "Add address"}
                                         </span>
                                     </div>
-                                    <HiChevronDown className="h-4 w-4 shrink-0 text-custom-secondary" />
+                                    <HiChevronDown className="h-4 w-4 shrink-0 text-custom-secondary dark:text-[#71717A]" />
                                 </button>
                             ) : (
                                 <Link
                                     to={paths.auth.jwt.signIn}
-                                    className="flex w-full items-center gap-2 rounded-lg px-1 py-0.5 text-start transition-colors hover:bg-[color:color-mix(in_srgb,var(--color-main)_10%,transparent)]"
+                                    className="flex w-full items-center gap-2 rounded-lg px-1 py-0.5 text-start transition-colors hover:bg-[color:color-mix(in_srgb,var(--color-main)_10%,transparent)] dark:hover:bg-[color-mix(in_srgb,var(--color-main)_10%,transparent)]"
                                 >
-                                    <HiLocationMarker className="h-5 w-5 shrink-0 text-custom-primary" />
+                                    <HiLocationMarker className="h-5 w-5 shrink-0 text-custom-primary dark:text-primary" />
                                     <div className="flex min-w-0 flex-1 flex-col items-start">
-                                        <span className="text-[11px] font-normal leading-tight text-custom-secondary">
+                                        <span className="text-[11px] font-normal leading-tight text-custom-secondary dark:text-[#A1A1AA]">
                                             {t("navbar.deliveringTo")}
                                         </span>
-                                        <span className="w-full truncate text-sm font-semibold text-custom-primary">
+                                        <span className="w-full truncate text-sm font-semibold text-custom-primary dark:text-white">
                                             {t("common.login") || "Login"}
                                         </span>
                                     </div>
@@ -391,7 +392,7 @@ export default function Navbar() {
                             {!authenticated && (
                                 <Link
                                     to={paths.auth.jwt.signIn}
-                                    className="hidden items-center gap-2 rounded-xl border border-primary/25 bg-white px-3 py-2 text-sm font-semibold text-primary shadow-sm transition-colors hover:bg-primary/5 sm:flex lg:px-4 lg:text-base dark:border-primary/35 dark:bg-[color:color-mix(in_srgb,white_8%,#1e293b)] dark:text-primary"
+                                    className="hidden items-center gap-2 rounded-xl border border-primary/25 bg-white px-3 py-2 text-sm font-semibold text-primary shadow-sm transition-all duration-300 hover:bg-primary/5 sm:flex lg:px-4 lg:text-base dark:border-white/[0.1] dark:bg-white/[0.06] dark:text-primary dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)] dark:backdrop-blur-md dark:hover:border-[color-mix(in_srgb,var(--color-main)_35%,transparent)] dark:hover:bg-[color-mix(in_srgb,var(--color-main)_14%,transparent)] dark:hover:shadow-[0_0_28px_-12px_color-mix(in_srgb,var(--color-main)_25%,transparent)]"
                                 >
                                     <HiLogin className="h-5 w-5 shrink-0" />
                                     <span className="hidden xl:inline">
@@ -549,7 +550,7 @@ export default function Navbar() {
                 <div className={`${HEADER_MAX} overflow-x-hidden`}>
                     <div className="hidden min-w-0 items-center justify-between gap-4 py-3 lg:flex">
                         <nav
-                            className="scrollbar-custom flex min-w-0 flex-nowrap items-center gap-3 overflow-x-auto pb-0.5 sm:gap-4 xl:gap-6"
+                            className="navbar-main-nav scrollbar-custom flex min-w-0 flex-nowrap items-center gap-3 overflow-x-auto pb-0.5 sm:gap-4 xl:gap-6"
                             aria-label="Main"
                         >
                             <Link

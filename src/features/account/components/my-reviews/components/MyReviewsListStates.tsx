@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { Star } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
+import { PremiumInlineLoader } from "@/shared/component/loading";
 import type { ReviewUnion } from "../../../types";
 import BasketReviewCard from "../../BasketReviewCard";
 import BrandReviewCard from "../../BrandReviewCard";
@@ -107,13 +108,7 @@ export default function MyReviewsListStates({
                 role="status"
                 aria-live="polite"
             >
-                <div className="relative h-14 w-14">
-                    <div className="absolute inset-0 rounded-full bg-custom-primary/12" />
-                    <div
-                        className="absolute inset-0 animate-spin rounded-full bg-[conic-gradient(from_0deg,var(--color-api-second),var(--color-main),transparent_65%)] opacity-95 [mask:radial-gradient(farthest-side,transparent_calc(100%-3px),#000_100%)]"
-                        aria-hidden
-                    />
-                </div>
+                <PremiumInlineLoader size="lg" />
                 <p className="text-sm text-custom-tertiary">
                     {t("common.loading")}
                 </p>

@@ -62,6 +62,11 @@ export type ProductCardProps = {
     surfaceColor?: string | null;
     /** API-driven gradient for lower content panel. */
     surfaceGradient?: string | null;
+    /**
+     * Categories listing (dark luxury API surface): align card chrome with glass panels
+     * (`buildCategoriesLuxuryDarkSurface`).
+     */
+    categoriesLuxuryListing?: boolean;
 };
 
 export default function ProductCard({
@@ -91,6 +96,7 @@ export default function ProductCard({
     layout,
     surfaceColor,
     surfaceGradient,
+    categoriesLuxuryListing = false,
 }: ProductCardProps) {
     const imageFrameClass = layout
         ? layout === "horizontal"
@@ -132,7 +138,9 @@ export default function ProductCard({
                 "before:pointer-events-none before:absolute before:inset-x-4 before:top-0 before:z-[1] before:h-px before:rounded-full before:bg-gradient-to-r before:from-transparent before:via-white/80 before:to-transparent dark:before:via-white/15",
                 "transition-[transform,box-shadow] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
                 "hover:-translate-y-1 hover:border-stone-300/90 hover:shadow-[0_16px_36px_-10px_rgba(15,23,42,0.14),0_6px_14px_-4px_rgba(15,23,42,0.08)]",
-                "dark:border-[color-mix(in_srgb,var(--color-main)_22%,#1f2230)] dark:bg-[color-mix(in_srgb,var(--color-main)_18%,#13151c)] dark:shadow-[0_2px_14px_-2px_rgba(0,0,0,0.5)] dark:hover:border-[color-mix(in_srgb,var(--color-api-second)_30%,#22253a)] dark:hover:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.6)]",
+                "dark:border-white/[0.12] dark:bg-[var(--color-bg-card-elevated)] dark:shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_4px_28px_-10px_rgba(0,0,0,0.5)] dark:hover:border-white/[0.18] dark:hover:shadow-[0_0_0_1px_rgba(255,255,255,0.09),0_14px_44px_-14px_rgba(0,0,0,0.62)]",
+                categoriesLuxuryListing &&
+                    "dark:border-white/[0.07] dark:bg-[rgba(16,17,20,0.72)] dark:shadow-[0_8px_32px_-14px_rgba(0,0,0,0.55),0_0_0_1px_rgba(255,255,255,0.06)] dark:hover:border-white/[0.10] dark:hover:shadow-[0_0_0_1px_rgba(255,255,255,0.09),0_14px_44px_-14px_rgba(0,0,0,0.62)]",
                 "motion-reduce:transition-none motion-reduce:hover:translate-y-0",
                 onClick &&
                     "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-main)]/35 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg-card)]",
@@ -150,7 +158,7 @@ export default function ProductCard({
             <div className="shrink-0 p-2.5 pb-0">
                 <div
                     className={cn(
-                        "relative overflow-hidden rounded-2xl bg-stone-100 ring-1 ring-inset ring-black/[0.04] dark:bg-[color-mix(in_srgb,var(--color-api-second)_14%,#10121a)] dark:ring-[color-mix(in_srgb,var(--color-main)_22%,transparent)]",
+                        "relative overflow-hidden rounded-2xl bg-stone-100 ring-1 ring-inset ring-black/[0.04] dark:bg-[#0B0B0C] dark:ring-white/[0.06]",
                         imageFrameClass,
                     )}
                 >
@@ -206,7 +214,7 @@ export default function ProductCard({
                     )}
 
                     {/* Favorite — frosted chip */}
-                    <div className="absolute right-2.5 top-2.5 z-20 rounded-full bg-white/90 p-0.5 shadow-md ring-1 ring-stone-900/8 backdrop-blur-md dark:bg-[color-mix(in_srgb,var(--color-main)_22%,#0e1017)]/90 dark:ring-[color-mix(in_srgb,var(--color-api-second)_28%,transparent)]">
+                    <div className="absolute right-2.5 top-2.5 z-20 rounded-full bg-white/90 p-0.5 shadow-md ring-1 ring-stone-900/8 backdrop-blur-md dark:bg-[rgba(16,17,20,0.92)] dark:ring-white/[0.08]">
                         <FavoriteButton
                             isFavorite={isFavorite}
                             onToggle={(e) => {
@@ -219,11 +227,11 @@ export default function ProductCard({
                     </div>
 
                     {/* Rating (bottom-left) */}
-                    <div className="absolute bottom-2.5 left-2.5 z-10 rounded-full bg-white/95 px-3 py-1.5 shadow-md ring-1 ring-stone-900/[0.06] backdrop-blur-md dark:bg-[color-mix(in_srgb,var(--color-main)_24%,#0e1017)]/92 dark:ring-[color-mix(in_srgb,var(--color-api-second)_28%,transparent)]">
+                    <div className="absolute bottom-2.5 left-2.5 z-10 rounded-full bg-white/95 px-3 py-1.5 shadow-md ring-1 ring-stone-900/[0.06] backdrop-blur-md dark:bg-[rgba(16,17,20,0.92)] dark:ring-white/[0.08]">
                         <Rating
                             rating={rating}
                             size="sm"
-                            className="px-0 py-0 [&_span:last-child]:font-semibold [&_span:last-child]:text-custom-primary dark:[&_span:last-child]:text-[var(--color-text)]"
+                            className="px-0 py-0 [&_span:last-child]:font-semibold [&_span:last-child]:text-custom-primary dark:[&_span:last-child]:text-white"
                         />
                     </div>
                 </div>
@@ -233,10 +241,10 @@ export default function ProductCard({
             <div
                 className={cn(
                     "flex min-h-0 flex-1 flex-col px-4 pb-5 pt-4",
-                    "border-t border-stone-200/50 dark:border-[color-mix(in_srgb,var(--color-main)_18%,transparent)]",
+                    "border-t border-stone-200/50 dark:border-white/[0.10]",
                     !surfaceColor &&
                         !surfaceGradient &&
-                        "bg-gradient-to-b from-custom-secondary via-custom-secondary to-[color-mix(in_srgb,var(--color-bg-card)_85%,#dbeafe)] dark:from-[color-mix(in_srgb,var(--color-main)_16%,#11131a)] dark:via-[color-mix(in_srgb,var(--color-api-second)_14%,#10121a)] dark:to-[color-mix(in_srgb,var(--color-main)_10%,#0d0f16)]",
+                        "bg-gradient-to-b from-custom-secondary via-custom-secondary to-[color-mix(in_srgb,var(--color-bg-card)_85%,#dbeafe)] dark:from-[var(--color-bg-card-elevated)] dark:via-[color-mix(in_srgb,var(--color-bg-card-elevated)_90%,var(--color-bg-secondary)_10%)] dark:to-[color-mix(in_srgb,var(--color-bg-card-elevated)_68%,var(--color-bg-tertiary)_32%)]",
                 )}
                 style={
                     surfaceGradient
@@ -253,13 +261,13 @@ export default function ProductCard({
                 }
             >
                 {/* Product Name - 2 lines */}
-                <h3 className="line-clamp-2 text-[0.9375rem] font-bold leading-snug tracking-tight text-custom-primary dark:text-[var(--color-text)] sm:text-base">
+                <h3 className="line-clamp-2 text-[0.9375rem] font-bold leading-snug tracking-tight text-custom-primary dark:text-white sm:text-base">
                     {name}
                 </h3>
 
                 {/* Description or category */}
                 {(description || category) && (
-                    <p className="mt-2 line-clamp-2 text-[13px] leading-relaxed text-custom-secondary/90 dark:text-white/90 sm:text-sm">
+                    <p className="mt-2 line-clamp-2 text-[13px] leading-relaxed text-custom-secondary/90 dark:text-zinc-400 sm:text-sm">
                         {description || category}
                     </p>
                 )}
@@ -267,7 +275,7 @@ export default function ProductCard({
                 {/* Price Section */}
                 <div className="mt-3">
                     <div className="flex flex-wrap items-end gap-x-2 gap-y-1">
-                        <span className="text-xl font-extrabold tabular-nums tracking-tight text-custom-primary dark:text-[var(--color-text)] sm:text-[1.35rem] sm:leading-none">
+                        <span className="text-xl font-extrabold tabular-nums tracking-tight text-custom-primary dark:text-white sm:text-[1.35rem] sm:leading-none">
                             {price}
                         </span>
                     </div>
@@ -276,7 +284,7 @@ export default function ProductCard({
                     {(originalPrice || savings || sold != null) && (
                         <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1.5">
                             {originalPrice && (
-                                <span className="text-sm text-custom-tertiary/90 line-through decoration-custom-tertiary/50 dark:text-white/70 dark:decoration-white/40">
+                                <span className="text-sm text-custom-tertiary/90 line-through decoration-custom-tertiary/50 dark:text-zinc-500 dark:decoration-zinc-600">
                                     {originalPrice}
                                 </span>
                             )}
@@ -286,7 +294,7 @@ export default function ProductCard({
                                 </span>
                             )}
                             {sold != null && (
-                                <span className="ml-auto text-xs font-medium uppercase tracking-wide text-custom-secondary/80 dark:text-white/85">
+                                <span className="ml-auto text-xs font-medium uppercase tracking-wide text-custom-secondary/80 dark:text-zinc-500">
                                     {sold.toLocaleString()}{" "}
                                     {t?.("product.sold") || "Sold"}
                                 </span>
@@ -322,7 +330,7 @@ export default function ProductCard({
                                 heightClassName="h-5"
                                 type="button"
                                 onClick={(e) => e.stopPropagation()}
-                                className="self-center justify-center text-xs font-semibold text-custom-secondary dark:text-white/90"
+                                className="self-center justify-center text-xs font-semibold text-custom-secondary dark:text-zinc-400"
                             />
                         )}
                         {/* {deliveryInfo && (

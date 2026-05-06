@@ -12,6 +12,7 @@ import {
  HiSparkles,
 } from"react-icons/hi";
 import { cn } from"@/shared/lib/utils";
+import { PremiumInlineLoader } from "@/shared/component/loading";
 import { useOrderDetail } from"../hooks/useOrderDetail";
 import RatingFormModal from"./RatingFormModal";
 import type { OrderDetailItem, OrderDetailVariantAttribute } from"../types/order";
@@ -300,7 +301,7 @@ export default function OrderDetailsModal({
  <div className="flex-1 overflow-y-auto">
  {isLoading ? (
  <div className="flex items-center justify-center py-20">
- <div className="animate-spin rounded-full h-10 w-10 border-2 border-[#2C8090] border-t-transparent"/>
+<PremiumInlineLoader size="md" />
  </div>
  ) : order ? (
  <div className="p-6 space-y-6 bg-[radial-gradient(circle_at_top,_rgba(76,218,246,0.08),_transparent_30%)]">

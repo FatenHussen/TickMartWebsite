@@ -64,6 +64,17 @@ export const queryKeys = {
  },
 
  /**
+ * User promotions (CMS / marketing banners)
+ */
+ promotions: {
+ all: () => ["promotions"] as const,
+ list: (pageSlug?: string) =>
+ pageSlug
+ ? (["promotions","list", pageSlug] as const)
+ : (["promotions","list"] as const),
+ },
+
+ /**
  * FAQs query keys (Help Center)
  */
  faqs: {
@@ -233,6 +244,7 @@ export const queryKeys = {
  id !== undefined
  ? (["shop","services", id] as const)
  : (["shop","services"] as const),
+ vendorServices: () => ["shop","vendorServices"] as const,
  },
 
  /**
@@ -429,10 +441,17 @@ export const queryKeys = {
  * Popup campaign query keys
  */
  popups: {
- all: () => ["popups"] as const,
- active: (params?: { page_type?: string; current_url?: string }) =>
- params && Object.keys(params).length > 0
- ? (["popups","active", params] as const)
- : (["popups","active"] as const),
- },
+        all: () => ["popups"] as const,
+        active: (params?: {
+            page_type?: string;
+            current_url?: string;
+            product_id?: number;
+            shop_id?: number;
+            recipe_id?: number;
+            basket_id?: number;
+        }) =>
+            params && Object.keys(params).filter((k) => params[k as keyof typeof params] != null).length > 0
+                ? (["popups", "active", params] as const)
+                : (["popups", "active"] as const),
+    },
 } as const;

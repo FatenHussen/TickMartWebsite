@@ -24,9 +24,10 @@ export function ComplaintTicketCard({ complaint, expanded, onToggle }: Complaint
     return (
         <div
             className={cn(
-                "group relative overflow-hidden rounded-2xl",
-                "bg-gradient-to-br from-custom-card via-custom-card to-blue-off/[0.2] shadow-md shadow-primary/[0.06] transition-all duration-200",
-                "hover:shadow-lg hover:shadow-primary/[0.1] dark:to-primary/[0.04]"
+                "group relative overflow-hidden rounded-2xl border border-transparent transition-all duration-200",
+                "bg-gradient-to-br from-custom-card via-custom-card to-blue-off/[0.2] shadow-md shadow-primary/[0.06]",
+                "hover:shadow-lg hover:shadow-primary/[0.1]",
+                "dark:border-[rgba(255,255,255,0.06)] dark:bg-[rgba(16,17,20,0.72)] dark:shadow-[0_12px_40px_-22px_rgba(0,0,0,0.62)] dark:hover:border-[rgba(255,255,255,0.09)] dark:hover:shadow-[0_18px_48px_-22px_rgba(0,0,0,0.72)]",
             )}
         >
             <div className="p-4">

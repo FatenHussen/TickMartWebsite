@@ -7,8 +7,8 @@ export function ProfileErrorView() {
     return (
         <div className="flex items-center justify-center h-96">
             <div className="text-center">
-                <AlertTriangle className="w-16 h-16 text-[var(--color-ui-red-500)] mx-auto mb-4" />
-                <p className="text-lg text-custom-primary">
+                <AlertTriangle className="mx-auto mb-4 h-16 w-16 text-[var(--color-ui-red-500)] dark:text-[color-mix(in_srgb,var(--color-error)_70%,#fca5a5)]" />
+                <p className="text-lg text-custom-primary dark:text-[#FFFFFF]">
                     {t("account.profile.loadError", "فشل تحميل البيانات")}
                 </p>
             </div>

@@ -62,8 +62,9 @@ export type BasketFilter =
 // Packages API types
 export interface PackageApi {
  id: number;
- name: string;
+ name: string | { ar: string; en: string };
  price: number | string;
+ price_currency?: string;
  currency?: string;
  currency_symbol?: string;
  price_formatted?: string;
@@ -72,13 +73,24 @@ export interface PackageApi {
  free_delivery_count: number;
  discount_percentage: string;
  points_bonus: number;
- is_active: number;
+ is_active: boolean | number;
+}
+
+export interface SubscriptionPaymentMethod {
+ id: number;
+ name: string;
+ code: string;
+ icon: string | null;
+ is_active: boolean;
+ is_default: boolean;
 }
 
 export interface MySubscriptionData {
  id: number;
  package: PackageApi;
- status: string;
+ status: "active" | "pending" | string;
+ payment_method_id?: number;
+ payment_method?: SubscriptionPaymentMethod;
  start_date: string;
  end_date: string;
  remaining_orders: number;

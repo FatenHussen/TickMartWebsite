@@ -7,6 +7,7 @@ import TrackOrderMap from "../components/TrackOrderMap";
 import TrackOrderSidebar from "../components/TrackOrderSidebar";
 import { useTrackOrder } from "../hooks/useTrackOrder";
 import { getSocket, joinOrderRoom, useOrderLocation } from "@/lib/socket";
+import { PremiumInlineLoader } from "@/shared/component/loading";
 
 export default function TrackOrder() {
     const { orderId } = useParams<{ orderId: string }>();
@@ -47,7 +48,7 @@ export default function TrackOrder() {
             <div className="bg-custom-primary">
                 <div className="page-container py-6" dir={isRTL ? "rtl" : "ltr"}>
                     <div className="flex items-center justify-center min-h-[400px]">
-                        <div className="animate-spin rounded-full h-10 w-10 border-2 border-custom-accent border-t-transparent" />
+                        <PremiumInlineLoader size="md" />
                     </div>
                 </div>
             </div>

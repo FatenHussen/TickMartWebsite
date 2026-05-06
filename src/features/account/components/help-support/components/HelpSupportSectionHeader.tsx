@@ -30,14 +30,14 @@ export function HelpSupportSectionHeader({
                         "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl",
                         "bg-gradient-to-br from-primary/[0.2] to-[var(--color-api-second)]/[0.28]",
                         "shadow-[inset_0_1px_0_0_rgba(255,255,255,0.42),0_10px_36px_-10px_color-mix(in_srgb,var(--color-primary)_32%,transparent)]",
-                        "dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_12px_40px_-8px_color-mix(in_srgb,var(--color-api-second)_22%,transparent)]"
+                        "dark:bg-[color-mix(in_srgb,var(--color-main)_10%,rgba(255,255,255,0.04))] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_0_28px_-8px_color-mix(in_srgb,var(--color-main)_22%,transparent)]",
                     )}
                 >
                     {icon}
                 </div>
                 <div className="min-w-0 pt-0.5">
-                    <h2 className="text-xl font-bold tracking-tight text-custom-primary">{title}</h2>
-                    <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-custom-secondary">
+                    <h2 className="text-xl font-bold tracking-tight text-custom-primary dark:text-[#FFFFFF]">{title}</h2>
+                    <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-custom-secondary dark:text-[#A1A1AA]">
                         {subtitle}
                     </p>
                 </div>

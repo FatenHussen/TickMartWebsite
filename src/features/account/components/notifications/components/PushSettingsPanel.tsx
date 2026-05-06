@@ -31,8 +31,9 @@ export function PushSettingsPanel({
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-2xl p-5 shadow-sm",
-        "bg-[linear-gradient(145deg,color-mix(in_srgb,var(--color-bg-card)_92%,var(--color-api-second))_0%,var(--color-bg-card)_100%)]",
+        "account-shell relative overflow-hidden rounded-2xl border border-[var(--color-border-primary)] p-5",
+        "bg-[linear-gradient(145deg,color-mix(in_srgb,var(--color-bg-card)_94%,var(--color-api-second))_0%,var(--color-bg-card)_100%)]",
+        "shadow-[0_4px_24px_-8px_var(--color-shadow)]",
       )}
     >
       <div

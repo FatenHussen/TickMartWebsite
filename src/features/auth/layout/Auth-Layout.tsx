@@ -39,11 +39,14 @@ export type AuthLayoutProps = {
     /** Optional extra classes for the form card */
     formCardClassName?: string;
     /** Max width of form container */
-    maxWidth?: "md" | "576" | "lg" | "640" | "2xl";
+    maxWidth?: "md" | "auth" | "authWide" | "576" | "lg" | "640" | "2xl";
 };
 
 const MAX_WIDTH_CLASS = {
     md: "max-w-md",
+    /** Premium auth column — tight focus (≈ 460px) */
+    auth: "max-w-[460px]",
+    authWide: "max-w-[520px]",
     "576": "max-w-[576px]",
     lg: "max-w-lg",
     "640": "max-w-[640px]",
@@ -65,10 +68,11 @@ export default function AuthLayout({
     children,
     useFormCard = false,
     formCardClassName = "",
-    maxWidth = "576",
+    maxWidth = "auth",
 }: AuthLayoutProps) {
     const authDarkScopeStyle = useAuthDarkScopeStyle();
     const { theme } = useTheme();
+    const isAuthDark = theme === "dark";
 
     const renderLeftPanel = () => {
         if (leftPanel === "none") return null;
@@ -106,7 +110,14 @@ export default function AuthLayout({
 
         if (leftPanel === "custom" && leftContent) {
             return (
-                <aside className="hidden lg:flex items-center justify-center bg-custom-tertiary p-8">
+                <aside
+                    className={cn(
+                        "hidden lg:flex items-center justify-center border-e p-8",
+                        isAuthDark
+                            ? "border-[rgba(255,255,255,0.06)] bg-[#0B0B0C]"
+                            : "border-transparent bg-custom-tertiary",
+                    )}
+                >
                     {leftContent}
                 </aside>
             );
@@ -114,9 +125,23 @@ export default function AuthLayout({
 
         if (leftPanel === "signup") {
             return (
-                <aside className="relative hidden lg:flex min-h-[400px] lg:min-h-screen overflow-hidden items-center justify-center bg-gradient-to-br from-[var(--color-main)] via-[color-mix(in_srgb,var(--color-api-second)_28%,var(--color-main))] to-[color-mix(in_srgb,var(--color-api-second)_42%,var(--color-main))] px-8 py-12">
+                <aside
+                    className={cn(
+                        "relative hidden lg:flex min-h-[400px] lg:min-h-screen overflow-hidden items-center justify-center border-e px-8 py-12",
+                        isAuthDark
+                            ? "border-[rgba(255,255,255,0.06)] bg-[#0B0B0C]"
+                            : "border-transparent bg-gradient-to-br from-[var(--color-main)] via-[color-mix(in_srgb,var(--color-api-second)_28%,var(--color-main))] to-[color-mix(in_srgb,var(--color-api-second)_42%,var(--color-main))]",
+                    )}
+                >
                     <div className="flex w-full max-w-[446px] flex-col items-center gap-9">
-                        <div className="w-full overflow-hidden rounded-[18px]">
+                        <div
+                            className={cn(
+                                "w-full overflow-hidden",
+                                isAuthDark
+                                    ? "rounded-3xl border border-[rgba(255,255,255,0.06)] bg-[rgba(16,17,20,0.5)] shadow-[0_24px_60px_-28px_rgba(0,0,0,0.55)] backdrop-blur-md"
+                                    : "rounded-[18px]",
+                            )}
+                        >
                             {illustration ? (
                                 <div className="w-full">{illustration}</div>
                             ) : (
@@ -129,7 +154,12 @@ export default function AuthLayout({
                         </div>
 
                         <div
-                            className="w-full rounded-[20px] border border-[var(--color-border-accent-light)] bg-custom-card px-8 py-10 text-custom-primary shadow-[0_20px_45px_var(--color-shadow)]"
+                            className={cn(
+                                "w-full rounded-3xl border px-8 py-10 text-custom-primary shadow-[0_24px_56px_-24px_rgba(0,0,0,0.55)] backdrop-blur-xl",
+                                isAuthDark
+                                    ? "border-[rgba(255,255,255,0.06)] bg-[rgba(16,17,20,0.72)]"
+                                    : "rounded-[20px] border-[var(--color-border-accent-light)] bg-custom-card shadow-[0_20px_45px_var(--color-shadow)]",
+                            )}
                         >
                             <h2 className="mb-7 text-[28px] font-bold leading-[1.2] tracking-[-0.02em] text-custom-primary">
                                 {title}
@@ -151,7 +181,12 @@ export default function AuthLayout({
                         {(ctaLabel || helper) && (
                             <button
                                 type="button"
-                                className="flex min-h-[106px] w-full max-w-[257px] items-center justify-between rounded-[18px] bg-[var(--color-api-second)] px-6 py-5 text-left text-custom-primary shadow-[0_12px_28px_var(--color-shadow-strong)] transition-opacity hover:opacity-90"
+                                className={cn(
+                                    "flex min-h-[106px] w-full max-w-[257px] items-center justify-between rounded-2xl border px-6 py-5 text-left text-custom-primary transition-[transform,box-shadow,background-color] duration-200 hover:-translate-y-0.5",
+                                    isAuthDark
+                                        ? "border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)] shadow-[0_12px_36px_-16px_rgba(0,0,0,0.65)] hover:bg-[rgba(255,255,255,0.06)]"
+                                        : "rounded-[18px] border-transparent bg-[var(--color-api-second)] shadow-[0_12px_28px_var(--color-shadow-strong)] hover:opacity-90",
+                                )}
                             >
                                 <div className="flex flex-col gap-1">
                                     {ctaLabel && (
@@ -160,12 +195,17 @@ export default function AuthLayout({
                                         </span>
                                     )}
                                     {helper && (
-                                        <span className="text-[14px] font-medium leading-none">
+                                        <span className="text-[14px] font-medium leading-none text-custom-secondary">
                                             {helper}
                                         </span>
                                     )}
                                 </div>
-                                <HiGift className="h-9 w-9 flex-shrink-0 text-[var(--color-text-inverse)]" />
+                                <HiGift
+                                    className={cn(
+                                        "h-9 w-9 flex-shrink-0",
+                                        isAuthDark ? "text-[var(--color-main)]" : "text-[var(--color-text-inverse)]",
+                                    )}
+                                />
                             </button>
                         )}
                     </div>
@@ -179,7 +219,7 @@ export default function AuthLayout({
     return (
         <div
             className={cn(
-                "min-h-screen flex flex-col bg-custom-card text-custom-primary",
+                "auth-scope min-h-screen flex flex-col bg-custom-card text-custom-primary",
                 theme === "dark" && "dark",
             )}
             style={authDarkScopeStyle}
@@ -191,8 +231,15 @@ export default function AuthLayout({
             >
                 {renderLeftPanel()}
 
-                <main className="flex flex-1 items-center justify-center bg-gradient-to-b from-[var(--color-bg-primary)] to-[color-mix(in_srgb,var(--color-api-second)_12%,var(--color-bg-secondary))] px-4 py-8 md:px-6 lg:px-8 lg:py-10">
-                    <div className={`w-full ${MAX_WIDTH_CLASS[maxWidth]}`}>
+                <main
+                    className={cn(
+                        "relative flex flex-1 items-center justify-center px-4 py-10 md:px-6 lg:px-8 lg:py-12",
+                        isAuthDark
+                            ? "bg-[#050505]"
+                            : "bg-gradient-to-b from-[var(--color-bg-primary)] to-[color-mix(in_srgb,var(--color-api-second)_12%,var(--color-bg-secondary))]",
+                    )}
+                >
+                    <div className={`w-full min-w-0 max-w-full ${MAX_WIDTH_CLASS[maxWidth]}`}>
                         {useFormCard ? (
                             <AuthFormCard className={formCardClassName}>{children}</AuthFormCard>
                         ) : (

@@ -23,7 +23,8 @@ export function useMySubscription(enabled = true) {
 export function useSubscribe() {
  const queryClient = useQueryClient();
  return useMutation({
- mutationFn: (packageId: number) => packagesApi.subscribe(packageId),
+ mutationFn: ({ packageId, paymentMethodId }: { packageId: number; paymentMethodId: number }) =>
+  packagesApi.subscribe(packageId, paymentMethodId),
  onSuccess: () => {
  queryClient.invalidateQueries({ queryKey: queryKeys.packages.all() });
  },
@@ -33,7 +34,8 @@ export function useSubscribe() {
 export function useRenewSubscription() {
  const queryClient = useQueryClient();
  return useMutation({
- mutationFn: (packageId: number) => packagesApi.renew(packageId),
+ mutationFn: ({ packageId, paymentMethodId }: { packageId: number; paymentMethodId: number }) =>
+  packagesApi.renew(packageId, paymentMethodId),
  onSuccess: () => {
  queryClient.invalidateQueries({ queryKey: queryKeys.packages.all() });
  },

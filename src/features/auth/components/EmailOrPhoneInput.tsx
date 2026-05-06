@@ -156,7 +156,7 @@ function EmailOrPhoneInput({
  )}
  <div
  className={cn(
-"flex rounded-lg border overflow-hidden focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary bg-custom-card",
+"flex flex-col overflow-hidden rounded-lg border focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary bg-custom-card sm:flex-row sm:items-stretch",
  hasError
  ?"border-red-500 dark:border-red-400"
  :"border-custom-secondary"
@@ -165,9 +165,9 @@ function EmailOrPhoneInput({
  <select
  aria-label={t("auth.selectCountry")}
  className={cn(
-"appearance-none bg-transparent px-3 py-2.5 text-sm text-custom-primary",
-"border-r border-custom-secondary",
-"focus:outline-none min-w-[100px]",
+"w-full min-w-0 appearance-none bg-transparent px-3 py-2.5 text-sm text-custom-primary sm:w-auto sm:min-w-[6.5rem] sm:max-w-[12rem] sm:shrink-0",
+"border-b border-custom-secondary sm:border-b-0 sm:border-e",
+"focus:outline-none",
  hasError &&"border-red-500 dark:border-red-400"
  )}
  value={selectedCountry?.id ??""}
@@ -204,7 +204,7 @@ function EmailOrPhoneInput({
  onBlur={field.onBlur}
  disabled={disabled}
  className={cn(
-"flex-1 min-w-0 px-4 py-2.5 text-sm",
+"w-full min-w-0 flex-1 px-4 py-2.5 text-sm",
 "placeholder:text-custom-tertiary dark:placeholder:text-custom-secondary",
 "focus:outline-none bg-transparent",
 "text-custom-primary",

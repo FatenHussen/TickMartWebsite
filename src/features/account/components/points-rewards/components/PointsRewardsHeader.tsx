@@ -6,7 +6,7 @@ type PointsRewardsHeaderProps = {
 
 export function PointsRewardsHeader({ t }: PointsRewardsHeaderProps) {
     return (
-        <header className="space-y-2 border-b border-custom-primary/10 pb-6">
+        <header className="space-y-2 border-b border-[var(--color-border-primary)] pb-6">
             <h1 className="text-2xl font-bold tracking-tight text-custom-primary sm:text-3xl">
                 {t("account.pointsRewards.title")}
             </h1>

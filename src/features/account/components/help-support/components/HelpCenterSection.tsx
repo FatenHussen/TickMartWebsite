@@ -52,7 +52,12 @@ export function HelpCenterSection({
     return (
         <HelpSupportSectionCard>
             <HelpSupportSectionHeader
-                icon={<CircleHelp className="h-7 w-7 text-primary" aria-hidden />}
+                icon={
+                    <CircleHelp
+                        className="h-7 w-7 text-primary dark:text-[color-mix(in_srgb,var(--color-main)_65%,#a1a1aa)]"
+                        aria-hidden
+                    />
+                }
                 title={t("helpCenter.title")}
                 subtitle={t("helpCenter.subtitle")}
             />

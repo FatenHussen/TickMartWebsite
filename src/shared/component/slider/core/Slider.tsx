@@ -98,11 +98,29 @@ export default function Slider({
                         size="sm"
                         onClick={onViewAll}
                         className={cn(
-                            "h-auto p-0 text-sm font-semibold text-primary hover:underline",
+                            "group h-auto rounded-full border border-primary/20 bg-white/70 px-3.5 py-1.5 text-sm font-semibold text-primary shadow-sm backdrop-blur-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/35 hover:bg-primary hover:text-white hover:shadow-md dark:border-white/15 dark:bg-white/5 dark:text-[color:var(--color-text,var(--color-text-primary))] dark:hover:border-primary/40 dark:hover:bg-primary dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
                             viewAllButtonClassName,
                         )}
                     >
-                        {viewAllLabel}
+                        <span>{viewAllLabel}</span>
+                        <span
+                            aria-hidden="true"
+                            className="ml-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary/12 text-xs leading-none transition-all duration-200 group-hover:bg-white/20 group-hover:translate-x-0.5 dark:bg-white/12"
+                        >
+                            <svg
+                                viewBox="0 0 20 20"
+                                fill="none"
+                                className="h-3.5 w-3.5"
+                            >
+                                <path
+                                    d="M7 5L12 10L7 15"
+                                    stroke="currentColor"
+                                    strokeWidth="1.8"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                />
+                            </svg>
+                        </span>
                     </Button>
                 )}
             </div>

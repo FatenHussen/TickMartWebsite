@@ -1,3 +1,6 @@
+/** Extra detail selections for `POST` order / preview `items[].extras` */
+export type CartExtraLine = { id: number; quantity: number };
+
 export type CartItem = {
  id: number | string;
  name: string;
@@ -32,8 +35,10 @@ export type CartItem = {
  shop_product_variant_id?: number;
  /** For API: cannot mix instant and non-instant delivery in same cart */
  is_instant_delivery?: boolean;
- /** Extra detail / add-on IDs for order preview & create (POST items[].extras) */
- extras?: number[];
+ /** Extra detail / add-on lines for order preview & create (POST items[].extras) */
+ extras?: CartExtraLine[];
+ /** Per-line note for order preview & create (`items[].note`, max 500) */
+ note?: string;
 };
 
 export type CartType ="default"|"recipe"|"basket"|"schedule_admin_cart";
@@ -80,7 +85,9 @@ export interface CreateScheduledBasketPayload {
 export type OrderPreviewItem = {
  shop_product_variant_id: number;
  quantity: number;
- extras?: number[];
+ extras?: CartExtraLine[];
+ /** Nullable string, max 500 on API */
+ note?: string;
 };
 
 /** GET user/orders/active response */
@@ -211,23 +218,35 @@ export interface OrderPreviewItemPrice {
  price_before_discount?: number;
 }
 
-/** Order item from preview API (orderItems format) */
+/** Order item from preview API (`orderItems` or `order_items`) */
 export interface OrderPreviewOrderItem {
  shop_product_variant_id: number;
  product_name?: string;
-  product_image?: string;
+ product_image?: string;
  quantity: number;
  price?: number | string;
-unit_price?: number | string;
-  product_discount?: number | string;
+ unit_price?: number | string;
+ product_discount?: number | string;
  price_after_discount?: number | string;
-final_price?: number | string;
-subtotal?: number | string;
-  total?: number | string;
+ final_price?: number | string;
+ /** Product line subtotal (qty × unit), before extras — API key: `subtotal` */
+ subtotal?: number | string;
+ extras_total?: number | string;
+ total?: number | string;
  variant?: string[];
-  image?: string;
+ image?: string;
  shop_name?: string;
- extras?: number[];
+ extras?: number[] | CartExtraLine[];
+ note?: string;
+}
+
+/** Root `automatic_promotions` from preview (optional; shape may evolve) */
+export interface OrderPreviewAutomaticPromotions {
+ gifts?: unknown[];
+ points_expected?: number;
+ points_awarded?: number;
+ points_awards?: unknown[];
+ free_shipping_applies?: boolean;
 }
 
 export interface OrderPreviewResponse {
@@ -251,6 +270,7 @@ export interface OrderPreviewResponse {
  available_promotions?: AvailablePromotion[];
  non_discount_promotions?: NonDiscountPromotion | null | unknown[];
  excluded_items?: number[];
+ automatic_promotions?: OrderPreviewAutomaticPromotions;
  // Normalized fields (set by API layer for UI compatibility)
  subtotal: number;
  delivery_price: number;

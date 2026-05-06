@@ -20,6 +20,7 @@ type BaseAnimatedButtonProps = Omit<
     heightClassName?: string;
     durationMs?: number;
     pauseRatio?: number;
+    badge?: React.ReactNode;
 };
 
 export type AnimatedButtonProps = BaseAnimatedButtonProps &
@@ -33,6 +34,7 @@ function MultiLabelAnimatedButton({
     heightClassName,
     durationMs = 2500,
     pauseRatio: _pauseRatio,
+    badge,
     className,
     ...buttonProps
 }: BaseAnimatedButtonProps & { items: AnimatedButtonItem[] }) {
@@ -123,6 +125,11 @@ function MultiLabelAnimatedButton({
                     ))}
                 </div>
             </div>
+            {badge != null && (
+                <span className="pointer-events-none absolute -top-1.5 -end-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold leading-none text-white">
+                    {badge}
+                </span>
+            )}
         </Button>
     );
 }
@@ -157,6 +164,7 @@ export default function AnimatedButton(props: AnimatedButtonProps) {
 
     const {
         note,
+        badge,
         className,
         heightClassName = "h-6",
         durationMs = 2500,
@@ -204,6 +212,11 @@ export default function AnimatedButton(props: AnimatedButtonProps) {
                     {note.secondary}
                 </span>
             </span>
+            {badge != null && (
+                <span className="pointer-events-none absolute -top-1.5 -end-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold leading-none text-white">
+                    {badge}
+                </span>
+            )}
         </Button>
     );
 }

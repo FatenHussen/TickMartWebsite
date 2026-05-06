@@ -140,15 +140,14 @@ export default function CustomerSignUp({ role, setRole }: CustomerSignUpProps) {
             ctaLabel={t("auth.getDiscount")}
             helper={t("auth.onFirstOrder")}
             useFormCard
-            formCardClassName="border-white"
-            maxWidth="576"
+            maxWidth="auth"
         >
-            <div className="space-y-6">
-                <div className="flex justify-center">
+            <div className="w-full min-w-0 space-y-6">
+                <div className="flex w-full justify-center">
                     <AuthRoleToggle role={role} setRole={setRole} t={t} />
                 </div>
 
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                <form onSubmit={handleSubmit(onSubmit)} className="w-full min-w-0 space-y-4">
                     <div className="space-y-1.5">
                         <InputField
                             label={t("auth.fullName")}
@@ -203,8 +202,8 @@ export default function CustomerSignUp({ role, setRole }: CustomerSignUpProps) {
                         />
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="space-y-1.5">
+                    <div className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div className="min-w-0 space-y-1.5">
                             <Label className="block text-sm font-medium text-custom-primary">
                                 {t("auth.governorate")}
                                 <span className="text-red-500 dark:text-red-400 ms-0.5">*</span>
@@ -252,7 +251,7 @@ export default function CustomerSignUp({ role, setRole }: CustomerSignUpProps) {
                             )}
                         </div>
 
-                        <div className="space-y-1.5">
+                        <div className="min-w-0 space-y-1.5">
                             <Label className="block text-sm font-medium text-custom-primary">
                                 {t("auth.city")}
                                 <span className="text-red-500 dark:text-red-400 ms-0.5">*</span>

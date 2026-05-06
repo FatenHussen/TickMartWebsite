@@ -29,7 +29,8 @@ import { useProductsFromSameSeller } from "../hooks/useProductsFromSameSeller";
 import { toast } from "sonner";
 import { useCartStore } from "@/store/cart";
 import { useAuthStore } from "@/store/auth";
-import type { CartItem } from "@/features/cart/types";
+import type { CartItem, CartExtraLine } from "@/features/cart/types";
+import { extrasLineKeyFromExtras } from "@/features/cart/utils/cartExtras";
 import { paths } from "@/app/routes/path/paths";
 import { useFavorites, useToggleFavorite } from "@/features/account/hooks/useFavorites";
 import { useCanRate } from "@/features/account/hooks/useRatings";
@@ -37,6 +38,7 @@ import { RatingFormModal } from "@/features/account/components";
 import BasePopup from "@/shared/component/BasePopup";
 import Button from "@/shared/ui/Button";
 import Rating from "@/shared/component/Rating";
+import { PremiumInlineLoader } from "@/shared/component/loading";
 import type { ProductItem } from "@/features/home/types";
 import {
     mapApiBottomBadgesToProductCard,
@@ -64,8 +66,13 @@ function ProductDetails() {
         description: string;
     } | null>(null);
     const [specialInstructions, setSpecialInstructions] = useState("");
+    /** Non-food: line note sent as `items[].note` (max 500). Food uses `specialInstructions` → same field. */
+    const [lineItemNote, setLineItemNote] = useState("");
     const [selectedExtraIds, setSelectedExtraIds] = useState<number[]>([]);
-    const [selectedExtraDetailIds, setSelectedExtraDetailIds] = useState<number[]>([]);
+    /** Selected extra details (product extra_details): id → quantity (min from API per row). */
+    const [extraDetailQtyById, setExtraDetailQtyById] = useState<
+        Record<number, number>
+    >({});
     /** When set, fetches full product via `GET .../user/products/:id` for the quick-view dialog */
     const [boughtWithPreviewId, setBoughtWithPreviewId] = useState<number | null>(null);
     const [previewSelectedShopVariantId, setPreviewSelectedShopVariantId] =
@@ -112,7 +119,9 @@ function ProductDetails() {
 
     useEffect(() => {
         setSelectedExtraIds([]);
-        setSelectedExtraDetailIds([]);
+        setExtraDetailQtyById({});
+        setLineItemNote("");
+        setSpecialInstructions("");
     }, [productIdNum]);
 
     const handleCloseProductPreview = useCallback(() => {
@@ -212,6 +221,28 @@ function ProductDetails() {
         basePrice: product?.price || 0,
         basePriceAfterDiscount: product?.price_after_discount || 0,
     });
+
+    const isFoodProduct = product?.product_type === "food";
+
+    const extraQuantityMax = useMemo(() => {
+        if (!product) return 999;
+        const stock = selectedVariant?.quantity ?? 9999;
+        const cap = product.max_purchase_quantity;
+        return Math.min(
+            stock > 0 ? stock : 9999,
+            cap != null && cap > 0 ? cap : 9999,
+            999
+        );
+    }, [product, selectedVariant]);
+
+    const extraDetailsUnitAddon = useMemo(() => {
+        if (!product?.extra_details?.length || isFoodProduct) return 0;
+        return product.extra_details.reduce((sum, d) => {
+            const q = extraDetailQtyById[d.id];
+            if (q == null) return sum;
+            return sum + (d.price ?? 0) * q;
+        }, 0);
+    }, [product?.extra_details, extraDetailQtyById, isFoodProduct]);
 
     const [quantity, setQuantity] = useState(1);
     const { data: favoriteProducts = [] } = useFavorites("product", false);
@@ -462,15 +493,15 @@ function ProductDetails() {
 
     const handleAddToCart = () => {
         if (!product) return;
-        const price = currentPriceAfterDiscount ?? currentPrice ?? 0;
-        const extraIdsForCart =
-            product.product_type === "food"
-                ? selectedExtraIds
-                : selectedExtraDetailIds;
-        const extrasKey =
-            extraIdsForCart.length > 0
-                ? `-e-${[...extraIdsForCart].sort((a, b) => a - b).join("-")}`
-                : "";
+        const baseUnit = currentPriceAfterDiscount ?? currentPrice ?? 0;
+        const price = baseUnit + (isFoodProduct ? 0 : extraDetailsUnitAddon);
+        const extraLinesForCart: CartExtraLine[] = isFoodProduct
+            ? selectedExtraIds.map((id) => ({ id, quantity: 1 }))
+            : Object.entries(extraDetailQtyById).map(([id, q]) => ({
+                  id: Number(id),
+                  quantity: q,
+              }));
+        const extrasKey = extrasLineKeyFromExtras(extraLinesForCart);
         const lineId =
             selectedVariant?.id != null
                 ? `spv-${selectedVariant.id}${extrasKey}`
@@ -504,8 +535,14 @@ function ProductDetails() {
                     ? { ...selectedAttributes }
                     : undefined,
         };
-        if (extraIdsForCart.length > 0) {
-            cartItem.extras = [...extraIdsForCart];
+        if (extraLinesForCart.length > 0) {
+            cartItem.extras = extraLinesForCart;
+        }
+        const rawNote = (
+            isFoodProduct ? specialInstructions : lineItemNote
+        ).trim();
+        if (rawNote) {
+            cartItem.note = rawNote.slice(0, 500);
         }
         if (
             currentPriceAfterDiscount != null &&
@@ -558,24 +595,43 @@ function ProductDetails() {
     };
 
     const handleToggleExtraDetail = (id: number) => {
-        setSelectedExtraDetailIds((prev) =>
-            prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+        if (!product?.extra_details) return;
+        const detail = product.extra_details.find((d) => d.id === id);
+        const minQ = Math.max(1, detail?.quantity ?? 1);
+        setExtraDetailQtyById((prev) => {
+            if (prev[id] != null) {
+                const next = { ...prev };
+                delete next[id];
+                return next;
+            }
+            return { ...prev, [id]: minQ };
+        });
+    };
+
+    const handleExtraDetailQuantityChange = (id: number, nextQty: number) => {
+        if (!product?.extra_details) return;
+        const detail = product.extra_details.find((d) => d.id === id);
+        const minQ = Math.max(1, detail?.quantity ?? 1);
+        const clamped = Math.min(
+            Math.max(nextQty, minQ),
+            extraQuantityMax
         );
+        setExtraDetailQtyById((prev) => ({ ...prev, [id]: clamped }));
     };
 
     if (isLoading) {
         return (
-            <div className="flex min-h-screen items-center justify-center bg-custom-primary dark:bg-[color-mix(in_srgb,var(--color-main)_18%,#13151c)]">
-                <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-t-2 border-primary-light dark:border-b-[color-mix(in_srgb,var(--color-main)_45%,transparent)] dark:border-t-[color-mix(in_srgb,var(--color-main)_45%,transparent)]" />
+            <div className="flex min-h-screen items-center justify-center bg-custom-primary dark:bg-[#050505]">
+                <PremiumInlineLoader size="lg" />
             </div>
         );
     }
 
     if (error || !product) {
         return (
-            <div className="flex min-h-screen items-center justify-center bg-custom-primary dark:bg-[color-mix(in_srgb,var(--color-main)_18%,#13151c)]">
+            <div className="flex min-h-screen items-center justify-center bg-custom-primary dark:bg-[#050505]">
                 <div className="text-center">
-                    <p className="text-lg text-custom-primary dark:text-[var(--color-text)]">
+                    <p className="text-lg text-custom-primary dark:text-[#FFFFFF]">
                         {t("product.notFound", "Product not found")}
                     </p>
                 </div>
@@ -593,19 +649,22 @@ function ProductDetails() {
         );
         badges.push({
             label: `${pct}% OFF`,
-            className: "bg-primary-light text-white",
+            className:
+                "bg-primary-light text-white dark:bg-[color-mix(in_srgb,var(--color-main)_32%,#242428)] dark:text-white",
         });
     }
     if (product.is_most_ordered) {
         badges.push({
             label: t("product.mostOrdered", "Most Ordered"),
-            className: "bg-yellow-400 text-black",
+            className:
+                "bg-yellow-400 text-black dark:bg-[color-mix(in_srgb,var(--color-main)_18%,#1c1c18)] dark:text-[#E4E4E7]",
         });
     }
     if (product.is_instant_delivery) {
         badges.push({
             label: t("product.freeDelivery", "Free Delivery"),
-            className: "bg-yellow-400 text-black",
+            className:
+                "bg-yellow-400 text-black dark:bg-[color-mix(in_srgb,var(--color-main)_18%,#1c1c18)] dark:text-[#E4E4E7]",
         });
     }
 
@@ -624,7 +683,7 @@ function ProductDetails() {
         product.available_shops.length > 0;
 
     return (
-        <div className="bg-custom-primary dark:bg-[color-mix(in_srgb,var(--color-main)_18%,#13151c)]">
+        <div className="">
             <div className="page-container py-8" dir={isRTL ? "rtl" : "ltr"}>
                 <div className="grid grid-cols-1 gap-24 lg:grid-cols-2">
                     {/* Left – Product Images */}
@@ -650,10 +709,16 @@ function ProductDetails() {
                             name={product.name}
                             sku={isFood ? undefined : product.sku}
                             origin={isFood ? undefined : product.country}
-                            price={formatPrice(currentPriceAfterDiscount || currentPrice)}
+                            price={formatPrice(
+                                (currentPriceAfterDiscount ?? currentPrice) +
+                                    (isFood ? 0 : extraDetailsUnitAddon)
+                            )}
                             originalPrice={
                                 currentPriceAfterDiscount < currentPrice
-                                    ? formatPrice(currentPrice)
+                                    ? formatPrice(
+                                          currentPrice +
+                                              (isFood ? 0 : extraDetailsUnitAddon)
+                                      )
                                     : undefined
                             }
                             savings={savings}
@@ -694,22 +759,70 @@ function ProductDetails() {
                             />
                         )}
 
-                        {/* Food: Special instructions textarea */}
+                        {/* Food: Special instructions → cart line `note` */}
                         {isFood && (
-                            <div className="flex flex-col gap-2">
-                                <label className="text-sm font-semibold text-text-primary dark:text-[var(--color-text)]">
+                            <div
+                                className={cn(
+                                    "flex flex-col gap-2 rounded-xl border p-4",
+                                    "border-[color-mix(in_srgb,var(--color-api-second)_32%,var(--color-border-primary))]",
+                                    "bg-[color-mix(in_srgb,var(--color-api-second)_4%,var(--color-bg-card))]",
+                                )}
+                            >
+                                <label className="text-sm font-semibold text-text-primary dark:text-[#FFFFFF]">
                                     {t("product.specialInstructions", "Special instructions")}
                                 </label>
                                 <textarea
                                     value={specialInstructions}
-                                    onChange={(e) => setSpecialInstructions(e.target.value)}
+                                    onChange={(e) =>
+                                        setSpecialInstructions(
+                                            e.target.value.slice(0, 500)
+                                        )
+                                    }
                                     placeholder={t(
                                         "product.specialInstructionsPlaceholder",
                                         "Any special requests..."
                                     )}
                                     rows={3}
-                                    className="w-full resize-none rounded-lg border border-custom-primary bg-custom-primary px-4 py-3 text-sm text-custom-primary placeholder-gray-400 outline-none transition-colors focus:border-primary-light focus:ring-1 focus:ring-primary-light dark:border-[color-mix(in_srgb,var(--color-main)_22%,#1f2230)] dark:bg-[color-mix(in_srgb,var(--color-main)_18%,#13151c)] dark:text-[var(--color-text)] dark:placeholder:text-[color-mix(in_srgb,var(--color-text)_55%,transparent)] dark:focus:border-[var(--color-main)] dark:focus:ring-[color-mix(in_srgb,var(--color-main)_45%,transparent)]"
+                                    maxLength={500}
+                                    className="w-full resize-none rounded-lg border border-custom-primary bg-custom-primary px-4 py-3 text-sm text-custom-primary placeholder-gray-400 outline-none transition-colors focus:border-primary-light focus:ring-1 focus:ring-primary-light dark:border-[rgba(255,255,255,0.06)] dark:bg-[#0B0B0C] dark:text-[#FFFFFF] dark:placeholder:text-[#71717A] dark:focus:border-[color-mix(in_srgb,var(--color-main)_45%,#71717A)] dark:focus:ring-[color-mix(in_srgb,var(--color-main)_18%,transparent)]"
                                 />
+                                <p className="text-xs text-custom-secondary dark:text-[#71717A]">
+                                    {specialInstructions.length}/500
+                                </p>
+                            </div>
+                        )}
+
+                        {/* Non-food: line note for checkout (`items[].note`) */}
+                        {!isFood && (
+                            <div
+                                className={cn(
+                                    "flex flex-col gap-2 rounded-xl border p-4",
+                                    "border-[color-mix(in_srgb,var(--color-api-second)_32%,var(--color-border-primary))]",
+                                    "bg-[color-mix(in_srgb,var(--color-api-second)_4%,var(--color-bg-card))]",
+                                )}
+                            >
+                                <label className="text-sm font-semibold text-text-primary dark:text-[#FFFFFF]">
+                                    {t(
+                                        "product.lineItemNote",
+                                        "Note for this item",
+                                    )}
+                                </label>
+                                <textarea
+                                    value={lineItemNote}
+                                    onChange={(e) =>
+                                        setLineItemNote(e.target.value.slice(0, 500))
+                                    }
+                                    placeholder={t(
+                                        "product.lineItemNotePlaceholder",
+                                        "Optional instructions for this product (e.g. packaging, preparation)",
+                                    )}
+                                    rows={3}
+                                    maxLength={500}
+                                    className="w-full resize-none rounded-lg border border-custom-primary bg-custom-primary px-4 py-3 text-sm text-custom-primary placeholder-gray-400 outline-none transition-colors focus:border-primary-light focus:ring-1 focus:ring-primary-light dark:border-[rgba(255,255,255,0.06)] dark:bg-[#0B0B0C] dark:text-[#FFFFFF] dark:placeholder:text-[#71717A] dark:focus:border-[color-mix(in_srgb,var(--color-main)_45%,#71717A)] dark:focus:ring-[color-mix(in_srgb,var(--color-main)_18%,transparent)]"
+                                />
+                                <p className="text-xs text-custom-secondary dark:text-[#71717A]">
+                                    {lineItemNote.length}/500
+                                </p>
                             </div>
                         )}
 
@@ -739,7 +852,7 @@ function ProductDetails() {
                             product.category_details &&
                             product.category_details.length > 0 && (
                                 <div className="">
-                                    <h3 className="mb-3 border-b-2 border-primary/20 pb-2 text-lg font-semibold text-primary dark:border-[color-mix(in_srgb,var(--color-main)_22%,transparent)] dark:text-[var(--color-text)]">
+                                    <h3 className="mb-3 border-b-2 border-primary/20 pb-2 text-lg font-semibold text-primary dark:border-[rgba(255,255,255,0.06)] dark:text-[#FFFFFF]">
                                         {t(
                                             "product.categoryDetails",
                                             "Category Details"
@@ -756,7 +869,7 @@ function ProductDetails() {
                             product.extra_details &&
                             product.extra_details.length > 0 && (
                                 <div className="mt-4">
-                                    <h3 className="mb-3 border-b-2 border-primary/20 pb-2 text-lg font-semibold text-primary dark:border-[color-mix(in_srgb,var(--color-main)_22%,transparent)] dark:text-[var(--color-text)]">
+                                    <h3 className="mb-3 border-b-2 border-primary/20 pb-2 text-lg font-semibold text-primary dark:border-[rgba(255,255,255,0.06)] dark:text-[#FFFFFF]">
                                         {t("product.details", "Details")}
                                     </h3>
                                     <ExtraDetailsTable
@@ -765,8 +878,12 @@ function ProductDetails() {
                                             product.currency_symbol ?? "$"
                                         }
                                         selectable
-                                        selectedIds={selectedExtraDetailIds}
+                                        selection={extraDetailQtyById}
                                         onToggle={handleToggleExtraDetail}
+                                        onQuantityChange={
+                                            handleExtraDetailQuantityChange
+                                        }
+                                        maxQuantityPerExtra={extraQuantityMax}
                                     />
                                 </div>
                             )}
@@ -832,12 +949,12 @@ function ProductDetails() {
                                 <button
                                     type="button"
                                     onClick={() => setRatingModalOpen(true)}
-                                    className="rounded-lg bg-[var(--color-api-second)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--color-api-second-hover)] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 dark:text-[var(--color-text)]"
+                                    className="rounded-lg bg-[var(--color-api-second)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--color-api-second-hover)] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 dark:bg-[color-mix(in_srgb,var(--color-api-second)_40%,#2a2a2e)] dark:text-white dark:hover:bg-[color-mix(in_srgb,var(--color-api-second)_52%,#333336)] dark:focus-visible:ring-[color-mix(in_srgb,var(--color-main)_22%,transparent)] dark:focus-visible:ring-offset-[#050505]"
                                 >
                                     {t("account.myReviews.rateProduct", "قيم هذا المنتج")}
                                 </button>
                             ) : (
-                                <p className="text-sm text-custom-secondary dark:text-[color-mix(in_srgb,var(--color-text)_82%,transparent)]">
+                                <p className="text-sm text-custom-secondary dark:text-[#A1A1AA]">
                                     {canRateData.reason_ar || canRateData.reason ||
                                         t("account.myReviews.mustPurchaseToRate", "يجب شراء هذا المنتج قبل تقييمه")}
                                 </p>
@@ -846,7 +963,7 @@ function ProductDetails() {
                     )}
                     {isRatingsLoading ? (
                         <div className="mt-10 flex justify-center py-8">
-                            <div className="h-10 w-10 animate-spin rounded-full border-b-2 border-t-2 border-primary-light dark:border-b-[color-mix(in_srgb,var(--color-main)_45%,transparent)] dark:border-t-[color-mix(in_srgb,var(--color-main)_45%,transparent)]" />
+                            <PremiumInlineLoader size="md" />
                         </div>
                     ) : (
                         <ProductReviews
@@ -867,7 +984,7 @@ function ProductDetails() {
                             className={cn(
                                 "flex h-14 w-14 items-center justify-center rounded-2xl shadow-inner",
                                 "bg-gradient-to-br from-primary/25 via-[color-mix(in_srgb,var(--color-api-second)_18%,var(--color-bg-card))] to-primary/20",
-                                "text-primary ring-2 ring-primary/30 dark:from-[color-mix(in_srgb,var(--color-main)_22%,#0e1017)] dark:via-[color-mix(in_srgb,var(--color-api-second)_18%,#10121a)] dark:to-[color-mix(in_srgb,var(--color-main)_18%,#13151c)] dark:text-[var(--color-text)] dark:ring-[color-mix(in_srgb,var(--color-main)_45%,transparent)]"
+                                "text-primary ring-2 ring-primary/30 dark:from-[#0B0B0C] dark:via-[rgba(16,17,20,0.85)] dark:to-[#050505] dark:text-[color-mix(in_srgb,var(--color-main)_78%,#FFFFFF)] dark:ring-[color-mix(in_srgb,var(--color-main)_16%,transparent)]"
                             )}
                         >
                             <HiEye className="h-8 w-8" aria-hidden />
@@ -887,12 +1004,12 @@ function ProductDetails() {
                               )
                     }
                     maxWidth="xl"
-                    backdropClassName="pv-modal-backdrop bg-gradient-to-br from-slate-950/80 via-[color-mix(in_srgb,var(--color-primary)_12%,#0f172a)] to-slate-900/80 backdrop-blur-md dark:from-[color-mix(in_srgb,var(--color-main)_88%,transparent)] dark:via-[color-mix(in_srgb,var(--color-main)_35%,#0c0e14)] dark:to-[color-mix(in_srgb,var(--color-api-second)_82%,transparent)]"
+                    backdropClassName="pv-modal-backdrop bg-gradient-to-br from-slate-950/80 via-[color-mix(in_srgb,var(--color-primary)_12%,#0f172a)] to-slate-900/80 backdrop-blur-md dark:from-[#050505]/92 dark:via-[color-mix(in_srgb,var(--color-main)_8%,#080809)] dark:to-[#050505]/94"
                     className={cn(
                         "pv-modal-panel border-0",
                         "bg-gradient-to-b from-white via-white to-slate-50/95",
                         "shadow-[0_28px_90px_-20px_color-mix(in_srgb,var(--color-primary)_32%,transparent)]",
-                        "ring-2 ring-primary/25 dark:from-[color-mix(in_srgb,var(--color-main)_18%,#13151c)] dark:via-[color-mix(in_srgb,var(--color-api-second)_18%,#10121a)] dark:to-[color-mix(in_srgb,var(--color-main)_22%,#0e1017)] dark:ring-primary/20"
+                        "ring-2 ring-primary/25 dark:from-[rgba(16,17,20,0.92)] dark:via-[#0B0B0C] dark:to-[#050505] dark:ring-[rgba(255,255,255,0.06)]"
                     )}
                     contentClassName="!pt-14 text-start max-h-[78vh] overflow-y-auto !px-6 !pb-6"
                     actions={
@@ -928,7 +1045,7 @@ function ProductDetails() {
                                     type="button"
                                     variant="outline"
                                     fullWidth
-                                    className="cursor-pointer rounded-xl border-2 border-[var(--color-api-second)]/75 font-semibold text-primary hover:bg-[color-mix(in_srgb,var(--color-api-second)_12%,var(--color-bg-card))] hover:border-[var(--color-api-second)]"
+                                    className="cursor-pointer rounded-xl border-2 border-[var(--color-api-second)]/75 font-semibold text-primary hover:bg-[color-mix(in_srgb,var(--color-api-second)_12%,var(--color-bg-card))] hover:border-[var(--color-api-second)] dark:border-[rgba(255,255,255,0.1)] dark:text-[#A1A1AA] dark:hover:border-[color-mix(in_srgb,var(--color-api-second)_32%,rgba(255,255,255,0.1))] dark:hover:bg-[color-mix(in_srgb,var(--color-api-second)_10%,#0B0B0C)] dark:hover:text-[#FFFFFF]"
                                     onClick={() => {
                                         navigate(
                                             paths.client.productDetails(
@@ -956,17 +1073,17 @@ function ProductDetails() {
                                 className={cn(
                                     "-mx-1 flex items-center gap-2 overflow-hidden rounded-xl px-3 py-2",
                                     "bg-gradient-to-r from-primary/12 via-[color-mix(in_srgb,var(--color-api-second)_10%,transparent)] to-transparent",
-                                    "text-xs font-semibold uppercase tracking-[0.2em] text-primary dark:from-[color-mix(in_srgb,var(--color-main)_18%,transparent)] dark:via-[color-mix(in_srgb,var(--color-api-second)_14%,transparent)] dark:text-[var(--color-text)]"
+                                    "text-xs font-semibold uppercase tracking-[0.2em] text-primary dark:from-[color-mix(in_srgb,var(--color-main)_10%,transparent)] dark:via-transparent dark:to-transparent dark:text-[#A1A1AA]"
                                 )}
                             >
-                                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary shadow-[0_0_10px_var(--color-shadow-accent)]" />
+                                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary shadow-[0_0_10px_var(--color-shadow-accent)] dark:bg-[color-mix(in_srgb,var(--color-main)_42%,#71717A)] dark:shadow-[0_0_8px_color-mix(in_srgb,var(--color-main)_18%,transparent)]" />
                                 {t("product.quickViewBadge", "Quick view")}
                             </div>
 
                             {isBoughtWithPreviewLoading && (
                                 <div className="flex flex-col items-center justify-center gap-3 py-14">
-                                    <div className="h-12 w-12 animate-spin rounded-full border-2 border-b-2 border-t-2 border-primary/80 border-t-transparent" />
-                                    <p className="text-sm text-custom-secondary dark:text-[color-mix(in_srgb,var(--color-text)_82%,transparent)]">
+                                    <PremiumInlineLoader size="lg" />
+                                    <p className="text-sm text-custom-secondary dark:text-[#A1A1AA]">
                                         {t(
                                             "product.quickViewLoadingHint",
                                             "Fetching photos, prices & variants…"
@@ -975,7 +1092,7 @@ function ProductDetails() {
                                 </div>
                             )}
                             {isBoughtWithPreviewError && (
-                                <p className="text-center text-sm text-red-600">
+                                <p className="text-center text-sm text-red-600 dark:text-red-400">
                                     {t(
                                         "product.detailsLoadError",
                                         "Could not load product details."
@@ -984,7 +1101,7 @@ function ProductDetails() {
                             )}
                             {boughtWithPreview && !isBoughtWithPreviewLoading && (
                                 <>
-                                    <div className="group relative overflow-hidden rounded-2xl shadow-xl ring-1 ring-black/5 dark:ring-[color-mix(in_srgb,var(--color-text)_14%,transparent)]">
+                                    <div className="group relative overflow-hidden rounded-2xl shadow-xl ring-1 ring-black/5 dark:ring-[rgba(255,255,255,0.06)]">
                                         <div className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-t from-black/35 via-transparent to-transparent" />
                                         <img
                                             src={
@@ -998,9 +1115,9 @@ function ProductDetails() {
                                             className="mx-auto w-full max-h-60 object-cover transition duration-500 group-hover:scale-[1.02]"
                                         />
                                     </div>
-                                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-custom-secondary">
+                                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-custom-secondary dark:text-[#A1A1AA]">
                                         {boughtWithPreview.category?.name && (
-                                            <span className="rounded-full bg-custom-secondary/80 px-2.5 py-0.5 text-xs font-medium">
+                                            <span className="rounded-full bg-custom-secondary/80 px-2.5 py-0.5 text-xs font-medium dark:bg-[rgba(255,255,255,0.06)] dark:text-[#A1A1AA]">
                                                 {boughtWithPreview.category.name}
                                             </span>
                                         )}
@@ -1018,7 +1135,7 @@ function ProductDetails() {
                                         size="sm"
                                     />
                                     <div className="flex flex-wrap items-baseline gap-3">
-                                        <p className="text-2xl font-bold tabular-nums text-custom-primary">
+                                        <p className="text-2xl font-bold tabular-nums text-custom-primary dark:text-[#FFFFFF]">
                                             {previewSelectedVariant
                                                 ? previewSelectedVariant.price_formatted ??
                                                   `${previewSelectedVariant.currency_symbol ?? boughtWithPreview.currency_symbol ?? ""}${previewSelectedVariant.price.toFixed(2)}`
@@ -1032,13 +1149,13 @@ function ProductDetails() {
                                         {!previewSelectedVariant &&
                                             boughtWithPreview.price >
                                                 boughtWithPreview.price_after_discount && (
-                                                <p className="text-base text-custom-tertiary line-through">
+                                                <p className="text-base text-custom-tertiary line-through dark:text-[#71717A]">
                                                     {boughtWithPreview.price_formatted ??
                                                         `${boughtWithPreview.currency_symbol ?? ""}${boughtWithPreview.price.toFixed(2)}`}
                                                 </p>
                                             )}
                                     </div>
-                                    <div className="rounded-2xl border border-custom-primary/15 bg-gradient-to-br from-custom-secondary/50 to-transparent p-4 dark:from-[color-mix(in_srgb,var(--color-api-second)_18%,#10121a)] dark:border-[color-mix(in_srgb,var(--color-main)_18%,transparent)]">
+                                    <div className="rounded-2xl border border-custom-primary/15 bg-gradient-to-br from-custom-secondary/50 to-transparent p-4 dark:border-[rgba(255,255,255,0.06)] dark:from-[rgba(16,17,20,0.75)] dark:to-[rgba(16,17,20,0.55)]">
                                         <ProductDescription
                                             description={
                                                 boughtWithPreview.description
@@ -1064,11 +1181,11 @@ function ProductDetails() {
                                             onSelect={
                                                 setPreviewSelectedShopVariantId
                                             }
-                                            className="rounded-2xl border border-primary/20 bg-[color-mix(in_srgb,var(--color-api-second)_8%,var(--color-bg-card))] p-4 dark:border-[color-mix(in_srgb,var(--color-main)_22%,transparent)] dark:bg-[color-mix(in_srgb,var(--color-api-second)_18%,#10121a)]"
+                                            className="rounded-2xl border border-primary/20 bg-[color-mix(in_srgb,var(--color-api-second)_8%,var(--color-bg-card))] p-4 dark:border-[rgba(255,255,255,0.06)] dark:bg-[rgba(16,17,20,0.75)]"
                                         />
                                     )}
-                                    <div className="rounded-xl border border-custom-primary/20 bg-custom-secondary/30 px-3 py-2 dark:border-[color-mix(in_srgb,var(--color-main)_22%,#1f2230)] dark:bg-[color-mix(in_srgb,var(--color-api-second)_18%,#10121a)]">
-                                        <p className="mb-2 text-xs font-medium text-custom-secondary dark:text-[color-mix(in_srgb,var(--color-text)_82%,transparent)]">
+                                    <div className="rounded-xl border border-custom-primary/20 bg-custom-secondary/30 px-3 py-2 dark:border-[rgba(255,255,255,0.06)] dark:bg-[#0B0B0C]">
+                                        <p className="mb-2 text-xs font-medium text-custom-secondary dark:text-[#A1A1AA]">
                                             {t("product.quantity", "Quantity")}
                                         </p>
                                         <ProductQuantitySelector
@@ -1099,7 +1216,7 @@ function ProductDetails() {
                     contentClassName="text-left max-h-[60vh] overflow-y-auto"
                 >
                     {selectedIcon?.description && (
-                        <p className="whitespace-pre-wrap text-sm leading-relaxed text-custom-primary dark:text-[var(--color-text)]">
+                        <p className="whitespace-pre-wrap text-sm leading-relaxed text-custom-primary dark:text-[#FFFFFF]">
                             {selectedIcon.description}
                         </p>
                     )}

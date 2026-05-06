@@ -16,12 +16,12 @@ export function AddressFormFooter({
     const { t } = useTranslation();
 
     return (
-        <div className="flex flex-col gap-4 border-t border-custom-primary pt-6 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-4 border-t border-custom-primary pt-6 sm:flex-row sm:items-center sm:justify-between dark:border-white/[0.06]">
             <button
                 type="button"
                 onClick={onCancel}
                 disabled={isSubmitPending}
-                className="text-sm font-medium text-custom-secondary transition-colors hover:text-custom-primary"
+                className="text-sm font-medium text-custom-secondary transition-colors duration-200 hover:text-custom-primary dark:text-[#A1A1AA] dark:hover:text-[#FFFFFF]"
             >
                 {t("common.cancel")}
             </button>
@@ -32,7 +32,7 @@ export function AddressFormFooter({
                     disabled={isSubmitPending}
                     className={cn(
                         API_SECOND_BUTTON_CLASS,
-                        "min-w-[10rem] rounded-xl px-8 disabled:cursor-not-allowed disabled:opacity-50",
+                        "min-w-[10rem] rounded-xl px-8 disabled:cursor-not-allowed disabled:opacity-50 dark:shadow-[0_12px_36px_-18px_color-mix(in_srgb,var(--color-api-second)_35%,transparent)] dark:ring-1 dark:ring-white/[0.06]",
                     )}
                 >
                     {isSubmitPending ? (

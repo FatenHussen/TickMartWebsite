@@ -25,7 +25,7 @@ export function HowPaymentsWorkPanel({
 }: HowPaymentsWorkPanelProps) {
     return (
         <section
-            className="relative z-0 overflow-hidden rounded-3xl border border-custom-primary/80 bg-custom-card shadow-[0_24px_60px_-12px_color-mix(in_srgb,var(--color-main)_12%,transparent)]"
+            className="account-shell relative z-0 overflow-hidden rounded-3xl border border-[var(--color-border-primary)] bg-[var(--color-bg-card)] shadow-[0_4px_24px_-8px_var(--color-shadow)] dark:shadow-[0_8px_40px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.04)]"
             aria-labelledby={PAYMENT_HOW_SECTION_TITLE_ID}
         >
             <HowPaymentsWorkBackdrop illustrationSrc={illustrationSrc} />

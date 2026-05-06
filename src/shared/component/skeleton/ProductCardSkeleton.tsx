@@ -1,4 +1,8 @@
-import { cn } from"../../lib/utils";
+import { cn } from"@/shared/lib/utils";
+import {
+ PremiumSkeletonBlock,
+ PremiumSkeletonCardShell,
+} from"@/shared/component/loading";
 
 type ProductCardSkeletonProps = {
  className?: string;
@@ -8,41 +12,26 @@ export default function ProductCardSkeleton({
  className,
 }: ProductCardSkeletonProps) {
  return (
- <div
- className={cn(
-"bg-custom-primary rounded-2xl border border-custom-secondary shadow-sm overflow-hidden animate-pulse",
- className
- )}
- >
- {/* Image skeleton */}
- <div className="aspect-square bg-custom-hover"/>
+ <PremiumSkeletonCardShell className={cn(className)}>
+ <PremiumSkeletonBlock
+ tone="inset"
+ className="aspect-square w-full rounded-none border-x-0 border-t-0"
+ />
 
- {/* Content skeleton */}
- <div className="p-4">
- {/* Category badge */}
- <div className="h-5 w-16 bg-custom-hover rounded-full mb-2"/>
-
- {/* Title */}
- <div className="h-5 bg-custom-hover rounded mb-2 w-4/5"/>
-
- {/* Rating and sold */}
- <div className="flex items-center justify-between mb-3">
- <div className="h-4 w-16 bg-custom-hover rounded"/>
- <div className="h-4 w-20 bg-custom-hover rounded"/>
+ <div className="space-y-3 p-4">
+ <PremiumSkeletonBlock className="mb-2 h-5 w-16 rounded-full" />
+ <PremiumSkeletonBlock className="h-5 w-4/5" />
+ <div className="mb-3 flex items-center justify-between gap-2">
+ <PremiumSkeletonBlock className="h-4 w-16" />
+ <PremiumSkeletonBlock className="h-4 w-20" />
  </div>
-
- {/* Price */}
- <div className="flex items-center gap-2 mb-3">
- <div className="h-6 w-20 bg-custom-hover rounded"/>
- <div className="h-4 w-16 bg-custom-hover rounded"/>
+ <div className="mb-3 flex items-center gap-2">
+ <PremiumSkeletonBlock className="h-6 w-20" />
+ <PremiumSkeletonBlock className="h-4 w-16" />
  </div>
-
- {/* Savings */}
- <div className="h-4 w-24 bg-custom-hover rounded mb-3"/>
-
- {/* Button */}
- <div className="h-10 w-full bg-custom-hover rounded-lg"/>
+ <PremiumSkeletonBlock className="mb-3 h-4 w-24" />
+ <PremiumSkeletonBlock className="h-10 w-full rounded-lg" />
  </div>
- </div>
+ </PremiumSkeletonCardShell>
  );
 }

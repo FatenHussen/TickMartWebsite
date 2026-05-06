@@ -4,12 +4,14 @@ import Footer from "@/components/Footer";
 
 export default function AppLayout() {
     return (
-        <div className="flex min-h-screen flex-col bg-custom-primary">
-            <Navbar />
-            <main className="flex min-h-0 flex-1 flex-col">
-                <Outlet />
-            </main>
-            <Footer />
+        <div className="app-layout-canvas flex min-h-screen flex-col">
+            <div className="app-layout-canvas-stack">
+                <Navbar />
+                <main className="flex min-h-0 flex-1 flex-col">
+                    <Outlet />
+                </main>
+                <Footer />
+            </div>
         </div>
     );
 }

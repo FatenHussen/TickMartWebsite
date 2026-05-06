@@ -32,7 +32,13 @@ export default function InfoCards() {
     }
 
     return (
-        <section className={rowClassName} style={rowStyle}>
+        <section
+            className={cn(
+                rowClassName,
+                isDarkTheme && "border-y border-white/[0.09]",
+            )}
+            style={rowStyle}
+        >
             <div className="page-container min-w-0">
                 <div
                     className={cn(
