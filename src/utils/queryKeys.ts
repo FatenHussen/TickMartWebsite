@@ -57,9 +57,9 @@ export const queryKeys = {
  */
  sections: {
  all: () => ["sections"] as const,
- list: (pageSlug?: string) =>
+ list: (pageSlug?: string, filters?: Record<string, unknown>) =>
  pageSlug
- ? (["sections","list", pageSlug] as const)
+ ? (["sections","list", pageSlug, filters ?? {}] as const)
  : (["sections","list"] as const),
  },
 

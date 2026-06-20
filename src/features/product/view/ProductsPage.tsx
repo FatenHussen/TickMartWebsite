@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useLanguage } from "@/context/LanguageContext";
@@ -11,6 +11,10 @@ import { _ShopApi } from "@/features/store/api/shopApi";
 import { useInfiniteSelect } from "@/shared/hooks/useInfiniteSelect";
 import { useInfiniteList } from "@/shared/hooks/useInfiniteList";
 import { useToggleFavorite } from "@/features/account/hooks/useFavorites";
+import type { SectionsFilters } from "@/features/home/api/sections.service";
+import { useSectionsByPosition } from "@/features/home/hooks/useSections";
+import ApiSectionsRenderer from "@/shared/component/sections/ApiSectionsRenderer";
+import FullBleedSection from "@/shared/component/FullBleedSection";
 import ProductCard from "@/shared/component/card/ProductCard";
 import ProductCardSkeleton from "@/shared/component/skeleton/ProductCardSkeleton";
 import { paths } from "@/app/routes/path/paths";
@@ -48,6 +52,7 @@ export default function ProductsPage() {
 
     const {
         options: categoryOptions,
+        items: categoryItems,
         handleScroll: handleCatScroll,
         isFetchingNextPage: isFetchingMoreCats,
     } = useInfiniteSelect<Category>({
@@ -112,6 +117,8 @@ export default function ProductsPage() {
         return rest;
     }, [applied]);
 
+    const sectionsFilters = useMemo((): SectionsFilters => listFilters, [listFilters]);
+
     const {
         items: products,
         observerTarget,
@@ -128,6 +135,15 @@ export default function ProductsPage() {
 
     const toggleFavorite = useToggleFavorite();
 
+    const { beforeSections, afterSections } = useSectionsByPosition(
+        "products",
+        sectionsFilters,
+    );
+    const bannerSections = beforeSections.filter((s) => s.display_type_id === 1);
+    const otherBeforeSections = beforeSections.filter(
+        (s) => s.display_type_id !== 1
+    );
+
     const handleProductClick = (id: number) => {
         navigate(paths.client.productDetails(id));
     };
@@ -136,10 +152,15 @@ export default function ProductsPage() {
         toggleFavorite.mutate({ type: "product", id });
     };
 
-    const applyFilters = () => {
-        const qs = serializeProductListingParams(draft);
+    const applyDraft = useCallback((next: ProductsFilters) => {
+        setDraft(next);
+        const qs = serializeProductListingParams(next);
         if (!qs) setSearchParams({});
         else setSearchParams(new URLSearchParams(qs));
+    }, [setSearchParams]);
+
+    const applyFilters = () => {
+        applyDraft(draft);
     };
 
     const clearFilters = () => {
@@ -194,9 +215,11 @@ export default function ProductsPage() {
         <ProductFiltersSidebar
             draft={draft}
             onDraftChange={setDraft}
+            onApplyDraft={applyDraft}
             onApply={applyFilters}
             onClear={clearFilters}
             categoryOptions={numericCategoryOptions}
+            categoryItems={categoryItems}
             brandOptions={numericBrandOptions}
             shopOptions={numericShopOptions}
             onCategoryScroll={handleCatScroll}
@@ -213,7 +236,18 @@ export default function ProductsPage() {
             className="min-h-screen w-full min-w-0 bg-custom-primary dark:bg-[color-mix(in_srgb,var(--color-main)_18%,#13151c)]"
             dir={isRTL ? "rtl" : "ltr"}
         >
+            {bannerSections.length > 0 && (
+                <div className="w-full">
+                    <ApiSectionsRenderer sections={bannerSections} />
+                </div>
+            )}
+
             <div className="page-container w-full min-w-0 py-6 sm:py-8">
+                {otherBeforeSections.length > 0 && (
+                    <FullBleedSection>
+                        <ApiSectionsRenderer sections={otherBeforeSections} />
+                    </FullBleedSection>
+                )}
                 <div className="mb-4 sm:mb-6">
                     <h1 className="text-xl font-bold text-custom-primary dark:text-[var(--color-text)] sm:text-2xl">
                         {t("productsListing.title", "Products")}
@@ -279,6 +313,12 @@ export default function ProductsPage() {
                         )}
                     </div>
                 </SideContentLayout>
+
+                {afterSections.length > 0 && (
+                    <FullBleedSection>
+                        <ApiSectionsRenderer sections={afterSections} />
+                    </FullBleedSection>
+                )}
             </div>
         </div>
     );

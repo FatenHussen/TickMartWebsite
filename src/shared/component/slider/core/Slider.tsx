@@ -4,6 +4,7 @@ import { type ReactNode } from "react";
 import Button from "@/shared/ui/Button";
 import { useTheme } from "@/context/ThemeContext";
 import { cn } from "@/shared/lib/utils";
+import FlashSaleBadge from "./FlashSaleBadge";
 
 type SliderProps = {
     title?: string;
@@ -42,6 +43,9 @@ export default function Slider({
     title,
     titleMainColor,
     titleSecondColor,
+    flashSaleEndDate,
+    flashSaleMainColor,
+    flashSaleSecondColor,
     viewAllLabel,
     onViewAll,
     viewAllButtonClassName,
@@ -71,9 +75,9 @@ export default function Slider({
         Boolean(title && titleGradientMain && titleGradientSecond) && !isDarkTheme;
 
     const header =
-        (title || viewAllLabel) && (
-            <div className="mb-6 flex items-center justify-between">
-                <div className="flex items-center gap-3">
+        (title || viewAllLabel || flashSaleEndDate) && (
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+                <div className="flex flex-wrap items-center gap-3">
                     {title &&
                         (useTitleGradient ? (
                             <h2
@@ -91,6 +95,13 @@ export default function Slider({
                                 {title}
                             </h2>
                         ))}
+                    {flashSaleEndDate && (
+                        <FlashSaleBadge
+                            endDate={flashSaleEndDate}
+                            mainColor={flashSaleMainColor}
+                            secondColor={flashSaleSecondColor}
+                        />
+                    )}
                 </div>
                 {viewAllLabel && (
                     <Button

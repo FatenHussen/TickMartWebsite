@@ -3,8 +3,11 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/context/ThemeContext";
 import { useAppSettings } from "@/features/account/hooks/useAppSettings";
-import { useSections } from "@/features/home/hooks/useSections";
+import type { SectionsFilters } from "@/features/home/api/sections.service";
+import { useSections, useSectionsByPosition } from "@/features/home/hooks/useSections";
 import { pickHomeSectionBySeeMorePageSlug } from "@/features/home/lib/homeStaticSectionSurface";
+import ApiSectionsRenderer from "@/shared/component/sections/ApiSectionsRenderer";
+import FullBleedSection from "@/shared/component/FullBleedSection";
 import { getSectionCardSurfaceColor } from "@/shared/component/sections/sectionCardVariant";
 import { cn } from "@/shared/lib/utils";
 import { resolveApiPaletteForTheme } from "@/shared/lib/themeColors";
@@ -165,6 +168,18 @@ export default function CategoriesView() {
     const categoryIdForProducts = showAllCategories
         ? undefined
         : (selectedSubcategory?.id || selectedCategory?.id);
+
+    const sectionsFilters = useMemo((): SectionsFilters | undefined => {
+        if (categoryIdForProducts == null) return undefined;
+        return { category_id: categoryIdForProducts };
+    }, [categoryIdForProducts]);
+
+    const { beforeSections, afterSections } = useSectionsByPosition(
+        "categories",
+        sectionsFilters,
+    );
+    const bannerSections = beforeSections.filter((s) => s.display_type_id === 1);
+    const otherBeforeSections = beforeSections.filter((s) => s.display_type_id !== 1);
 
     const { sortField, sortOrder } = useMemo(() => mapSortToApi(sortBy), [sortBy]);
 
@@ -375,10 +390,30 @@ export default function CategoriesView() {
             )}
             style={pageRootStyle}
         >
+            {bannerSections.length > 0 && (
+                <div className="w-full">
+                    <ApiSectionsRenderer sections={bannerSections} />
+                </div>
+            )}
+
             <CategoriesLayout
                 sidebar={sidebar}
                 sidebarPosition="left"
                 gapClassName={categoriesDarkSurface ? "gap-8 lg:gap-10" : undefined}
+                header={
+                    otherBeforeSections.length > 0 ? (
+                        <FullBleedSection>
+                            <ApiSectionsRenderer sections={otherBeforeSections} />
+                        </FullBleedSection>
+                    ) : undefined
+                }
+                footer={
+                    afterSections.length > 0 ? (
+                        <FullBleedSection>
+                            <ApiSectionsRenderer sections={afterSections} />
+                        </FullBleedSection>
+                    ) : undefined
+                }
             >
                 <div className={cn("space-y-6", categoriesDarkSurface && "lg:space-y-8")}>
                     {/* <HeroBanner

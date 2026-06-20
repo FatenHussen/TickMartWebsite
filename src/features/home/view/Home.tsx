@@ -3,7 +3,6 @@ import { useLanguage } from "@/context/LanguageContext";
 import Categories from "../components/Categories";
 import InfoCards from "../components/InfoCards";
 import AllProductsSection from "../components/AllProductsSection";
-import HomeFlashSaleBanner from "../components/HomeFlashSaleBanner";
 import ApiSectionsRenderer from "@/shared/component/sections/ApiSectionsRenderer";
 import { useSectionsByPosition } from "../hooks/useSections";
 import { useAuthStore } from "@/store/auth";
@@ -40,29 +39,6 @@ export default function Home() {
         localStorage.setItem(HAS_SEEN_POPUP_KEY, "true");
     };
 
-    const homeFlashSale = useMemo(() => {
-        const firstFlashSection = [...beforeSections, ...afterSections].find(
-            (section) =>
-                typeof section.end_date === "string" &&
-                section.end_date.trim().length > 0 &&
-                Number.isFinite(Date.parse(section.end_date))
-        );
-
-        if (!firstFlashSection?.end_date) return null;
-
-        return {
-            endDate: firstFlashSection.end_date,
-            title: firstFlashSection.name,
-            mainColor:
-                firstFlashSection.main_color ??
-                firstFlashSection.background_color ??
-                "#ef4444",
-            secondColor: firstFlashSection.second_color ?? "#f59e0b",
-            textColor: firstFlashSection.text_color ?? "#ffffff",
-            seeMore: firstFlashSection.see_more,
-        };
-    }, [beforeSections, afterSections]);
-
     /** Same full-bleed band as InfoCards / API sliders (`getDarkSectionBackground` in dark). */
     const homeSectionBandSurface = useMemo(
         () => homeStaticSectionRowSurface(isDarkTheme, undefined),
@@ -87,20 +63,6 @@ export default function Home() {
                 <InfoCards />
 
                 <ScreenPromotions pageSlug="home" placement="top" />
-
-                {homeFlashSale && (
-                    <section
-                        className={homeSectionBandSurface.className}
-                        style={homeSectionBandSurface.style}
-                    >
-                        <div className="page-container min-w-0">
-                            <HomeFlashSaleBanner
-                                flashSale={homeFlashSale}
-                                isRTL={isRTL}
-                            />
-                        </div>
-                    </section>
-                )}
 
                 {beforeSections.length > 0 && (
                     <section

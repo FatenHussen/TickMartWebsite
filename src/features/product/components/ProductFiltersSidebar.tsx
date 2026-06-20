@@ -1,8 +1,10 @@
 import type { ReactNode } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/shared/lib/utils";
 import { _CategoriesApi } from "@/features/home/api/categories.service";
+import type { Category } from "@/features/home/types";
 import type {
     ProductsFilters,
     ProductListType,
@@ -34,9 +36,11 @@ const SORT_OPTIONS: { value: ProductSortBy; labelKey: string }[] = [
 type ProductFiltersSidebarProps = {
     draft: ProductsFilters;
     onDraftChange: (next: ProductsFilters) => void;
+    onApplyDraft: (next: ProductsFilters) => void;
     onApply: () => void;
     onClear: () => void;
     categoryOptions: { value: number; label: string }[];
+    categoryItems: Category[];
     brandOptions: { value: number; label: string }[];
     shopOptions: { value: number; label: string }[];
     onCategoryScroll?: (e: React.UIEvent<HTMLSelectElement>) => void;
@@ -56,9 +60,11 @@ function FieldLabel({ children }: { children: ReactNode }) {
 export default function ProductFiltersSidebar({
     draft,
     onDraftChange,
+    onApplyDraft,
     onApply,
     onClear,
     categoryOptions,
+    categoryItems,
     brandOptions,
     shopOptions,
     onCategoryScroll,
@@ -70,7 +76,42 @@ export default function ProductFiltersSidebar({
 }: ProductFiltersSidebarProps) {
     const { t } = useTranslation();
 
+    const draftRef = useRef(draft);
+    draftRef.current = draft;
+
+    const debouncedApplyRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+    useEffect(
+        () => () => {
+            if (debouncedApplyRef.current) clearTimeout(debouncedApplyRef.current);
+        },
+        [],
+    );
+
+    const apply = (patch: Partial<ProductsFilters>) => {
+        onApplyDraft({ ...draftRef.current, ...patch });
+    };
+
+    const applyDebounced = (patch: Partial<ProductsFilters>) => {
+        const next = { ...draftRef.current, ...patch };
+        draftRef.current = next;
+        onDraftChange(next);
+        if (debouncedApplyRef.current) clearTimeout(debouncedApplyRef.current);
+        debouncedApplyRef.current = setTimeout(() => onApplyDraft(next), 400);
+    };
+
     const categoryId = draft.category_id;
+
+    const selectedParentCategory = useMemo(() => {
+        if (categoryId == null) return undefined;
+        const asParent = categoryItems.find((c) => c.id === categoryId);
+        if (asParent) return asParent;
+        return categoryItems.find((c) =>
+            c.children?.some((child) => child.id === categoryId)
+        );
+    }, [categoryItems, categoryId]);
+
+    const subcategoryOptions = selectedParentCategory?.children ?? [];
 
     const {
         data: categoryAttributes = [],
@@ -85,15 +126,22 @@ export default function ProductFiltersSidebar({
         enabled: categoryId != null && categoryId > 0,
     });
 
-    const update = (patch: Partial<ProductsFilters>) =>
-        onDraftChange({ ...draft, ...patch });
-
     const toggleAttributeValue = (valueId: number) => {
         const cur = new Set(draft.attribute_values ?? []);
         if (cur.has(valueId)) cur.delete(valueId);
         else cur.add(valueId);
-        update({ attribute_values: cur.size ? [...cur] : undefined });
+        apply({ attribute_values: cur.size ? [...cur] : undefined });
     };
+
+    // Parents with children must filter by a child id in the products/sections APIs.
+    useEffect(() => {
+        if (!selectedParentCategory?.children?.length || categoryId == null) return;
+        if (categoryId !== selectedParentCategory.id) return;
+        onApplyDraft({
+            ...draftRef.current,
+            category_id: selectedParentCategory.children[0].id,
+        });
+    }, [selectedParentCategory, categoryId, onApplyDraft]);
 
     const inputCls = cn(
         "w-full rounded-lg border border-sky-200/90 bg-white/80 px-3 py-2.5 text-sm text-slate-800",
@@ -130,11 +178,24 @@ export default function ProductFiltersSidebar({
                 <div>
                     <FieldLabel>{t("categories.categories", "Category")}</FieldLabel>
                     <select
-                        value={draft.category_id ?? ""}
+                        value={selectedParentCategory?.id ?? ""}
                         onChange={(e) => {
                             const v = e.target.value;
-                            update({
-                                category_id: v ? Number(v) : undefined,
+                            if (!v) {
+                                apply({
+                                    category_id: undefined,
+                                    attribute_values: undefined,
+                                });
+                                return;
+                            }
+                            const parent = categoryItems.find(
+                                (c) => c.id === Number(v)
+                            );
+                            const nextCategoryId = parent?.children?.length
+                                ? parent.children[0].id
+                                : Number(v);
+                            apply({
+                                category_id: nextCategoryId,
                                 attribute_values: undefined,
                             });
                         }}
@@ -156,6 +217,35 @@ export default function ProductFiltersSidebar({
                         )}
                     </select>
                 </div>
+
+                {subcategoryOptions.length > 0 && selectedParentCategory && (
+                    <div>
+                        <FieldLabel>
+                            {t("categories.subcategories", "Subcategory")}
+                        </FieldLabel>
+                        <select
+                            value={
+                                subcategoryOptions.some((sub) => sub.id === categoryId)
+                                    ? categoryId
+                                    : subcategoryOptions[0]?.id ?? ""
+                            }
+                            onChange={(e) => {
+                                const v = e.target.value;
+                                apply({
+                                    category_id: Number(v),
+                                    attribute_values: undefined,
+                                });
+                            }}
+                            className={selectCls}
+                        >
+                            {subcategoryOptions.map((sub) => (
+                                <option key={sub.id} value={sub.id}>
+                                    {sub.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                )}
 
                 {categoryId ? (
                     <CategoryAttributeFilters
@@ -179,7 +269,7 @@ export default function ProductFiltersSidebar({
                     <select
                         value={draft.shop_id ?? ""}
                         onChange={(e) =>
-                            update({
+                            apply({
                                 shop_id: e.target.value
                                     ? Number(e.target.value)
                                     : undefined,
@@ -207,7 +297,7 @@ export default function ProductFiltersSidebar({
                     <select
                         value={draft.brand_id ?? ""}
                         onChange={(e) =>
-                            update({
+                            apply({
                                 brand_id: e.target.value
                                     ? Number(e.target.value)
                                     : undefined,
@@ -238,7 +328,7 @@ export default function ProductFiltersSidebar({
                             min={0}
                             value={draft.price_min ?? ""}
                             onChange={(e) =>
-                                update({
+                                applyDebounced({
                                     price_min: e.target.value
                                         ? Number(e.target.value)
                                         : undefined,
@@ -254,7 +344,7 @@ export default function ProductFiltersSidebar({
                             min={0}
                             value={draft.price_max ?? ""}
                             onChange={(e) =>
-                                update({
+                                applyDebounced({
                                     price_max: e.target.value
                                         ? Number(e.target.value)
                                         : undefined,
@@ -271,7 +361,7 @@ export default function ProductFiltersSidebar({
                         type="text"
                         value={draft.country ?? ""}
                         onChange={(e) =>
-                            update({ country: e.target.value.trim() || undefined })
+                            applyDebounced({ country: e.target.value.trim() || undefined })
                         }
                         maxLength={100}
                         className={inputCls}
@@ -284,7 +374,7 @@ export default function ProductFiltersSidebar({
                         type="text"
                         value={draft.name ?? ""}
                         onChange={(e) =>
-                            update({ name: e.target.value.trim() || undefined })
+                            applyDebounced({ name: e.target.value.trim() || undefined })
                         }
                         maxLength={100}
                         className={inputCls}
@@ -297,7 +387,7 @@ export default function ProductFiltersSidebar({
                         type="search"
                         value={draft.search ?? ""}
                         onChange={(e) =>
-                            update({ search: e.target.value.trim() || undefined })
+                            applyDebounced({ search: e.target.value.trim() || undefined })
                         }
                         maxLength={255}
                         className={inputCls}
@@ -309,7 +399,7 @@ export default function ProductFiltersSidebar({
                     <select
                         value={draft.type ?? ""}
                         onChange={(e) =>
-                            update({
+                            apply({
                                 type: (e.target.value || undefined) as
                                     | ProductListType
                                     | undefined,
@@ -331,7 +421,7 @@ export default function ProductFiltersSidebar({
                     <select
                         value={draft.sort_by ?? ""}
                         onChange={(e) =>
-                            update({
+                            apply({
                                 sort_by: (e.target.value || undefined) as
                                     | ProductSortBy
                                     | undefined,
@@ -357,7 +447,7 @@ export default function ProductFiltersSidebar({
                             className={checkboxCls}
                             checked={!!draft.is_free_delivery}
                             onChange={(e) =>
-                                update({
+                                apply({
                                     is_free_delivery: e.target.checked ? true : undefined,
                                 })
                             }
@@ -370,7 +460,7 @@ export default function ProductFiltersSidebar({
                             className={checkboxCls}
                             checked={!!draft.is_instant_delivery}
                             onChange={(e) =>
-                                update({
+                                apply({
                                     is_instant_delivery: e.target.checked
                                         ? true
                                         : undefined,
@@ -385,7 +475,7 @@ export default function ProductFiltersSidebar({
                             className={checkboxCls}
                             checked={!!draft.on_sale}
                             onChange={(e) =>
-                                update({ on_sale: e.target.checked ? true : undefined })
+                                apply({ on_sale: e.target.checked ? true : undefined })
                             }
                         />
                         {t("productsListing.onSale", "On sale")}
@@ -396,7 +486,7 @@ export default function ProductFiltersSidebar({
                             className={checkboxCls}
                             checked={!!draft.in_stock_only}
                             onChange={(e) =>
-                                update({
+                                apply({
                                     in_stock_only: e.target.checked ? true : undefined,
                                 })
                             }

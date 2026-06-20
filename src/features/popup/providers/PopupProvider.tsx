@@ -13,12 +13,12 @@ import { useQuery } from "@tanstack/react-query";
 import { queryKeys } from "@/utils/queryKeys";
 import { _PopupApi } from "../api/popupApi";
 import { enqueue, dequeue, clearQueue } from "../queue/popupQueue";
-import { canShowPopup, recordImpression, recordDismissal } from "../storage/popupStorage";
+import { recordImpression, recordDismissal } from "../storage/popupStorage";
 import { PopupTracker } from "../tracking/popupTracking";
 import { getPageTypeFromPath } from "../utils/pageType";
 import { useEntityContext } from "../hooks/useEntityContext";
 import type { PopupCampaign, PopupCloseReason, PopupTrackPayload } from "../types";
-import PopupCampaign from "../components/PopupCampaign";
+import PopupCampaignComponent from "../components/PopupCampaign";
 
 // ─── Context ──────────────────────────────────────────────────────────────────
 
@@ -185,7 +185,7 @@ export function PopupProvider({ children }: Props) {
             value={{ activePopup, close, trackClick, trackPayload }}
         >
             {children}
-            <PopupCampaign popup={activePopup} isOpen={isOpen} />
+            <PopupCampaignComponent popup={activePopup} isOpen={isOpen} />
         </PopupContext.Provider>
     );
 }

@@ -230,6 +230,9 @@ export interface Section {
  /** API `variant` — card layout for product/brand/etc. sliders */
  variant?: SectionCardVariant | null;
  end_date?: string | null;
+ /** Section-level flash-sale discount applied to every item. */
+ discount?: number | null;
+ discount_type?: "percent" | "percentage" | "fixed" | string | null;
  main_color?: string | null;
  second_color?: string | null;
  text_color?: string | null;
@@ -259,10 +262,20 @@ export const DISPLAY_TYPE = {
 export type DisplayTypeId = (typeof DISPLAY_TYPE)[keyof typeof DISPLAY_TYPE];
 
 // ==================== Category Types ====================
+export interface CategoryChild {
+ id: number;
+ name: string;
+ order?: number;
+ is_restaurant?: boolean;
+}
+
 export interface Category {
  id: number;
  name: string;
  icon: string | null;
+ order?: number;
+ is_restaurant?: boolean;
+ children?: CategoryChild[];
  /** Optional brand colors from API (snake_case or camelCase). */
  main_color?: string | null;
  second_color?: string | null;

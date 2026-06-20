@@ -78,7 +78,7 @@ export function PopupContent({ popup, lang, theme, isFullScreen }: Props) {
             )}
 
             {/* Debug meta — full_screen only, hidden in production via opacity */}
-            {isFullScreen && process.env.NODE_ENV === "development" && (
+            {isFullScreen && import.meta.env.DEV && (
                 <motion.div
                     variants={contentItemVariants}
                     className="flex flex-wrap gap-1.5 mb-4"

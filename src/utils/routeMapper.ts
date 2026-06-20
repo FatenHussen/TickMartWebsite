@@ -60,6 +60,7 @@ export function mapPageSlugToRoute(
  recipes: paths.client.recipes,
  products: paths.client.products,
  baskets: paths.client.baskets,
+ categories: paths.client.categories,
  };
 
  const baseRoute = routeMap[pageSlug] || `/${pageSlug}`;

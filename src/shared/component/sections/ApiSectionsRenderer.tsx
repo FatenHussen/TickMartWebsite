@@ -71,6 +71,41 @@ function getFlashSaleColors(
     };
 }
 
+/**
+ * Flash-sale items carry the discount on the section (`discount` / `discount_type`)
+ * while the per-item `discount` string is empty. Treat an item as discounted when its
+ * `price_after_discount` is below `price`, regardless of which level set the discount.
+ */
+function hasProductDiscount(item: ProductItem): boolean {
+    if (item.discount && parseFloat(item.discount) > 0) return true;
+    const after = item.price_after_discount;
+    const before = item.price;
+    return (
+        after != null &&
+        before != null &&
+        Number(after) < Number(before)
+    );
+}
+
+/** Badge label for a discounted product: per-item discount wins, else section-level. */
+function getDiscountBadgeLabel(
+    item: ProductItem,
+    section: Section
+): string | null {
+    if (item.discount && parseFloat(item.discount) > 0) {
+        return `-${parseFloat(item.discount)}%`;
+    }
+    const sectionDiscount = section.discount;
+    if (sectionDiscount != null && Number(sectionDiscount) > 0) {
+        const value = Number(sectionDiscount);
+        const isPercent =
+            section.discount_type === "percent" ||
+            section.discount_type === "percentage";
+        return isPercent ? `-${value}%` : `-${value}`;
+    }
+    return null;
+}
+
 /** Shop list may send badges on the item or on `vendor` */
 function shopTopBadgesFromItem(item: ShopItem) {
     if (item.top_badges?.length) return item.top_badges;
@@ -796,15 +831,14 @@ function ProductSection({
             removeVerticalSpacing={removeSectionVerticalSpacing}
             renderItem={(item) => {
                 if (isProductItem(item)) {
-                    const hasDiscount = item.discount && parseFloat(item.discount) > 0;
+                    const hasDiscount = hasProductDiscount(item);
+                    const discountLabel = getDiscountBadgeLabel(item, section);
                     const isFav = isFavoriteFor(item.id, item.is_favorite);
 
-                    
-
-                    const discountBadges: ProductCardBadge[] = hasDiscount
+                    const discountBadges: ProductCardBadge[] = discountLabel
                         ? [
                               {
-                                  label: `-${item.discount}%`,
+                                  label: discountLabel,
                                   className: "bg-red-500 text-white",
                                   rawLabel: true,
                                   align: "left",

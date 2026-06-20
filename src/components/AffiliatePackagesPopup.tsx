@@ -28,7 +28,7 @@ export default function AffiliatePackagesPopup({
     packages,
     isLoading = false,
 }: AffiliatePackagesPopupProps) {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
 
     const visiblePackages = packages.slice(0, 3);
 
@@ -103,6 +103,12 @@ export default function AffiliatePackagesPopup({
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                 {visiblePackages.map((pkg, idx) => {
                                     const style = CARD_STYLES[idx] ?? CARD_STYLES[0];
+                                    const localizedName =
+                                        typeof pkg.name === "string"
+                                            ? pkg.name
+                                            : i18n.language === "ar"
+                                              ? pkg.name.ar
+                                              : pkg.name.en;
                                     const priceDisplay = pkg.price_formatted ?? `${pkg.currency_symbol ?? ""}${pkg.price}`;
                                     const duration = formatPackageDuration(pkg.duration_days, t);
                                     const pricePeriodSuffix = formatPriceBillingSuffix(
@@ -123,7 +129,7 @@ export default function AffiliatePackagesPopup({
                                             className={`rounded-xl p-4 ${style.border} ${style.bg}`}
                                         >
                                             <h3 className="font-bold text-custom-primary mb-1 text-sm">
-                                                {pkg.name}
+                                                {localizedName}
                                             </h3>
                                             <p className="text-xs text-custom-secondary mb-2">
                                                 {duration}

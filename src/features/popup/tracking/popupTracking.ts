@@ -6,11 +6,26 @@ import type {
     PopupFormSubmitPayload,
 } from "../types";
 
+type DismissReason = NonNullable<PopupTrackDismissPayload["reason"]>;
+type AllowedDismissReason = Extract<
+    PopupCloseReason,
+    "close_button" | "backdrop" | "escape" | "secondary_cta"
+>;
+
 // ─── Dedup guard ─────────────────────────────────────────────────────────────
 // Prevents duplicate events within the same browser session.
 
 type EventKey = `${number}:${"view" | "click" | "dismiss" | "form_submit"}`;
 const firedThisSession = new Set<EventKey>();
+
+function isDismissReason(reason: PopupCloseReason): reason is AllowedDismissReason {
+    return (
+        reason === "close_button" ||
+        reason === "backdrop" ||
+        reason === "escape" ||
+        reason === "secondary_cta"
+    );
+}
 
 function once(key: EventKey, fn: () => void): void {
     if (firedThisSession.has(key)) return;
@@ -82,8 +97,11 @@ export const PopupTracker = {
         reason: PopupCloseReason,
         payload: PopupTrackPayload
     ): void {
+        const dismissReason: DismissReason = isDismissReason(reason)
+            ? reason
+            : "close_button";
         once(`${id}:dismiss`, () =>
-            _fireDismiss(id, { ...payload, reason })
+            _fireDismiss(id, { ...payload, reason: dismissReason })
         );
     },
 

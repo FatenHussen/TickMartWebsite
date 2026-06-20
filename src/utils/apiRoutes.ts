@@ -1,3 +1,85 @@
+/** Shared product listing filter params (products API + sections API). */
+export type UserProductListFilters = {
+    category_id?: number;
+    brand_id?: number;
+    shop_id?: number;
+    country_id?: number;
+    country?: string;
+    name?: string;
+    price_min?: number;
+    price_max?: number;
+    is_free_delivery?: boolean | 0 | 1;
+    is_instant_delivery?: boolean | 0 | 1;
+    on_sale?: boolean | 0 | 1;
+    in_stock_only?: boolean | 0 | 1;
+    attribute_values?: number[];
+    type?:
+        | "new"
+        | "trend"
+        | "top_rated"
+        | "offers"
+        | "recommended"
+        | "for_you"
+        | "search_based"
+        | "most_popular";
+    search?: string;
+    sort_by?:
+        | "price_desc"
+        | "price_asc"
+        | "newest"
+        | "oldest"
+        | "rating_desc"
+        | "rating_asc"
+        | "rating";
+    sortField?: string;
+    sortOrder?: "asc" | "desc";
+    page?: number;
+    per_page?: number;
+};
+
+function appendUserProductListFilters(
+    params: URLSearchParams,
+    filters?: UserProductListFilters,
+) {
+    if (filters?.category_id != null)
+        params.append("category_id", String(filters.category_id));
+    if (filters?.brand_id != null) params.append("brand_id", String(filters.brand_id));
+    if (filters?.shop_id != null) params.append("shop_id", String(filters.shop_id));
+    if (filters?.country_id != null)
+        params.append("country_id", String(filters.country_id));
+    if (filters?.country) params.append("country", filters.country.trim());
+    if (filters?.name) params.append("name", filters.name.trim());
+    if (filters?.price_min != null) params.append("price_min", String(filters.price_min));
+    if (filters?.price_max != null) params.append("price_max", String(filters.price_max));
+    if (filters?.is_free_delivery === true || filters?.is_free_delivery === 1)
+        params.append("is_free_delivery", "1");
+    if (filters?.is_instant_delivery != null) {
+        const inst =
+            filters.is_instant_delivery === true
+                ? 1
+                : filters.is_instant_delivery === false
+                  ? 0
+                  : filters.is_instant_delivery;
+        params.append("is_instant_delivery", String(inst));
+    }
+    if (filters?.on_sale === true || filters?.on_sale === 1) params.append("on_sale", "1");
+    if (filters?.in_stock_only === true || filters?.in_stock_only === 1)
+        params.append("in_stock_only", "1");
+    if (filters?.attribute_values?.length) {
+        filters.attribute_values.forEach((v) =>
+            params.append("attribute_values[]", String(v)),
+        );
+    }
+    if (filters?.type) params.append("type", filters.type);
+    if (filters?.search) params.append("search", filters.search.trim());
+    if (filters?.sort_by) {
+        params.append("sort_by", filters.sort_by);
+    } else {
+        if (filters?.sortField) params.append("sortField", filters.sortField);
+        if (filters?.sortOrder) params.append("sortOrder", filters.sortOrder);
+    }
+}
+
 export const apiRoutes = {
     /**
     * Authentication endpoints
@@ -53,8 +135,12 @@ export const apiRoutes = {
     * Sections endpoints
     */
     sections: {
-        getByPage: (pageSlug: string) =>
-            `/user/sections?page_slug=${pageSlug}` as const,
+        getByPage: (pageSlug: string, filters?: UserProductListFilters) => {
+            const params = new URLSearchParams();
+            params.set("page_slug", pageSlug);
+            appendUserProductListFilters(params, filters);
+            return `/user/sections?${params.toString()}` as const;
+        },
     },
 
     /**
@@ -123,82 +209,9 @@ export const apiRoutes = {
     * Product endpoints
     */
     product: {
-        list: (filters?: {
-            category_id?: number;
-            brand_id?: number;
-            shop_id?: number;
-            country_id?: number;
-            country?: string;
-            name?: string;
-            price_min?: number;
-            price_max?: number;
-            is_free_delivery?: boolean | 0 | 1;
-            is_instant_delivery?: boolean | 0 | 1;
-            on_sale?: boolean | 0 | 1;
-            in_stock_only?: boolean | 0 | 1;
-            attribute_values?: number[];
-            type?:
-            | "new"
-            | "trend"
-            | "top_rated"
-            | "offers"
-            | "recommended"
-            | "for_you"
-            | "search_based"
-            | "most_popular";
-            search?: string;
-            /** Preferred backend sort (matches Laravel validation) */
-            sort_by?:
-            | "price_desc"
-            | "price_asc"
-            | "newest"
-            | "oldest"
-            | "rating_desc"
-            | "rating_asc"
-            | "rating";
-            /** Legacy; used when sort_by is not set */
-            sortField?: string;
-            sortOrder?: "asc" | "desc";
-            page?: number;
-            per_page?: number;
-        }) => {
+        list: (filters?: UserProductListFilters) => {
             const params = new URLSearchParams();
-            if (filters?.category_id)
-                params.append("category_id", String(filters.category_id));
-            if (filters?.brand_id) params.append("brand_id", String(filters.brand_id));
-            if (filters?.shop_id) params.append("shop_id", String(filters.shop_id));
-            if (filters?.country_id) params.append("country_id", String(filters.country_id));
-            if (filters?.country) params.append("country", filters.country.trim());
-            if (filters?.name) params.append("name", filters.name.trim());
-            if (filters?.price_min != null) params.append("price_min", String(filters.price_min));
-            if (filters?.price_max != null) params.append("price_max", String(filters.price_max));
-            if (filters?.is_free_delivery === true || filters?.is_free_delivery === 1)
-                params.append("is_free_delivery", "1");
-            if (filters?.is_instant_delivery != null) {
-                const inst =
-                    filters.is_instant_delivery === true
-                        ? 1
-                        : filters.is_instant_delivery === false
-                            ? 0
-                            : filters.is_instant_delivery;
-                params.append("is_instant_delivery", String(inst));
-            }
-            if (filters?.on_sale === true || filters?.on_sale === 1) params.append("on_sale", "1");
-            if (filters?.in_stock_only === true || filters?.in_stock_only === 1)
-                params.append("in_stock_only", "1");
-            if (filters?.attribute_values?.length) {
-                filters.attribute_values.forEach((v) =>
-                    params.append("attribute_values[]", String(v))
-                );
-            }
-            if (filters?.type) params.append("type", filters.type);
-            if (filters?.search) params.append("search", filters.search.trim());
-            if (filters?.sort_by) {
-                params.append("sort_by", filters.sort_by);
-            } else {
-                if (filters?.sortField) params.append("sortField", filters.sortField);
-                if (filters?.sortOrder) params.append("sortOrder", filters.sortOrder);
-            }
+            appendUserProductListFilters(params, filters);
             if (filters?.page) params.append("page", String(filters.page));
             if (filters?.per_page) params.append("per_page", String(filters.per_page));
             return `/user/products${params.toString() ? `?${params.toString()}` : ""
@@ -330,7 +343,10 @@ export const apiRoutes = {
             serves_max?: number;
             prepare_time_min?: number;
             prepare_time_max?: number;
+            type?: "newest" | "popular" | "top_rated" | "on_sale";
             sort_by?: "newest" | "oldest" | "price_desc" | "price_asc";
+            sortField?: string;
+            sortOrder?: "asc" | "desc";
             page?: number;
             per_page?: number;
         }) => {
@@ -342,7 +358,13 @@ export const apiRoutes = {
             if (filters?.serves_max != null) params.append("serves_max", String(filters.serves_max));
             if (filters?.prepare_time_min != null) params.append("prepare_time_min", String(filters.prepare_time_min));
             if (filters?.prepare_time_max != null) params.append("prepare_time_max", String(filters.prepare_time_max));
-            if (filters?.sort_by) params.append("sort_by", filters.sort_by);
+            if (filters?.type) params.append("type", filters.type);
+            if (filters?.sort_by) {
+                params.append("sort_by", filters.sort_by);
+            } else {
+                if (filters?.sortField) params.append("sortField", filters.sortField);
+                if (filters?.sortOrder) params.append("sortOrder", filters.sortOrder);
+            }
             if (filters?.page) params.append("page", String(filters.page));
             if (filters?.per_page) params.append("per_page", String(filters.per_page));
             return `/user/recipes${params.toString() ? `?${params.toString()}` : ""}` as const;

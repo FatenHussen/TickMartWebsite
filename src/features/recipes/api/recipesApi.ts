@@ -6,6 +6,8 @@ export type RecipeSortBy = "newest" | "oldest" | "price_desc" | "price_asc";
 
 export type RecipeSortField = "rating" | "orders_count" | "discount" | "created_at";
 
+export type RecipeTypeFilter = "newest" | "popular" | "top_rated" | "on_sale";
+
 export interface RecipeFilters {
  search?: string;
  discount_min?: number;
@@ -14,6 +16,7 @@ export interface RecipeFilters {
  serves_max?: number;
  prepare_time_min?: number;
  prepare_time_max?: number;
+ type?: RecipeTypeFilter;
  sort_by?: RecipeSortBy;
  sortField?: RecipeSortField;
  sortOrder?: "asc" | "desc";

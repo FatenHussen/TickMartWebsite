@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContext";
 import { HiSearch } from "react-icons/hi";
@@ -11,14 +11,14 @@ import RecipeCard from "../components/RecipeCard";
 import RecipeCardSkeleton from "@/shared/component/skeleton/RecipeCardSkeleton";
 import { useInfiniteScroll } from "@/shared/hooks/useInfiniteScroll";
 import type { Recipe } from "../types";
-import type { RecipeFilters } from "../api/recipesApi";
+import type { RecipeFilters, RecipeTypeFilter } from "../api/recipesApi";
 
-const SORT_OPTIONS: { value: RecipeFilters["sortField"]; labelKey: string }[] = [
+const TYPE_OPTIONS: { value: RecipeTypeFilter | undefined; labelKey: string }[] = [
     { value: undefined, labelKey: "recipes.sortDefault" },
-    { value: "rating", labelKey: "recipes.sortRating" },
-    { value: "orders_count", labelKey: "recipes.sortMostOrdered" },
-    { value: "discount", labelKey: "recipes.sortDiscount" },
-    { value: "created_at", labelKey: "recipes.sortNewest" },
+    { value: "newest", labelKey: "recipes.sortNewest" },
+    { value: "popular", labelKey: "recipes.typePopular" },
+    { value: "top_rated", labelKey: "recipes.typeTopRated" },
+    { value: "on_sale", labelKey: "recipes.typeOnSale" },
 ];
 
 export default function Recipes() {
@@ -27,28 +27,37 @@ export default function Recipes() {
 
     const [search, setSearch] = useState("");
     const [debouncedSearch, setDebouncedSearch] = useState("");
-    const [sortField, setSortField] = useState<RecipeFilters["sortField"]>(undefined);
+    const [typeFilter, setTypeFilter] = useState<RecipeTypeFilter | undefined>(undefined);
     const [currentPage, setCurrentPage] = useState(1);
     const [allRecipes, setAllRecipes] = useState<Recipe[]>([]);
     const [hasMore, setHasMore] = useState(true);
 
-    // Debounce search input by 400ms
-    useEffect(() => {
-        const timer = setTimeout(() => setDebouncedSearch(search), 400);
-        return () => clearTimeout(timer);
-    }, [search]);
+    const debouncedSearchRef = useRef(debouncedSearch);
 
-    // Reset list when filters change
-    useEffect(() => {
+    const resetList = () => {
         setAllRecipes([]);
         setCurrentPage(1);
         setHasMore(true);
-    }, [debouncedSearch, sortField]);
+    };
+
+    // Debounce search input by 400ms; reset pagination when search changes
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (search !== debouncedSearchRef.current) {
+                resetList();
+            }
+            setDebouncedSearch(search);
+        }, 400);
+        return () => clearTimeout(timer);
+    }, [search]);
+
+    useEffect(() => {
+        debouncedSearchRef.current = debouncedSearch;
+    }, [debouncedSearch]);
 
     const filters: RecipeFilters = {
         search: debouncedSearch || undefined,
-        sortField,
-        sortOrder: sortField ? "desc" : undefined,
+        type: typeFilter,
         page: currentPage,
     };
 
@@ -76,6 +85,7 @@ export default function Recipes() {
         hasMore,
         isLoading: isRecipesLoading,
         threshold: 300,
+        enabled: allRecipes.length > 0,
     });
 
     const { data: favoriteRecipes = [] } = useFavorites("recipe", false);
@@ -124,15 +134,18 @@ export default function Recipes() {
                                 />
                             </div>
 
-                            {/* Sort */}
+                            {/* Filter by type */}
                             <select
-                                value={sortField ?? ""}
-                                onChange={(e) =>
-                                    setSortField((e.target.value || undefined) as RecipeFilters["sortField"])
-                                }
+                                value={typeFilter ?? ""}
+                                onChange={(e) => {
+                                    setTypeFilter(
+                                        (e.target.value || undefined) as RecipeTypeFilter | undefined
+                                    );
+                                    resetList();
+                                }}
                                 className="px-4 py-2.5 rounded-xl border border-custom-primary bg-custom-card text-sm text-custom-primary outline-none focus:ring-2 focus:ring-primary-light focus:border-transparent"
                             >
-                                {SORT_OPTIONS.map((opt) => (
+                                {TYPE_OPTIONS.map((opt) => (
                                     <option key={opt.value ?? "default"} value={opt.value ?? ""}>
                                         {t(opt.labelKey, opt.value ?? "Default")}
                                     </option>
