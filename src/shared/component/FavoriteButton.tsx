@@ -1,4 +1,4 @@
-import { useId } from "react";
+import { useId, useState } from "react";
 import { cn } from "../lib/utils";
 
 /** Fixed frame + max constraints so flex layouts cannot stretch the circle */
@@ -34,22 +34,33 @@ export default function FavoriteButton({
 }: FavoriteButtonProps) {
     const uid = useId().replace(/:/g, "");
     const gradId = `favorite-btn-grad-${uid}`;
+    const [pop, setPop] = useState(false);
 
     const icon = ICON_PX[size];
+
+    const heartFillPath =
+        "M11.645 20.428l-7.981-8.725A5.422 5.422 0 012.75 7.5v0A5.422 5.422 0 017.172 2.128c1.481 0 2.904.601 3.923 1.662l.427.438.427-.438a5.421 5.421 0 013.923-1.662 5.422 5.422 0 013.422 5.372v0a5.422 5.422 0 01-1.914 3.203l-7.981 8.725a.75.75 0 01-1.09 0z";
 
     return (
         <button
             type="button"
             aria-label={ariaLabel}
             aria-pressed={isFavorite}
-            onClick={onToggle}
+            onClick={(e) => {
+                setPop(true);
+                onToggle?.(e);
+            }}
+            onAnimationEnd={() => setPop(false)}
             className={cn(
-                "relative box-border shrink-0 rounded-[9999px] p-0",
+                "favorite-button group relative box-border shrink-0 rounded-[9999px] p-0",
                 "flex items-center justify-center",
                 "border border-transparent",
                 SIZE_CLASS[size],
                 "cursor-pointer touch-manipulation",
-                "transition-opacity duration-150 hover:opacity-90",
+                "transition-[transform,box-shadow] duration-200 ease-out",
+                "hover:scale-110 hover:shadow-[0_4px_14px_-4px_color-mix(in_srgb,var(--color-gradient-to)_55%,transparent)]",
+                "active:scale-90",
+                pop && "favorite-button--pop",
                 "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-light/50 focus-visible:ring-offset-1",
                 className
             )}
@@ -80,21 +91,28 @@ export default function FavoriteButton({
                         <stop offset="100%" stopColor="var(--color-gradient-to)" />
                     </linearGradient>
                 </defs>
-                {isFavorite ? (
-                    <path
-                        fill={`url(#${gradId})`}
-                        d="M11.645 20.428l-7.981-8.725A5.422 5.422 0 012.75 7.5v0A5.422 5.422 0 017.172 2.128c1.481 0 2.904.601 3.923 1.662l.427.438.427-.438a5.421 5.421 0 013.923-1.662 5.422 5.422 0 013.422 5.372v0a5.422 5.422 0 01-1.914 3.203l-7.981 8.725a.75.75 0 01-1.09 0z"
-                    />
-                ) : (
-                    <path
-                        fill="none"
-                        stroke={`url(#${gradId})`}
-                        strokeWidth={1.5}
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
-                    />
-                )}
+                {/* Outline — fades out as the fill takes over on hover/active */}
+                <path
+                    fill="none"
+                    stroke={`url(#${gradId})`}
+                    strokeWidth={1.5}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
+                    className={cn(
+                        "transition-opacity duration-200",
+                        isFavorite ? "opacity-0" : "opacity-100 group-hover:opacity-0",
+                    )}
+                />
+                {/* Fill — solid when favorited, softly previewed on hover */}
+                <path
+                    fill={`url(#${gradId})`}
+                    d={heartFillPath}
+                    className={cn(
+                        "origin-center transition-opacity duration-200",
+                        isFavorite ? "opacity-100" : "opacity-0 group-hover:opacity-100",
+                    )}
+                />
             </svg>
         </button>
     );

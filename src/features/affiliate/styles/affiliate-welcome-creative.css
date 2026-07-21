@@ -61,12 +61,41 @@
   animation: affiliate-welcome-hero-glow 8s ease-in-out infinite;
 }
 
+/* Slow light sweep across the hero card — palette-tinted, subtle */
+@keyframes affiliate-welcome-shimmer {
+  0% {
+    transform: translateX(-120%) skewX(-18deg);
+  }
+  100% {
+    transform: translateX(220%) skewX(-18deg);
+  }
+}
+
+.affiliate-welcome-hero-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    100deg,
+    transparent 40%,
+    color-mix(in srgb, var(--color-main) 12%, transparent) 50%,
+    transparent 60%
+  );
+  transform: translateX(-120%) skewX(-18deg);
+  animation: affiliate-welcome-shimmer 7s ease-in-out 1.2s infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .affiliate-welcome-blob-a,
   .affiliate-welcome-blob-b,
   .affiliate-welcome-blob-c,
   .affiliate-welcome-hero-glow {
     animation: none;
+  }
+
+  .affiliate-welcome-hero-shimmer::after {
+    display: none;
   }
 
   .affiliate-welcome-blob-c {

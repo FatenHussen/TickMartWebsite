@@ -583,7 +583,7 @@ export default function SellerSignUp({ role, setRole }: SellerSignUpProps) {
  isLoading={isPending}
  fullWidth
  variant="primary"
- className="mt-3! py-2.5 rounded-full font-semibold"
+ className="mt-3! py-3 rounded-xl font-semibold"
  >
  {t("auth.createStoreAccount")}
  </Button>

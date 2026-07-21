@@ -5,6 +5,7 @@ export const ROOTS = {
     CATEGORIES: "/categories",
     STORE: "/shops",
     CART: "/cart",
+    
     TRACK_ORDER: "/track-order",
     ACCOUNT: "/account",
 };

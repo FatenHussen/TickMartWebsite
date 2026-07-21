@@ -9,7 +9,7 @@ import {
     HiChevronDown,
     HiSearch,
     HiMenu,
-    HiLogin,
+    HiUserAdd,
     HiX,
     HiGlobe,
     HiSun,
@@ -43,7 +43,7 @@ import { cn } from "@/shared/lib/utils";
 const HEADER_MAX = "page-container";
 /** Light: white pill + brand icons. Dark: glass chip; API colour on icon + hover glow only. */
 const ICON_CIRCLE =
-    "flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-primary/25 bg-white text-primary shadow-[0_1px_4px_rgba(0,0,0,0.08)] transition-[background-color,box-shadow,color,transform] duration-300 ease-out hover:bg-primary/5 hover:shadow-[0_2px_8px_rgba(0,0,0,0.1)] dark:border-white/[0.08] dark:bg-white/[0.05] dark:text-primary dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_6px_28px_-12px_rgba(0,0,0,0.55)] dark:backdrop-blur-md dark:hover:bg-[color-mix(in_srgb,var(--color-main)_13%,transparent)] dark:hover:shadow-[0_0_32px_-12px_color-mix(in_srgb,var(--color-main)_28%,transparent),inset_0_1px_0_0_rgba(255,255,255,0.08)]";
+    "flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-primary/25 bg-white text-primary shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-[background-color,border-color,box-shadow,color,transform] duration-200 ease-out hover:-translate-y-0.5 hover:border-primary/45 hover:bg-primary/[0.08] hover:text-primary hover:shadow-[0_4px_12px_-4px_color-mix(in_srgb,var(--color-main)_35%,transparent)] active:translate-y-0 dark:border-white/[0.08] dark:bg-white/[0.05] dark:text-primary dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_6px_28px_-12px_rgba(0,0,0,0.55)] dark:backdrop-blur-md dark:hover:bg-[color-mix(in_srgb,var(--color-main)_13%,transparent)] dark:hover:shadow-[0_0_32px_-12px_color-mix(in_srgb,var(--color-main)_28%,transparent),inset_0_1px_0_0_rgba(255,255,255,0.08)]";
 
 export default function Navbar() {
     const { isRTL, language, toggleLanguage } = useLanguage();
@@ -68,6 +68,25 @@ export default function Navbar() {
     const profileButtonRef = useRef<HTMLButtonElement>(null);
     const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left?: number; right?: number } | null>(null);
     const [packagesPopupOpen, setPackagesPopupOpen] = useState(false);
+    const [isScrolled, setIsScrolled] = useState(false);
+
+    // Soft elevation cue once the page starts scrolling (transform/shadow only — no layout shift)
+    useEffect(() => {
+        let raf = 0;
+        const onScroll = () => {
+            if (raf) return;
+            raf = requestAnimationFrame(() => {
+                setIsScrolled(window.scrollY > 8);
+                raf = 0;
+            });
+        };
+        onScroll();
+        window.addEventListener("scroll", onScroll, { passive: true });
+        return () => {
+            window.removeEventListener("scroll", onScroll);
+            if (raf) cancelAnimationFrame(raf);
+        };
+    }, []);
 
     const { data: packages = [], isLoading: packagesLoading } = usePackages(authenticated);
 
@@ -78,7 +97,7 @@ export default function Navbar() {
     const cartCount = items.reduce((sum, i) => sum + i.quantity, 0);
     const { data: profile } = useProfile();
 
-    const profileInitial = useMemo(() => {
+    const profileName = useMemo(() => {
         const getName = (n: unknown): string => {
             if (n == null) return "";
             if (typeof n === "string") return n;
@@ -88,9 +107,13 @@ export default function Navbar() {
             }
             return "";
         };
-        const name = getName(profile?.name) || authUser?.name || "";
-        return name.charAt(0).toUpperCase() || "?";
+        return getName(profile?.name) || authUser?.name || "";
     }, [profile?.name, authUser?.name, language]);
+
+    const profileInitial = useMemo(
+        () => profileName.charAt(0).toUpperCase() || "?",
+        [profileName],
+    );
 
     const selectedAddress = useMemo(() => {
         if (addressId != null) {
@@ -178,11 +201,11 @@ export default function Navbar() {
 
     const navLinkClass = (active: boolean) =>
         cn(
-            "navbar-premium-nav-link inline-flex items-center border-b-2 pb-0.5 text-sm font-medium transition-colors whitespace-nowrap shrink-0 px-2 py-1",
+            "navbar-premium-nav-link inline-flex items-center rounded-full px-3.5 py-2 text-sm font-medium whitespace-nowrap shrink-0 transition-[color,background-color,transform] duration-200 ease-out active:scale-[0.97]",
             active && "navbar-premium-nav-link--active",
             active
-                ? "border-primary text-primary"
-                : "border-transparent text-text-secondary hover:text-primary",
+                ? "bg-primary/10 text-primary"
+                : "text-text-secondary hover:bg-primary/[0.06] hover:text-primary",
         );
 
     const navItems = [
@@ -230,10 +253,15 @@ export default function Navbar() {
 
     return (
         <div className="w-full bg-custom-card dark:bg-transparent" dir={isRTL ? "rtl" : "ltr"}>
-            <header className="w-full">
+            <header
+                className={cn(
+                    "navbar-elevate w-full",
+                    isScrolled && "navbar-elevate--scrolled",
+                )}
+            >
                 <div className="navbar-surface-top w-full">
                 <div className={`${HEADER_MAX} overflow-x-hidden`}>
-                    <div className="flex min-h-[60px] min-w-0 items-center gap-3 py-3 sm:min-h-[64px] sm:gap-4 md:min-h-[72px] lg:gap-6 xl:gap-8 2xl:gap-10">
+                    <div className="navbar-top-row flex min-h-[60px] min-w-0 items-center gap-3 py-3 sm:min-h-[64px] sm:gap-4 md:min-h-[72px] lg:gap-6 xl:gap-8 2xl:gap-10">
                         <div className="flex min-w-0 shrink-0 items-center gap-5 lg:gap-6 xl:gap-8">
                             <Link
                                 to={paths.client.home}
@@ -244,11 +272,11 @@ export default function Navbar() {
                                     <img
                                         src="/images/shared/logo.png"
                                         alt="Tikmart"
-                                        className="h-14 w-auto max-w-[min(480px,56vw)] object-contain sm:h-[3.75rem] md:h-20 lg:h-24 xl:h-28 md:max-w-[min(500px,92vw)]"
+                                        className="h-16 w-auto max-w-[min(480px,56vw)] object-contain sm:h-[4.5rem] md:h-24 lg:h-18 xl:h-22 md:max-w-[min(500px,92vw)]"
                                         onError={() => setLogoError(true)}
                                     />
                                 ) : (
-                                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-primary-light sm:h-[3.75rem] md:h-20">
+                                    <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-primary-light sm:h-[4.5rem] md:h-24">
                                         <span className="text-xl font-bold text-white">∞</span>
                                     </div>
                                 )}
@@ -260,11 +288,13 @@ export default function Navbar() {
                                 <button
                                     type="button"
                                     onClick={() => setShowLocationDropdown(!showLocationDropdown)}
-                                    className="flex w-full items-center gap-2 rounded-lg px-1 py-0.5 text-start transition-colors hover:bg-[color:color-mix(in_srgb,var(--color-main)_10%,transparent)] dark:hover:bg-[color-mix(in_srgb,var(--color-main)_10%,transparent)]"
+                                    className="group flex w-full items-center gap-2.5 rounded-2xl border border-black/[0.07] bg-white px-3 py-2 text-start transition-[background-color,border-color,box-shadow,transform] duration-200 ease-out hover:-translate-y-px hover:border-primary/25 hover:bg-primary/[0.04] hover:shadow-[0_4px_14px_-8px_rgba(15,23,42,0.18)] dark:border-white/[0.08] dark:bg-white/[0.04] dark:hover:bg-[color-mix(in_srgb,var(--color-main)_10%,transparent)]"
                                 >
-                                    <HiLocationMarker className="h-5 w-5 shrink-0 text-custom-primary dark:text-primary" />
+                                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                                        <HiLocationMarker className="h-[18px] w-[18px]" />
+                                    </span>
                                     <div className="flex min-w-0 flex-1 flex-col items-start">
-                                        <span className="text-[11px] font-normal leading-tight text-custom-secondary dark:text-[#A1A1AA]">
+                                        <span className="text-[11px] font-medium leading-tight text-custom-secondary dark:text-[#A1A1AA]">
                                             {t("navbar.deliveringTo")}
                                         </span>
                                         <span className="w-full truncate text-sm font-semibold text-custom-primary dark:text-white">
@@ -275,30 +305,32 @@ export default function Navbar() {
                                                 "Add address"}
                                         </span>
                                     </div>
-                                    <HiChevronDown className="h-4 w-4 shrink-0 text-custom-secondary dark:text-[#71717A]" />
+                                    <HiChevronDown className="h-4 w-4 shrink-0 text-custom-secondary transition-transform duration-200 group-hover:translate-y-px dark:text-[#71717A]" />
                                 </button>
                             ) : (
                                 <Link
                                     to={paths.auth.jwt.signIn}
-                                    className="flex w-full items-center gap-2 rounded-lg px-1 py-0.5 text-start transition-colors hover:bg-[color:color-mix(in_srgb,var(--color-main)_10%,transparent)] dark:hover:bg-[color-mix(in_srgb,var(--color-main)_10%,transparent)]"
+                                    className="flex w-full items-center gap-2.5 rounded-2xl border border-black/[0.07] bg-white px-3 py-2 text-start transition-[background-color,border-color,box-shadow,transform] duration-200 ease-out hover:-translate-y-px hover:border-primary/25 hover:bg-primary/[0.04] hover:shadow-[0_4px_14px_-8px_rgba(15,23,42,0.18)] dark:border-white/[0.08] dark:bg-white/[0.04] dark:hover:bg-[color-mix(in_srgb,var(--color-main)_10%,transparent)]"
                                 >
-                                    <HiLocationMarker className="h-5 w-5 shrink-0 text-custom-primary dark:text-primary" />
+                                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                                        <HiLocationMarker className="h-[18px] w-[18px]" />
+                                    </span>
                                     <div className="flex min-w-0 flex-1 flex-col items-start">
-                                        <span className="text-[11px] font-normal leading-tight text-custom-secondary dark:text-[#A1A1AA]">
+                                        <span className="text-[11px] font-medium leading-tight text-custom-secondary dark:text-[#A1A1AA]">
                                             {t("navbar.deliveringTo")}
                                         </span>
                                         <span className="w-full truncate text-sm font-semibold text-custom-primary dark:text-white">
-                                            {t("common.login") || "Login"}
+                                            {t("navbar.selectLocation") || "Select your location"}
                                         </span>
                                     </div>
                                 </Link>
                             )}
                             {showLocationDropdown && authenticated && (
-                                <div className="absolute top-full left-0 right-0 mt-2 bg-custom-card rounded-lg shadow-lg border border-gray-bold z-50">
+                                <div className="absolute top-full left-0 right-0 mt-2 bg-custom-card rounded-2xl shadow-[0_16px_50px_-12px_rgba(15,23,42,0.25)] border border-black/[0.06] z-50 dark:border-white/[0.06]">
                                     <div className="p-4">
                                         <Link
                                             to={paths.account.addAddress}
-                                            className="block w-full mb-3 px-4 py-2 text-center bg-primary-light/10 text-primary-light rounded-lg font-medium hover:bg-primary-light/20"
+                                            className="block w-full mb-3 px-4 py-2.5 text-center bg-primary/10 text-primary rounded-xl font-semibold transition-colors hover:bg-primary/15"
                                             onClick={() => setShowLocationDropdown(false)}
                                         >
                                             {t("navbar.addNewAddress") || "Add new address"}
@@ -361,14 +393,23 @@ export default function Navbar() {
                                 {desktopShortcutItems.map((item) => {
                                     const Icon = item.icon;
                                     const isCart = item.path === paths.client.cart;
+                                    const active = !isCart && item.path !== paths.client.home && isActive(item.path);
                                     return (
                                         <Link
                                             key={item.label}
                                             to={item.path}
-                                            className={cn(ICON_CIRCLE, "relative")}
+                                            className={cn(
+                                                ICON_CIRCLE,
+                                                "relative",
+                                                active && "border-primary/40 bg-primary/[0.08] text-primary",
+                                            )}
                                             aria-label={item.label}
+                                            aria-current={active ? "page" : undefined}
                                         >
                                             <Icon className="h-5 w-5" />
+                                            {active && (
+                                                <span className="absolute -bottom-1.5 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-primary" aria-hidden />
+                                            )}
                                             {isCart && cartCount > 0 && (
                                                 <span className="absolute -top-1 -right-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-white bg-primary-light px-1 text-[10px] font-bold text-white">
                                                     {cartCount > 99 ? "99+" : cartCount}
@@ -392,11 +433,11 @@ export default function Navbar() {
                             {!authenticated && (
                                 <Link
                                     to={paths.auth.jwt.signIn}
-                                    className="hidden items-center gap-2 rounded-xl border border-primary/25 bg-white px-3 py-2 text-sm font-semibold text-primary shadow-sm transition-all duration-300 hover:bg-primary/5 sm:flex lg:px-4 lg:text-base dark:border-white/[0.1] dark:bg-white/[0.06] dark:text-primary dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)] dark:backdrop-blur-md dark:hover:border-[color-mix(in_srgb,var(--color-main)_35%,transparent)] dark:hover:bg-[color-mix(in_srgb,var(--color-main)_14%,transparent)] dark:hover:shadow-[0_0_28px_-12px_color-mix(in_srgb,var(--color-main)_25%,transparent)]"
+                                    className="group hidden items-center gap-2 rounded-full border border-black/[0.08] bg-white px-4 py-2 text-sm font-semibold text-primary shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-[background-color,border-color,box-shadow,transform] duration-200 ease-out hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/[0.06] hover:shadow-[0_4px_14px_-6px_rgba(15,23,42,0.16)] sm:flex lg:text-base dark:border-white/[0.1] dark:bg-white/[0.06] dark:text-primary dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)] dark:backdrop-blur-md dark:hover:border-[color-mix(in_srgb,var(--color-main)_35%,transparent)] dark:hover:bg-[color-mix(in_srgb,var(--color-main)_14%,transparent)] dark:hover:shadow-[0_0_28px_-12px_color-mix(in_srgb,var(--color-main)_25%,transparent)]"
                                 >
-                                    <HiLogin className="h-5 w-5 shrink-0" />
+                                    <HiUserAdd className="h-5 w-5 shrink-0 text-[#F39C12] transition-colors duration-300 group-hover:text-[#d68910]" />
                                     <span className="hidden xl:inline">
-                                        {t("common.login") || "Login"}
+                                        {t("common.loginRegister") || "Login"}
                                     </span>
                                 </Link>
                             )}
@@ -428,21 +469,36 @@ export default function Navbar() {
                                             setShowAccountDropdown((prev) => !prev);
                                         }}
                                         className={cn(
-                                            "rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-primary-light focus:ring-offset-2 dark:focus:ring-offset-gray-900",
-                                            showAccountDropdown && "ring-2 ring-primary-light ring-offset-2 dark:ring-offset-gray-900",
+                                            "group flex items-center gap-2 rounded-full border border-black/[0.07] bg-white py-1 pe-1.5 ps-1 transition-[background-color,border-color,box-shadow,transform] duration-200 ease-out hover:-translate-y-px hover:border-primary/25 hover:shadow-[0_4px_14px_-8px_rgba(15,23,42,0.18)] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 xl:pe-3 dark:border-white/[0.08] dark:bg-white/[0.04]",
+                                            showAccountDropdown && "border-primary/30 shadow-[0_4px_14px_-8px_rgba(15,23,42,0.2)]",
                                         )}
                                     >
                                         {profile?.image?.trim() ? (
                                             <img
                                                 src={profile.image}
                                                 alt=""
-                                                className="h-10 w-10 rounded-full border-2 border-primary-light/40 object-cover xl:h-11 xl:w-11"
+                                                className="h-9 w-9 rounded-full border border-primary/25 object-cover"
                                             />
                                         ) : (
-                                            <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border-2 border-primary-light/40 bg-white/90 text-sm font-semibold text-primary-light xl:h-11 xl:w-11">
+                                            <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-primary/25 bg-primary/10 text-sm font-semibold text-primary">
                                                 {profileInitial}
                                             </div>
                                         )}
+                                        <span className="hidden min-w-0 max-w-[130px] flex-col items-start leading-tight xl:flex">
+                                            <span className="w-full truncate text-sm font-semibold text-custom-primary dark:text-white">
+                                                {profileName || t("navbar.account")}
+                                            </span>
+                                            <span className="w-full truncate text-[11px] font-medium text-custom-secondary dark:text-[#A1A1AA]">
+                                                {t("navbar.account")}
+                                            </span>
+                                        </span>
+                                        <HiChevronDown
+                                            className={cn(
+                                                "hidden h-4 w-4 shrink-0 text-custom-secondary transition-transform duration-200 xl:block dark:text-[#71717A]",
+                                                showAccountDropdown && "rotate-180",
+                                            )}
+                                            aria-hidden
+                                        />
                                     </button>
                                     {showAccountDropdown && dropdownPosition && createPortal(
                                         <div
@@ -470,6 +526,29 @@ export default function Navbar() {
                                             }}
                                         >
                                             <div className={`bg-custom-card rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15),0_0_0_1px_rgba(0,0,0,0.05)] dark:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.4)] min-w-[260px] overflow-hidden ${isRTL ? "ml-0" : "mr-0"}`}>
+                                                <div className="flex items-center gap-3 border-b border-black/[0.06] px-4 py-3.5 dark:border-white/[0.06]">
+                                                    {profile?.image?.trim() ? (
+                                                        <img
+                                                            src={profile.image}
+                                                            alt=""
+                                                            className="h-11 w-11 rounded-full border border-primary/25 object-cover"
+                                                        />
+                                                    ) : (
+                                                        <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border border-primary/25 bg-primary/10 text-base font-semibold text-primary">
+                                                            {profileInitial}
+                                                        </div>
+                                                    )}
+                                                    <div className="flex min-w-0 flex-col leading-tight">
+                                                        <span className="truncate text-sm font-semibold text-custom-primary dark:text-white">
+                                                            {profileName || t("navbar.account")}
+                                                        </span>
+                                                        {authUser?.email && (
+                                                            <span className="truncate text-xs text-custom-secondary dark:text-[#A1A1AA]">
+                                                                {authUser.email}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
                                                 <div className="p-2 max-h-[70vh] overflow-y-auto">
                                                     {accountItems.map((item) => {
                                                         const Icon = item.icon;
@@ -548,17 +627,11 @@ export default function Navbar() {
 
                 <div className="navbar-surface-sub hidden w-full lg:block">
                 <div className={`${HEADER_MAX} overflow-x-hidden`}>
-                    <div className="hidden min-w-0 items-center justify-between gap-4 py-3 lg:flex">
+                    <div className="navbar-sub-row hidden min-w-0 items-center justify-between gap-4 py-3 lg:flex">
                         <nav
                             className="navbar-main-nav scrollbar-custom flex min-w-0 flex-nowrap items-center gap-3 overflow-x-auto pb-0.5 sm:gap-4 xl:gap-6"
                             aria-label="Main"
                         >
-                            <Link
-                                to={paths.client.home}
-                                className={navLinkClass(isActive(paths.client.home))}
-                            >
-                                {t("home.home") || "Home"}
-                            </Link>
                             <Link
                                 to={paths.client.categories}
                                 className={navLinkClass(isActive(paths.client.categories))}
@@ -587,16 +660,18 @@ export default function Navbar() {
                                 {showBecomeMarketer && (
                                     <Link
                                         to={paths.becomeMarketer}
-                                        className="inline-flex items-center justify-center rounded-full bg-primary px-5 py-2 text-sm font-bold text-white shadow-sm transition-opacity hover:opacity-95"
+                                        className="group inline-flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-white shadow-[0_6px_16px_-8px_color-mix(in_srgb,var(--color-main)_60%,transparent)] transition-[transform,box-shadow,filter] duration-200 ease-out hover:-translate-y-0.5 hover:brightness-105 hover:shadow-[0_10px_22px_-8px_color-mix(in_srgb,var(--color-main)_65%,transparent)] active:translate-y-0"
                                     >
+                                        <HiStar className="h-[18px] w-[18px] shrink-0 transition-transform duration-200 group-hover:scale-110" />
                                         {t("navbar.becomeMarketer")}
                                     </Link>
                                 )}
                                 {isApprovedMarketer && (
                                     <Link
                                         to={paths.marketerDashboard}
-                                        className="inline-flex items-center justify-center rounded-full bg-primary px-5 py-2 text-sm font-bold text-white shadow-sm transition-opacity hover:opacity-95"
+                                        className="group inline-flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-white shadow-[0_6px_16px_-8px_color-mix(in_srgb,var(--color-main)_60%,transparent)] transition-[transform,box-shadow,filter] duration-200 ease-out hover:-translate-y-0.5 hover:brightness-105 hover:shadow-[0_10px_22px_-8px_color-mix(in_srgb,var(--color-main)_65%,transparent)] active:translate-y-0"
                                     >
+                                        <HiTrendingUp className="h-[18px] w-[18px] shrink-0 transition-transform duration-200 group-hover:scale-110" />
                                         {t("account.menu.marketerDashboard")}
                                     </Link>
                                 )}
@@ -863,10 +938,10 @@ export default function Navbar() {
                                         <Link
                                             to={paths.auth.jwt.signIn}
                                             onClick={() => setIsMobileMenuOpen(false)}
-                                            className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-primary-light text-white rounded-lg font-medium hover:bg-primary transition-colors"
+                                            className="group flex items-center justify-center gap-2 w-full px-4 py-3 bg-primary-light text-white rounded-lg font-medium hover:bg-primary transition-colors"
                                         >
-                                            <HiLogin className="w-5 h-5" />
-                                            <span>{t("common.login") || "Login"}</span>
+                                            <HiUserAdd className="w-5 h-5 text-[#F39C12] transition-colors duration-300 group-hover:text-white" />
+                                            <span>{t("common.loginRegister") || "Login"}</span>
                                         </Link>
                                     </div>
                                 )}

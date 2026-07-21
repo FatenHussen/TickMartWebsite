@@ -2,22 +2,34 @@ import type { Section, SectionCardVariant } from "@/features/home/types";
 import { DISPLAY_TYPE } from "@/features/home/types";
 
 /**
- * Dark-mode row behind home API sliders — neutral near-black, no API color saturation.
+ * Dark-mode row behind home API sliders — deep charcoal carrying a faint wash of the
+ * dashboard "dark second color" (`--color-api-second`) so cards sit in a cohesive branded band.
  */
 export function getDarkSectionBackground(): string {
-    return "#0B0B0C";
+    return "radial-gradient(ellipse 90% 60% at 50% -10%, color-mix(in srgb, var(--color-api-second) 5%, transparent) 0%, transparent 55%), #0B0B0C";
 }
 
 /**
- * Dark card surface inside section rows — neutral dark panel, API colors used only as accents elsewhere.
+ * Dark card surface inside section rows — subtle diagonal gradient from deep near-black to a
+ * gentle tint of the dashboard "dark second color" (`--color-api-second`). Prefer this over
+ * {@link getDarkCardSurface} wherever a card supports a gradient (`backgroundImage`).
+ */
+export function getDarkCardSurfaceGradient(): string {
+    return "linear-gradient(160deg, color-mix(in srgb, var(--color-api-second) 9%, #101114) 0%, color-mix(in srgb, var(--color-api-second) 20%, #0b0b0c) 100%)";
+}
+
+/**
+ * Dark card surface — solid fallback (for cards that only accept a `backgroundColor`).
+ * Tinted with the dashboard "dark second color" (`--color-api-second`).
  */
 export function getDarkCardSurface(): string {
-    return "rgba(16,17,20,0.88)";
+    return "color-mix(in srgb, var(--color-api-second) 14%, #0e0f12)";
 }
 
 export type SectionSliderPreset = {
     slidesPerView: number;
     breakpoints: {
+        480: { slidesPerView: number; spaceBetween?: number };
         640: { slidesPerView: number; spaceBetween?: number };
         768: { slidesPerView: number; spaceBetween?: number };
         1024: { slidesPerView: number; spaceBetween?: number };
@@ -42,11 +54,12 @@ export function getSectionCardSurfaceColor(section: Section): string | null {
 function sliderPresetForCardVariant(v: SectionCardVariant): SectionSliderPreset {
     switch (v) {
         case "horizontal":
-            // Whole-number slidesPerView only — fractional (e.g. 1.5) makes one slide
-            // ~⅔ of the row and the next a “peek”, so cards look different widths.
+            // Wide/landscape cards: one full card on the smallest phones, a peek of the
+            // second from 480px up so the row reads as scrollable on mobile.
             return {
                 slidesPerView: 1,
                 breakpoints: {
+                    480: { slidesPerView: 1.15 },
                     640: { slidesPerView: 2 },
                     768: { slidesPerView: 3 },
                     1024: { slidesPerView: 3 },
@@ -54,8 +67,9 @@ function sliderPresetForCardVariant(v: SectionCardVariant): SectionSliderPreset 
             };
         case "vertical":
             return {
-                slidesPerView: 1,
+                slidesPerView: 1.6,
                 breakpoints: {
+                    480: { slidesPerView: 2.15 },
                     640: { slidesPerView: 3 },
                     768: { slidesPerView: 4 },
                     1024: { slidesPerView: 5 },
@@ -64,8 +78,9 @@ function sliderPresetForCardVariant(v: SectionCardVariant): SectionSliderPreset 
         case "square":
         default:
             return {
-                slidesPerView: 1,
+                slidesPerView: 1.6,
                 breakpoints: {
+                    480: { slidesPerView: 2.15 },
                     640: { slidesPerView: 3 },
                     768: { slidesPerView: 4 },
                     1024: { slidesPerView: 4 },

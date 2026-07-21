@@ -72,6 +72,14 @@ export default function AffiliateWelcomePage() {
 
     const firstName = displayName.split(" ")[0] || displayName;
 
+    const greeting = useMemo(() => {
+        const hour = new Date().getHours();
+        if (hour < 12) return t("affiliateWelcome.greetingMorning", "Good morning");
+        if (hour < 18)
+            return t("affiliateWelcome.greetingAfternoon", "Good afternoon");
+        return t("affiliateWelcome.greetingEvening", "Good evening");
+    }, [t]);
+
     return (
         <div
             className={cn(
@@ -104,7 +112,7 @@ export default function AffiliateWelcomePage() {
             <div className="page-container relative space-y-10 py-10 md:space-y-12 md:py-14">
                 {/* Hero */}
                 <section className="relative">
-                    <div className="relative overflow-hidden rounded-[1.75rem] border border-[color-mix(in_srgb,var(--color-main)_18%,var(--color-border-primary))] bg-custom-card/95 shadow-[0_32px_120px_-48px_color-mix(in_srgb,var(--color-main)_45%,transparent)] backdrop-blur-sm">
+                    <div className="affiliate-welcome-hero-shimmer relative overflow-hidden rounded-[1.75rem] border border-[color-mix(in_srgb,var(--color-main)_18%,var(--color-border-primary))] bg-custom-card/95 shadow-[0_32px_120px_-48px_color-mix(in_srgb,var(--color-main)_45%,transparent)] backdrop-blur-sm">
                         <div
                             className="affiliate-welcome-hero-glow pointer-events-none absolute -end-16 top-0 h-64 w-64 rounded-full bg-[color-mix(in_srgb,var(--color-main)_20%,transparent)] blur-3xl"
                             aria-hidden
@@ -128,19 +136,24 @@ export default function AffiliateWelcomePage() {
                                             )}
                                         </span>
                                     </div>
-                                    <h1 className="max-w-xl text-3xl font-black leading-[1.12] tracking-tight text-[var(--color-text-heading)] md:text-4xl">
-                                        <Trans
-                                            i18nKey="affiliateWelcome.welcomeBack"
-                                            values={{ name: firstName }}
-                                            components={{
-                                                name: (
-                                                    <span
-                                                        className={WELCOME_NAME_CLASS}
-                                                    />
-                                                ),
-                                            }}
-                                        />
-                                    </h1>
+                                    <div className="space-y-2">
+                                        <p className="text-sm font-bold tracking-tight text-[var(--color-main)]">
+                                            {greeting}
+                                        </p>
+                                        <h1 className="max-w-xl text-3xl font-black leading-[1.12] tracking-tight text-[var(--color-text-heading)] md:text-4xl">
+                                            <Trans
+                                                i18nKey="affiliateWelcome.welcomeBack"
+                                                values={{ name: firstName }}
+                                                components={{
+                                                    name: (
+                                                        <span
+                                                            className={WELCOME_NAME_CLASS}
+                                                        />
+                                                    ),
+                                                }}
+                                            />
+                                        </h1>
+                                    </div>
                                     <p className="text-lg font-semibold text-[var(--color-text-primary)]">
                                         {t(
                                             "affiliateWelcome.happyToSeeYou",
@@ -159,7 +172,9 @@ export default function AffiliateWelcomePage() {
                                     className="relative mx-auto flex h-[14rem] w-full max-w-[16rem] items-center justify-center lg:mx-0 lg:h-[16rem] lg:max-w-none"
                                     aria-hidden
                                 >
-                                    <div className="absolute inset-0 rounded-[2rem] border border-dashed border-[color-mix(in_srgb,var(--color-main)_35%,var(--color-border-primary))] opacity-80 motion-safe:animate-[spin_48s_linear_infinite] motion-reduce:animate-none" />
+                                    <div className="absolute inset-0 rounded-[2rem] border border-dashed border-[color-mix(in_srgb,var(--color-main)_35%,var(--color-border-primary))] opacity-80 motion-safe:animate-[spin_48s_linear_infinite] motion-reduce:animate-none">
+                                        <div className="absolute -top-1 left-1/2 h-2.5 w-2.5 -translate-x-1/2 rounded-full bg-[var(--color-main)] shadow-[0_0_0_5px_color-mix(in_srgb,var(--color-main)_22%,transparent)]" />
+                                    </div>
                                     <div className="absolute inset-5 rounded-[1.5rem] bg-[linear-gradient(145deg,color-mix(in_srgb,var(--color-api-second)_14%,var(--color-bg-card)),var(--color-bg-card))] shadow-inner ring-1 ring-[color-mix(in_srgb,var(--color-main)_20%,var(--color-border-primary))]" />
                                     <div className="absolute end-3 top-10 h-16 w-12 rotate-[-14deg] rounded-2xl bg-gradient-to-br from-[var(--color-main)]/35 to-[var(--color-api-second)]/25 shadow-lg backdrop-blur-sm" />
                                     <div className="absolute bottom-12 start-4 h-14 w-14 rotate-[18deg] rounded-2xl border border-[color-mix(in_srgb,var(--color-api-second)_40%,transparent)] bg-custom-card/80 shadow-md" />
@@ -174,59 +189,97 @@ export default function AffiliateWelcomePage() {
                     </div>
                 </section>
 
-                {/* Location */}
+                {/* Location — map-style card */}
                 <section className="relative">
                     <div className="group relative overflow-hidden rounded-[1.75rem] border border-[color-mix(in_srgb,var(--color-main)_16%,var(--color-border-primary))] bg-custom-card shadow-[0_24px_80px_-40px_color-mix(in_srgb,var(--color-main)_35%,transparent)]">
+                        {/* Map grid backdrop */}
                         <div
-                            className="pointer-events-none absolute inset-0 bg-[linear-gradient(120deg,transparent_40%,color-mix(in_srgb,var(--color-api-second)_8%,transparent)_55%,transparent_70%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100 motion-reduce:transition-none"
+                            className="pointer-events-none absolute inset-0 opacity-[0.5]"
+                            style={{
+                                backgroundImage:
+                                    "linear-gradient(color-mix(in srgb, var(--color-main) 8%, transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in srgb, var(--color-main) 8%, transparent) 1px, transparent 1px)",
+                                backgroundSize: "34px 34px",
+                                maskImage:
+                                    "radial-gradient(ellipse 90% 120% at 15% 0%, #000 30%, transparent 75%)",
+                                WebkitMaskImage:
+                                    "radial-gradient(ellipse 90% 120% at 15% 0%, #000 30%, transparent 75%)",
+                            }}
                             aria-hidden
                         />
-                        <div className="relative flex flex-col gap-6 p-6 sm:flex-row sm:items-center md:gap-8 md:p-8">
-                            <div className="relative mx-auto flex h-[4.75rem] w-[4.75rem] shrink-0 items-center justify-center sm:mx-0">
-                                <span className="absolute inset-0 z-0 rounded-3xl bg-[color-mix(in_srgb,var(--color-main)_14%,var(--color-bg-card))] ring-2 ring-[color-mix(in_srgb,var(--color-api-second)_35%,var(--color-border-primary))]" />
-                                <span className="absolute inset-0 z-[1] rounded-3xl bg-[color-mix(in_srgb,var(--color-main)_16%,transparent)] opacity-50 motion-safe:animate-ping motion-reduce:animate-none" />
-                                <MapPin
-                                    className="relative z-[2] h-9 w-9 text-[var(--color-main)]"
-                                    strokeWidth={1.65}
-                                    aria-hidden
-                                />
-                            </div>
-                            <div className="min-w-0 flex-1 text-center sm:text-start">
-                                <h2 className="mb-1 text-xs font-bold uppercase tracking-[0.12em] text-[var(--color-text-secondary)]">
-                                    {t(
-                                        "affiliateWelcome.yourCurrentLocation",
-                                        "Your current location"
-                                    )}
-                                </h2>
-                                <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between sm:gap-x-12">
-                                    <p className="text-[15px] text-[var(--color-text-primary)]">
-                                        <span className="me-2 font-semibold text-[var(--color-text-secondary)]">
-                                            {t(
-                                                "auth.governorate",
-                                                "Governorate"
-                                            )}
-                                        </span>
-                                        <span className="font-semibold text-[var(--color-text-heading)]">
-                                            {governorateName ||
-                                                t(
-                                                    "affiliateWelcome.notSet",
-                                                    "Not set"
-                                                )}
-                                        </span>
-                                    </p>
-                                    <p className="text-[15px] text-[var(--color-text-primary)] sm:text-end">
-                                        <span className="me-2 font-semibold text-[var(--color-text-secondary)]">
-                                            {t("auth.city", "City")}
-                                        </span>
-                                        <span className="font-semibold text-[var(--color-text-heading)]">
-                                            {cityName ||
-                                                t(
-                                                    "affiliateWelcome.notSet",
-                                                    "Not set"
-                                                )}
-                                        </span>
-                                    </p>
+                        <div
+                            className="pointer-events-none absolute -end-10 -top-10 h-40 w-40 rounded-full bg-[color-mix(in_srgb,var(--color-api-second)_18%,transparent)] blur-3xl opacity-0 transition-opacity duration-500 group-hover:opacity-100 motion-reduce:transition-none"
+                            aria-hidden
+                        />
+
+                        <div className="relative flex flex-col gap-6 p-6 md:gap-7 md:p-8">
+                            {/* Header */}
+                            <div className="flex items-center gap-3.5">
+                                <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[var(--color-main)] to-[var(--color-api-second)] shadow-[0_12px_30px_-10px_color-mix(in_srgb,var(--color-main)_60%,transparent)]">
+                                    <span className="absolute inset-0 rounded-2xl bg-[color-mix(in_srgb,var(--color-main)_40%,transparent)] motion-safe:animate-ping motion-reduce:animate-none opacity-40" />
+                                    <MapPin
+                                        className="relative z-[1] h-6 w-6 text-[var(--color-text-inverse)]"
+                                        strokeWidth={2}
+                                        aria-hidden
+                                    />
                                 </div>
+                                <div className="min-w-0">
+                                    <h2 className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--color-text-secondary)]">
+                                        {t(
+                                            "affiliateWelcome.yourCurrentLocation",
+                                            "Your current location"
+                                        )}
+                                    </h2>
+                                    <span className="mt-1 inline-flex items-center gap-1.5 text-[11px] font-semibold text-[var(--color-main)]">
+                                        <span className="relative flex h-2 w-2">
+                                            <span className="absolute inline-flex h-full w-full rounded-full bg-[var(--color-main)] opacity-70 motion-safe:animate-ping motion-reduce:animate-none" />
+                                            <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--color-main)]" />
+                                        </span>
+                                        {t("affiliateWelcome.liveNow", "Live")}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Waypoints with route */}
+                            <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch sm:gap-0">
+                                {[
+                                    {
+                                        label: t("auth.governorate", "Governorate"),
+                                        value: governorateName,
+                                    },
+                                    {
+                                        label: t("auth.city", "City"),
+                                        value: cityName,
+                                    },
+                                ].map((point, i) => (
+                                    <div
+                                        key={point.label}
+                                        className="flex min-w-0 flex-1 items-center gap-3"
+                                    >
+                                        <div className="flex flex-1 items-center gap-3 rounded-2xl border border-[color-mix(in_srgb,var(--color-main)_14%,var(--color-border-primary))] bg-[color-mix(in_srgb,var(--color-main)_6%,var(--color-bg-card))] px-4 py-3.5 transition-colors duration-300 group-hover:border-[color-mix(in_srgb,var(--color-api-second)_30%,var(--color-border-primary))]">
+                                            <span className="relative flex h-3 w-3 shrink-0 items-center justify-center">
+                                                <span className="h-3 w-3 rounded-full bg-[var(--color-main)] ring-4 ring-[color-mix(in_srgb,var(--color-main)_20%,transparent)]" />
+                                            </span>
+                                            <div className="min-w-0">
+                                                <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--color-text-secondary)]">
+                                                    {point.label}
+                                                </p>
+                                                <p className="truncate text-[15px] font-bold text-[var(--color-text-heading)]">
+                                                    {point.value ||
+                                                        t(
+                                                            "affiliateWelcome.notSet",
+                                                            "Not set"
+                                                        )}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        {i === 0 && (
+                                            <span
+                                                className="hidden h-px w-6 shrink-0 border-t-2 border-dashed border-[color-mix(in_srgb,var(--color-main)_35%,var(--color-border-primary))] sm:block"
+                                                aria-hidden
+                                            />
+                                        )}
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     </div>

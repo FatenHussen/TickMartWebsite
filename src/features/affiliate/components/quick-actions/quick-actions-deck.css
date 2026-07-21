@@ -1,0 +1,143 @@
+/* Quick Actions — "Command Deck"
+   Ambient field, orbiting progress ring, grain and reduced-motion fallbacks.
+   Everything is driven by theme tokens so it adapts to light/dark + brand hue. */
+
+.qa-deck {
+    --qa-ring-duration: 4200ms;
+}
+
+/* ------------------------------------------------------------------ *
+ * Ambient background — drifting brand orbs + fine grid + grain
+ * ------------------------------------------------------------------ */
+.qa-ambient-orb {
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(70px);
+    opacity: 0.55;
+    will-change: transform;
+}
+
+@keyframes qa-drift-a {
+    0%,
+    100% {
+        transform: translate3d(0, 0, 0) scale(1);
+    }
+    50% {
+        transform: translate3d(8%, 6%, 0) scale(1.12);
+    }
+}
+
+@keyframes qa-drift-b {
+    0%,
+    100% {
+        transform: translate3d(0, 0, 0) scale(1.05);
+    }
+    50% {
+        transform: translate3d(-9%, -5%, 0) scale(0.92);
+    }
+}
+
+.qa-ambient-orb--a {
+    animation: qa-drift-a 18s ease-in-out infinite;
+}
+.qa-ambient-orb--b {
+    animation: qa-drift-b 22s ease-in-out infinite;
+}
+
+.qa-grain {
+    position: absolute;
+    inset: 0;
+    opacity: 0.5;
+    mix-blend-mode: soft-light;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 180px 180px;
+}
+
+/* ------------------------------------------------------------------ *
+ * Orbiting progress ring around the spotlight icon
+ * ------------------------------------------------------------------ */
+.qa-ring__progress {
+    stroke-dasharray: var(--qa-ring-c);
+    stroke-dashoffset: var(--qa-ring-c);
+    animation: qa-ring-fill var(--qa-ring-duration, 4200ms) linear forwards;
+    transform: rotate(-90deg);
+    transform-origin: center;
+}
+
+.qa-ring.is-paused .qa-ring__progress {
+    animation-play-state: paused;
+}
+
+@keyframes qa-ring-fill {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+/* ------------------------------------------------------------------ *
+ * Glass sheen sweep across the spotlight icon well
+ * ------------------------------------------------------------------ */
+.qa-sheen {
+    background: linear-gradient(
+        115deg,
+        transparent 40%,
+        rgba(255, 255, 255, 0.22) 50%,
+        transparent 60%
+    );
+    background-size: 240% 100%;
+    background-position: 200% 0;
+    animation: qa-sheen-sweep 6s ease-in-out 0.8s infinite;
+}
+
+@keyframes qa-sheen-sweep {
+    0% {
+        background-position: 200% 0;
+    }
+    55%,
+    100% {
+        background-position: -140% 0;
+    }
+}
+
+/* ------------------------------------------------------------------ *
+ * Rail scroll affordances — slim, on-brand scrollbar
+ * ------------------------------------------------------------------ */
+.qa-rail {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--color-main) 35%, transparent)
+        transparent;
+}
+.qa-rail::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+.qa-rail::-webkit-scrollbar-thumb {
+    border-radius: 9999px;
+    background: color-mix(in srgb, var(--color-main) 32%, transparent);
+}
+.qa-rail::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+/* Mobile dock snap */
+.qa-rail--dock {
+    scroll-snap-type: x mandatory;
+}
+.qa-rail--dock > * {
+    scroll-snap-align: start;
+}
+
+/* ------------------------------------------------------------------ *
+ * Reduced motion — freeze every ambient / looping animation
+ * ------------------------------------------------------------------ */
+@media (prefers-reduced-motion: reduce) {
+    .qa-ambient-orb--a,
+    .qa-ambient-orb--b,
+    .qa-sheen {
+        animation: none;
+    }
+    .qa-ring__progress {
+        animation: none;
+        stroke-dashoffset: var(--qa-ring-c);
+    }
+}

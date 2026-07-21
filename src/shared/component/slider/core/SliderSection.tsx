@@ -9,6 +9,8 @@ type SliderSectionProps<T extends { id: number | string }> = {
   flashSaleEndDate?: string | null;
   flashSaleMainColor?: string | null;
   flashSaleSecondColor?: string | null;
+  flashSaleDiscountLabel?: string;
+  flashSaleFastDiscountsLabel?: string;
   viewAllLabel?: string;
   onViewAllClick?: () => void;
   viewAllButtonClassName?: string;
@@ -48,6 +50,8 @@ export default function SliderSection<T extends { id: number | string }>({
   flashSaleEndDate,
   flashSaleMainColor,
   flashSaleSecondColor,
+  flashSaleDiscountLabel,
+  flashSaleFastDiscountsLabel,
   viewAllLabel,
   onViewAllClick,
   viewAllButtonClassName,
@@ -83,6 +87,8 @@ export default function SliderSection<T extends { id: number | string }>({
       flashSaleEndDate={flashSaleEndDate}
       flashSaleMainColor={flashSaleMainColor}
       flashSaleSecondColor={flashSaleSecondColor}
+      flashSaleDiscountLabel={flashSaleDiscountLabel}
+      flashSaleFastDiscountsLabel={flashSaleFastDiscountsLabel}
       viewAllLabel={viewAllLabel}
       onViewAll={onViewAllClick}
       viewAllButtonClassName={viewAllButtonClassName}

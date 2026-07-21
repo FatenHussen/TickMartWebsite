@@ -30,6 +30,10 @@ export type BasketCardProps = {
     offerEndingDate?: string; //"Offer ending date: 11/1/2022"
     /** Bottom animated rows from API `bottom_badges` — no static fallback when omitted */
     bottomBadges?: ProductCardBadge[];
+    /** Number of products bundled inside this basket (drives the "bundle" identity) */
+    itemCount?: number;
+    /** Social proof — how many times this basket has been ordered */
+    soldCount?: number;
     isFavorite?: boolean;
     onToggleFavorite?: (id: number) => void;
     onAddToCart?: (id: number) => void;
@@ -38,10 +42,44 @@ export type BasketCardProps = {
     className?: string;
     layout?: SectionCardVariant;
     surfaceColor?: string | null;
+    /** API-driven gradient for the content panel — wins over `surfaceColor`. */
+    surfaceGradient?: string | null;
     mainColor?: string | null;
     secondColor?: string | null;
     textColor?: string | null;
 };
+
+/** Woven-basket glyph — the visual anchor that distinguishes a bundle from a product. */
+function BasketGlyph({ className }: { className?: string }) {
+    return (
+        <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            className={className}
+            aria-hidden
+        >
+            <path
+                d="M3 8.5h18l-1.4 9.1a2 2 0 0 1-2 1.7H6.4a2 2 0 0 1-2-1.7L3 8.5Z"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinejoin="round"
+            />
+            <path
+                d="M8 8.5 11 3.5M16 8.5 13 3.5"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+            />
+            <path
+                d="M9 12.5v3M12 12.5v3M15 12.5v3"
+                stroke="currentColor"
+                strokeWidth="1.4"
+                strokeLinecap="round"
+                opacity="0.6"
+            />
+        </svg>
+    );
+}
 
 export default function BasketCard({
     id,
@@ -56,6 +94,8 @@ export default function BasketCard({
     savings,
     offerEndingDate,
     bottomBadges,
+    itemCount,
+    soldCount,
     isFavorite = false,
     onToggleFavorite,
     onAddToCart,
@@ -64,6 +104,7 @@ export default function BasketCard({
     className,
     layout,
     surfaceColor,
+    surfaceGradient,
     mainColor,
     secondColor,
     textColor,
@@ -115,26 +156,16 @@ export default function BasketCard({
     const gradientBase = isDarkTheme
         ? "var(--color-bg-card-elevated)"
         : "var(--color-bg-card)";
-    const saveAsBadge: ProductCardBadge[] = saveAmount
-        ? [
-            {
-                label: saveAmount,
-                className:
-                    "rounded-full bg-amber-300 px-3 py-1 text-xs font-semibold text-amber-950 shadow-sm ring-1 ring-amber-400/30",
-                align: "left",
-                rawLabel: true,
-            },
-        ]
-        : [];
     const extraBadges = badge
         ? Array.isArray(badge)
             ? badge
             : [badge]
         : [];
-    /** Prefer API `top_badges`, else savings strip */
-    const allTopBadges = [...extraBadges, ...saveAsBadge].slice(0, 1);
-    const leftBadges = allTopBadges.filter((b) => (b.align ?? "left") === "left");
-    const rightBadges = allTopBadges.filter((b) => b.align === "right");
+    /** API top badges only — savings now has its own dedicated treatments below. */
+    const leftBadges = extraBadges
+        .filter((b) => (b.align ?? "left") === "left")
+        .slice(0, 1);
+    const rightBadges = extraBadges.filter((b) => b.align === "right").slice(0, 1);
 
     const bottomBadgeItems = useMemo(
         () =>
@@ -144,11 +175,18 @@ export default function BasketCard({
             })),
         [bottomBadges, t],
     );
-    const ctaLabel = (() => {
-        if (!t) return "Open Basket";
-        const translated = t("home.openBasket");
-        return translated === "home.openBasket" ? "Open Basket" : translated;
-    })();
+    const tr = (key: string, fallback: string) => {
+        if (!t) return fallback;
+        const value = t(key);
+        return value === key ? fallback : value;
+    };
+    const ctaLabel = tr("home.openBasket", "Open Basket");
+    /** Savings ticket prefers the rich `savings` copy, falls back to the short `saveAmount`. */
+    const savingsLabel = savings || saveAmount;
+    /** Bundle ribbon copy: exact item count when known, otherwise a generic "curated" tag. */
+    const bundleLabel = itemCount && itemCount > 0
+        ? `${itemCount} ${tr("baskets.items", itemCount === 1 ? "item" : "items")}`
+        : tr("baskets.curated", "Curated bundle");
 
     return (
         <div
@@ -176,10 +214,20 @@ export default function BasketCard({
                 color: isDarkTheme ? resolvedTextColor : undefined,
             }}
         >
+            {/* Stacked-layer depth — two slivers peeking behind the top edge imply a bundle */}
+            <div
+                className="pointer-events-none absolute inset-x-5 -top-2 z-0 h-4 rounded-t-2xl bg-white/55 opacity-70 blur-[0.5px] transition-transform duration-300 group-hover:-translate-y-0.5 dark:bg-white/[0.07]"
+                aria-hidden
+            />
+            <div
+                className="pointer-events-none absolute inset-x-2.5 -top-1 z-0 h-4 rounded-t-2xl bg-white/80 dark:bg-white/[0.1]"
+                aria-hidden
+            />
+
             {/* Image */}
             <div
                 className={cn(
-                    "relative w-full shrink-0 overflow-hidden bg-stone-100 dark:bg-[#0B0B0C]",
+                    "relative z-[1] w-full shrink-0 overflow-hidden bg-stone-100 dark:bg-[#0B0B0C]",
                     imageFrameClass,
                     imageShapeClass,
                 )}
@@ -191,28 +239,32 @@ export default function BasketCard({
                     wrapperClassName="h-full w-full"
                 />
                 <div
-                    className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/15 to-transparent dark:from-black/35"
+                    className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/45 via-black/10 to-transparent"
                     aria-hidden
                 />
 
-                {/* Top-left badges */}
-                {leftBadges.length > 0 && (
-                    <div className="absolute left-3 top-3 z-10 flex flex-col gap-1">
-                        {leftBadges.map((b, idx) => (
-                            <Badge
-                                key={idx}
-                                label={resolveProductCardBadgeLabel(b, t)}
-                                type={b.type}
-                                imageSrc={b.image}
-                                imageAlt={resolveProductCardBadgeLabel(b, t)}
-                                className={cn(
-                                    "rounded-full px-3 py-1 text-xs font-semibold leading-none shadow-sm ring-1 ring-amber-400/25",
-                                    b.className || "bg-amber-300 text-amber-950"
-                                )}
-                            />
-                        ))}
-                    </div>
-                )}
+                {/* Top-left: bundle identity ribbon + any API left badge */}
+                <div className="absolute left-3 top-3 z-10 flex flex-col items-start gap-1.5">
+                    <span
+                        className="inline-flex items-center gap-1.5 rounded-full border border-white/40 bg-white/85 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-stone-800 shadow-sm backdrop-blur-md dark:border-white/15 dark:bg-black/55 dark:text-white"
+                    >
+                        <BasketGlyph className="h-3.5 w-3.5 text-[var(--color-main)] dark:text-white" />
+                        {bundleLabel}
+                    </span>
+                    {leftBadges.map((b, idx) => (
+                        <Badge
+                            key={idx}
+                            label={resolveProductCardBadgeLabel(b, t)}
+                            type={b.type}
+                            imageSrc={b.image}
+                            imageAlt={resolveProductCardBadgeLabel(b, t)}
+                            className={cn(
+                                "rounded-full px-3 py-1 text-xs font-semibold leading-none shadow-sm ring-1 ring-amber-400/25",
+                                b.className || "bg-amber-300 text-amber-950"
+                            )}
+                        />
+                    ))}
+                </div>
 
                 {/* Top-right badges + favorite */}
                 <div className="absolute right-3 top-3 z-10 flex flex-col items-end gap-1">
@@ -236,17 +288,31 @@ export default function BasketCard({
                         ariaLabel="Toggle favorite"
                     />
                 </div>
+
+                {/* Bottom-of-image social proof — only renders when the API gives us a count */}
+                {soldCount != null && soldCount > 0 && (
+                    <span className="absolute bottom-3 left-3 z-10 inline-flex items-center gap-1.5 rounded-full bg-black/45 px-2.5 py-1 text-[11px] font-semibold text-white backdrop-blur-sm">
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" aria-hidden />
+                        {soldCount.toLocaleString()} {tr("baskets.sold", "sold")}
+                    </span>
+                )}
             </div>
 
             {/* Body — soft mint wash when no API card tint */}
             <div
                 className={cn(
-                    "flex flex-1 flex-col border-t border-stone-200/60 px-4 pb-5 pt-4 dark:border-white/[0.06]",
+                    "relative z-[1] flex flex-1 flex-col border-t border-stone-200/60 px-4 pb-5 pt-4 dark:border-white/[0.06]",
                     !surfaceColor &&
+                        !surfaceGradient &&
                         "bg-gradient-to-b from-emerald-50/95 via-emerald-50/70 to-white dark:from-[var(--color-bg-card-elevated)] dark:via-[color-mix(in_srgb,var(--color-bg-card-elevated)_88%,var(--color-bg-secondary)_12%)] dark:to-[color-mix(in_srgb,var(--color-bg-card-elevated)_65%,var(--color-bg-tertiary)_35%)]",
                 )}
                 style={
-                    surfaceColor
+                    surfaceGradient
+                        ? {
+                              backgroundImage: surfaceGradient,
+                              color: isDarkTheme ? resolvedTextColor : undefined,
+                          }
+                        : surfaceColor
                         ? {
                               backgroundColor: surfaceColor,
                               color: isDarkTheme ? resolvedTextColor : undefined,
@@ -278,24 +344,33 @@ export default function BasketCard({
                     </div>
                 )}
 
-                {/* Price Section */}
-                <div className="mt-3">
-                    <div className="flex items-baseline gap-2">
-                        <span className="text-2xl font-bold tabular-nums leading-none tracking-tight text-custom-primary dark:text-white">
-                            {price}
+                {/* Price + savings ticket */}
+                <div className="mt-3 flex items-end justify-between gap-3">
+                    <div className="flex flex-col">
+                        <span className="text-[11px] font-medium uppercase tracking-wide text-custom-tertiary dark:text-zinc-500">
+                            {tr("baskets.bundlePrice", "Bundle price")}
                         </span>
+                        <div className="flex items-baseline gap-2">
+                            <span className="text-2xl font-bold tabular-nums leading-none tracking-tight text-custom-primary dark:text-white">
+                                {price}
+                            </span>
+                            {originalPrice && (
+                                <span className="text-sm text-custom-tertiary line-through decoration-1 dark:text-zinc-500 dark:decoration-zinc-600">
+                                    {originalPrice}
+                                </span>
+                            )}
+                        </div>
                     </div>
 
-                    {/* Original Price and Savings */}
-                    {originalPrice && savings && (
-                        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm leading-snug">
-                            <span className="text-custom-tertiary line-through decoration-1 dark:text-zinc-500 dark:decoration-zinc-600">
-                                {originalPrice}
-                            </span>
-                            <span className="font-medium text-green-600">
-                                {savings}
-                            </span>
-                        </div>
+                    {/* Receipt-style savings ticket — perforated edge nods to a basket checkout */}
+                    {savingsLabel && (
+                        <span className="relative inline-flex items-center rounded-md bg-emerald-500/12 px-2.5 py-1 text-xs font-bold text-emerald-700 ring-1 ring-emerald-500/25 dark:bg-emerald-400/10 dark:text-emerald-300 dark:ring-emerald-400/25">
+                            <span
+                                className="absolute -left-1 top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-[var(--color-bg-card)] dark:bg-[var(--color-bg-card-elevated)]"
+                                aria-hidden
+                            />
+                            {savingsLabel}
+                        </span>
                     )}
                 </div>
 
@@ -303,7 +378,7 @@ export default function BasketCard({
                 {offerEndingDate && (
                     <p className="mt-3 text-sm font-normal leading-snug">
                         <span className="text-custom-secondary dark:text-zinc-400">
-                            Offer ending date:
+                            {tr("baskets.offerEnding", "Offer ending date")}:
                         </span>{" "}
                         <span className="text-red-600 dark:text-red-400">{offerEndingDate}</span>
                     </p>
@@ -321,20 +396,21 @@ export default function BasketCard({
                         size="md"
                         fullWidth
                         className={cn(
-                            "h-11 min-h-[44px] border-0 px-4 pb-2 pt-3 text-base font-bold shadow-md transition-[transform,box-shadow,background-color] duration-300 hover:-translate-y-0.5 hover:shadow-lg motion-reduce:hover:translate-y-0",
+                            "group/cta flex h-11 min-h-[44px] items-center justify-center gap-2 border-0 px-4 pb-2 pt-3 text-base font-bold shadow-md transition-[transform,box-shadow,background-color,filter] duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:brightness-105 motion-reduce:hover:translate-y-0",
                             "bg-[var(--color-api-second)] hover:bg-[var(--color-api-second-hover)]",
                             "focus-visible:ring-2 focus-visible:ring-[var(--color-main)]/40",
                             buttonShapeClass,
                         )}
                         style={{
                             backgroundColor: resolvedSecondColor,
-                            color: resolvedTextColor,
+                            color: "#ffffff",
                         }}
                         onClick={(e) => {
                             e.stopPropagation();
                             onAddToCart?.(id);
                         }}
                     >
+                        <BasketGlyph className="h-5 w-5 transition-transform duration-300 group-hover/cta:-translate-y-0.5" />
                         {ctaLabel}
                     </Button>
 

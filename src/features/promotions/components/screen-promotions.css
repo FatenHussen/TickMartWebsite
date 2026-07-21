@@ -21,8 +21,31 @@
     }
 }
 
+/* Friendly little wave on the header badge — playful, not distracting. */
+@keyframes promotions-strip-wave {
+    0%,
+    70%,
+    100% {
+        transform: rotate(0deg);
+    }
+    78% {
+        transform: rotate(-9deg);
+    }
+    86% {
+        transform: rotate(9deg);
+    }
+    94% {
+        transform: rotate(-5deg);
+    }
+}
+
+.promotions-strip-wave {
+    animation: promotions-strip-wave 4.5s ease-in-out infinite;
+    transform-origin: 70% 70%;
+}
+
 .promotions-strip-card {
-    animation: promotions-strip-enter 0.58s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation: promotions-strip-enter 0.62s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
 .promotions-strip-card__shine {
@@ -35,7 +58,8 @@
 
 @media (prefers-reduced-motion: reduce) {
     .promotions-strip-card,
-    .promotions-strip-card__shine {
+    .promotions-strip-card__shine,
+    .promotions-strip-wave {
         animation: none !important;
     }
 }

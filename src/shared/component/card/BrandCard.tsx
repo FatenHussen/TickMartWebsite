@@ -23,6 +23,8 @@ type BrandCardProps = {
     className?: string;
     layout?: SectionCardVariant;
     surfaceColor?: string | null;
+    /** API-driven gradient for the content panel — wins over `surfaceColor`. */
+    surfaceGradient?: string | null;
 };
 
 export default function BrandCard({
@@ -36,6 +38,7 @@ export default function BrandCard({
     className,
     layout,
     surfaceColor,
+    surfaceGradient,
 }: BrandCardProps) {
     const { t } = useTranslation();
     const allBadges = badge
@@ -118,15 +121,11 @@ export default function BrandCard({
                     ))}
                 </div>
             )}
-            <div className="flex w-full shrink-0 flex-col items-stretch bg-[color-mix(in_srgb,var(--color-primary)_6%,var(--color-bg-card))] px-0 pb-3 pt-4 dark:bg-[#0B0B0C]">
+            <div className="flex w-full shrink-0 flex-col items-stretch bg-white dark:bg-[#0B0B0C]">
                 <div
                     className={cn(
-                        "relative w-full shrink-0 overflow-hidden rounded-xl bg-custom-card",
-                        "dark:bg-[#121316] dark:ring-1 dark:ring-white/[0.06]",
-                        "shadow-[inset_0_1px_0_color-mix(in_srgb,var(--color-primary)_22%,white),0_4px_16px_-2px_rgba(0,0,0,0.08)]",
-                        "dark:shadow-[inset_0_1px_0_color-mix(in_srgb,var(--color-text)_10%,transparent),0_6px_22px_-10px_rgba(0,0,0,0.55)]",
-                        "transition-[box-shadow] duration-[450ms] [transition-timing-function:cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none group-hover:shadow-[inset_0_1px_0_color-mix(in_srgb,var(--color-primary)_28%,white),0_8px_22px_-2px_rgba(0,0,0,0.1)]",
-                        "dark:group-hover:shadow-[inset_0_1px_0_color-mix(in_srgb,var(--color-text)_14%,transparent),0_10px_28px_-10px_rgba(0,0,0,0.62)]",
+                        "relative w-full h-full shrink-0 overflow-hidden bg-white",
+                        "dark:bg-[#121316]",
                         imageFrameClass,
                     )}
                 >
@@ -135,7 +134,7 @@ export default function BrandCard({
                         alt={name}
                         effect=""
                         wrapperClassName="absolute inset-0 block h-full w-full overflow-hidden"
-                        className="h-full w-full object-contain object-center"
+                        className="h-full w-full object-cover object-center"
                     />
                 </div>
             </div>
@@ -144,10 +143,15 @@ export default function BrandCard({
                 className={cn(
                     "flex min-h-0 w-full flex-1 flex-col items-center px-4 pb-4 pt-3",
                     !surfaceColor &&
+                        !surfaceGradient &&
                         "bg-[color-mix(in_srgb,var(--color-primary)_9%,var(--color-bg-card))] dark:bg-[color-mix(in_srgb,var(--color-bg-card-elevated)_88%,var(--color-bg-tertiary)_12%)]",
                 )}
                 style={
-                    surfaceColor ? { backgroundColor: surfaceColor } : undefined
+                    surfaceGradient
+                        ? { backgroundImage: surfaceGradient }
+                        : surfaceColor
+                        ? { backgroundColor: surfaceColor }
+                        : undefined
                 }
             >
                 <h3 className="mb-2 w-full text-center text-base font-bold text-[var(--color-text-primary)] dark:text-white">
@@ -163,14 +167,7 @@ export default function BrandCard({
                 </div>
 
                 {showOrders && (
-                    <p
-                        className={cn(
-                            "mt-2 text-center text-xs",
-                            surfaceColor
-                                ? "text-white"
-                                : "text-[var(--color-text-muted)] dark:text-zinc-400",
-                        )}
-                    >
+                    <p className="mt-2 text-center text-xs font-medium text-[var(--color-text-secondary)] dark:text-zinc-300">
                         {t("brands.ordersCount", {
                             count: ordersCount,
                         })}

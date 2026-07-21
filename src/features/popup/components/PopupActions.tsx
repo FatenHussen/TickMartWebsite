@@ -21,20 +21,25 @@ export function PopupActions({ popup, theme, onPrimaryClick, onClose }: Props) {
     return (
         <motion.div
             variants={contentItemVariants}
-            className="flex flex-col sm:flex-row items-center gap-3 mt-1"
+            className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mt-1"
         >
             {hasPrimary && (
                 <button
                     type="button"
                     onClick={onPrimaryClick}
-                    className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all duration-200 hover:brightness-110 hover:scale-[1.02] active:scale-[0.98] border-0"
+                    className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-xl px-6 py-3 text-sm font-bold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] border-0"
                     style={{
-                        backgroundColor: theme.secondary,
+                        backgroundImage: `linear-gradient(135deg, ${theme.secondary}, color-mix(in srgb, ${theme.secondary} 70%, ${theme.main}))`,
                         color: "#0f172a",
-                        boxShadow: `0 8px 24px color-mix(in srgb, ${theme.secondary} 40%, transparent)`,
+                        boxShadow: `0 10px 30px color-mix(in srgb, ${theme.secondary} 45%, transparent)`,
                     }}
                 >
-                    <HiArrowTopRightOnSquare className="w-4 h-4 shrink-0" aria-hidden="true" />
+                    {/* Sheen sweep on hover */}
+                    <span
+                        aria-hidden="true"
+                        className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent transition-transform duration-700 group-hover:translate-x-full"
+                    />
+                    <HiArrowTopRightOnSquare className="w-4 h-4 shrink-0 rtl:-scale-x-100" aria-hidden="true" />
                     {primaryLabel}
                 </button>
             )}
@@ -43,7 +48,7 @@ export function PopupActions({ popup, theme, onPrimaryClick, onClose }: Props) {
                 <button
                     type="button"
                     onClick={onClose}
-                    className="inline-flex items-center rounded-xl px-5 py-2.5 text-sm font-medium transition-all duration-200 hover:bg-white/15 active:scale-[0.98]"
+                    className="inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-medium transition-all duration-200 hover:bg-white/15 active:scale-[0.98]"
                     style={{
                         color: theme.text,
                         border: `1px solid color-mix(in srgb, ${theme.main} 30%, white)`,

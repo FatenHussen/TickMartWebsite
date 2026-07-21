@@ -39,6 +39,8 @@ type ShopCardProps = {
     className?: string;
     layout?: SectionCardVariant;
     surfaceColor?: string | null;
+    /** API-driven gradient for the content panel — wins over `surfaceColor`. */
+    surfaceGradient?: string | null;
 };
 
 export default function ShopCard({
@@ -63,6 +65,7 @@ export default function ShopCard({
     className,
     layout,
     surfaceColor,
+    surfaceGradient,
 }: ShopCardProps) {
     const imageAspectClass = layout
         ? layout === "horizontal"
@@ -200,10 +203,13 @@ export default function ShopCard({
                 className={cn(
                     "flex flex-1 flex-col rounded-b-3xl border-t border-stone-200/60 px-4 pb-4 pt-3.5 dark:border-white/[0.10]",
                     !surfaceColor &&
+                        !surfaceGradient &&
                         "bg-gradient-to-b from-emerald-50/95 via-sky-50/55 to-white dark:from-[var(--color-bg-card-elevated)] dark:via-[color-mix(in_srgb,var(--color-bg-card-elevated)_90%,var(--color-bg-secondary)_10%)] dark:to-[color-mix(in_srgb,var(--color-bg-card-elevated)_68%,var(--color-bg-tertiary)_32%)]",
                 )}
                 style={
-                    surfaceColor
+                    surfaceGradient
+                        ? { backgroundImage: surfaceGradient }
+                        : surfaceColor
                         ? { backgroundColor: surfaceColor }
                         : undefined
                 }

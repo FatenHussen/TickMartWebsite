@@ -10,6 +10,8 @@ import { PopupMedia } from "./PopupMedia";
 import { PopupContent } from "./PopupContent";
 import { PopupActions } from "./PopupActions";
 import { PopupForm } from "../forms/PopupForm";
+import PromotionPopupContent from "./PromotionPopupContent";
+import { isEntityPopup } from "../utils/flattenPromotionEntities";
 import type { PopupCampaign as PopupCampaignType, PopupCloseReason } from "../types";
 
 type Props = {
@@ -25,6 +27,21 @@ export default function PopupCampaign({ popup, isOpen }: Props) {
     if (!popup) return null;
 
     const type = (popup.type || "modal") as string;
+
+    // Entity-scoped campaigns abandon the static media/CTA layout and render a
+    // flattened, scrollable list of promotion entities instead.
+    if (isEntityPopup(popup)) {
+        return (
+            <PopupShell isOpen={isOpen} popupType={type} onClose={close}>
+                <PromotionPopupContent
+                    popup={popup}
+                    mainColor={theme.main}
+                    secondColor={theme.secondary}
+                />
+            </PopupShell>
+        );
+    }
+
     const isFullScreen =
         type.replace(/[-\s]+/g, "_").toLowerCase() === "full_screen" ||
         type.toLowerCase() === "fullscreen";

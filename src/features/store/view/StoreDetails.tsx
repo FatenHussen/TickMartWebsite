@@ -19,6 +19,8 @@ import { queryKeys } from "@/utils/queryKeys";
 import ApiSectionsRenderer from "@/shared/component/sections/ApiSectionsRenderer";
 import FullBleedSection from "@/shared/component/FullBleedSection";
 import ShopCard from "@/shared/component/card/ShopCard";
+import { useTheme } from "@/context/ThemeContext";
+import { getDarkCardSurfaceGradient } from "@/shared/component/sections/sectionCardVariant";
 import { paths } from "@/app/routes/path/paths";
 import {
     mapApiBottomBadgesToProductCard,
@@ -32,6 +34,8 @@ export default function StoreDetails() {
     const { t } = useTranslation();
     const { isRTL } = useLanguage();
     const navigate = useNavigate();
+    const { theme } = useTheme();
+    const isDarkTheme = theme === "dark";
     const [search, setSearch] = useState("");
     const [searchInput, setSearchInput] = useState("");
     const [governorateId, setGovernorateId] = useState<number | undefined>();
@@ -266,6 +270,7 @@ export default function StoreDetails() {
                                     bottomBadges={mappedBottomBadges}
                                     isFavorite={shop.is_favorite ?? false}
                                     onFavorite={handleToggleFavorite}
+                                    surfaceGradient={isDarkTheme ? getDarkCardSurfaceGradient() : undefined}
                                     onClick={() => handleShopClick(shop.id)}
                                 />
                                 );

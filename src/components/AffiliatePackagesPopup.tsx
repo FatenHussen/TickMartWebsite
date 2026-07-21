@@ -1,7 +1,10 @@
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { HiX, HiInformationCircle } from "react-icons/hi";
+import { HiCheckCircle, HiSparkles } from "react-icons/hi2";
+import type { CSSProperties } from "react";
 import { paths } from "@/app/routes/path/paths";
+import { cn } from "@/shared/lib/utils";
 import { PremiumInlineLoader } from "@/shared/component/loading";
 import type { PackageApi } from "@/features/account/types";
 import {
@@ -9,11 +12,16 @@ import {
     formatPriceBillingSuffix,
 } from "@/features/account/utils/formatPackageDuration";
 
-const CARD_STYLES = [
-    { border: "border-t-4 border-t-cyan-400", bg: "bg-blue-50 dark:bg-cyan-900/20" },
-    { border: "border-2 border-amber-400", bg: "bg-amber-50 dark:bg-amber-900/20" },
-    { border: "border-t-4 border-t-purple-400", bg: "bg-purple-50 dark:bg-purple-900/20" },
-];
+/**
+ * Per-tier accent derived entirely from the API palette
+ * (`--color-main` / `--color-api-second`), so cards stay on-brand.
+ * The middle tier is featured (highlighted + "Most popular").
+ */
+const TIER_ACCENTS = [
+    "var(--color-main)",
+    "var(--color-api-second)",
+    "color-mix(in srgb, var(--color-main) 45%, var(--color-api-second))",
+] as const;
 
 type AffiliatePackagesPopupProps = {
     isOpen: boolean;
@@ -37,22 +45,32 @@ export default function AffiliatePackagesPopup({
     return (
         <>
             <div
-                className="fixed inset-0 bg-black/50 z-40"
+                className="fixed inset-0 bg-black/50 z-[60]"
                 onClick={onClose}
                 aria-hidden="true"
             />
             <div
-                className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto"
+                className="fixed inset-0 z-[70] flex items-center justify-center p-4 overflow-y-auto"
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="packages-popup-title"
             >
                 <div
-                    className="bg-custom-card rounded-2xl shadow-xl max-w-2xl w-full my-8 relative"
+                    className="bg-custom-card rounded-3xl shadow-2xl max-w-2xl w-full my-8 relative overflow-hidden"
                     onClick={(e) => e.stopPropagation()}
                 >
+                    {/* Ambient brand glow */}
+                    <div
+                        className="pointer-events-none absolute inset-x-0 top-0 h-56 bg-gradient-to-b from-[color-mix(in_srgb,var(--color-main)_14%,transparent)] via-[color-mix(in_srgb,var(--color-api-second)_6%,transparent)] to-transparent"
+                        aria-hidden
+                    />
+                    <div
+                        className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-[var(--color-main)] via-[var(--color-api-second)] to-[var(--color-main)]"
+                        aria-hidden
+                    />
+
                     {/* Header */}
-                    <div className="flex items-start justify-between gap-4 p-6 pb-4">
+                    <div className="relative flex items-start justify-between gap-4 p-6 pb-4">
                         <div className="flex items-center gap-2 flex-wrap">
                             <h2
                                 id="packages-popup-title"
@@ -60,14 +78,15 @@ export default function AffiliatePackagesPopup({
                             >
                                 {t("packagesPopup.title", "Unlock More Savings Every Month")}
                             </h2>
-                            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-400 text-custom-primary">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold text-[var(--color-text-inverse)] bg-gradient-to-r from-[var(--color-main)] to-[var(--color-api-second)] shadow-sm">
+                                <HiSparkles className="w-3 h-3" />
                                 {t("packagesPopup.newBadge", "New")}
                             </span>
                         </div>
                         <button
                             type="button"
                             onClick={onClose}
-                            className="p-2 rounded-lg hover:bg-custom-tertiary text-custom-secondary transition-colors"
+                            className="p-2 rounded-full hover:bg-custom-tertiary text-custom-secondary transition-colors"
                             aria-label={t("common.close")}
                         >
                             <HiX className="w-6 h-6" />
@@ -75,12 +94,16 @@ export default function AffiliatePackagesPopup({
                     </div>
 
                     {/* Illustration */}
-                    <div className="flex justify-center px-6 pb-4">
-                        <div className="border-2 border-dashed border-custom-secondary rounded-xl p-3">
+                    <div className="relative flex justify-center px-6 pb-4">
+                        <div className="relative rounded-2xl border-2 border-dashed border-[color-mix(in_srgb,var(--color-main)_30%,var(--color-border-primary))] bg-[color-mix(in_srgb,var(--color-main)_5%,var(--color-bg-card))] p-4">
+                            <div
+                                className="pointer-events-none absolute inset-0 rounded-2xl bg-[radial-gradient(circle_at_50%_35%,color-mix(in_srgb,var(--color-main)_18%,transparent),transparent_70%)]"
+                                aria-hidden
+                            />
                             <img
                                 src="/images/shared/packages.png"
                                 alt=""
-                                className="max-h-32 md:max-h-40 w-auto object-contain"
+                                className="relative max-h-32 md:max-h-40 w-auto object-contain"
                             />
                         </div>
                     </div>
@@ -94,15 +117,16 @@ export default function AffiliatePackagesPopup({
                     </p>
 
                     {/* Package Cards */}
-                    <div className="px-6 pb-4">
+                    <div className="relative px-6 pb-4">
                         {isLoading ? (
                             <div className="flex justify-center py-8">
                                 <PremiumInlineLoader size="md" />
                             </div>
                         ) : visiblePackages.length > 0 ? (
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 pt-3 items-stretch">
                                 {visiblePackages.map((pkg, idx) => {
-                                    const style = CARD_STYLES[idx] ?? CARD_STYLES[0];
+                                    const accent = TIER_ACCENTS[idx] ?? TIER_ACCENTS[0];
+                                    const featured = idx === 1;
                                     const localizedName =
                                         typeof pkg.name === "string"
                                             ? pkg.name
@@ -126,26 +150,49 @@ export default function AffiliatePackagesPopup({
                                     return (
                                         <div
                                             key={pkg.id}
-                                            className={`rounded-xl p-4 ${style.border} ${style.bg}`}
+                                            style={{ "--tier": accent } as CSSProperties}
+                                            className={cn(
+                                                "group relative flex flex-col rounded-2xl p-4 transition-transform duration-300 motion-reduce:transition-none",
+                                                "border bg-[color-mix(in_srgb,var(--tier)_7%,var(--color-bg-card))]",
+                                                featured
+                                                    ? "border-transparent ring-2 ring-[var(--tier)] shadow-[0_20px_45px_-20px_var(--tier)] sm:-translate-y-1 sm:hover:-translate-y-2"
+                                                    : "border-[color-mix(in_srgb,var(--tier)_35%,var(--color-border-primary))] hover:-translate-y-1",
+                                            )}
                                         >
-                                            <h3 className="font-bold text-custom-primary mb-1 text-sm">
+                                            {/* Top accent bar */}
+                                            <span
+                                                className="pointer-events-none absolute inset-x-0 top-0 h-1.5 rounded-t-2xl bg-[var(--tier)]"
+                                                aria-hidden
+                                            />
+                                            {featured && (
+                                                <span className="absolute -top-3 start-1/2 -translate-x-1/2 rtl:translate-x-1/2 inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-gradient-to-r from-[var(--color-main)] to-[var(--color-api-second)] px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-[var(--color-text-inverse)] shadow-md">
+                                                    <HiSparkles className="h-3 w-3" />
+                                                    {t("packagesPopup.mostPopular", "Most popular")}
+                                                </span>
+                                            )}
+
+                                            <h3 className="mt-2 font-extrabold text-custom-primary text-base">
                                                 {localizedName}
                                             </h3>
-                                            <p className="text-xs text-custom-secondary mb-2">
+                                            <p className="text-xs text-custom-secondary mb-3">
                                                 {duration}
                                             </p>
-                                            <ul className="space-y-1 mb-4">
+                                            <ul className="space-y-2 mb-4">
                                                 {features.map((text, i) => (
-                                                    <li key={i} className="text-xs text-custom-primary">
-                                                        {text}
+                                                    <li
+                                                        key={i}
+                                                        className="flex items-start gap-2 text-xs text-custom-primary"
+                                                    >
+                                                        <HiCheckCircle className="mt-px h-4 w-4 shrink-0 text-[var(--tier)]" />
+                                                        <span>{text}</span>
                                                     </li>
                                                 ))}
                                             </ul>
-                                            <div>
-                                                <p className="text-base font-bold text-custom-primary">
+                                            <div className="mt-auto flex items-baseline gap-1">
+                                                <p className="text-2xl font-black text-custom-primary">
                                                     {priceDisplay}
                                                 </p>
-                                                <p className="text-xs text-custom-secondary text-right">
+                                                <p className="text-xs font-medium text-custom-secondary">
                                                     {pricePeriodSuffix}
                                                 </p>
                                             </div>
@@ -172,12 +219,18 @@ export default function AffiliatePackagesPopup({
                         <Link
                             to={paths.account.packages}
                             onClick={onClose}
-                            className="flex items-center justify-center w-full py-3 px-6 bg-cyan-500 hover:bg-cyan-600 text-white font-semibold rounded-full transition-colors"
+                            className="group relative flex items-center justify-center w-full py-3.5 px-6 overflow-hidden bg-gradient-to-r from-[var(--color-main)] to-[var(--color-api-second)] text-[var(--color-text-inverse)] font-bold rounded-full shadow-[0_16px_38px_-14px_color-mix(in_srgb,var(--color-main)_65%,transparent)] transition hover:brightness-110 active:scale-[0.99] motion-reduce:transition-none motion-reduce:active:scale-100"
                         >
-                            {t(
-                                "packagesPopup.viewAll",
-                                "View all subscription packages"
-                            )}
+                            <span
+                                className="pointer-events-none absolute inset-y-0 -start-1/3 w-1/3 -skew-x-12 bg-white/25 blur-md transition-transform duration-700 group-hover:translate-x-[380%] motion-reduce:transition-none"
+                                aria-hidden
+                            />
+                            <span className="relative">
+                                {t(
+                                    "packagesPopup.viewAll",
+                                    "View all subscription packages"
+                                )}
+                            </span>
                         </Link>
                         <p className="text-center text-xs text-custom-secondary">
                             {t(

@@ -137,7 +137,7 @@ export function PopupProvider({ children }: Props) {
             return () => window.removeEventListener("scroll", onScroll);
         }
 
-        if (triggerType === "exit") {
+        if (triggerType === "exit_intent" || triggerType === "exit") {
             const onMouseLeave = (e: MouseEvent) => {
                 if (e.clientY <= 0) {
                     document.removeEventListener("mouseleave", onMouseLeave);

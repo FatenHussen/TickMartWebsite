@@ -7,6 +7,7 @@ import { useThemeFromApi } from "@/shared/hooks/useThemeFromApi";
 import NotificationToast from "@/components/NotificationToast";
 import useFirebaseNotifications from "@/hooks/useFirebaseNotifications";
 import { PopupProvider } from "@/features/popup/providers/PopupProvider";
+import { BootGate } from "@/shared/component/loading";
 import "@/i18n/config";
 
 type AppProps = {
@@ -32,9 +33,11 @@ export default function App({ children }: AppProps) {
       <CurrencyProvider>
         <ThemeProvider>
           <ThemeFromApiSync />
-          <PopupProvider>
-            {children}
-          </PopupProvider>
+          <BootGate>
+            <PopupProvider>
+              {children}
+            </PopupProvider>
+          </BootGate>
           <NotificationToast
             notification={notification}
             onClose={dismissNotification}

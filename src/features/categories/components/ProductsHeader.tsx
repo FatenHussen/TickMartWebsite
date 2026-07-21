@@ -47,9 +47,9 @@ export default function ProductsHeader({
  return (
  <div
  className={cn(
-"mb-6 rounded-2xl border p-4 shadow-sm",
+"mb-6 rounded-[20px] border p-4 shadow-[0_1px_3px_rgba(15,23,42,0.04),0_10px_30px_-20px_rgba(15,23,42,0.2)]",
  !apiSurface &&
- "border-primary-light/15 bg-gradient-to-r from-custom-card via-custom-card to-blue-50/50",
+ "border-slate-200/70 bg-custom-card",
  )}
  style={
  apiSurface
@@ -91,9 +91,9 @@ export default function ProductsHeader({
  <div className="flex flex-wrap items-center gap-2 sm:gap-3">
  <label
  className={cn(
-"inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm shadow-sm transition",
+"inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm shadow-sm transition-all duration-200 active:scale-[0.98]",
  !apiSurface &&
- "border-primary-light/20 bg-white/80 text-custom-secondary hover:border-primary-light/40",
+ "border-slate-200/80 bg-white text-custom-secondary hover:border-primary-light/40 hover:bg-slate-50 has-[:checked]:border-primary-light/50 has-[:checked]:bg-primary-light/10 has-[:checked]:text-custom-primary has-[:checked]:font-medium",
  )}
  style={
  apiSurface
@@ -116,9 +116,9 @@ export default function ProductsHeader({
 
  <label
  className={cn(
-"inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm shadow-sm transition",
+"inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm shadow-sm transition-all duration-200 active:scale-[0.98]",
  !apiSurface &&
- "border-primary-light/20 bg-white/80 text-custom-secondary hover:border-primary-light/40",
+ "border-slate-200/80 bg-white text-custom-secondary hover:border-primary-light/40 hover:bg-slate-50 has-[:checked]:border-primary-light/50 has-[:checked]:bg-primary-light/10 has-[:checked]:text-custom-primary has-[:checked]:font-medium",
  )}
  style={
  apiSurface
@@ -144,9 +144,9 @@ export default function ProductsHeader({
  value={sortBy}
  onChange={(e) => onSortChange?.(e.target.value)}
  className={cn(
-"appearance-none rounded-full border px-4 py-2 pr-9 text-sm font-semibold shadow-sm transition focus:outline-none focus:ring-2",
+"appearance-none rounded-full border px-4 py-2 pr-9 text-sm font-semibold shadow-sm transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2",
  !apiSurface &&
- "border-primary-light/25 bg-white text-custom-primary hover:border-primary-light/45 focus:ring-primary-light/30",
+ "border-slate-200/80 bg-white text-custom-primary hover:border-primary-light/45 focus:ring-primary-light/20",
  )}
  style={
  apiSurface

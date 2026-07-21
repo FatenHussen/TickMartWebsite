@@ -7,6 +7,8 @@ import ProductItemsTable, { type ProductItemData } from "@/shared/component/tabl
 import BasePopup from "@/shared/component/BasePopup";
 import { Button, Select } from "@/shared/ui";
 import { HiClock, HiPlus } from "react-icons/hi2";
+import { HiOutlineCheckCircle } from "react-icons/hi2";
+import AnimatedPrice from "@/shared/component/AnimatedPrice";
 import { useCartStore } from "@/store/cart";
 import { useAuthStore } from "@/store/auth";
 import { paths } from "@/app/routes/path/paths";
@@ -221,24 +223,59 @@ export default function SubscriptionBasketDetails({
     };
 
     return (
-        <div className="min-h-screen bg-custom-light" dir={isRTL ? "rtl" : "ltr"}>
+        <div className="min-h-screen" dir={isRTL ? "rtl" : "ltr"}>
             <div className="page-container py-8">
-                {/* Selected Basket Header */}
-                <div className={`${BASKET_CARD_ELEVATED} p-4 sm:p-5 mb-5`}>
-                    <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-3">
-                        <div className="flex flex-wrap items-center gap-2 md:gap-3">
-                            <h2 className="text-lg sm:text-xl font-bold text-custom-primary leading-snug">
-                                {t("baskets.selectedBasket")}: {basket.name}
+                {/* Selected Basket Hero */}
+                <div
+                    className={cn(
+                        BASKET_CARD_ELEVATED,
+                        "animate-basket-rise relative mb-5 overflow-hidden p-5 sm:p-6"
+                    )}
+                >
+                    {/* Accent strip + soft glow anchor the hero */}
+                    <span
+                        className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[var(--color-main)] to-[var(--color-api-second)]"
+                        aria-hidden
+                    />
+                    <span
+                        className="pointer-events-none absolute -right-16 -top-16 h-44 w-44 rounded-full bg-[color-mix(in_srgb,var(--color-main)_14%,transparent)] blur-3xl"
+                        aria-hidden
+                    />
+
+                    <div className="relative flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+                        <div className="min-w-0 flex-1">
+                            <div className="mb-2 flex flex-wrap items-center gap-2">
+                                <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--color-api-second)] px-3 py-1 text-xs font-semibold text-white shadow-sm">
+                                    <span className="h-1.5 w-1.5 rounded-full bg-white/90" aria-hidden />
+                                    {t("baskets.scheduled")}
+                                </span>
+                                {selectedSchedule && (
+                                    <span className={BASKET_BADGE_NEUTRAL}>{selectedSchedule.title}</span>
+                                )}
+                            </div>
+                            <p className="text-xs font-medium uppercase tracking-wide text-custom-tertiary">
+                                {t("baskets.selectedBasket")}
+                            </p>
+                            <h2 className="mt-0.5 text-xl font-bold leading-snug tracking-tight text-custom-primary sm:text-2xl">
+                                {basket.name}
                             </h2>
-                            <span className="inline-flex items-center rounded-full bg-[var(--color-api-second)] px-3 py-1 text-xs font-semibold text-white shadow-sm">
-                                {t("baskets.scheduled")}
-                            </span>
-                            {selectedSchedule && (
-                                <span className={BASKET_BADGE_NEUTRAL}>{selectedSchedule.title}</span>
-                            )}
+
+                            <div className="mt-3.5 flex flex-wrap items-center gap-2">
+                                <span className="inline-flex items-center gap-1.5 rounded-full bg-[color-mix(in_srgb,var(--color-main)_8%,var(--color-bg-card))] px-3 py-1.5 text-sm text-custom-secondary ring-1 ring-custom-primary/10">
+                                    <span className="font-bold text-[var(--color-main)] tabular-nums">{productItems.length}</span>
+                                    {t("checkout.items")}
+                                </span>
+                                <span className="inline-flex items-center gap-1.5 rounded-full bg-[color-mix(in_srgb,var(--color-main)_8%,var(--color-bg-card))] px-3 py-1.5 text-sm text-custom-secondary ring-1 ring-custom-primary/10">
+                                    <HiClock className="h-4 w-4 shrink-0 text-[var(--color-main)] opacity-80" />
+                                    <span className="font-medium">{t("baskets.nextDelivery")}:</span>
+                                    <span className="font-semibold text-custom-primary">{basket.next_delivery_date ?? "-"}</span>
+                                </span>
+                            </div>
                         </div>
+
+                        {/* Delivery schedule selector — cleaner card */}
                         {basket.schedules && basket.schedules.length > 0 && (
-                            <div className="w-full md:w-64 shrink-0">
+                            <div className="w-full shrink-0 rounded-2xl border border-custom-primary/10 bg-[color-mix(in_srgb,var(--color-main)_4%,var(--color-bg-card))] p-3.5 lg:w-72">
                                 <Select
                                     label={t("baskets.selectSchedule")}
                                     options={scheduleOptions}
@@ -253,47 +290,41 @@ export default function SubscriptionBasketDetails({
                             </div>
                         )}
                     </div>
-
-                    <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-custom-secondary">
-                        <div className="flex items-center gap-2">
-                            <span className="font-semibold text-[var(--color-main)] tabular-nums">{productItems.length}</span>
-                            <span>{t("checkout.items")}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <HiClock className="h-4 w-4 shrink-0 text-[var(--color-main)] opacity-80" />
-                            <span className="font-medium text-custom-secondary">{t("baskets.nextDelivery")}:</span>
-                            <span className="font-medium text-custom-primary">{basket.next_delivery_date ?? "-"}</span>
-                        </div>
-                    </div>
                 </div>
 
                 {/* Pricing Info */}
                 <div className={`${BASKET_CARD_ELEVATED} p-4 sm:p-5 mb-5`}>
-                    <div className="flex items-center justify-between text-sm mb-2">
-                        <div className="flex items-center gap-4">
-                            <div>
-                                <span className="text-custom-secondary">{t("baskets.subtotal")}:</span>
-                                <span className="font-bold text-custom-primary ml-2">${subtotal.toFixed(2)}</span>
+                    <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
+                        <div className="flex items-baseline gap-2">
+                            <span className="text-custom-secondary">{t("baskets.subtotal")}:</span>
+                            <AnimatedPrice value={subtotal} prefix="$" className="font-bold text-custom-primary" />
+                        </div>
+                        {discount > 0 && (
+                            <div className="flex items-baseline gap-2">
+                                <span className="text-custom-secondary">{t("baskets.discount")}:</span>
+                                <AnimatedPrice value={discount} prefix="-$" className="font-bold text-[var(--color-error)]" />
                             </div>
-                            {discount > 0 && (
-                                <div>
-                                    <span className="text-custom-secondary">{t("baskets.discount")}:</span>
-                                    <span className="font-bold text-[var(--color-error)] ml-2">-${discount.toFixed(2)}</span>
-                                </div>
-                            )}
-                            <div>
-                                <span className="text-custom-secondary">{t("baskets.total")}:</span>
-                                <span className="ml-2 text-lg font-bold tabular-nums text-[var(--color-main)]">${total.toFixed(2)}</span>
-                            </div>
+                        )}
+                        <div className="flex items-baseline gap-2">
+                            <span className="text-custom-secondary">{t("baskets.total")}:</span>
+                            <AnimatedPrice value={total} prefix="$" className="text-lg font-bold text-[var(--color-main)]" />
                         </div>
                     </div>
                     {savings > 0 && (
-                        <div className="mt-3 rounded-xl border border-dashed border-[color-mix(in_srgb,var(--color-main)_28%,var(--color-border-primary))] bg-custom-accent-light p-3 sm:p-4">
-                            <p className="text-sm font-medium text-custom-primary">
-                                {t("baskets.youSave")} ${savings.toFixed(2)}
+                        <div className="mt-3 flex items-start gap-3 rounded-xl border border-[color-mix(in_srgb,var(--color-success)_30%,transparent)] bg-[color-mix(in_srgb,var(--color-success)_8%,var(--color-bg-card))] p-3 sm:p-4">
+                            <span
+                                className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--color-success)_16%,transparent)] text-[var(--color-success)]"
+                                aria-hidden
+                            >
+                                <HiOutlineCheckCircle className="h-5 w-5" />
+                            </span>
+                            <p className="text-sm font-medium leading-relaxed text-custom-primary">
+                                <span className="font-bold text-[var(--color-success)]">
+                                    {t("baskets.youSave")} <AnimatedPrice value={savings} prefix="$" />
+                                </span>
                                 {scheduleDiscount > 0 && selectedSchedule && (
                                     <>
-                                        {""}
+                                        {" "}
                                         ({selectedSchedule.discount_type === "percentage"
                                             ? `${selectedSchedule.discount_value}%`
                                             : ""})
@@ -321,41 +352,52 @@ export default function SubscriptionBasketDetails({
                     />
                 </div>
 
-                {/* Summary Section */}
-                <div className={`${BASKET_ACCENT_SECTION} mb-6 p-4 sm:p-5`}>
-                    <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-6">
-                            <span className="font-bold text-custom-primary">{t("baskets.orderSummary")}</span>
-                            <div className="flex flex-wrap items-center gap-2 text-sm">
-                                <span className="text-custom-secondary">
-                                    {productItems.length} {t("baskets.totalItems")}
-                                </span>
-                                <span className="text-custom-tertiary" aria-hidden>
-                                    |
-                                </span>
-                                <span className="text-custom-secondary">
-                                    {t("recipes.quantity")}: {totalQuantity}
-                                </span>
-                            </div>
-                        </div>
-                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
-                            <div className={isRTL ? "text-left sm:text-right" : "text-right"}>
-                                <div className="text-sm text-custom-secondary tabular-nums">
-                                    {t("baskets.subtotal")}: ${subtotal.toFixed(2)}
-                                </div>
-                                <div className="text-lg font-bold tabular-nums text-[var(--color-main)]">
-                                    {t("baskets.total")}: ${total.toFixed(2)}
+                {/* Summary Section — sticks to the bottom while scrolling the items */}
+                <div className="sticky bottom-3 z-20 mb-6">
+                    <div
+                        className={cn(
+                            BASKET_ACCENT_SECTION,
+                            "p-4 shadow-[0_10px_30px_-12px_color-mix(in_srgb,var(--color-main)_45%,transparent)] backdrop-blur-sm sm:p-5",
+                            "supports-[backdrop-filter]:bg-[color-mix(in_srgb,var(--color-accent-light-bg)_90%,transparent)]"
+                        )}
+                    >
+                        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-6">
+                                <span className="font-bold text-custom-primary">{t("baskets.orderSummary")}</span>
+                                <div className="flex flex-wrap items-center gap-2 text-sm">
+                                    <span className="text-custom-secondary">
+                                        {productItems.length} {t("baskets.totalItems")}
+                                    </span>
+                                    <span className="text-custom-tertiary" aria-hidden>
+                                        |
+                                    </span>
+                                    <span className="text-custom-secondary">
+                                        {t("recipes.quantity")}: {totalQuantity}
+                                    </span>
                                 </div>
                             </div>
-                            {availableExtras.length > 0 && (
-                                <Button
-                                    onClick={handleAddMoreItems}
-                                    className={cn(BASKET_PRIMARY_CTA, "px-5 py-2.5")}
-                                    variant="ghost"
-                                >
-                                    + {t("baskets.addMoreItems")}
-                                </Button>
-                            )}
+                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
+                                <div className={isRTL ? "text-left sm:text-right" : "text-right"}>
+                                    <div className="text-sm text-custom-secondary tabular-nums">
+                                        {t("baskets.subtotal")}: <AnimatedPrice value={subtotal} prefix="$" />
+                                    </div>
+                                    <div className="text-lg font-bold text-[var(--color-main)]">
+                                        {t("baskets.total")}: <AnimatedPrice value={total} prefix="$" />
+                                    </div>
+                                </div>
+                                {availableExtras.length > 0 && (
+                                    <Button
+                                        onClick={handleAddMoreItems}
+                                        className={cn(
+                                            BASKET_PRIMARY_CTA,
+                                            "px-5 py-2.5 transition-transform duration-150 ease-out hover:-translate-y-0.5 active:translate-y-0 motion-reduce:hover:translate-y-0"
+                                        )}
+                                        variant="ghost"
+                                    >
+                                        + {t("baskets.addMoreItems")}
+                                    </Button>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>

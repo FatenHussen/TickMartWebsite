@@ -16,21 +16,23 @@ export function PopupContent({ popup, lang, theme, isFullScreen }: Props) {
     const subtitle = localize(popup.content?.subheadline, lang);
     const description = localize(popup.content?.description, lang);
     const campaignLabel = localize(popup.title, lang);
+    const badgeLabel = lang === "ar" ? "عرض خاص" : "Special offer";
 
     return (
         <>
             {/* Badge */}
             <motion.div
                 variants={contentItemVariants}
-                className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 mb-3 w-fit backdrop-blur-md text-xs font-medium tracking-wide"
+                className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 mb-3 w-fit backdrop-blur-md text-xs font-semibold tracking-wide shadow-sm"
                 style={{
                     backgroundColor: "rgba(255,255,255,0.15)",
                     border: `1px solid color-mix(in srgb, ${theme.secondary} 55%, white)`,
                     color: `color-mix(in srgb, ${theme.secondary} 85%, white)`,
+                    boxShadow: `0 2px 12px color-mix(in srgb, ${theme.secondary} 30%, transparent)`,
                 }}
             >
                 <HiSparkles className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-                Special offer
+                {badgeLabel}
             </motion.div>
 
             {/* Campaign label */}
@@ -44,12 +46,18 @@ export function PopupContent({ popup, lang, theme, isFullScreen }: Props) {
                 </motion.span>
             )}
 
-            {/* Headline */}
+            {/* Headline — gradient ink for a premium feel */}
             {title && (
                 <motion.h2
                     variants={contentItemVariants}
-                    className="text-3xl md:text-4xl font-extrabold leading-tight mb-1.5"
-                    style={{ color: theme.text }}
+                    className="text-3xl md:text-4xl font-extrabold leading-tight mb-1.5 drop-shadow-sm"
+                    style={{
+                        color: theme.text,
+                        backgroundImage: `linear-gradient(120deg, ${theme.text}, color-mix(in srgb, ${theme.secondary} 60%, ${theme.text}))`,
+                        WebkitBackgroundClip: "text",
+                        backgroundClip: "text",
+                        WebkitTextFillColor: "transparent",
+                    }}
                 >
                     {title}
                 </motion.h2>
@@ -86,7 +94,7 @@ export function PopupContent({ popup, lang, theme, isFullScreen }: Props) {
                     {[
                         `type: ${popup.type}`,
                         `trigger: ${popup.trigger?.type ?? "delay"}`,
-                        `every: ${popup.frequency?.show_every ?? "∞"}m`,
+                        `every: ${popup.frequency?.show_every ?? "∞"}d`,
                     ].map((tag) => (
                         <span
                             key={tag}

@@ -15,6 +15,8 @@ import CategoryStore from"../components/CategoryStore";
 import ShopServiceCard from"../components/ShopServiceCard";
 import BookServiceModal from"../components/BookServiceModal";
 import ProductCard from"@/shared/component/card/ProductCard";
+import { useTheme } from"@/context/ThemeContext";
+import { getDarkCardSurfaceGradient } from"@/shared/component/sections/sectionCardVariant";
 import { PremiumInlineLoader } from"@/shared/component/loading";
 import { convertShopDataToStoreMeta } from"../utils/shopDataConverter";
 import { mapActionPageSlugToRoute } from"@/utils/routeMapper";
@@ -26,6 +28,8 @@ export default function ShopDetails() {
  const { t } = useTranslation();
  const { isRTL } = useLanguage();
  const navigate = useNavigate();
+ const { theme } = useTheme();
+ const isDarkTheme = theme ==="dark";
  const { shopId } = useParams<{ shopId: string }>();
  const shopIdNum = parseInt(shopId ||"0", 10);
 
@@ -247,6 +251,7 @@ onSelectCategory={setSelectedCategoryId}
  : undefined
  }
  deliveryInfo={t("home.freeDelivery","Free Delivery")}
+ surfaceGradient={isDarkTheme ? getDarkCardSurfaceGradient() : undefined}
  onClick={(id) => {
  const route = mapActionPageSlugToRoute(
 "product_details",

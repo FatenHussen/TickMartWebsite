@@ -1,4 +1,4 @@
-import { useState, useEffect } from"react";
+import { useState, useEffect, useRef } from"react";
 import { useTranslation } from"react-i18next";
 import { cn } from"@/shared/lib/utils";
 import type { CategoriesApiDarkSurface } from"../lib/categoriesApiDarkSurface";
@@ -44,15 +44,44 @@ export default function CategoryFilters({
  setLocalMaxPrice(maxPrice?.toString() ??"");
  }, [maxPrice]);
 
- const handleApply = () => {
- onTypeFilterChange?.(localType);
+ const priceDebounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+ useEffect(
+ () => () => {
+ if (priceDebounceRef.current) clearTimeout(priceDebounceRef.current);
+ },
+ [],
+ );
+
+ // Live filtering — type applies instantly on change.
+ const handleTypeChange = (value: CategoryTypeFilter) => {
+ setLocalType(value);
+ onTypeFilterChange?.(value);
+ };
+
+ // Price applies after a short debounce so typing stays smooth.
+ const commitPrice = (nextMin: string, nextMax: string) => {
+ if (priceDebounceRef.current) clearTimeout(priceDebounceRef.current);
+ priceDebounceRef.current = setTimeout(() => {
  onPriceChange?.({
- minPrice: localMinPrice.trim() ===""? undefined : Number(localMinPrice),
- maxPrice: localMaxPrice.trim() ===""? undefined : Number(localMaxPrice),
+ minPrice: nextMin.trim() ===""? undefined : Number(nextMin),
+ maxPrice: nextMax.trim() ===""? undefined : Number(nextMax),
  });
+ }, 400);
+ };
+
+ const handleMinPriceChange = (value: string) => {
+ setLocalMinPrice(value);
+ commitPrice(value, localMaxPrice);
+ };
+
+ const handleMaxPriceChange = (value: string) => {
+ setLocalMaxPrice(value);
+ commitPrice(localMinPrice, value);
  };
 
  const handleReset = () => {
+ if (priceDebounceRef.current) clearTimeout(priceDebounceRef.current);
  setLocalType(undefined);
  setLocalMinPrice("");
  setLocalMaxPrice("");
@@ -70,7 +99,7 @@ export default function CategoryFilters({
  style={apiSurface ? { color: apiSurface.mutedColor } : undefined}
  >
  <h3
- className={cn("text-base font-bold", !apiSurface && "text-custom-primary")}
+ className={cn("text-[15px] font-bold tracking-tight", !apiSurface && "text-custom-primary")}
  style={apiSurface ? { color: apiSurface.pageColor } : undefined}
  >
  {t("categories.filters","Filters")}
@@ -79,7 +108,7 @@ export default function CategoryFilters({
  {/* Category Type */}
  <section className="space-y-3">
  <p
- className={cn("text-sm font-semibold", !apiSurface && "text-custom-primary")}
+ className={cn("text-[11px] font-semibold uppercase tracking-[0.07em]", !apiSurface && "text-custom-secondary")}
  style={apiSurface ? { color: apiSurface.pageColor } : undefined}
  >
  {t("categories.typeFilter","Category Type")}
@@ -89,9 +118,11 @@ export default function CategoryFilters({
  <label
  key={opt.value ??"all"}
  className={cn(
-"flex min-h-11 cursor-pointer items-center gap-2.5 rounded-xl border px-3 py-2.5 text-sm transition",
+"flex min-h-11 cursor-pointer items-center gap-2.5 rounded-xl border px-3 py-2.5 text-sm transition-all duration-200 active:scale-[0.99]",
  !apiSurface &&
- "border-primary-light/10 bg-white hover:border-primary-light/25 hover:bg-blue-50/40",
+ (localType === opt.value
+									? "border-primary-light/40 bg-primary-light/[0.07] shadow-[0_1px_2px_rgba(15,23,42,0.04)]"
+									: "border-slate-200/80 bg-white hover:border-primary-light/30 hover:bg-slate-50"),
  )}
  style={
  apiSurface
@@ -106,8 +137,8 @@ export default function CategoryFilters({
  type="radio"
  name="categoryType"
  checked={localType === opt.value}
- onChange={() => setLocalType(opt.value)}
- className="h-4 w-4 border-custom-secondary text-primary-light focus:ring-primary-light"
+ onChange={() => handleTypeChange(opt.value)}
+ className="h-[18px] w-[18px] accent-primary-light focus:outline-none focus:ring-2 focus:ring-primary-light/30"
  />
  <span
  className={cn(!apiSurface && "text-custom-secondary")}
@@ -126,7 +157,7 @@ export default function CategoryFilters({
  style={apiSurface ? { borderColor: apiSurface.cardBorder } : undefined}
  >
  <p
- className={cn("text-sm font-semibold", !apiSurface && "text-custom-primary")}
+ className={cn("text-[11px] font-semibold uppercase tracking-[0.07em]", !apiSurface && "text-custom-secondary")}
  style={apiSurface ? { color: apiSurface.pageColor } : undefined}
  >
  {t("categories.priceRange","Price range")}
@@ -136,12 +167,12 @@ export default function CategoryFilters({
  type="number"
  min={0}
  value={localMinPrice}
- onChange={(e) => setLocalMinPrice(e.target.value)}
+ onChange={(e) => handleMinPriceChange(e.target.value)}
  placeholder={t("baskets.min","Min")}
  className={cn(
-"h-11 w-full rounded-xl border px-3 text-sm outline-none transition focus:ring-2",
+"h-11 w-full rounded-xl border px-3 text-sm outline-none transition-all duration-200 focus:ring-2",
  !apiSurface &&
- "border-primary-light/20 bg-white text-custom-primary focus:border-primary-light/50 focus:ring-primary-light/20",
+ "border-slate-200/80 bg-white text-custom-primary placeholder:text-slate-400 focus:border-primary-light/60 focus:ring-primary-light/15",
  )}
  style={
  apiSurface
@@ -157,12 +188,12 @@ export default function CategoryFilters({
  type="number"
  min={0}
  value={localMaxPrice}
- onChange={(e) => setLocalMaxPrice(e.target.value)}
+ onChange={(e) => handleMaxPriceChange(e.target.value)}
  placeholder={t("baskets.max","Max")}
  className={cn(
-"h-11 w-full rounded-xl border px-3 text-sm outline-none transition focus:ring-2",
+"h-11 w-full rounded-xl border px-3 text-sm outline-none transition-all duration-200 focus:ring-2",
  !apiSurface &&
- "border-primary-light/20 bg-white text-custom-primary focus:border-primary-light/50 focus:ring-primary-light/20",
+ "border-slate-200/80 bg-white text-custom-primary placeholder:text-slate-400 focus:border-primary-light/60 focus:ring-primary-light/15",
  )}
  style={
  apiSurface
@@ -180,29 +211,12 @@ export default function CategoryFilters({
  {/* Action Buttons */}
  <div className="space-y-2.5 pt-1">
  <button
- onClick={handleApply}
- className={cn(
-"h-11 w-full rounded-xl text-sm font-semibold shadow-sm transition hover:opacity-90",
- !apiSurface && "bg-gradient-to-r from-amber-400 via-primary-light to-blue-500 text-white",
- )}
- style={
- apiSurface
- ? {
- background: `linear-gradient(90deg, ${apiSurface.main}, ${apiSurface.second})`,
- color: "#fafafa",
- }
- : undefined
- }
- >
- {t("categories.applyFilters","Apply filters")}
- </button>
- <button
  type="button"
  onClick={handleReset}
  className={cn(
-"h-11 w-full rounded-xl border text-sm font-semibold transition",
+"h-11 w-full rounded-xl border text-sm font-semibold transition-all duration-200 active:scale-[0.99]",
  !apiSurface &&
- "border-primary-light/20 bg-white/80 text-primary-light hover:bg-blue-50",
+ "border-slate-200/90 bg-white text-custom-primary hover:border-primary-light/40 hover:bg-slate-50",
  )}
  style={
  apiSurface

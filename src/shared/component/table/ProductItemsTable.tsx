@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContext";
 import { HiMinus, HiPlus, HiTrash } from "react-icons/hi2";
 import { cn } from "@/shared/lib/utils";
+import AnimatedPrice from "@/shared/component/AnimatedPrice";
 
 /** QTY stepper ring: API `main` → `second` on card surface */
 const qtyStepperButtonStyle = (): CSSProperties => ({
@@ -156,24 +157,36 @@ export default function ProductItemsTable({
                                 <tr
                                     key={item.id}
                                     className={cn(
-                                        "border-b border-custom-primary/10 transition-colors last:border-b-0",
+                                        "group/row border-b border-custom-primary/10 last:border-b-0",
+                                        "transition-[background-color,box-shadow] duration-200 ease-out",
                                         "bg-custom-card hover:bg-[color-mix(in_srgb,var(--color-main)_5%,var(--color-bg-card))]",
                                         "even:bg-[color-mix(in_srgb,var(--color-main)_2.5%,var(--color-bg-card))]",
+                                        "hover:shadow-[inset_3px_0_0_0_var(--color-main)]",
                                         "dark:border-custom-primary/15 dark:hover:bg-white/[0.04]"
                                     )}
                                 >
                                     {/* Product */}
                                     <td className="align-middle px-5 py-4 sm:px-6 sm:py-5">
-                                        <div className="flex items-center gap-3">
-                                            {item.image && (
-                                                <img
-                                                    src={item.image}
-                                                    alt={item.name}
-                                                    className="h-12 w-12 shrink-0 rounded-lg object-cover"
-                                                />
-                                            )}
+                                        <div className="flex items-center gap-3.5">
+                                            <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-[color-mix(in_srgb,var(--color-main)_8%,var(--color-bg-card))] ring-1 ring-custom-primary/10 shadow-sm dark:ring-white/10">
+                                                {item.image ? (
+                                                    <img
+                                                        src={item.image}
+                                                        alt={item.name}
+                                                        loading="lazy"
+                                                        className="h-full w-full object-cover transition-transform duration-300 ease-out will-change-transform group-hover/row:scale-105 motion-reduce:group-hover/row:scale-100"
+                                                    />
+                                                ) : (
+                                                    <span
+                                                        className="flex h-full w-full items-center justify-center text-base font-bold uppercase text-[var(--color-main)]/70"
+                                                        aria-hidden
+                                                    >
+                                                        {item.name?.trim().charAt(0) || "•"}
+                                                    </span>
+                                                )}
+                                            </div>
                                             <div className="flex min-w-0 flex-col">
-                                                <span className="font-bold text-custom-primary">
+                                                <span className="font-bold leading-snug text-custom-primary">
                                                     {item.name}
                                                     {item.is_required && (
                                                         <span className="ms-1 text-[var(--color-error)]">*</span>
@@ -266,13 +279,13 @@ export default function ProductItemsTable({
                                     {/* Quantity */}
                                     <td className="align-middle px-5 py-4 sm:px-6 sm:py-5">
                                         {!readonly && item.can_adjust !== false ? (
-                                            <div className="flex items-center justify-center gap-3 sm:gap-4">
+                                            <div className="mx-auto inline-flex items-center gap-1 rounded-full border border-custom-primary/10 bg-[color-mix(in_srgb,var(--color-main)_5%,var(--color-bg-card))] p-1 shadow-inner dark:border-white/10">
                                                 <button
                                                     type="button"
                                                     onClick={() => handleQuantityDecrease(item)}
                                                     disabled={item.quantity <= minQty}
                                                     className={cn(
-                                                        "flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-transparent p-0 text-custom-primary transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40",
+                                                        "flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-transparent p-0 text-custom-primary transition-transform duration-150 ease-out hover:scale-105 active:scale-90 disabled:cursor-not-allowed disabled:opacity-40 motion-reduce:transition-none motion-reduce:hover:scale-100",
                                                         item.quantity <= minQty && "cursor-not-allowed opacity-50"
                                                     )}
                                                     style={qtyStepperButtonStyle()}
@@ -280,7 +293,10 @@ export default function ProductItemsTable({
                                                 >
                                                     <HiMinus className="h-4 w-4" />
                                                 </button>
-                                                <span className="min-w-[2rem] text-center text-lg font-bold text-custom-primary tabular-nums">
+                                                <span
+                                                    key={item.quantity}
+                                                    className="min-w-[2.25rem] animate-[qtyPop_180ms_ease-out] text-center text-lg font-bold text-custom-primary tabular-nums"
+                                                >
                                                     {item.quantity}
                                                 </span>
                                                 <button
@@ -288,7 +304,7 @@ export default function ProductItemsTable({
                                                     onClick={() => handleQuantityIncrease(item)}
                                                     disabled={item.quantity >= maxQty}
                                                     className={cn(
-                                                        "flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-transparent p-0 text-custom-primary transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40",
+                                                        "flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-transparent p-0 text-custom-primary transition-transform duration-150 ease-out hover:scale-105 active:scale-90 disabled:cursor-not-allowed disabled:opacity-40 motion-reduce:transition-none motion-reduce:hover:scale-100",
                                                         item.quantity >= maxQty && "cursor-not-allowed opacity-50"
                                                     )}
                                                     style={qtyStepperButtonStyle()}
@@ -311,8 +327,12 @@ export default function ProductItemsTable({
                                             isRTL ? "text-left" : "text-right"
                                         )}
                                     >
-                                        {item.priceLineFormatted ??
-                                            `${currencySymbol}${Number.isFinite(item.subtotal) ? item.subtotal.toFixed(2) : "0.00"}`}
+                                        {item.priceLineFormatted ?? (
+                                            <AnimatedPrice
+                                                value={Number.isFinite(item.subtotal) ? item.subtotal : 0}
+                                                prefix={currencySymbol}
+                                            />
+                                        )}
                                     </td>
 
                                     {/* Action */}
@@ -321,7 +341,13 @@ export default function ProductItemsTable({
                                             <button
                                                 type="button"
                                                 onClick={() => onRemoveItem?.(item.id)}
-                                                className="inline-flex text-[var(--color-error)] transition hover:opacity-80"
+                                                className={cn(
+                                                    "inline-flex h-9 w-9 items-center justify-center rounded-full text-[var(--color-error)]",
+                                                    "transition-[transform,background-color,color] duration-150 ease-out",
+                                                    "hover:scale-105 hover:bg-[color-mix(in_srgb,var(--color-error)_12%,transparent)] active:scale-90",
+                                                    "focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-error)]/40",
+                                                    "motion-reduce:transition-none motion-reduce:hover:scale-100"
+                                                )}
                                                 aria-label={t("cart.removeItem")}
                                             >
                                                 <HiTrash className="h-5 w-5" />

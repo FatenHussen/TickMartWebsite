@@ -3,6 +3,7 @@ import { useTranslation } from"react-i18next";
 import InputField from"@/shared/ui/InputField";
 import Button from"@/shared/ui/Button";
 import AuthLayout from"@/features/auth/layout/Auth-Layout";
+import AuthBrand from"@/features/auth/components/AuthBrand";
 import { useResetPassword } from"@/features/auth/hooks/useAuth";
 import type { ChangePasswordFormValues } from"@/features/auth/types";
 
@@ -30,33 +31,19 @@ export default function ChangePassword() {
  });
  };
 
- const leftContent = (
- <div className="max-w-lg">
- <img
- src="https://i.ibb.co/ZxYJK1q/security-illustration.png"
- alt="Security illustration"
- className="w-full h-auto"
- />
- </div>
- );
 
  return (
  <AuthLayout
- leftPanel="custom"
- leftContent={leftContent}
+ leftPanel="image"
+ leftImageSrc="/images/auth/changePassword.jpg"
+ leftImageAlt=""
+ leftImageHeight="100vh"
  useFormCard
  maxWidth="auth"
  >
  <div className="space-y-8">
  <div className="text-center">
- <div className="flex items-center justify-center gap-2 mb-6">
- <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-main)]">
- <span className="text-xl text-[var(--color-text-inverse)]">🌀</span>
- </div>
- <span className="text-xl font-bold text-custom-primary">
- Tikmart
- </span>
- </div>
+ <AuthBrand size="sm" className="mb-6" />
 
  <h1 className="text-2xl font-bold text-custom-primary">
  {t("auth.changePassword")}
@@ -117,7 +104,7 @@ export default function ChangePassword() {
  isLoading={isPending}
  fullWidth
  variant="primary"
- className="py-3 rounded-full font-semibold mt-6"
+ className="py-3 rounded-xl font-semibold mt-6"
  >
  {t("auth.changePassword")}
  </Button>

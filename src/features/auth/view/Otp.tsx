@@ -115,8 +115,8 @@ export default function Otp() {
                 )}
             >
                 <img
-                    src="/images/auth/Vector.png"
-                    alt="Tickmart"
+                    src="/images/shared/logo.png"
+                    alt="Logo"
                     className="mx-auto h-auto w-full max-w-[220px] object-contain"
                 />
             </div>

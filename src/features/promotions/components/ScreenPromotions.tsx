@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { Sparkles } from "lucide-react";
+import { Gift, PartyPopper } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { useTheme } from "@/context/ThemeContext";
 import { pickLocalizedPromotionText } from "../utils/pickLocalizedPromotionText";
@@ -77,6 +77,9 @@ export function ScreenPromotions({
             ? "max-w-3xl"
             : "grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3";
 
+    // Surface behind the cards — used to punch the coupon notches cleanly.
+    const surfaceColor = isDark ? "#0B0B0C" : "var(--color-bg-card)";
+
     const sectionBandStyle = isDark
         ? {
               backgroundColor: "#0B0B0C",
@@ -85,7 +88,7 @@ export function ScreenPromotions({
           }
         : undefined;
 
-    return (
+    return  (
         <section
             className={`relative w-screen max-w-[100vw] [margin-inline-start:calc(50%-50vw)] pt-4 sm:pt-5 pb-4 sm:pb-5 ${!isDark ? "bg-custom-card" : ""} ${className}`.trim()}
             style={sectionBandStyle}
@@ -109,16 +112,16 @@ export function ScreenPromotions({
                 {rows.length > 1 && (
                     <div className="flex flex-wrap items-center gap-3">
                         <div
-                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl"
+                            className="promotions-strip-wave flex h-11 w-11 shrink-0 items-center justify-center rounded-[1.35rem]"
                             style={{
                                 background:
                                     "linear-gradient(135deg, var(--color-gradient-from), var(--color-gradient-to))",
                                 boxShadow:
-                                    "0 8px 20px -8px color-mix(in srgb, var(--color-main) 52%, transparent)",
+                                    "0 10px 22px -8px color-mix(in srgb, var(--color-main) 55%, transparent)",
                             }}
                         >
-                            <Sparkles
-                                className="h-[1.1rem] w-[1.1rem] text-white"
+                            <PartyPopper
+                                className="h-[1.2rem] w-[1.2rem] text-white"
                                 strokeWidth={2.2}
                                 aria-hidden
                             />
@@ -126,29 +129,31 @@ export function ScreenPromotions({
 
                         <div className="min-w-0 flex-1">
                             <p
-                                className={`text-[10px] font-bold uppercase tracking-[0.22em] ${isDark ? "text-[#52525b]" : "text-custom-secondary"}`}
+                                className={`flex items-center gap-1.5 text-[11px] font-bold tracking-wide ${isDark ? "text-[#a1a1aa]" : "text-custom-secondary"}`}
                             >
-                                {t("promotions.eyebrow", "Rewards & perks")}
+                                <span aria-hidden>👋</span>
+                                {t("promotions.eyebrow", "Just for you today")}
                             </p>
                             <p
-                                className={`mt-0.5 text-sm font-semibold sm:text-base ${isDark ? "text-white" : "text-custom-primary"}`}
+                                className={`mt-0.5 text-base font-extrabold tracking-tight sm:text-lg ${isDark ? "text-white" : "text-custom-primary"}`}
                             >
                                 {t(
                                     "promotions.subtitle",
-                                    "Curated offers running right now"
+                                    "Treats & perks worth grabbing"
                                 )}
                             </p>
                         </div>
 
                         <div
-                            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white tabular-nums"
+                            className="flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold text-white tabular-nums"
                             style={{
                                 background:
                                     "linear-gradient(135deg, var(--color-gradient-from), var(--color-gradient-to))",
                                 boxShadow:
-                                    "0 4px 12px -4px color-mix(in srgb, var(--color-main) 55%, transparent)",
+                                    "0 6px 14px -5px color-mix(in srgb, var(--color-main) 58%, transparent)",
                             }}
                         >
+                            <Gift className="h-3.5 w-3.5" strokeWidth={2.4} aria-hidden />
                             {rows.length}
                         </div>
                     </div>
@@ -163,18 +168,21 @@ export function ScreenPromotions({
                             description={description}
                             index={index}
                             isDark={isDark}
-                            offerBadgeLabel={t("promotions.offerBadge", "Offer")}
+                            surfaceColor={surfaceColor}
+                            offerBadgeLabel={t("promotions.offerBadge", "Treat")}
+                            exploreLabel={t("promotions.explore", "Grab it")}
                         />
                     ))}
                 </div>
 
                 {rows.length > 2 && (
                     <p
-                        className={`text-center text-[11px] font-medium ${isDark ? "text-[#52525b]" : "text-custom-secondary"}`}
+                        className={`flex items-center justify-center gap-1.5 text-center text-[11px] font-medium ${isDark ? "text-[#a1a1aa]" : "text-custom-secondary"}`}
                     >
+                        <span aria-hidden>✨</span>
                         {t(
                             "promotions.stackHint",
-                            "Explore each perk — some combine at checkout."
+                            "Pick your favorites — a few even stack at checkout!"
                         )}
                     </p>
                 )}

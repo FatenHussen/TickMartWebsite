@@ -647,6 +647,7 @@ export const apiRoutes = {
             shop_id?: number;
             recipe_id?: number;
             basket_id?: number;
+            shop_vendor_service_id?: number;
         }) => {
             const p = new URLSearchParams();
             if (params?.page_type) p.set("page_type", params.page_type);
@@ -655,6 +656,8 @@ export const apiRoutes = {
             if (params?.shop_id != null) p.set("shop_id", String(params.shop_id));
             if (params?.recipe_id != null) p.set("recipe_id", String(params.recipe_id));
             if (params?.basket_id != null) p.set("basket_id", String(params.basket_id));
+            if (params?.shop_vendor_service_id != null)
+                p.set("shop_vendor_service_id", String(params.shop_vendor_service_id));
             const qs = p.toString();
             return `/popups/active${qs ? `?${qs}` : ""}`;
         },

@@ -5,6 +5,7 @@ import { useAuthStore } from "@/store/auth";
 import { useFavorites, useToggleFavorite } from "@/features/account/hooks/useFavorites";
 import SliderSection from "../slider/core/SliderSection";
 import ProductCard from "../card/ProductCard";
+import FlashSaleCard from "../card/FlashSaleCard";
 import BrandCardWithRating from "../card/BrandCardWithRating";
 import BasketCard from "../card/BasketCard";
 import ShopCard from "../card/ShopCard";
@@ -40,6 +41,7 @@ import {
     getSectionCardSurfaceColor,
     getDarkSectionBackground,
     getDarkCardSurface,
+    getDarkCardSurfaceGradient,
 } from "./sectionCardVariant";
 import { useTheme } from "@/context/ThemeContext";
 
@@ -51,24 +53,38 @@ function getFlashSaleEndDate(endDate?: string | null): string | null {
     return Number.isFinite(parsed) ? normalized : null;
 }
 
-function getFlashSaleColors(
-    section: Section,
-    isDarkTheme: boolean
-): {
+/**
+ * Flash-sale accents (timer badge, headline pill, card discount chip) always use
+ * the public brand color — NOT the per-section `main_color`, which is often a
+ * washed-out tint that makes the flame/discount badges illegible. Same in both
+ * themes so the "limited deal" look stays vivid and on-brand.
+ */
+function getFlashSaleColors(): {
     mainColor: string | null;
     secondColor: string | null;
 } {
-    if (isDarkTheme) {
-        return {
-            mainColor: "var(--color-main)",
-            secondColor: "var(--color-api-second)",
-        };
-    }
     return {
-        mainColor: section.main_color ?? section.background_color ?? null,
-        secondColor:
-            section.second_color ?? getSectionCardSurfaceColor(section) ?? null,
+        mainColor: "var(--color-main)",
+        secondColor: "var(--color-api-second)",
     };
+}
+
+/**
+ * Full-width band background behind a section's slider. Flash-sale rows tint the
+ * band with the API section's `main_color` (per design — falls back to
+ * `background_color`); non-flash rows keep `background_color`. Dark theme always
+ * uses the neutral dark band so API tints never wash the surface out.
+ */
+function getSectionBandBackground(
+    section: Section,
+    isDarkTheme: boolean,
+    flashSaleEndDate: string | null
+): string | null {
+    if (isDarkTheme) return getDarkSectionBackground();
+    if (flashSaleEndDate) {
+        return section.main_color ?? section.background_color ?? null;
+    }
+    return section.background_color ?? null;
 }
 
 /**
@@ -104,6 +120,47 @@ function getDiscountBadgeLabel(
         return isPercent ? `-${value}%` : `-${value}`;
     }
     return null;
+}
+
+/**
+ * Highest discount percentage advertised by a flash-sale section — the section-level
+ * percent discount or the largest per-item discount, whichever is bigger. Drives the
+ * "Up to X% off" headline. Returns null when nothing is on a percentage discount.
+ */
+function getFlashSaleMaxDiscountPercent(section: Section): number | null {
+    let max = 0;
+    const sd = section.discount;
+    const sectionIsPercent =
+        section.discount_type == null ||
+        section.discount_type === "percent" ||
+        section.discount_type === "percentage";
+    if (sd != null && sectionIsPercent && Number(sd) > 0) {
+        max = Math.max(max, Number(sd));
+    }
+    for (const item of section.items) {
+        const data = isManualItem(item) ? item.item : item;
+        const disc = (data as { discount?: string | null }).discount;
+        if (disc && parseFloat(disc) > 0) max = Math.max(max, parseFloat(disc));
+    }
+    return max > 0 ? Math.round(max) : null;
+}
+
+/** Localized flash-sale headline labels for a section, or empty when not a flash sale. */
+function getFlashSaleHeadline(
+    section: Section,
+    flashSaleEndDate: string | null,
+    t: (key: string) => string
+): { discountLabel?: string; fastDiscountsLabel?: string } {
+    if (!flashSaleEndDate) return {};
+    const percent = getFlashSaleMaxDiscountPercent(section);
+    if (percent == null) return {};
+    return {
+        discountLabel: t("flashSale.upToDiscount").replace(
+            "{{value}}",
+            String(percent)
+        ),
+        fastDiscountsLabel: t("flashSale.fastDiscounts"),
+    };
 }
 
 /** Shop list may send badges on the item or on `vendor` */
@@ -611,6 +668,7 @@ type ScheduledBasketCardProps = {
     t: (key: string) => string;
     onClick: () => void;
     onToggleFavorite: (id: number, currentIsFavorite: boolean) => void;
+    isDarkTheme?: boolean;
 };
 
 function ScheduledBasketCard({
@@ -619,6 +677,7 @@ function ScheduledBasketCard({
     t,
     onClick,
     onToggleFavorite,
+    isDarkTheme = false,
 }: ScheduledBasketCardProps) {
     const nextDelivery = item.next_delivery_date
         ? new Date(item.next_delivery_date).toLocaleDateString()
@@ -638,7 +697,7 @@ function ScheduledBasketCard({
 
     return (
         <div
-            className="group relative flex h-full flex-col overflow-hidden rounded-3xl border border-emerald-200/70 bg-white shadow-[0_10px_30px_-18px_rgba(16,185,129,0.45)] transition-all duration-300 hover:-translate-y-1 dark:border-emerald-300/20 dark:bg-[var(--color-bg-card-elevated)]"
+            className="group relative flex h-full flex-col overflow-hidden rounded-3xl border border-emerald-200/70 bg-white shadow-[0_10px_30px_-18px_rgba(16,185,129,0.45)] transition-all duration-300 hover:-translate-y-1 dark:border-white/[0.12] dark:bg-[var(--color-bg-card-elevated)] dark:shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_4px_28px_-10px_rgba(0,0,0,0.5)]"
             onClick={onClick}
             role="button"
             tabIndex={0}
@@ -669,7 +728,18 @@ function ScheduledBasketCard({
                 </div>
             </div>
 
-            <div className="flex flex-1 flex-col gap-3 bg-gradient-to-b from-emerald-50/80 to-white p-4 dark:from-emerald-950/20 dark:to-[var(--color-bg-card-elevated)]">
+            <div
+                className={`flex flex-1 flex-col gap-3 p-4${
+                    isDarkTheme
+                        ? ""
+                        : " bg-gradient-to-b from-emerald-50/80 to-white"
+                }`}
+                style={
+                    isDarkTheme
+                        ? { backgroundImage: getDarkCardSurfaceGradient() }
+                        : undefined
+                }
+            >
                 <h3 className="line-clamp-2 text-lg font-bold text-custom-primary dark:text-white">
                     {item.title || item.name || ""}
                 </h3>
@@ -810,8 +880,10 @@ function ProductSection({
         cardVariant
     );
     const surfaceColor = isDarkTheme ? getDarkCardSurface() : getSectionCardSurfaceColor(section);
+    const surfaceGradient = isDarkTheme ? getDarkCardSurfaceGradient() : undefined;
     const flashSaleEndDate = getFlashSaleEndDate(section.end_date);
-    const { mainColor, secondColor } = getFlashSaleColors(section, isDarkTheme);
+    const { mainColor, secondColor } = getFlashSaleColors();
+    const flashHeadline = getFlashSaleHeadline(section, flashSaleEndDate, t);
 
     return (
         <SliderSection
@@ -819,13 +891,15 @@ function ProductSection({
             flashSaleEndDate={flashSaleEndDate}
             flashSaleMainColor={mainColor}
             flashSaleSecondColor={secondColor}
+            flashSaleDiscountLabel={flashHeadline.discountLabel}
+            flashSaleFastDiscountsLabel={flashHeadline.fastDiscountsLabel}
             viewAllLabel={showViewAll ? t("common.viewAll") : undefined}
             onViewAllClick={showViewAll ? onViewAll : undefined}
             items={section.items}
             slidesPerView={sliderPreset.slidesPerView}
             breakpoints={sliderPreset.breakpoints}
             spaceBetween={sliderPreset.spaceBetween}
-            sectionBackgroundColor={isDarkTheme ? getDarkSectionBackground() : (section.background_color ?? null)}
+            sectionBackgroundColor={getSectionBandBackground(section, isDarkTheme, flashSaleEndDate)}
             edgeToEdgeSectionBackground={edgeToEdgeSectionBackgrounds}
             className={sectionClassName}
             removeVerticalSpacing={removeSectionVerticalSpacing}
@@ -834,6 +908,45 @@ function ProductSection({
                     const hasDiscount = hasProductDiscount(item);
                     const discountLabel = getDiscountBadgeLabel(item, section);
                     const isFav = isFavoriteFor(item.id, item.is_favorite);
+
+                    // Flash-sale rows use a dedicated campaign card, not the shared one.
+                    if (flashSaleEndDate) {
+                        return (
+                            <FlashSaleCard
+                                key={item.id}
+                                id={item.id}
+                                name={item.name}
+                                description={item.description ?? undefined}
+                                image={item.image}
+                                price={
+                                    item.price_after_discount_formatted ??
+                                    `${item.price_after_discount}`
+                                }
+                                originalPrice={
+                                    hasDiscount && item.price
+                                        ? item.price_formatted ?? `${item.price}`
+                                        : undefined
+                                }
+                                savings={
+                                    item.amount_saved > 0
+                                        ? item.amount_saved_formatted ??
+                                          `${item.amount_saved}`
+                                        : undefined
+                                }
+                                discountLabel={discountLabel ?? undefined}
+                                rating={item.rating || 0}
+                                sold={item.sold_number}
+                                isFavorite={isFav}
+                                mainColor={mainColor}
+                                secondColor={secondColor}
+                                t={t}
+                                onClick={() => onItemClick(item)}
+                                onToggleFavorite={(id) =>
+                                    onToggleFavorite(id, isFav)
+                                }
+                            />
+                        );
+                    }
 
                     const discountBadges: ProductCardBadge[] = discountLabel
                         ? [
@@ -881,6 +994,7 @@ function ProductSection({
                             savings={item.amount_saved_formatted ?? undefined}
                             layout={cardVariant}
                             surfaceColor={surfaceColor}
+                            surfaceGradient={surfaceGradient}
                             t={t}
                             isFavorite={isFav}
                             onClick={() => onItemClick(item)}
@@ -952,6 +1066,7 @@ function ProductSection({
                         }
                         layout={cardVariant}
                         surfaceColor={surfaceColor}
+                        surfaceGradient={surfaceGradient}
                         t={t}
                         isFavorite={isFav}
                         onClick={() => onItemClick(item)}
@@ -982,8 +1097,10 @@ function RecipeSection({
         cardVariant
     );
     const surfaceColor = isDarkTheme ? getDarkCardSurface() : getSectionCardSurfaceColor(section);
+    const surfaceGradient = isDarkTheme ? getDarkCardSurfaceGradient() : undefined;
     const flashSaleEndDate = getFlashSaleEndDate(section.end_date);
-    const { mainColor, secondColor } = getFlashSaleColors(section, isDarkTheme);
+    const { mainColor, secondColor } = getFlashSaleColors();
+    const flashHeadline = getFlashSaleHeadline(section, flashSaleEndDate, t);
 
     return (
         <SliderSection
@@ -991,13 +1108,15 @@ function RecipeSection({
             flashSaleEndDate={flashSaleEndDate}
             flashSaleMainColor={mainColor}
             flashSaleSecondColor={secondColor}
+            flashSaleDiscountLabel={flashHeadline.discountLabel}
+            flashSaleFastDiscountsLabel={flashHeadline.fastDiscountsLabel}
             viewAllLabel={showViewAll ? t("common.viewAll") : undefined}
             onViewAllClick={showViewAll ? onViewAll : undefined}
             items={section.items}
             slidesPerView={sliderPreset.slidesPerView}
             breakpoints={sliderPreset.breakpoints}
             spaceBetween={sliderPreset.spaceBetween}
-            sectionBackgroundColor={isDarkTheme ? getDarkSectionBackground() : (section.background_color ?? null)}
+            sectionBackgroundColor={getSectionBandBackground(section, isDarkTheme, flashSaleEndDate)}
             edgeToEdgeSectionBackground={edgeToEdgeSectionBackgrounds}
             className={sectionClassName}
             removeVerticalSpacing={removeSectionVerticalSpacing}
@@ -1053,6 +1172,7 @@ function RecipeSection({
                             }
                             layout={cardVariant}
                             surfaceColor={surfaceColor}
+                            surfaceGradient={surfaceGradient}
                             t={t}
                             isFavorite={isFav}
                             onClick={() => onItemClick(item)}
@@ -1114,6 +1234,7 @@ function RecipeSection({
                         }
                         layout={cardVariant}
                         surfaceColor={surfaceColor}
+                        surfaceGradient={surfaceGradient}
                         t={t}
                         isFavorite={isFav}
                         onClick={() => onItemClick(item)}
@@ -1145,8 +1266,10 @@ function BasketSection({
         cardVariant
     );
     const surfaceColor = isDarkTheme ? getDarkCardSurface() : getSectionCardSurfaceColor(section);
+    const surfaceGradient = isDarkTheme ? getDarkCardSurfaceGradient() : undefined;
     const flashSaleEndDate = getFlashSaleEndDate(section.end_date);
-    const { mainColor, secondColor } = getFlashSaleColors(section, isDarkTheme);
+    const { mainColor, secondColor } = getFlashSaleColors();
+    const flashHeadline = getFlashSaleHeadline(section, flashSaleEndDate, t);
 
     return (
         <SliderSection
@@ -1154,13 +1277,15 @@ function BasketSection({
             flashSaleEndDate={flashSaleEndDate}
             flashSaleMainColor={mainColor}
             flashSaleSecondColor={secondColor}
+            flashSaleDiscountLabel={flashHeadline.discountLabel}
+            flashSaleFastDiscountsLabel={flashHeadline.fastDiscountsLabel}
             viewAllLabel={showViewAll ? t("common.viewAll") : undefined}
             onViewAllClick={showViewAll ? onViewAll : undefined}
             items={section.items}
             slidesPerView={sliderPreset.slidesPerView}
             breakpoints={sliderPreset.breakpoints}
             spaceBetween={sliderPreset.spaceBetween}
-            sectionBackgroundColor={isDarkTheme ? getDarkSectionBackground() : (section.background_color ?? null)}
+            sectionBackgroundColor={getSectionBandBackground(section, isDarkTheme, flashSaleEndDate)}
             edgeToEdgeSectionBackground={edgeToEdgeSectionBackgrounds}
             className={sectionClassName}
             removeVerticalSpacing={removeSectionVerticalSpacing}
@@ -1191,6 +1316,7 @@ function BasketSection({
                                 t={t}
                                 onClick={() => onItemClick(item)}
                                 onToggleFavorite={onToggleFavorite}
+                                isDarkTheme={isDarkTheme}
                             />
                         );
                     }
@@ -1216,8 +1342,11 @@ function BasketSection({
                             bottomBadges={mapApiBottomBadgesToProductCard(
                                 item.bottom_badges
                             )}
+                            itemCount={item.items_count}
+                            soldCount={item.num_sold}
                             layout={cardVariant}
                             surfaceColor={surfaceColor}
+                            surfaceGradient={surfaceGradient}
                             mainColor={isDarkTheme ? null : (item.main_color ?? null)}
                             secondColor={isDarkTheme ? null : (item.second_color ?? null)}
                             textColor={isDarkTheme ? null : (item.text_color ?? null)}
@@ -1259,6 +1388,7 @@ function BasketSection({
                         )}
                         layout={cardVariant}
                         surfaceColor={surfaceColor}
+                        surfaceGradient={surfaceGradient}
                         mainColor={isDarkTheme ? null : ((data.main_color as string) ?? null)}
                         secondColor={isDarkTheme ? null : ((data.second_color as string) ?? null)}
                         textColor={isDarkTheme ? null : ((data.text_color as string) ?? null)}
@@ -1293,8 +1423,9 @@ function ShopSection({
         cardVariant
     );
     const surfaceColor = isDarkTheme ? getDarkCardSurface() : getSectionCardSurfaceColor(section);
+    const surfaceGradient = isDarkTheme ? getDarkCardSurfaceGradient() : undefined;
     const flashSaleEndDate = getFlashSaleEndDate(section.end_date);
-    const { mainColor, secondColor } = getFlashSaleColors(section, isDarkTheme);
+    const { mainColor, secondColor } = getFlashSaleColors();
 
     return (
         <SliderSection
@@ -1308,7 +1439,7 @@ function ShopSection({
             slidesPerView={sliderPreset.slidesPerView}
             breakpoints={sliderPreset.breakpoints}
             spaceBetween={sliderPreset.spaceBetween}
-            sectionBackgroundColor={isDarkTheme ? getDarkSectionBackground() : (section.background_color ?? null)}
+            sectionBackgroundColor={getSectionBandBackground(section, isDarkTheme, flashSaleEndDate)}
             edgeToEdgeSectionBackground={edgeToEdgeSectionBackgrounds}
             className={sectionClassName}
             removeVerticalSpacing={removeSectionVerticalSpacing}
@@ -1338,6 +1469,7 @@ function ShopSection({
                         bottomBadges={shopCardData.bottomBadges}
                         layout={cardVariant}
                         surfaceColor={surfaceColor}
+                        surfaceGradient={surfaceGradient}
                         isFavorite={isFav}
                         onFavorite={(id) => onToggleFavorite(Number(id), isFav)}
                         onClick={() => onItemClick(shopCardData.sourceItem)}
@@ -1370,8 +1502,9 @@ function BrandSection({
         : (getSectionCardSurfaceColor(section) ??
             brandDefaultsWhenApiMissing?.cardSurface ??
             null);
+    const surfaceGradient = isDarkTheme ? getDarkCardSurfaceGradient() : undefined;
     const flashSaleEndDate = getFlashSaleEndDate(section.end_date);
-    const { mainColor, secondColor } = getFlashSaleColors(section, isDarkTheme);
+    const { mainColor, secondColor } = getFlashSaleColors();
     const sectionBgFallback = isDarkTheme
         ? getDarkSectionBackground()
         : (brandDefaultsWhenApiMissing?.sectionBackground ?? "var(--color-api-second)");
@@ -1403,6 +1536,7 @@ function BrandSection({
                             onClick={() => onItemClick(item)}
                             layout={cardVariant}
                             surfaceColor={surfaceColor}
+                            surfaceGradient={surfaceGradient}
                         />
                     );
                 }
@@ -1436,6 +1570,7 @@ function BrandSection({
                         onClick={() => onItemClick(item)}
                         layout={cardVariant}
                         surfaceColor={surfaceColor}
+                        surfaceGradient={surfaceGradient}
                     />
                 );
             }}

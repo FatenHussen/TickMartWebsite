@@ -9,6 +9,9 @@ import ApiSectionsRenderer from "@/shared/component/sections/ApiSectionsRenderer
 import FullBleedSection from "@/shared/component/FullBleedSection";
 import BasketCard from "@/shared/component/card/BasketCard";
 import BasketCardSkeleton from "@/shared/component/skeleton/BasketCardSkeleton";
+import { useTheme } from "@/context/ThemeContext";
+import { getDarkCardSurfaceGradient } from "@/shared/component/sections/sectionCardVariant";
+import RevealOnScroll from "@/shared/component/RevealOnScroll";
 import { useInfiniteScroll } from "@/shared/hooks/useInfiniteScroll";
 import SideContentLayout from "@/layout/SideContentLayout";
 import BasketFiltersSidebar from "../components/BasketFiltersSidebar";
@@ -24,6 +27,8 @@ export default function AllBaskets() {
     const { t } = useTranslation();
     const { isRTL } = useLanguage();
     const navigate = useNavigate();
+    const { theme } = useTheme();
+    const isDarkTheme = theme === "dark";
 
     const [filters, setFilters] = useState<BasketFilters>(DEFAULT_FILTERS);
     const [currentPage, setCurrentPage] = useState(1);
@@ -146,8 +151,10 @@ export default function AllBaskets() {
                 <SideContentLayout
                     sidebar={sidebar}
                     sidebarPosition="left"
-                    sidebarClassName="lg:w-[280px]"
+                    sidebarClassName="lg:w-[280px] lg:max-h-[calc(100vh-3rem)] lg:overflow-y-auto lg:overflow-x-hidden lg:pe-1 scrollbar-custom"
                     gapClassName="gap-6"
+                    stickySidebar
+                    stickyTopClassName="top-6"
                 >
                     <div className="mb-6">
                         <h2 className="text-2xl font-bold text-custom-primary">
@@ -164,10 +171,14 @@ export default function AllBaskets() {
                         </div>
                     ) : (
                         <div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                                {allBaskets.map((basket) => (
-                                    <BasketCard
+                            <div className="baskets-grid">
+                                {allBaskets.map((basket, index) => (
+                                    <RevealOnScroll
                                         key={basket.id}
+                                        delayMs={(index % 4) * 70}
+                                        className="h-full"
+                                    >
+                                    <BasketCard
                                         id={basket.id}
                                         name={basket.name}
                                         description={basket.desc || ""}
@@ -192,6 +203,8 @@ export default function AllBaskets() {
                                         bottomBadges={mapApiBottomBadgesToProductCard(
                                             basket.bottom_badges
                                         )}
+                                        itemCount={basket.items_count}
+                                        soldCount={basket.num_sold}
                                         offerEndingDate={
                                             basket.is_on_offer
                                                 ? `${t("baskets.offerEnding")}: ${basket.offer_ends_at}`
@@ -205,8 +218,10 @@ export default function AllBaskets() {
                                         onClick={() => handleBasketClick(basket.id, basket.next_delivery_date ?? undefined)}
                                         onAddToCart={() => handleAddToCart(basket.id)}
                                         onToggleFavorite={() => handleToggleFavorite(basket.id)}
+                                        surfaceGradient={isDarkTheme ? getDarkCardSurfaceGradient() : undefined}
                                         t={t}
                                     />
+                                    </RevealOnScroll>
                                 ))}
 
                                 {isBasketsLoading &&

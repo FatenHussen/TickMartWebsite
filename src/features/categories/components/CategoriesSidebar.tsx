@@ -82,10 +82,10 @@ export default function CategoriesSidebar({
 
     const cardShell = (extraClass: string) =>
         cn(
-            "rounded-2xl border p-5 shadow-sm",
+            "rounded-[20px] border p-5 shadow-[0_1px_3px_rgba(15,23,42,0.04),0_14px_36px_-22px_rgba(15,23,42,0.24)]",
             apiSurface
                 ? "border-solid"
-                : "border-primary-light/15 bg-gradient-to-b from-custom-card to-blue-50/40",
+                : "border-slate-200/70 bg-custom-card",
             extraClass,
         );
 
@@ -103,7 +103,7 @@ export default function CategoriesSidebar({
             <div className={cardShell("")} style={cardStyle}>
                 {sidebarTitleGradient ? (
                     <h2
-                        className="text-base font-bold mb-4 bg-clip-text text-transparent"
+                        className="text-[15px] font-bold tracking-tight mb-4 bg-clip-text text-transparent"
                         style={{
                             backgroundImage: `linear-gradient(105deg, ${sidebarGradMain}, ${sidebarGradSecond})`,
                             WebkitBackgroundClip: "text",
@@ -114,7 +114,7 @@ export default function CategoriesSidebar({
                     </h2>
                 ) : (
                     <h2
-                        className={cn("text-base font-bold mb-4", !apiSurface && "text-custom-primary")}
+                        className={cn("text-[15px] font-bold tracking-tight mb-4", !apiSurface && "text-custom-primary")}
                         style={apiSurface ? { color: apiSurface.pageColor } : undefined}
                     >
                         {sidebarTitleText}
@@ -137,11 +137,11 @@ export default function CategoriesSidebar({
                                 type="button"
                                 onClick={onShowAllCategories}
                                 className={cn(
-                                    "w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all font-medium",
+                                    "w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all duration-200 active:scale-[0.99] font-medium",
                                     !selectedCategoryId
                                         ? apiSurface
                                             ? "shadow-sm font-semibold"
-                                            : "bg-primary-light/10 text-primary-light shadow-sm font-semibold"
+                                            : "bg-primary-light/10 text-primary-light shadow-sm font-semibold ring-1 ring-inset ring-primary-light/20"
                                         : apiSurface
                                             ? "font-medium"
                                             : "text-custom-primary font-medium hover:bg-custom-light",
@@ -178,13 +178,13 @@ export default function CategoriesSidebar({
                                     <button
                                         onClick={() => onCategorySelect(category)}
                                         className={cn(
-                                            "w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all",
+                                            "w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all duration-200 active:scale-[0.99]",
                                             isSelected
                                                 ? hasApiGradient
                                                     ? "text-white shadow-md ring-1 ring-white/25"
                                                     : apiSurface
                                                         ? "shadow-sm"
-                                                        : "bg-primary-light/10 text-primary-light shadow-sm"
+                                                        : "bg-primary-light/10 text-primary-light shadow-sm ring-1 ring-inset ring-primary-light/20"
                                                 : hasApiGradient
                                                     ? "text-white/95 shadow-sm hover:opacity-95"
                                                     : apiSurface

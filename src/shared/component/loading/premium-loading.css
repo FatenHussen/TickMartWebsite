@@ -82,6 +82,11 @@
   animation: premium-ring-turn 14s linear infinite;
 }
 
+/* Brand gradient progress ring around the app-loader logo mark */
+.premium-loader-ring {
+  animation: premium-ring-turn 2.4s linear infinite;
+}
+
 @keyframes premium-btn-breathe {
   0%,
   100% {

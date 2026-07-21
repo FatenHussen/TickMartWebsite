@@ -1,5 +1,7 @@
 import { Flame, Snowflake } from "lucide-react";
-import { useEffect, useId, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useLanguage } from "@/context/LanguageContext";
 
 type FlashSaleBadgeProps = {
   endDate: string;
@@ -7,13 +9,28 @@ type FlashSaleBadgeProps = {
   secondColor?: string | null;
 };
 
+/** A single time unit shown as a premium, readable tile with a unit caption. */
+function TimeUnit({ value, label }: { value: string; label: string }) {
+  return (
+    <div className="flex flex-col items-center">
+      <span className="relative flex min-w-[2.1ch] items-center justify-center overflow-hidden rounded-[10px] bg-gradient-to-b from-stone-800 to-stone-950 px-2 py-1.5 text-center text-sm font-extrabold tabular-nums leading-none text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_2px_6px_-2px_rgba(0,0,0,0.4)] dark:from-white/[0.18] dark:to-white/[0.08]">
+        {value}
+      </span>
+      <span className="mt-1 text-[8.5px] font-bold uppercase tracking-[0.08em] text-stone-400 dark:text-zinc-500">
+        {label}
+      </span>
+    </div>
+  );
+}
+
 export default function FlashSaleBadge({
   endDate,
   mainColor,
   secondColor,
 }: FlashSaleBadgeProps) {
+  const { t } = useTranslation();
+  const { isRTL } = useLanguage();
   const [now, setNow] = useState(() => Date.now());
-  const gradientId = useId();
   const primary = mainColor?.trim() || "#ff4d6d";
   const secondary = secondColor?.trim() || "#ffb703";
 
@@ -28,11 +45,7 @@ export default function FlashSaleBadge({
     return () => clearInterval(i);
   }, [endTs]);
 
-  const remainingMs = useMemo(() => {
-    if (!endTs) return 0;
-    return Math.max(endTs - now, 0);
-  }, [endTs, now]);
-
+  const remainingMs = endTs ? Math.max(endTs - now, 0) : 0;
   const isEnded = remainingMs <= 0;
 
   const remainingParts = useMemo(() => {
@@ -41,7 +54,6 @@ export default function FlashSaleBadge({
     const hours = Math.floor((totalSeconds % 86400) / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     const seconds = totalSeconds % 60;
-
     return {
       days: String(days).padStart(2, "0"),
       hours: String(hours).padStart(2, "0"),
@@ -50,147 +62,67 @@ export default function FlashSaleBadge({
     };
   }, [remainingMs]);
 
-  const progress = useMemo(() => {
-    if (!endTs) return 0;
-    const start = endTs - 24 * 60 * 60 * 1000;
-    const total = endTs - start;
-    const current = now - start;
-    return Math.min(Math.max(current / total, 0), 1);
-  }, [endTs, now]);
-
-  const radius = 18;
-  const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference * (1 - progress);
+  const showDays = remainingParts.days !== "00";
 
   return (
-    <div className="relative inline-flex group">
-      {!isEnded && (
-        <div
-          className="absolute -inset-[2px] rounded-2xl blur-md opacity-70"
-          style={{
-            background: `conic-gradient(from 90deg, ${primary}, ${secondary}, ${primary})`,
-          }}
-        />
-      )}
-
-      <div
-        className={`
-          relative isolate overflow-hidden rounded-2xl px-3 py-2
-          border backdrop-blur-md shadow-xl
-          ${isEnded ? "bg-gray-200 text-gray-500 border-white/30" : "text-white border-white/20"}
-        `}
+    <div
+      dir={isRTL ? "rtl" : "ltr"}
+      className="inline-flex items-center gap-3 rounded-[1.1rem] border border-stone-200/70 bg-white/80 px-3 py-2 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_22px_-14px_rgba(15,23,42,0.25)] backdrop-blur-md dark:border-white/10 dark:bg-white/[0.05]"
+    >
+      {/* Flame / ended icon — tinted with the campaign color, never washed out */}
+      <span
+        className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-[0.9rem] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_4px_12px_-4px_rgba(0,0,0,0.35)]"
         style={
           isEnded
-            ? undefined
-            : {
-                background: `
-                  radial-gradient(130% 120% at 0% 0%, ${secondary}55 0%, transparent 45%),
-                  radial-gradient(130% 120% at 100% 100%, ${primary}55 0%, transparent 45%),
-                  linear-gradient(to left, ${primary}cc 0%, ${secondary}cc 100%)
-                `,
-              }
+            ? { background: "#9ca3af" }
+            : { background: `linear-gradient(135deg, ${primary}, ${secondary})` }
         }
       >
         {!isEnded && (
-          <>
-            <span className="pointer-events-none absolute inset-0 opacity-20 [background:repeating-linear-gradient(135deg,rgba(255,255,255,.22)_0,rgba(255,255,255,.22)_2px,transparent_2px,transparent_14px)]" />
-            <span className="pointer-events-none absolute -top-8 -right-8 h-24 w-24 rounded-full bg-white/20 blur-2xl" />
-            <span className="pointer-events-none absolute -bottom-8 -left-8 h-24 w-24 rounded-full bg-black/20 blur-2xl" />
-          </>
+          <span
+            aria-hidden
+            className="absolute inset-0 rounded-[0.9rem] opacity-60 blur-md"
+            style={{ background: `linear-gradient(135deg, ${primary}, ${secondary})` }}
+          />
         )}
-
-        <div className="relative z-10 flex items-center gap-3">
-          {!isEnded && (
-            <svg width="40" height="40" className="absolute -left-2">
-              <circle
-                cx="20"
-                cy="20"
-                r={radius}
-                stroke="rgba(255,255,255,0.25)"
-                strokeWidth="3"
-                fill="none"
-              />
-              <circle
-                cx="20"
-                cy="20"
-                r={radius}
-                stroke={`url(#${gradientId})`}
-                strokeWidth="3"
-                fill="none"
-                strokeDasharray={circumference}
-                strokeDashoffset={strokeDashoffset}
-                strokeLinecap="round"
-                className="transition-all duration-1000"
-              />
-              <defs>
-                <linearGradient id={gradientId}>
-                  <stop offset="0%" stopColor={primary} />
-                  <stop offset="100%" stopColor={secondary} />
-                </linearGradient>
-              </defs>
-            </svg>
+        <span className="relative z-10">
+          {isEnded ? (
+            <Snowflake className="h-4 w-4" />
+          ) : (
+            <Flame className="h-4 w-4 drop-shadow-sm" />
           )}
+        </span>
+      </span>
 
-          <div className="relative flex items-center justify-center w-6 h-6">
-            {!isEnded && (
-              <>
-                <span
-                  className="absolute w-full h-full rounded-full blur-md opacity-70 animate-pulse"
-                  style={{ backgroundColor: primary }}
-                />
-                <span
-                  className="absolute w-3 h-3 rounded-full animate-ping"
-                  style={{ backgroundColor: secondary }}
-                />
-              </>
-            )}
-            <span className="relative z-10">
-              {isEnded ? (
-                <Snowflake className="h-4 w-4" />
-              ) : (
-                <Flame className="h-4 w-4 text-white" />
-              )}
-            </span>
-          </div>
-
-          <div className="flex flex-col leading-tight">
-            <span className="text-[10px] uppercase tracking-wider opacity-75">
-              Limited Offer
-            </span>
-            <span className="font-semibold">
-              {isEnded ? "Sale Ended" : "Flash Sale"}
-            </span>
-          </div>
-
-          {endTs && (
-            <div
-              className={`
-                flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold tabular-nums
-                ${isEnded ? "bg-white text-gray-500" : "border text-white bg-black/25"}
-              `}
-              style={isEnded ? undefined : { borderColor: `${secondary}66` }}
-            >
-              {isEnded ? (
-                "00:00:00"
-              ) : (
-                <>
-                  {remainingParts.days !== "00" && (
-                    <>
-                      <span>{remainingParts.days}</span>
-                      <span className="opacity-70">:</span>
-                    </>
-                  )}
-                  <span>{remainingParts.hours}</span>
-                  <span className="opacity-70">:</span>
-                  <span>{remainingParts.minutes}</span>
-                  <span className="opacity-70">:</span>
-                  <span>{remainingParts.seconds}</span>
-                </>
-              )}
-            </div>
-          )}
-        </div>
+      {/* Label — always dark text for readability on the light section band */}
+      <div className="flex flex-col leading-tight">
+        <span className="text-[8.5px] font-bold uppercase tracking-[0.12em] text-stone-400 dark:text-zinc-500">
+          {t("flashSale.limitedOffer")}
+        </span>
+        <span className="text-[0.9rem] font-extrabold tracking-tight text-stone-900 dark:text-white">
+          {isEnded ? t("flashSale.saleEnded") : t("flashSale.flashSale")}
+        </span>
       </div>
+
+      {/* Countdown — segmented tiles, numbers stay LTR so time reads correctly */}
+      {endTs && !isEnded && (
+        <div
+          dir="ltr"
+          className="ms-0.5 flex items-start gap-1.5 border-stone-200/70 ps-3 [border-inline-start-width:1px] dark:border-white/10"
+        >
+          {showDays && (
+            <>
+              <TimeUnit value={remainingParts.days} label={t("flashSale.days")} />
+              <span className="self-center pt-0.5 text-sm font-bold text-stone-300 dark:text-zinc-600">:</span>
+            </>
+          )}
+          <TimeUnit value={remainingParts.hours} label={t("flashSale.hours")} />
+          <span className="self-center pt-0.5 text-sm font-bold text-stone-300 dark:text-zinc-600">:</span>
+          <TimeUnit value={remainingParts.minutes} label={t("flashSale.minutes")} />
+          <span className="self-center pt-0.5 text-sm font-bold text-stone-300 dark:text-zinc-600">:</span>
+          <TimeUnit value={remainingParts.seconds} label={t("flashSale.seconds")} />
+        </div>
+      )}
     </div>
   );
 }

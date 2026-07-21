@@ -100,11 +100,11 @@ export default function ProductCard({
 }: ProductCardProps) {
     const imageFrameClass = layout
         ? layout === "horizontal"
-            ? "h-36 sm:h-40"
+            ? "h-40 sm:h-44"
             : layout === "vertical"
-              ? "h-52 sm:h-56"
-              : "h-44 sm:h-48"
-        : "h-[200px]";
+              ? "h-56 sm:h-64"
+              : "h-48 sm:h-52"
+        : "h-[216px]";
 
     const allBadges = badge ? (Array.isArray(badge) ? badge : [badge]) : [];
     const leftBadges = allBadges.filter((b) => (b.align ?? "left") === "left");
@@ -154,28 +154,38 @@ export default function ProductCard({
                 if (e.key === "Enter" || e.key === " ") onClick(id);
             }}
         >
-            {/* Image — inset frame for a calmer, gallery-like look */}
-            <div className="shrink-0 p-2.5 pb-0">
+            {/* Image — full-bleed editorial header */}
+            <div className="shrink-0">
                 <div
                     className={cn(
-                        "relative overflow-hidden rounded-2xl bg-stone-100 ring-1 ring-inset ring-black/[0.04] dark:bg-[#0B0B0C] dark:ring-white/[0.06]",
+                        "relative overflow-hidden bg-stone-100 dark:bg-[#0B0B0C]",
                         imageFrameClass,
                     )}
                 >
                     <LazyImage
                         src={image}
                         alt={name}
-                        className="h-full w-full object-cover transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform group-hover:scale-[1.04] motion-reduce:group-hover:scale-100"
+                        className="h-full w-full object-cover transition-transform duration-[650ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform group-hover:scale-[1.07] motion-reduce:group-hover:scale-100"
                         wrapperClassName="h-full w-full"
                     />
+                    {/* Cinematic bottom fade for chip legibility + depth */}
                     <div
-                        className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/25 via-black/[0.07] to-transparent dark:from-black/50"
+                        className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/40 via-black/10 to-transparent dark:from-black/60"
+                        aria-hidden
+                    />
+                    {/* Soft sheen sweep on hover */}
+                    <div
+                        className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100 motion-reduce:hidden"
+                        style={{
+                            backgroundImage:
+                                "linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.16) 48%, transparent 66%)",
+                        }}
                         aria-hidden
                     />
 
                     {/* Left Badges (top-left, stacked vertically) */}
                     {leftBadges.length > 0 && (
-                        <div className="absolute left-2.5 top-2.5 z-10 flex flex-col gap-1.5">
+                        <div className="absolute left-3 top-3 z-10 flex flex-col gap-1.5">
                             {leftBadges.map((b, idx) => (
                                 <Badge
                                     key={idx}
@@ -184,7 +194,7 @@ export default function ProductCard({
                                     imageSrc={b.image}
                                     imageAlt={resolveProductCardBadgeLabel(b, t)}
                                     className={cn(
-                                        "shadow-md ring-1 ring-white/25",
+                                        "shadow-lg ring-1 ring-white/25 backdrop-blur-[2px]",
                                         b.className ||
                                             "rounded-full bg-gradient-to-br from-sky-500 to-blue-600 px-2.5 py-0.5 text-xs font-semibold text-white",
                                     )}
@@ -195,7 +205,7 @@ export default function ProductCard({
 
                     {/* Right Badges (top-right, stacked vertically under favorite) */}
                     {rightBadges.length > 0 && (
-                        <div className="absolute right-2.5 top-14 z-10 flex flex-col items-end gap-1.5">
+                        <div className="absolute right-3 top-14 z-10 flex flex-col items-end gap-1.5">
                             {rightBadges.map((b, idx) => (
                                 <Badge
                                     key={idx}
@@ -204,7 +214,7 @@ export default function ProductCard({
                                     imageSrc={b.image}
                                     imageAlt={resolveProductCardBadgeLabel(b, t)}
                                     className={cn(
-                                        "shadow-md ring-1 ring-white/20",
+                                        "shadow-lg ring-1 ring-white/20 backdrop-blur-[2px]",
                                         b.className ||
                                             "rounded-full bg-gradient-to-br from-amber-400 to-orange-500 px-2.5 py-0.5 text-xs font-semibold text-white",
                                     )}
@@ -214,7 +224,7 @@ export default function ProductCard({
                     )}
 
                     {/* Favorite — frosted chip */}
-                    <div className="absolute right-2.5 top-2.5 z-20 rounded-full bg-white/90 p-0.5 shadow-md ring-1 ring-stone-900/8 backdrop-blur-md dark:bg-[rgba(16,17,20,0.92)] dark:ring-white/[0.08]">
+                    <div className="absolute right-3 top-3 z-20 rounded-full bg-white/90 p-0.5 shadow-lg ring-1 ring-stone-900/8 backdrop-blur-md transition-transform duration-300 hover:scale-110 dark:bg-[rgba(16,17,20,0.92)] dark:ring-white/[0.08]">
                         <FavoriteButton
                             isFavorite={isFavorite}
                             onToggle={(e) => {
@@ -226,22 +236,13 @@ export default function ProductCard({
                         />
                     </div>
 
-                    {/* Rating (bottom-left) */}
-                    <div className="absolute bottom-2.5 left-2.5 z-10 rounded-full bg-white/95 px-3 py-1.5 shadow-md ring-1 ring-stone-900/[0.06] backdrop-blur-md dark:bg-[rgba(16,17,20,0.92)] dark:ring-white/[0.08]">
-                        <Rating
-                            rating={rating}
-                            size="sm"
-                            className="px-0 py-0 [&_span:last-child]:font-semibold [&_span:last-child]:text-custom-primary dark:[&_span:last-child]:text-white"
-                        />
-                    </div>
                 </div>
             </div>
 
             {/* Info Section */}
             <div
                 className={cn(
-                    "flex min-h-0 flex-1 flex-col px-4 pb-5 pt-4",
-                    "border-t border-stone-200/50 dark:border-white/[0.10]",
+                    "relative flex min-h-0 flex-1 flex-col px-4 pb-5 pt-7",
                     !surfaceColor &&
                         !surfaceGradient &&
                         "bg-gradient-to-b from-custom-secondary via-custom-secondary to-[color-mix(in_srgb,var(--color-bg-card)_85%,#dbeafe)] dark:from-[var(--color-bg-card-elevated)] dark:via-[color-mix(in_srgb,var(--color-bg-card-elevated)_90%,var(--color-bg-secondary)_10%)] dark:to-[color-mix(in_srgb,var(--color-bg-card-elevated)_68%,var(--color-bg-tertiary)_32%)]",
@@ -260,6 +261,15 @@ export default function ProductCard({
                         : undefined
                 }
             >
+                {/* Rating — floats up over the image/content seam (panel isn't clipped) */}
+                <div className="absolute -top-5 left-4 z-30 rounded-full bg-white px-3 py-1.5 shadow-[0_8px_20px_-6px_rgba(15,23,42,0.4)] ring-1 ring-stone-900/[0.06] dark:bg-[rgba(20,21,24,0.97)] dark:ring-white/[0.1]">
+                    <Rating
+                        rating={rating}
+                        size="sm"
+                        className="px-0 py-0 [&_span:last-child]:font-semibold [&_span:last-child]:text-custom-primary dark:[&_span:last-child]:text-white"
+                    />
+                </div>
+
                 {/* Product Name - 2 lines */}
                 <h3 className="line-clamp-2 text-[0.9375rem] font-bold leading-snug tracking-tight text-custom-primary dark:text-white sm:text-base">
                     {name}
@@ -272,38 +282,75 @@ export default function ProductCard({
                     </p>
                 )}
 
-                {/* Price Section */}
-                <div className="mt-3">
-                    <div className="flex flex-wrap items-end gap-x-2 gap-y-1">
-                        <span className="text-xl font-extrabold tabular-nums tracking-tight text-custom-primary dark:text-white sm:text-[1.35rem] sm:leading-none">
+                {/* Price + sold row */}
+                <div className="mt-4 flex items-center gap-3">
+                    {/* Price block */}
+                    <div className="min-w-0 flex-1">
+                        <span className="block bg-gradient-to-br from-[var(--color-main)] to-[var(--color-api-second)] bg-clip-text text-xl font-extrabold tabular-nums tracking-tight text-transparent dark:from-white dark:to-white/80 sm:text-[1.45rem] sm:leading-none">
                             {price}
                         </span>
+                        {originalPrice && (
+                            <span className="mt-1 block text-sm text-custom-tertiary/90 line-through decoration-custom-tertiary/50 dark:text-zinc-500 dark:decoration-zinc-600">
+                                {originalPrice}
+                            </span>
+                        )}
                     </div>
 
-                    {/* Original price + savings + sold */}
-                    {(originalPrice || savings || sold != null) && (
-                        <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1.5">
-                            {originalPrice && (
-                                <span className="text-sm text-custom-tertiary/90 line-through decoration-custom-tertiary/50 dark:text-zinc-500 dark:decoration-zinc-600">
-                                    {originalPrice}
-                                </span>
-                            )}
-                            {savings && (
-                                <span className="inline-flex items-center rounded-lg bg-emerald-500/10 px-2 py-0.5 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-600/15 dark:bg-emerald-400/10 dark:text-emerald-300 dark:ring-emerald-400/20">
-                                    {savings}
-                                </span>
-                            )}
-                            {sold != null && (
-                                <span className="ml-auto text-xs font-medium uppercase tracking-wide text-custom-secondary/80 dark:text-zinc-500">
-                                    {sold.toLocaleString()}{" "}
-                                    {t?.("product.sold") || "Sold"}
-                                </span>
-                            )}
+                    {/* Sold block — bag icon + count, divider on its left */}
+                    {sold != null && (
+                        <div className="flex shrink-0 items-center gap-2.5 self-stretch border-l border-stone-200/70 pl-3 dark:border-white/10">
+                            <span
+                                className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[color-mix(in_srgb,var(--color-main)_10%,transparent)] text-[var(--color-main)]"
+                                aria-hidden
+                            >
+                                <svg
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    className="h-4 w-4"
+                                >
+                                    <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+                                    <path d="M3 6h18" />
+                                    <path d="M16 10a4 4 0 0 1-8 0" />
+                                </svg>
+                            </span>
+                            <span className="text-sm font-bold uppercase tracking-wide leading-tight text-custom-primary dark:text-white">
+                                {sold.toLocaleString()}{" "}
+                                {t?.("product.sold") || "Sold"}
+                            </span>
                         </div>
                     )}
                 </div>
 
-                {/* View details + discount label + bottom badges + delivery */}
+                {/* Savings — own full-width row so it never collides with the sold block */}
+                {savings && (
+                    <div className="mt-2.5">
+                        <span className="inline-flex max-w-full items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-600/20 dark:bg-emerald-400/10 dark:text-emerald-300 dark:ring-emerald-400/25">
+                            <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="h-3.5 w-3.5 shrink-0"
+                                aria-hidden
+                            >
+                                <path d="M20 12v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8" />
+                                <path d="M2 7h20v5H2z" />
+                                <path d="M12 22V7" />
+                                <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7Z" />
+                                <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7Z" />
+                            </svg>
+                            <span className="truncate">{savings}</span>
+                        </span>
+                    </div>
+                )}
+
+                {/* Open-details button + bottom badges */}
                 {(onViewDetails ||
                     mergedBottomBadgeItems.length > 0 ||
                     deliveryInfo ||
@@ -314,14 +361,29 @@ export default function ProductCard({
                                 type="button"
                                 variant="primary"
                                 size="sm"
-                                fullWidth={false}
-                                className="h-10 min-h-10 w-[min(100%,200px)] rounded-full bg-gradient-to-r from-[var(--color-main)] to-[var(--color-api-second)] px-5 text-sm font-semibold text-white shadow-md transition-[transform,box-shadow] duration-300 hover:shadow-lg motion-reduce:transition-none dark:to-[color-mix(in_srgb,var(--color-api-second)_82%,var(--color-main))]"
+                                fullWidth
+                                className="h-12 min-h-12 w-full rounded-2xl bg-gradient-to-r from-[var(--color-main)] to-[var(--color-api-second)] px-5 text-sm font-bold text-white shadow-lg shadow-[color-mix(in_srgb,var(--color-main)_30%,transparent)] transition-[transform,box-shadow,filter] duration-300 hover:-translate-y-0.5 hover:shadow-xl hover:brightness-[1.04] motion-reduce:transition-none motion-reduce:hover:translate-y-0 dark:to-[color-mix(in_srgb,var(--color-api-second)_82%,var(--color-main))]"
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     onViewDetails(id);
                                 }}
                             >
-                                {viewDetailsLabel ?? "View details"}
+                                <span className="inline-flex items-center justify-center gap-2">
+                                    <svg
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="2"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        className="h-[18px] w-[18px]"
+                                        aria-hidden
+                                    >
+                                        <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
+                                        <circle cx="12" cy="12" r="3" />
+                                    </svg>
+                                    {viewDetailsLabel ?? "View details"}
+                                </span>
                             </Button>
                         )}
                         {mergedBottomBadgeItems.length > 0 && (
@@ -333,19 +395,6 @@ export default function ProductCard({
                                 className="self-center justify-center text-xs font-semibold text-custom-secondary dark:text-zinc-400"
                             />
                         )}
-                        {/* {deliveryInfo && (
-                            <AnimatedButton
-                                variant="primary"
-                                size="sm"
-                                type="button"
-                                onClick={(e) => e.stopPropagation()}
-                                className="w-full justify-center bg-custom-accent text-xs font-semibold text-custom-inverse hover:opacity-90"
-                                note={{
-                                    primary: deliveryInfo,
-                                    secondary: t ? t("home.orderNow") : "Order now",
-                                }}
-                            />
-                        )} */}
                     </div>
                 )}
             </div>

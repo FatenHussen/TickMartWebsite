@@ -10,7 +10,6 @@ import ProductActions from "../components/ProductActions";
 import ProductDescription from "../components/ProductDescription";
 import ShopVariantsPreview from "../components/ShopVariantsPreview";
 import ExtraDetailsTable from "../components/ExtraDetailsTable";
-import CategoryDetailsTable from "../components/CategoryDetailsTable";
 import ExtrasCheckboxTable from "../components/ExtrasCheckboxTable";
 import ShopSelector from "../components/ShopSelector";
 import {
@@ -696,10 +695,45 @@ function ProductDetails() {
                             onShare={handleShare}
                         />
 
-                        <ProductDescription
-                            description={product.description}
-                            fullDescription={product.full_description}
-                        />
+                        {(product.description || product.full_description) && (
+                            <div className="rounded-2xl border border-[color-mix(in_srgb,var(--color-api-second)_22%,var(--color-border-primary))] bg-gradient-to-br from-[color-mix(in_srgb,var(--color-api-second)_4%,var(--color-bg-card))] to-transparent p-5 dark:border-[rgba(255,255,255,0.06)]">
+                                <ProductDescription
+                                    description={product.description}
+                                    fullDescription={product.full_description}
+                                />
+                            </div>
+                        )}
+
+                        {/* Category Details – informational, kept on the left to
+                            balance the columns and fill the whitespace */}
+                        {!isFood &&
+                            product.category_details &&
+                            product.category_details.length > 0 && (
+                                <div className="rounded-2xl border border-[color-mix(in_srgb,var(--color-api-second)_22%,var(--color-border-primary))] bg-[color-mix(in_srgb,var(--color-api-second)_3%,var(--color-bg-card))] p-5 dark:border-[rgba(255,255,255,0.06)]">
+                                    <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-primary dark:text-[#FFFFFF]">
+                                        <span className="inline-block h-5 w-1.5 rounded-full bg-primary" />
+                                        {t(
+                                            "product.categoryDetails",
+                                            "Category Details"
+                                        )}
+                                    </h3>
+                                    <dl className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                        {product.category_details.map((detail) => (
+                                            <div
+                                                key={detail.id}
+                                                className="flex flex-col gap-0.5 rounded-xl border border-[color-mix(in_srgb,var(--color-api-second)_16%,var(--color-border-primary))] bg-custom-primary px-3.5 py-2.5 dark:border-[rgba(255,255,255,0.05)]"
+                                            >
+                                                <dt className="text-xs font-medium text-custom-secondary">
+                                                    {detail.name}
+                                                </dt>
+                                                <dd className="text-sm font-semibold text-custom-primary">
+                                                    {detail.value}
+                                                </dd>
+                                            </div>
+                                        ))}
+                                    </dl>
+                                </div>
+                            )}
                     </div>
 
                     {/* Right – Product Details */}
@@ -846,23 +880,6 @@ function ProductDetails() {
                                 setIconPopupOpen(true);
                             }}
                         />
-
-                        {/* Category Details Table */}
-                        {!isFood &&
-                            product.category_details &&
-                            product.category_details.length > 0 && (
-                                <div className="">
-                                    <h3 className="mb-3 border-b-2 border-primary/20 pb-2 text-lg font-semibold text-primary dark:border-[rgba(255,255,255,0.06)] dark:text-[#FFFFFF]">
-                                        {t(
-                                            "product.categoryDetails",
-                                            "Category Details"
-                                        )}
-                                    </h3>
-                                    <CategoryDetailsTable
-                                        details={product.category_details}
-                                    />
-                                </div>
-                            )}
 
                         {/* Extra Details Table (non-food static key/value + price) */}
                         {!isFood &&

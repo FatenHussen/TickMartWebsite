@@ -25,6 +25,8 @@ type BrandCardWithRatingProps = {
     layout?: SectionCardVariant;
     /** Optional card tint from API `section.background_card_color` or page defaults */
     surfaceColor?: string | null;
+    /** API-driven gradient for the content panel (dark mode) — wins over `surfaceColor`. */
+    surfaceGradient?: string | null;
 };
 
 /** Neutral translucent panel — matches home section cards; API colors stay as accents on CTAs. */
@@ -35,6 +37,7 @@ export default function BrandCardWithRating({
     onClick,
     layout,
     surfaceColor,
+    surfaceGradient,
 }: BrandCardWithRatingProps) {
     const { theme } = useTheme();
     const isDarkTheme = theme === "dark";
@@ -49,13 +52,17 @@ export default function BrandCardWithRating({
     const bottomBadges = mapApiBottomBadgesToProductCard(item.bottom_badges);
 
     /**
-     * In dark mode, ignore any per-section/per-page `surfaceColor` and force a
-     * creative API-settings-driven dark surface so brand cards stay consistent
-     * across the app.
+     * In dark mode, ignore any per-section/per-page `surfaceColor` and use the
+     * creative API-settings-driven dark gradient (`getDarkCardSurfaceGradient`,
+     * tinted by the dashboard "dark second color") so brand cards stay consistent
+     * across the app. Falls back to a neutral surface if no gradient is provided.
      */
     const resolvedSurface = isDarkTheme
-        ? DARK_SURFACE_FALLBACK
+        ? surfaceGradient
+            ? undefined
+            : DARK_SURFACE_FALLBACK
         : surfaceColor;
+    const resolvedGradient = isDarkTheme ? surfaceGradient : undefined;
 
     return (
         <BrandCard
@@ -68,6 +75,7 @@ export default function BrandCardWithRating({
             onClick={onClick}
             layout={layout}
             surfaceColor={resolvedSurface}
+            surfaceGradient={resolvedGradient}
         />
     );
 }

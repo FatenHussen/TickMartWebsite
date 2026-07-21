@@ -92,10 +92,10 @@ export function PopupShell({ isOpen, popupType, onClose, children }: Props) {
           : "fixed inset-0 z-[99999] flex items-center justify-center p-4";
 
     const dialogClass = isSlideIn
-        ? "relative w-full sm:max-w-lg rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl"
+        ? "relative w-full sm:max-w-lg rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-[0_24px_80px_rgba(0,0,0,0.45)] ring-1 ring-white/10"
         : isFullScreen
-          ? "relative w-full max-w-5xl max-h-[96vh] rounded-2xl overflow-hidden shadow-[0_24px_80px_rgba(0,0,0,0.4)]"
-          : "relative w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl";
+          ? "relative w-full max-w-5xl max-h-[96vh] rounded-3xl overflow-hidden shadow-[0_24px_80px_rgba(0,0,0,0.5)] ring-1 ring-white/10"
+          : "relative w-full max-w-lg rounded-3xl overflow-hidden shadow-[0_24px_70px_rgba(0,0,0,0.45)] ring-1 ring-white/10";
 
     const portal =
         typeof document !== "undefined" ? document.body : null;
@@ -130,11 +130,11 @@ export function PopupShell({ isOpen, popupType, onClose, children }: Props) {
                         className={dialogClass}
                         onClick={(e) => e.stopPropagation()}
                     >
-                        {/* Close button */}
+                        {/* Close button — end-aligned so it flips for RTL */}
                         <button
                             type="button"
                             onClick={() => onClose("close_button")}
-                            className="absolute top-4 right-4 z-30 flex h-8 w-8 items-center justify-center rounded-full bg-black/20 text-white/80 backdrop-blur-sm transition-all duration-200 hover:bg-black/40 hover:text-white focus:outline-none focus:ring-2 focus:ring-white/40"
+                            className="absolute top-3.5 end-3.5 z-30 flex h-9 w-9 items-center justify-center rounded-full bg-black/25 text-white/85 backdrop-blur-md ring-1 ring-white/15 transition-all duration-200 hover:bg-black/45 hover:text-white hover:rotate-90 focus:outline-none focus:ring-2 focus:ring-white/50"
                             aria-label="Close"
                         >
                             <HiX className="h-4 w-4" aria-hidden="true" />

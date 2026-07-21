@@ -6,6 +6,7 @@ import InputField from "@/shared/ui/InputField";
 import Button from "@/shared/ui/Button";
 import Label from "@/shared/ui/Label";
 import AuthLayout from "@/features/auth/layout/Auth-Layout";
+import AuthBrand from "@/features/auth/components/AuthBrand";
 import { detectEmailOrPhone } from "@/shared/lib/utils";
 import { useLogin } from "@/features/auth/hooks/useAuth";
 import { useAppSettings } from "@/features/account/hooks/useAppSettings";
@@ -60,6 +61,18 @@ export default function SignIn() {
             leftImageAlt={t("common.login")}
             useFormCard
         >
+            <div className="space-y-4">
+                <AuthBrand size="sm" />
+                <div className="space-y-1.5 text-center">
+                    <h1 className="text-2xl font-bold tracking-[-0.01em] text-custom-primary">
+                        {t("auth.signInTitle")}
+                    </h1>
+                    <p className="text-sm text-custom-secondary">
+                        {t("auth.signInSubtitle")}
+                    </p>
+                </div>
+            </div>
+
             <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-8">
                 <div className="space-y-1.5">
                     <EmailOrPhoneInput

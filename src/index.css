@@ -510,6 +510,40 @@ html.dark #root {
     }
   }
 
+  /* Basket details — quantity value pop + savings/row reveal */
+  @keyframes qtyPop {
+    0% {
+      opacity: 0.4;
+      transform: translateY(-2px) scale(0.85);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  @keyframes basketRise {
+    0% {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-basket-rise {
+    animation: basketRise 240ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-basket-rise,
+    .animate-\[qtyPop_180ms_ease-out\] {
+      animation: none !important;
+    }
+  }
+
   @keyframes app-canvas-ambient-drift {
     0% {
       opacity: 0.78;
@@ -621,13 +655,24 @@ html.dark #root {
   .navbar-surface-top {
     --navbar-main: var(--color-main, var(--color-primary));
     --navbar-second: var(--color-api-second, var(--color-primary-light));
-    background: linear-gradient(
-      180deg,
-      var(--navbar-main) 0%,
-      color-mix(in srgb, var(--navbar-main) 32%, white) 42%,
-      color-mix(in srgb, var(--navbar-second) 14%, white) 100%
-    );
-    box-shadow: 0 2px 14px -8px color-mix(in srgb, var(--navbar-main) 35%, transparent);
+    background-color: color-mix(in srgb, var(--navbar-main) 4%, #ffffff);
+    background-image:
+      radial-gradient(
+        ellipse 90% 130% at 8% -40%,
+        color-mix(in srgb, var(--navbar-second) 13%, transparent) 0%,
+        transparent 55%
+      ),
+      radial-gradient(
+        ellipse 80% 110% at 92% -20%,
+        color-mix(in srgb, var(--navbar-main) 11%, transparent) 0%,
+        transparent 52%
+      ),
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--navbar-main) 6%, transparent) 0%,
+        transparent 60%
+      );
+    box-shadow: 0 1px 2px -1px rgba(15, 23, 42, 0.05);
   }
 
   /**
@@ -668,10 +713,11 @@ html.dark #root {
   .navbar-surface-sub {
     --navbar-main: var(--color-main, var(--color-primary));
     --navbar-second: var(--color-api-second, var(--color-primary-light));
-    background-color: color-mix(
-      in srgb,
-      var(--navbar-main) 7%,
-      color-mix(in srgb, var(--navbar-second) 5%, white)
+    background-color: color-mix(in srgb, var(--navbar-main) 5%, #ffffff);
+    background-image: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--navbar-main) 8%, transparent) 0%,
+      color-mix(in srgb, var(--navbar-second) 4%, transparent) 100%
     );
   }
 
@@ -690,11 +736,7 @@ html.dark #root {
   }
 
   .navbar-divider {
-    border-color: color-mix(
-      in srgb,
-      var(--color-main, var(--color-primary)) 22%,
-      transparent
-    );
+    border-color: rgba(15, 23, 42, 0.06);
   }
 
   .dark .navbar-divider {
@@ -702,11 +744,8 @@ html.dark #root {
   }
 
   .navbar-bottom-edge {
-    border-color: color-mix(
-      in srgb,
-      var(--color-main, var(--color-primary)) 28%,
-      transparent
-    );
+    border-bottom-width: 1px;
+    border-color: rgba(15, 23, 42, 0.07);
   }
 
   .dark .navbar-bottom-edge {
@@ -726,7 +765,7 @@ html.dark #root {
    */
   .dark .navbar-main-nav .navbar-premium-nav-link {
     color: #a1a1aa;
-    border-bottom-color: transparent;
+    border-bottom: 2px solid transparent;
     border-radius: 0.375rem;
     transition:
       color 0.3s ease,
@@ -784,6 +823,49 @@ html.dark #root {
         in srgb,
         var(--color-api-second, var(--color-primary-light)) 18%,
         transparent
+      );
+  }
+
+  /**
+   * App footer (light): API main colour as a soft, creative gradient wash —
+   * low-opacity tint over near-white so text stays readable.
+   */
+  footer.app-footer-premium {
+    background-color: color-mix(
+      in srgb,
+      var(--color-main, var(--color-primary)) 4%,
+      #fbfbfc
+    );
+    background-image:
+      radial-gradient(
+        ellipse 120% 90% at 50% 0%,
+        color-mix(
+            in srgb,
+            var(--color-main, var(--color-primary)) 9%,
+            transparent
+          )
+          0%,
+        transparent 60%
+      ),
+      radial-gradient(
+        ellipse 70% 60% at 100% 100%,
+        color-mix(
+            in srgb,
+            var(--color-api-second, var(--color-primary-light)) 7%,
+            transparent
+          )
+          0%,
+        transparent 55%
+      ),
+      radial-gradient(
+        ellipse 65% 55% at 0% 100%,
+        color-mix(
+            in srgb,
+            var(--color-main, var(--color-primary)) 6%,
+            transparent
+          )
+          0%,
+        transparent 50%
       );
   }
 
@@ -1044,6 +1126,21 @@ html.dark #root {
     );
     border: 1px solid color-mix(in srgb, var(--color-main, var(--color-primary)) 14%, transparent);
     box-shadow: 0 4px 18px -10px color-mix(in srgb, var(--color-main, var(--color-primary)) 28%, transparent);
+    transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 0.25s ease, border-color 0.25s ease;
+  }
+  .basket-sidebar-card:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in srgb, var(--color-main, var(--color-primary)) 28%, transparent);
+    box-shadow: 0 12px 30px -14px color-mix(in srgb, var(--color-main, var(--color-primary)) 42%, transparent);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .basket-sidebar-card {
+      transition: none;
+    }
+    .basket-sidebar-card:hover {
+      transform: none;
+    }
   }
   .dark .basket-sidebar-card {
     background-image: linear-gradient(
@@ -1084,12 +1181,17 @@ html.dark #root {
     background-color: color-mix(in srgb, var(--color-main, var(--color-primary)) 4%, var(--color-bg-card));
     color: var(--color-text-primary);
     border: 1px solid color-mix(in srgb, var(--color-main, var(--color-primary)) 12%, transparent);
-    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease,
-      box-shadow 0.2s ease, transform 0.2s ease;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease,
+      box-shadow 0.15s ease, transform 0.15s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: transform;
   }
   .basket-sidebar-pill:hover {
     background-color: color-mix(in srgb, var(--color-main, var(--color-primary)) 10%, var(--color-bg-card));
     border-color: color-mix(in srgb, var(--color-main, var(--color-primary)) 30%, transparent);
+    transform: translateY(-1px);
+  }
+  .basket-sidebar-pill:active {
+    transform: scale(0.98);
   }
   .basket-sidebar-pill.is-active {
     background-image: linear-gradient(
@@ -1099,7 +1201,22 @@ html.dark #root {
     );
     color: #ffffff;
     border-color: transparent;
-    box-shadow: 0 8px 22px -10px color-mix(in srgb, var(--color-main, var(--color-primary)) 55%, transparent);
+    transform: scale(1.02);
+    box-shadow: 0 10px 26px -10px color-mix(in srgb, var(--color-main, var(--color-primary)) 60%, transparent),
+      0 0 0 1px color-mix(in srgb, var(--color-api-second, var(--color-primary-light)) 35%, transparent);
+  }
+  .basket-sidebar-pill.is-active:hover {
+    transform: scale(1.02) translateY(-1px);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .basket-sidebar-pill,
+    .basket-sidebar-pill:hover,
+    .basket-sidebar-pill:active,
+    .basket-sidebar-pill.is-active,
+    .basket-sidebar-pill.is-active:hover {
+      transform: none;
+      transition: background-color 0.15s ease, color 0.15s ease;
+    }
   }
   .dark .basket-sidebar-pill {
     background-color: color-mix(in srgb, var(--color-main, var(--color-primary)) 12%, var(--color-bg-card));
@@ -1822,5 +1939,104 @@ html.dark #root {
 @media (prefers-reduced-motion: reduce) {
   .popup-slide-in-from-bottom {
     animation: none;
+  }
+}
+
+/* ===== Premium UX: scroll reveal, responsive grid, micro-interactions ===== */
+
+/* Staggered entrance for grid items — opacity + transform only (60fps, no layout shift) */
+.reveal-on-scroll {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+.reveal-on-scroll.is-visible {
+  opacity: 1;
+  transform: none;
+  will-change: auto;
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal-on-scroll {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* Fluid grid — more cards per row on wide screens while preserving card proportions.
+   min(100%, 320px) prevents horizontal overflow on narrow viewports. */
+.baskets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  gap: 1.25rem;
+  align-items: stretch;
+}
+
+/* Wishlist heart: springy bounce on click */
+@keyframes favorite-pop {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.28);
+  }
+  65% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.favorite-button--pop {
+  animation: favorite-pop 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .favorite-button--pop {
+    animation: none;
+  }
+  .favorite-button {
+    transition: none !important;
+  }
+}
+
+/* Header elevation on scroll — soft shadow + hairline, transform/shadow only */
+.navbar-elevate {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  transition: box-shadow 0.22s ease;
+}
+.navbar-elevate--scrolled {
+  box-shadow: 0 8px 24px -16px rgba(15, 23, 42, 0.22),
+    0 2px 8px -4px rgba(15, 23, 42, 0.08);
+}
+.dark .navbar-elevate--scrolled {
+  box-shadow: 0 10px 30px -18px rgba(0, 0, 0, 0.7),
+    0 1px 0 0 rgba(255, 255, 255, 0.06);
+}
+
+/* Condense vertical padding once the page is scrolled — padding only, no layout jump */
+.navbar-top-row {
+  transition: padding 0.2s ease, min-height 0.2s ease;
+}
+.navbar-elevate--scrolled .navbar-top-row {
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+.navbar-sub-row {
+  transition: padding 0.2s ease;
+}
+.navbar-elevate--scrolled .navbar-sub-row {
+  padding-top: 0.45rem;
+  padding-bottom: 0.45rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .navbar-elevate,
+  .navbar-top-row,
+  .navbar-sub-row {
+    transition: none;
   }
 }

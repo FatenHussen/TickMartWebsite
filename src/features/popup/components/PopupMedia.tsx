@@ -54,9 +54,9 @@ export function PopupMedia({ media, lang, title, isFullScreen }: Props) {
                     loading="lazy"
                     decoding="async"
                     onLoad={() => setLoaded(true)}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: loaded ? 1 : 0 }}
-                    transition={{ duration: 0.4 }}
+                    initial={{ opacity: 0, scale: 1.08 }}
+                    animate={{ opacity: loaded ? 1 : 0, scale: loaded ? 1 : 1.08 }}
+                    transition={{ opacity: { duration: 0.4 }, scale: { duration: 6, ease: "easeOut" } }}
                     className="w-full h-full object-cover"
                 />
             )}
@@ -75,8 +75,9 @@ export function PopupMedia({ media, lang, title, isFullScreen }: Props) {
                 />
             )}
 
-            {/* Gradient overlay — improves text legibility */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+            {/* Gradient overlays — legibility + a soft blend into the content panel */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent" />
+            <div className="absolute inset-0 hidden md:block bg-gradient-to-l from-black/25 to-transparent rtl:bg-gradient-to-r" />
         </div>
     );
 }

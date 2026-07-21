@@ -4,6 +4,7 @@ import { Link } from"react-router-dom";
 import EmailOrPhoneInput from"@/features/auth/components/EmailOrPhoneInput";
 import Button from"@/shared/ui/Button";
 import AuthLayout from"@/features/auth/layout/Auth-Layout";
+import AuthBrand from"@/features/auth/components/AuthBrand";
 import { useForgotPassword } from"@/features/auth/hooks/useAuth";
 import { paths } from"@/app/routes/path/paths";
 import { detectEmailOrPhone } from"@/shared/lib/utils";
@@ -40,17 +41,7 @@ export default function ForgotPassword() {
  >
  <div className="space-y-6">
  <div className="text-center mb-10">
- <div className="flex items-center justify-center gap-2 mb-12">
- <img
- src="/images/auth/Vector.png"
- alt=""
- className="h-8 w-8 object-contain"
- aria-hidden
- />
- <span className="text-xl font-bold text-custom-primary">
- Tikmart
- </span>
- </div>
+ <AuthBrand size="sm" className="mb-10" />
 
  <h1 className="text-2xl font-bold text-custom-primary">
  {t("auth.forgotPassword")}

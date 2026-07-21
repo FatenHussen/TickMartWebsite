@@ -80,7 +80,14 @@ export type PopupDisplay = {
     audience_type?: string;
 };
 
-export type PopupTriggerType = "delay" | "scroll" | "exit" | "load" | (string & {});
+export type PopupTriggerType =
+    | "delay"
+    | "scroll"
+    | "exit_intent"
+    | "exit"
+    | "on_load"
+    | "load"
+    | (string & {});
 
 export type PopupTrigger = {
     type?: PopupTriggerType;
@@ -88,7 +95,7 @@ export type PopupTrigger = {
 };
 
 export type PopupFrequency = {
-    /** Cooldown between impressions, in minutes */
+    /** Cooldown between impressions, in days (0 = no daily wait) */
     show_every?: number;
     /** Cap on total impressions for this campaign per user */
     max_impressions?: number;
@@ -122,6 +129,88 @@ export type PopupEntityContext = {
     shop_id?: number;
     recipe_id?: number;
     basket_id?: number;
+    shop_vendor_service_id?: number;
+};
+
+// ─── Attached entities ─────────────────────────────────────────────────────────
+
+/**
+ * Permissive shape for an entity attached to a campaign/promotion. The backend
+ * serializes each entity with its own `AllResource`/`UserOneResource`, so field
+ * names vary between models — we probe a handful of likely keys at flatten time.
+ */
+export type PopupEntityResource = {
+    id: number;
+    name?: LocalizedString | string | null;
+    title?: LocalizedString | string | null;
+    subtitle?: LocalizedString | string | null;
+    description?: LocalizedString | string | null;
+    image?: string | null;
+    image_url?: string | null;
+    logo_url?: string | null;
+    media?: string | { path?: string | null } | null;
+    rating?: number | null;
+    is_restaurant?: boolean | null;
+    is_service_provider?: boolean | null;
+    [key: string]: unknown;
+};
+
+/**
+ * A promotion attached to the campaign. Carries its own theme/end-date and may
+ * itself relate to typed entity arrays. Field names are probed defensively.
+ */
+export type PopupPromotionResource = {
+    id: number;
+    name?: LocalizedString | string | null;
+    title?: LocalizedString | string | null;
+    main_color?: string | null;
+    second_color?: string | null;
+    main?: string | null;
+    secondary?: string | null;
+    end_date?: string | null;
+    ends_at?: string | null;
+    end_time?: string | null;
+    products?: PopupEntityResource[];
+    restaurants?: PopupEntityResource[];
+    serviceProviders?: PopupEntityResource[];
+    shops?: PopupEntityResource[];
+    recipes?: PopupEntityResource[];
+    baskets?: PopupEntityResource[];
+    shop_vendor_services?: PopupEntityResource[];
+    [key: string]: unknown;
+};
+
+/** Polymorphic entity kinds that a promotion popup can route to. */
+export type PopupEntityType =
+    | "product"
+    | "shop"
+    | "restaurant"
+    | "service_provider"
+    | "recipe"
+    | "basket"
+    | "shop_vendor_service";
+
+/**
+ * Normalized, render-ready item produced by flattening the nested
+ * promotion/entity payload. Each item inherits its parent promotion's title,
+ * theme colors, and end time.
+ */
+export type PromotionListItem = {
+    /** `${entityType}:${entityId}` — stable React key and dedupe identity. */
+    key: string;
+    entityType: PopupEntityType;
+    entityId: number;
+    /** Already localized for the active language. */
+    name: string;
+    subtitle?: string;
+    image?: string;
+    rating?: number;
+    /** Inherited from the parent promotion (or campaign title as fallback). */
+    promotionTitle?: string;
+    mainColor?: string | null;
+    secondColor?: string | null;
+    /** Inherited ISO 8601 end date driving the countdown. */
+    endTime?: string | null;
 };
 
 // ─── Campaign ────────────────────────────────────────────────────────────────
@@ -143,10 +232,14 @@ export type PopupCampaign = {
     colors?: PopupColors;
     theme?: PopupColors;
     scoped_to_entities?: boolean;
-    products?: unknown[];
-    shops?: unknown[];
-    recipes?: unknown[];
-    baskets?: unknown[];
+    products?: PopupEntityResource[];
+    restaurants?: PopupEntityResource[];
+    serviceProviders?: PopupEntityResource[];
+    shops?: PopupEntityResource[];
+    recipes?: PopupEntityResource[];
+    baskets?: PopupEntityResource[];
+    shop_vendor_services?: PopupEntityResource[];
+    promotions?: PopupPromotionResource[];
 };
 
 // ─── API shapes ──────────────────────────────────────────────────────────────
@@ -181,12 +274,11 @@ export type PopupFormSubmitPayload = {
 export type PopupPageType =
     | "home"
     | "category"
-    | "product"
+    | "product_details"
+    | "shop_details"
+    | "recipe_details"
+    | "basket_details"
     | "cart"
-    | "checkout"
-    | "shop"
-    | "recipe"
-    | "basket"
     | "account"
     | (string & {});
 

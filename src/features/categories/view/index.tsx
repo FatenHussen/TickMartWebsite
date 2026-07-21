@@ -8,14 +8,17 @@ import { useSections, useSectionsByPosition } from "@/features/home/hooks/useSec
 import { pickHomeSectionBySeeMorePageSlug } from "@/features/home/lib/homeStaticSectionSurface";
 import ApiSectionsRenderer from "@/shared/component/sections/ApiSectionsRenderer";
 import FullBleedSection from "@/shared/component/FullBleedSection";
-import { getSectionCardSurfaceColor } from "@/shared/component/sections/sectionCardVariant";
+import {
+    getSectionCardSurfaceColor,
+    getDarkCardSurfaceGradient,
+} from "@/shared/component/sections/sectionCardVariant";
 import { cn } from "@/shared/lib/utils";
 import { resolveApiPaletteForTheme } from "@/shared/lib/themeColors";
 import {
     buildCategoriesLuxuryDarkSurface,
-    categoriesPageRootStyle,
     resolveCategoriesDarkAccents,
 } from "../lib/categoriesApiDarkSurface";
+import { getHomeRootSurfaceStyle } from "@/features/home/lib/homeRootSurface";
 import CategoriesLayout from "../layout/CategoriesLayout";
 import CategoriesSidebar from "../components/CategoriesSidebar";
 import ProductsHeader from "../components/ProductsHeader";
@@ -150,9 +153,9 @@ export default function CategoriesView() {
             themeGradientColors?.second;
 
         if (isDarkTheme) {
-            const start = main ?? second ?? "var(--color-main)";
-            const end = second ?? main ?? "var(--color-api-second)";
-            return `linear-gradient(168deg, color-mix(in srgb, ${start} 6%, #121316) 0%, #0e0e10 42%, color-mix(in srgb, ${end} 5%, #111114) 100%)`;
+            // Match every other card: derive the dark surface from the dashboard
+            // "dark second color" (`--color-api-second`) via the shared gradient.
+            return getDarkCardSurfaceGradient();
         }
 
         if (!main && !second) return undefined;
@@ -378,7 +381,11 @@ export default function CategoriesView() {
 
     const pageRootStyle =
         isDarkTheme && categoriesDarkSurface
-            ? categoriesPageRootStyle(categoriesDarkSurface)
+            ? {
+                  // Match the home page shell: API `main`/`second` radial glows over near-black.
+                  ...getHomeRootSurfaceStyle(true),
+                  color: categoriesDarkSurface.pageColor,
+              }
             : undefined;
 
     return (

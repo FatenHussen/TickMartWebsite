@@ -1,3 +1,4 @@
+// import { ArrowRight } from "lucide-react";
 import {
     PROMO_CARD_VARIANTS,
     formatPromotionTypeLabel,
@@ -12,6 +13,9 @@ export interface PromotionOfferCardProps {
     index: number;
     isDark: boolean;
     offerBadgeLabel: string;
+    exploreLabel: string;
+    /** Colour of the surface behind the card — used to punch the coupon notches. */
+    surfaceColor: string;
 }
 
 export function PromotionOfferCard({
@@ -21,128 +25,139 @@ export function PromotionOfferCard({
     index,
     isDark,
     offerBadgeLabel,
+    // exploreLabel,
+    surfaceColor,
 }: PromotionOfferCardProps) {
     const Icon = promotionTypeIcon(promo.type);
     const variant = PROMO_CARD_VARIANTS[index % PROMO_CARD_VARIANTS.length];
     const typeLabel = formatPromotionTypeLabel(promo.type);
     const delayMs = Math.min(index, 10) * 72;
 
+    const borderColor = isDark
+        ? "rgba(255, 255, 255, 0.08)"
+        : "color-mix(in srgb, var(--color-main) 20%, transparent)";
+
     const shellStyle = isDark
         ? {
               background: "rgba(14, 15, 18, 0.94)",
-              borderColor: "rgba(255, 255, 255, 0.07)",
+              borderColor,
               boxShadow:
                   "0 22px 48px -22px rgba(0, 0, 0, 0.55), inset 0 1px 0 0 rgba(255, 255, 255, 0.05)",
           }
         : {
               background:
-                  "linear-gradient(155deg, var(--color-bg-card) 0%, color-mix(in srgb, var(--color-bg-card) 88%, var(--color-main)) 55%, color-mix(in srgb, var(--color-bg-card) 92%, var(--color-api-second)) 100%)",
-              borderColor:
-                  "color-mix(in srgb, var(--color-main) 22%, transparent)",
+                  "linear-gradient(135deg, var(--color-bg-card) 0%, color-mix(in srgb, var(--color-bg-card) 90%, var(--color-main)) 100%)",
+              borderColor,
               boxShadow:
                   "0 14px 36px -16px color-mix(in srgb, var(--color-main) 32%, transparent), inset 0 1px 0 0 rgba(255, 255, 255, 0.85)",
           };
 
+    // Coupon notch — a punched hole that reveals the surface behind the card.
+    const notchStyle = {
+        background: surfaceColor,
+        borderColor,
+    };
+
     return (
         <article
-            className="promotions-strip-card group relative overflow-hidden rounded-3xl border p-4 transition-[transform,box-shadow] duration-300 sm:p-5 motion-safe:hover:-translate-y-1 motion-safe:hover:shadow-xl"
-            style={{
-                ...shellStyle,
-                animationDelay: `${delayMs}ms`,
-            }}
+            className="promotions-strip-card group relative flex overflow-hidden rounded-[1.5rem] border transition-[transform,box-shadow] duration-300 motion-safe:hover:-translate-y-1.5 motion-safe:hover:shadow-xl"
+            style={{ ...shellStyle, animationDelay: `${delayMs}ms` }}
         >
-            {/* Ambient mesh */}
-            <div
-                aria-hidden
-                className="pointer-events-none absolute inset-0 z-0 opacity-[0.92]"
-                style={{
-                    background: [
-                        `radial-gradient(ellipse 85% 75% at 105% -25%, ${variant.meshFrom}, transparent 58%)`,
-                        `radial-gradient(ellipse 70% 65% at -15% 115%, ${variant.meshTo}, transparent 52%)`,
-                    ].join(", "),
-                }}
-            />
-
-            {/* Fine diagonal noise */}
-            <div
-                aria-hidden
-                className={`pointer-events-none absolute inset-0 z-[1] ${isDark ? "opacity-[0.04]" : "opacity-[0.06]"}`}
-                style={{
-                    background:
-                        "repeating-linear-gradient(135deg, currentColor 0, currentColor 1px, transparent 1px, transparent 22px)",
-                    color: isDark ? "#ffffff" : "var(--color-main)",
-                }}
-            />
-
             {/* Traveling shine */}
             <div
                 aria-hidden
-                className={`promotions-strip-card__shine pointer-events-none absolute -start-[40%] top-0 z-[2] h-full w-[45%] ${isDark ? "opacity-[0.06]" : "opacity-[0.22]"}`}
+                className={`promotions-strip-card__shine pointer-events-none absolute -start-[40%] top-0 z-[2] h-full w-[45%] ${isDark ? "opacity-[0.06]" : "opacity-[0.2]"}`}
                 style={{
                     background:
                         "linear-gradient(95deg, transparent 10%, rgba(255,255,255,0.95) 48%, transparent 88%)",
                 }}
             />
 
-            {/* Accent rail */}
+            {/* ── Coupon stub (icon side) ─────────────────────────── */}
             <div
-                aria-hidden
-                className="absolute start-0 top-5 bottom-5 z-[3] w-[3px] rounded-full opacity-90"
-                style={{ background: variant.accentBar }}
-            />
-
-            <div className="relative z-[4] flex gap-4 ps-2">
+                className="relative z-[3] flex w-[5.25rem] shrink-0 flex-col items-center justify-center gap-2 px-2 py-5 text-white sm:w-[5.75rem]"
+                style={{
+                    background:
+                        "linear-gradient(160deg, var(--color-gradient-from), var(--color-gradient-to))",
+                }}
+            >
                 <div
-                    className="relative flex h-[3.25rem] w-[3.25rem] shrink-0 items-center justify-center rounded-2xl transition-transform duration-300 motion-safe:group-hover:scale-[1.06]"
+                    aria-hidden
+                    className="pointer-events-none absolute inset-0 opacity-25"
                     style={{
                         background:
-                            "linear-gradient(145deg, var(--color-gradient-from), var(--color-gradient-to))",
-                        boxShadow: `0 12px 26px -10px ${variant.iconGlow}`,
+                            "repeating-linear-gradient(135deg, rgba(255,255,255,0.5) 0, rgba(255,255,255,0.5) 1px, transparent 1px, transparent 12px)",
+                    }}
+                />
+                <span
+                    className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 ring-1 ring-white/30 backdrop-blur-sm transition-transform duration-300 motion-safe:group-hover:scale-110 motion-safe:group-hover:-rotate-6"
+                    style={{ boxShadow: `0 10px 22px -10px ${variant.iconGlow}` }}
+                >
+                    <Icon className="h-6 w-6" strokeWidth={2.3} aria-hidden />
+                </span>
+                <span className="relative text-[10px] font-extrabold uppercase tracking-[0.14em] opacity-90">
+                    {offerBadgeLabel}
+                </span>
+            </div>
+
+            {/* ── Perforation + punched notches ───────────────────── */}
+            <div
+                aria-hidden
+                className="absolute inset-y-3 z-[3] w-px border-s border-dashed start-[5.25rem] sm:start-[5.75rem]"
+                style={{ borderColor: isDark ? "rgba(255,255,255,0.18)" : "color-mix(in srgb, var(--color-main) 28%, transparent)" }}
+            />
+            <span
+                aria-hidden
+                className="absolute z-[4] h-4 w-4 -translate-x-1/2 rounded-full border start-[5.25rem] -top-2 rtl:translate-x-1/2 sm:start-[5.75rem]"
+                style={notchStyle}
+            />
+            <span
+                aria-hidden
+                className="absolute z-[4] h-4 w-4 -translate-x-1/2 rounded-full border start-[5.25rem] -bottom-2 rtl:translate-x-1/2 sm:start-[5.75rem]"
+                style={notchStyle}
+            />
+
+            {/* ── Content ─────────────────────────────────────────── */}
+            <div className="relative z-[3] min-w-0 flex-1 p-4 ps-5 sm:p-5 sm:ps-6">
+                <span
+                    className={`inline-flex rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide ${isDark ? "bg-white/[0.07] text-[#a1a1aa]" : "bg-black/[0.04] text-custom-secondary"}`}
+                >
+                    {typeLabel}
+                </span>
+
+                {title ? (
+                    <h3
+                        className={`mt-2 text-base font-extrabold leading-snug tracking-tight sm:text-lg ${isDark ? "text-white" : "text-custom-primary"}`}
+                    >
+                        {title}
+                    </h3>
+                ) : null}
+
+                {description ? (
+                    <p
+                        className={`mt-1 text-sm leading-relaxed ${isDark ? "text-[#a1a1aa]" : "text-custom-secondary"}`}
+                    >
+                        {description}
+                    </p>
+                ) : null}
+
+                {/* <button
+                    type="button"
+                    className="mt-3.5 inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold text-white transition-transform duration-300 motion-safe:group-hover:scale-[1.03]"
+                    style={{
+                        background:
+                            "linear-gradient(135deg, var(--color-gradient-from), var(--color-gradient-to))",
+                        boxShadow:
+                            "0 8px 18px -8px color-mix(in srgb, var(--color-main) 60%, transparent)",
                     }}
                 >
-                    <Icon
-                        className="h-[1.35rem] w-[1.35rem] text-white opacity-[0.96]"
-                        strokeWidth={2.25}
+                    {exploreLabel}
+                    <ArrowRight
+                        className="h-3.5 w-3.5 transition-transform duration-300 motion-safe:group-hover:translate-x-1 rtl:rotate-180 rtl:motion-safe:group-hover:-translate-x-1"
+                        strokeWidth={2.6}
                         aria-hidden
                     />
-                </div>
-
-                <div className="min-w-0 flex-1 space-y-2 pt-0.5">
-                    <div className="flex flex-wrap items-center gap-2">
-                        <span
-                            className="inline-flex rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white shadow-sm"
-                            style={{
-                                background:
-                                    "linear-gradient(135deg, color-mix(in srgb, var(--color-api-second) 95%, white), var(--color-main))",
-                                boxShadow:
-                                    "0 6px 14px -6px color-mix(in srgb, var(--color-main) 55%, transparent)",
-                            }}
-                        >
-                            {offerBadgeLabel}
-                        </span>
-                        <span
-                            className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${isDark ? "bg-white/[0.06] text-[#a1a1aa]" : "bg-black/[0.04] text-custom-secondary"}`}
-                        >
-                            {typeLabel}
-                        </span>
-                    </div>
-
-                    {title ? (
-                        <h3
-                            className={`text-base font-bold leading-snug tracking-tight sm:text-lg ${isDark ? "text-white" : "text-custom-primary"}`}
-                        >
-                            {title}
-                        </h3>
-                    ) : null}
-
-                    {description ? (
-                        <p
-                            className={`text-sm leading-relaxed ${isDark ? "text-[#a1a1aa]" : "text-custom-secondary"}`}
-                        >
-                            {description}
-                        </p>
-                    ) : null}
-                </div>
+                </button> */}
             </div>
         </article>
     );

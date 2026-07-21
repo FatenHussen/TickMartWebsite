@@ -9,6 +9,8 @@ import ApiSectionsRenderer from "@/shared/component/sections/ApiSectionsRenderer
 import FullBleedSection from "@/shared/component/FullBleedSection";
 import BrandCard from "@/shared/component/card/BrandCard";
 import BrandCardSkeleton from "@/shared/component/skeleton/BrandCardSkeleton";
+import { useTheme } from "@/context/ThemeContext";
+import { getDarkCardSurfaceGradient } from "@/shared/component/sections/sectionCardVariant";
 import Input from "@/shared/ui/Input";
 import { useInfiniteList } from "@/shared/hooks/useInfiniteList";
 import { queryKeys } from "@/utils/queryKeys";
@@ -26,6 +28,8 @@ export default function AllBrands() {
     const { t } = useTranslation();
     const { isRTL } = useLanguage();
     const navigate = useNavigate();
+    const { theme } = useTheme();
+    const isDarkTheme = theme === "dark";
     const [searchInput, setSearchInput] = useState("");
     const [filterType, setFilterType] = useState<BrandFilterType>(undefined);
 
@@ -166,6 +170,7 @@ export default function AllBrands() {
                                     image={brand.image}
                                     rating={brand.rating ?? 0}
                                     ordersCount={brand.orders_count}
+                                    surfaceGradient={isDarkTheme ? getDarkCardSurfaceGradient() : undefined}
                                     onClick={() => handleBrandClick(brand.id)}
                                 />
                             ))}

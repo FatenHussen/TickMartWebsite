@@ -73,13 +73,13 @@ export function canShowPopup(popup: PopupCampaign): boolean {
         if (dailyDate === getToday()) return false;
     }
 
-    // Cooldown between impressions (minutes)
+    // Cooldown between impressions (days) — API defines show_every in days
     const showEvery = frequency?.show_every;
     if (typeof showEvery === "number" && showEvery > 0) {
         const lastShown = getNumber(K.lastShown(popup.id));
         if (lastShown != null) {
-            const elapsedMinutes = (Date.now() - lastShown) / 60_000;
-            if (elapsedMinutes < showEvery) return false;
+            const elapsedDays = (Date.now() - lastShown) / 86_400_000;
+            if (elapsedDays < showEvery) return false;
         }
     }
 

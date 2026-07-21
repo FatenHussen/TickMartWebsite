@@ -1,4 +1,5 @@
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, useLayoutEffect } from "react";
+import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContext";
@@ -76,21 +77,57 @@ export default function NavbarSearch({
     } = useNavbarSearch();
 
     const [showTypePicker, setShowTypePicker] = useState(false);
+    const [anchorRect, setAnchorRect] = useState<{
+        top: number;
+        left: number;
+        right: number;
+        width: number;
+    } | null>(null);
+
+    const resultsOpen = isOpen && hasQuery;
+    const panelOpen = resultsOpen || showTypePicker;
+
     useEffect(() => {
-        if (!isOpen) return;
+        if (!isOpen && !showTypePicker) return;
         const handleClickOutside = (e: MouseEvent) => {
             const target = e.target as HTMLElement;
             if (
-                containerRef.current &&
-                !containerRef.current.contains(target)
+                (containerRef.current &&
+                    containerRef.current.contains(target)) ||
+                target.closest("[data-search-portal]")
             ) {
-                closeDropdown();
-                setShowTypePicker(false);
+                return;
             }
+            closeDropdown();
+            setShowTypePicker(false);
         };
         document.addEventListener("click", handleClickOutside);
         return () => document.removeEventListener("click", handleClickOutside);
-    }, [isOpen, closeDropdown]);
+    }, [isOpen, showTypePicker, closeDropdown]);
+
+    // Anchor the portal dropdown to the input; escapes the navbar's
+    // `overflow-x-hidden` clipping and sibling stacking contexts.
+    useLayoutEffect(() => {
+        if (!panelOpen) return;
+        const updateRect = () => {
+            const el = containerRef.current;
+            if (!el) return;
+            const r = el.getBoundingClientRect();
+            setAnchorRect({
+                top: r.bottom,
+                left: r.left,
+                right: window.innerWidth - r.right,
+                width: r.width,
+            });
+        };
+        updateRect();
+        window.addEventListener("scroll", updateRect, true);
+        window.addEventListener("resize", updateRect);
+        return () => {
+            window.removeEventListener("scroll", updateRect, true);
+            window.removeEventListener("resize", updateRect);
+        };
+    }, [panelOpen]);
 
     const grouped =
         typeFilter === "all" && results.length > 0
@@ -109,11 +146,11 @@ export default function NavbarSearch({
             className={cn("relative w-full", className)}
             dir={isRTL ? "rtl" : "ltr"}
         >
-            <div className="relative">
+            <div className="group relative">
                 <HiSearch
                     className={cn(
-                        "pointer-events-none absolute top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-primary",
-                        isRTL ? "right-[14px]" : "left-[14px]"
+                        "pointer-events-none absolute top-1/2 h-5 w-5 -translate-y-1/2 text-primary transition-colors duration-200",
+                        isRTL ? "right-4" : "left-4"
                     )}
                 />
                 <input
@@ -126,8 +163,8 @@ export default function NavbarSearch({
                         "Search products and stores..."
                     }
                     className={cn(
-                        "h-11 w-full rounded-full border border-primary/35 bg-white text-sm leading-none text-custom-primary shadow-none transition-colors dark:bg-custom-card placeholder:text-text-tertiary focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15",
-                        isRTL ? "pr-12 pl-[42px]" : "pl-[42px] pr-12",
+                        "h-12 w-full rounded-2xl border border-primary/35 bg-white text-[15px] leading-none text-custom-primary transition-[border-color,box-shadow] duration-200 ease-out placeholder:text-text-tertiary hover:border-primary/55 focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/12 dark:border-white/[0.08] dark:bg-custom-card",
+                        isRTL ? "pr-12 pl-14" : "pl-12 pr-14",
                         inputClassName
                     )}
                 />
@@ -135,43 +172,68 @@ export default function NavbarSearch({
                     type="button"
                     onClick={() => setShowTypePicker((p) => !p)}
                     className={cn(
-                        "absolute top-1/2 -translate-y-1/2 rounded-full p-1 text-primary transition-colors hover:bg-primary/10",
+                        "absolute top-1/2 flex h-8 -translate-y-1/2 items-center justify-center rounded-xl px-2.5 text-primary transition-[background-color,transform] duration-200 ease-out hover:bg-primary/10 active:scale-95",
+                        showTypePicker && "bg-primary/10",
                         isRTL ? "left-2" : "right-2"
                     )}
                     aria-label={t("common.filter") || "Filter"}
+                    aria-pressed={showTypePicker}
                 >
-                    <HiFilter className="h-5 w-5" />
+                    <HiFilter className="h-[18px] w-[18px]" />
                 </button>
             </div>
 
-            {showTypePicker && (
-                <div
-                    className={cn(
-                        "absolute top-full mt-1 min-w-[160px] bg-custom-card rounded-lg shadow-lg border border-gray-bold z-50"
-                    )}
-                >
-                    {SEARCH_TYPES.map(({ value, labelKey }) => (
-                        <button
-                            key={value}
-                            type="button"
-                            onClick={() => {
-                                setTypeFilter(value);
-                                setShowTypePicker(false);
-                            }}
-                            className={cn(
-                                "w-full text-left px-4 py-2 text-sm hover:bg-primary-light/10",
-                                typeFilter === value &&
-                                    "bg-primary-light/10 font-medium"
-                            )}
-                        >
-                            {t(labelKey)}
-                        </button>
-                    ))}
-                </div>
-            )}
+            {showTypePicker && anchorRect &&
+                createPortal(
+                    <div
+                        data-search-portal
+                        dir={isRTL ? "rtl" : "ltr"}
+                        style={{
+                            position: "fixed",
+                            top: anchorRect.top + 8,
+                            ...(isRTL
+                                ? { right: anchorRect.right }
+                                : { left: anchorRect.left }),
+                        }}
+                        className={cn(
+                            "min-w-[170px] overflow-hidden rounded-2xl border border-black/[0.06] bg-custom-card p-1.5 shadow-[0_10px_40px_-12px_rgba(15,23,42,0.22)] z-[9999] dark:border-white/[0.06]"
+                        )}
+                    >
+                        {SEARCH_TYPES.map(({ value, labelKey }) => (
+                            <button
+                                key={value}
+                                type="button"
+                                onClick={() => {
+                                    setTypeFilter(value);
+                                    setShowTypePicker(false);
+                                }}
+                                className={cn(
+                                    "w-full rounded-xl px-3.5 py-2 text-start text-sm transition-colors duration-150 hover:bg-primary/[0.08]",
+                                    typeFilter === value
+                                        ? "bg-primary/10 font-semibold text-primary"
+                                        : "text-custom-primary"
+                                )}
+                            >
+                                {t(labelKey)}
+                            </button>
+                        ))}
+                    </div>,
+                    document.body
+                )}
 
-            {isOpen && hasQuery && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-custom-card rounded-lg shadow-lg border border-gray-bold z-50 max-h-80 overflow-y-auto">
+            {resultsOpen && anchorRect &&
+                createPortal(
+                <div
+                    data-search-portal
+                    dir={isRTL ? "rtl" : "ltr"}
+                    style={{
+                        position: "fixed",
+                        top: anchorRect.top + 8,
+                        left: anchorRect.left,
+                        width: anchorRect.width,
+                    }}
+                    className="bg-custom-card rounded-2xl shadow-[0_16px_50px_-12px_rgba(15,23,42,0.25)] border border-black/[0.06] z-[9999] max-h-80 overflow-y-auto dark:border-white/[0.06]"
+                >
                     {isLoading ? (
                         <div className="p-4 text-center text-sm text-gray-light">
                             {t("common.loading")}
@@ -256,7 +318,8 @@ export default function NavbarSearch({
                             ))}
                         </div>
                     )}
-                </div>
+                </div>,
+                document.body
             )}
         </div>
     );
