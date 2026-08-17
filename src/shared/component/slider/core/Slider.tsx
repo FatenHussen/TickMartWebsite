@@ -46,6 +46,16 @@ type SliderProps = {
     showNavigation?: boolean;
 };
 
+/**
+ * Module-level so the object identity is stable: swiper/react compares passed
+ * params by reference and re-runs `swiper.update()` whenever it sees a new one.
+ */
+const FALLBACK_BREAKPOINTS = {
+    640: { slidesPerView: 2.5 },
+    768: { slidesPerView: 3.5 },
+    1024: { slidesPerView: 4.5 },
+};
+
 export default function Slider({
     title,
     titleMainColor,
@@ -74,15 +84,25 @@ export default function Slider({
     const [swiperInstance, setSwiperInstance] = useState<SwiperClass | null>(null);
     const [nav, setNav] = useState({ canPrev: false, canNext: false });
 
-    /** freeMode makes the active index unreliable, so read the edges directly. */
+    /**
+     * freeMode makes the active index unreliable, so read the edges directly.
+     *
+     * Swiper emits `progress` on every `update()`, and swiper/react calls
+     * `update()` after any render that passes a fresh `breakpoints` object — so
+     * a state write here feeds straight back into another `progress`. Returning
+     * the previous state when the edges did not move keeps that from becoming
+     * an endless render loop (which pegged the CPU and spun the mouse cursor).
+     */
     const syncNav = (swiper: SwiperClass) =>
-        setNav({ canPrev: !swiper.isBeginning, canNext: !swiper.isEnd });
+        setNav((prev) => {
+            const canPrev = !swiper.isBeginning;
+            const canNext = !swiper.isEnd;
+            return prev.canPrev === canPrev && prev.canNext === canNext
+                ? prev
+                : { canPrev, canNext };
+        });
 
-    const defaultBreakpoints = breakpoints || {
-        640: { slidesPerView: 2.5 },
-        768: { slidesPerView: 3.5 },
-        1024: { slidesPerView: 4.5 },
-    };
+    const defaultBreakpoints = breakpoints || FALLBACK_BREAKPOINTS;
 
     const titleGradientMain = titleMainColor?.trim() || titleSecondColor?.trim();
     const titleGradientSecond = titleSecondColor?.trim() || titleMainColor?.trim();

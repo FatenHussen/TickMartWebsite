@@ -25,6 +25,16 @@ const SKELETON_CIRCLE: Record<CategoryCircleSize, string> = {
     sm: "h-14 w-14 sm:h-16 sm:w-16 md:h-20 md:w-20",
 };
 
+/**
+ * Overrides `SliderSection`'s numeric defaults, which would stretch the slides.
+ * Module-level on purpose: swiper/react re-runs `swiper.update()` for every new
+ * `breakpoints` object it is handed, so an inline literal would churn on each render.
+ */
+const AUTO_WIDTH_BREAKPOINTS = {
+    0: { slidesPerView: "auto" as const, spaceBetween: 16 },
+    640: { slidesPerView: "auto" as const, spaceBetween: 20 },
+};
+
 export type CategoryCircleStripProps = {
     items: CategoryCircleStripItem[];
     size?: CategoryCircleSize;
@@ -115,8 +125,7 @@ export default function CategoryCircleStrip({
                 slidesPerView="auto"
                 spaceBetween={20}
                 slideClassName="slide-auto-width"
-                // Overrides SliderSection's numeric defaults, which would stretch slides.
-                breakpoints={{ 0: { slidesPerView: "auto", spaceBetween: 16 }, 640: { slidesPerView: "auto", spaceBetween: 20 } }}
+                breakpoints={AUTO_WIDTH_BREAKPOINTS}
                 renderItem={renderCircle}
             />
         </div>
