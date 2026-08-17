@@ -18,25 +18,28 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  // server: {
-  //   proxy: {
-  //     "/api": {
-  //       target: "https://tikmool.octopus-software.online",
-  //       changeOrigin: true,
-  //       secure: true,
-  //       cookieDomainRewrite: "localhost",
-  //       configure: (proxy, _options) => {
-  //         proxy.on("proxyRes", (proxyRes) => {
-  //           // Ensure cookies are forwarded properly
-  //           const setCookieHeaders = proxyRes.headers["set-cookie"];
-  //           if (setCookieHeaders) {
-  //             proxyRes.headers["set-cookie"] = setCookieHeaders.map((cookie) =>
-  //               cookie.replace(/Domain=[^;]+/gi, "Domain=localhost")
-  //             );
-  //           }
-  //         });
-  //       },
-  //     },
-  //   },
-  // },
+  server: {
+    // The API host sends no Access-Control-Allow-Origin, so browsers block
+    // direct calls from localhost. In dev we call the relative "/api" path and
+    // let Vite proxy it server-side, where CORS does not apply.
+    proxy: {
+      "/api": {
+        target: "https://tickdash.tickmartsy.com",
+        changeOrigin: true,
+        secure: true,
+        cookieDomainRewrite: "localhost",
+        configure: (proxy) => {
+          proxy.on("proxyRes", (proxyRes) => {
+            // Ensure cookies are forwarded properly
+            const setCookieHeaders = proxyRes.headers["set-cookie"];
+            if (setCookieHeaders) {
+              proxyRes.headers["set-cookie"] = setCookieHeaders.map((cookie) =>
+                cookie.replace(/Domain=[^;]+/gi, "Domain=localhost")
+              );
+            }
+          });
+        },
+      },
+    },
+  },
 });

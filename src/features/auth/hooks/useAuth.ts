@@ -52,17 +52,12 @@ export function useRegister() {
  const qc = useQueryClient();
  const navigate = useNavigate();
  const { t } = useTranslation();
- const setEmail = useOtpStore((state) => state.setEmail);
  const setPhone = useOtpStore((state) => state.setPhone);
 
  return useMutation({
  mutationFn: (payload: RegisterPayload) => _AuthApi.register(payload),
  onSuccess: (_, variables) => {
- if (variables.email) {
- setEmail(variables.email);
- } else if (variables.phone) {
  setPhone(variables.phone);
- }
 
  toast.success(t("auth.registerSuccess","تم إنشاء الحساب بنجاح. يرجى التحقق من رمز OTP"));
  qc.invalidateQueries({ queryKey: [queryKeys.auth.register] });

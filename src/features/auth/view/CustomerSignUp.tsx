@@ -4,17 +4,15 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import AuthLayout from "@/features/auth/layout/Auth-Layout";
 import AuthRoleToggle from "@/features/auth/components/AuthRoleToggle";
-import EmailOrPhoneInput from "@/features/auth/components/EmailOrPhoneInput";
 import InputField from "@/shared/ui/InputField";
 import Button from "@/shared/ui/Button";
 import Label from "@/shared/ui/Label";
-import { detectEmailOrPhone } from "@/shared/lib/utils";
 import { _LocationApi } from "@/features/auth/api/location.service";
 import { useInfiniteSelect } from "@/shared/hooks/useInfiniteSelect";
 import type { Governorate, City } from "@/features/auth/types";
 import { useRegister } from "@/features/auth/hooks/useAuth";
 import { paths } from "@/app/routes/path/paths";
-import type { SignUpFormValues, UserRole } from "@/features/auth/types";
+import type { SignUpFormValues, UserRole, RegisterPayload } from "@/features/auth/types";
 
 type CustomerSignUpProps = {
     role: UserRole;
@@ -31,7 +29,6 @@ export default function CustomerSignUp({ role, setRole }: CustomerSignUpProps) {
 
     const {
         register,
-        control,
         handleSubmit,
         watch,
         setValue,
@@ -39,12 +36,25 @@ export default function CustomerSignUp({ role, setRole }: CustomerSignUpProps) {
     } = useForm<SignUpFormValues>({
         defaultValues: {
             fullName: "",
-            emailOrPhone: "",
+            phone: "",
+            email: "",
             password: "",
             confirmPassword: "",
             governorate: "",
             city: "",
             agree: false,
+        },
+    });
+
+    const phoneField = register("phone", {
+        required: t("validation.required"),
+        pattern: {
+            value: /^\d+$/,
+            message: t("validation.phoneInvalid"),
+        },
+        minLength: {
+            value: 8,
+            message: t("validation.phoneMinLength"),
         },
     });
 
@@ -103,26 +113,17 @@ export default function CustomerSignUp({ role, setRole }: CustomerSignUpProps) {
     }, [selectedGovernorateId, setValue]);
 
     const onSubmit = async (data: SignUpFormValues) => {
-        const detectedType = detectEmailOrPhone(data.emailOrPhone);
-
-        const payload: {
-            name: string;
-            password: string;
-            city_id: number;
-            governorate_id: number;
-            email?: string;
-            phone?: string;
-        } = {
+        const payload: RegisterPayload = {
             name: data.fullName,
+            phone: data.phone.replace(/\D/g, ""),
             password: data.password,
             city_id: Number(data.city),
             governorate_id: Number(data.governorate),
         };
 
-        if (detectedType === "email") {
-            payload.email = data.emailOrPhone;
-        } else if (detectedType === "phone") {
-            payload.phone = data.emailOrPhone;
+        const trimmedEmail = data.email?.trim();
+        if (trimmedEmail) {
+            payload.email = trimmedEmail;
         }
 
         registerUser(payload);
@@ -159,13 +160,35 @@ export default function CustomerSignUp({ role, setRole }: CustomerSignUpProps) {
                     </div>
 
                     <div className="space-y-1.5">
-                        <EmailOrPhoneInput
-                            name="emailOrPhone"
-                            control={control}
-                            label={t("auth.emailOrPhone")}
-                            placeholder="your.email@example.com / +963xxxxxxxxx"
-                            error={errors.emailOrPhone}
+                        <InputField
+                            label={t("auth.phoneNumber")}
+                            type="tel"
+                            inputMode="numeric"
+                            placeholder="0501234567"
                             required
+                            {...phoneField}
+                            onChange={(e) => {
+                                e.target.value = e.target.value.replace(/\D/g, "");
+                                phoneField.onChange(e);
+                            }}
+                            error={errors.phone}
+                        />
+                    </div>
+
+                    <div className="space-y-1.5">
+                        <InputField
+                            label={`${t("auth.emailAddress")} (${t("common.optional")})`}
+                            type="email"
+                            placeholder="ahmad@example.com"
+                            {...register("email", {
+                                validate: (value) => {
+                                    const trimmed = value?.trim();
+                                    if (!trimmed) return true;
+                                    const emailPattern = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+                                    return emailPattern.test(trimmed) || t("validation.emailInvalid");
+                                },
+                            })}
+                            error={errors.email}
                         />
                     </div>
 

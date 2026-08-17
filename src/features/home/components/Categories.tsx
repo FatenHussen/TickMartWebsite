@@ -12,30 +12,13 @@ import {
 } from "../lib/homeStaticSectionSurface";
 import { PremiumInlineLoader } from "@/shared/component/loading";
 import { getSectionCardSurfaceColor } from "@/shared/component/sections/sectionCardVariant";
-import type { Category } from "../types";
+import CategoryCircle from "@/shared/component/category/CategoryCircle";
+import { readCategoryColor } from "@/shared/lib/categoryColors";
 
 export type CategoriesProps = {
     /** Overrides row vertical padding (e.g. `pb-0` when promotions sit flush underneath). */
     sectionPaddingClass?: string;
 };
-
-const PLACEHOLDER_ICON =
-    "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&h=400&fit=crop";
-
-function readCategoryListColor(
-    category: Category & Record<string, unknown>,
-    key: "main" | "second"
-): string | undefined {
-    const keys =
-        key === "main"
-            ? ["main_color", "mainColor", "color_main"]
-            : ["second_color", "secondColor", "color_second", "secondary_color"];
-    for (const candidate of keys) {
-        const value = category[candidate];
-        if (typeof value === "string" && value.trim()) return value.trim();
-    }
-    return undefined;
-}
 
 export default function Categories({
     sectionPaddingClass,
@@ -112,71 +95,19 @@ export default function Categories({
                     slidesPerView={3.5}
                     items={categories}
                     removeVerticalSpacing
-                    renderItem={(category) => {
-                        const cat = category as Category & Record<string, unknown>;
-                        const cMain = readCategoryListColor(cat, "main");
-                        const cSecond = readCategoryListColor(cat, "second");
-                        const labelGradient =
-                            !isDarkTheme && cMain && cSecond
-                                ? `linear-gradient(100deg, ${cMain}, ${cSecond})`
-                                : null;
-                        const labelSolid =
-                            !isDarkTheme && !labelGradient && (cMain || cSecond)
-                                ? (cMain ?? cSecond)
-                                : undefined;
-
-                        return (
-                            <button
-                                type="button"
-                                className="group flex w-full flex-col items-center gap-3 bg-transparent"
-                                onClick={() =>
-                                    navigate(`${paths.client.categories}?category=${category.id}`)
-                                }
-                            >
-                                {/* Circle image with dark hover glow */}
-                                <div className="relative">
-                                    {/* Ambient glow ring on hover — dark only */}
-                                    <div
-                                        className="absolute -inset-1 rounded-full opacity-0 transition-opacity duration-300 dark:group-hover:opacity-100"
-                                        style={{
-                                            background:
-                                                "radial-gradient(circle, color-mix(in srgb, var(--color-main) 40%, transparent) 0%, transparent 70%)",
-                                            filter: "blur(6px)",
-                                        }}
-                                    />
-                                    <div className="relative h-20 w-20 overflow-hidden rounded-full ring-1 ring-transparent transition-all duration-300 dark:ring-white/[0.08] dark:group-hover:ring-white/[0.14] dark:group-hover:shadow-[0_0_22px_-6px_color-mix(in_srgb,var(--color-main)_45%,transparent)] sm:h-24 sm:w-24 md:h-32 md:w-32">
-                                        <img
-                                            src={category.icon || PLACEHOLDER_ICON}
-                                            alt={category.name}
-                                            className="h-full w-full object-cover transition-transform duration-400 ease-out group-hover:scale-105"
-                                        />
-                                    </div>
-                                </div>
-
-                                {/* Label */}
-                                <span
-                                    className={
-                                        labelGradient
-                                            ? "max-w-full text-center text-sm font-semibold bg-clip-text text-transparent"
-                                            : "max-w-full text-center text-sm font-semibold text-stone-800 transition-colors duration-300 dark:text-[#A1A1AA] dark:group-hover:text-white"
-                                    }
-                                    style={
-                                        labelGradient
-                                            ? {
-                                                  backgroundImage: labelGradient,
-                                                  WebkitBackgroundClip: "text",
-                                                  backgroundClip: "text",
-                                              }
-                                            : labelSolid
-                                              ? { color: labelSolid }
-                                              : undefined
-                                    }
-                                >
-                                    {category.name}
-                                </span>
-                            </button>
-                        );
-                    }}
+                    renderItem={(category) => (
+                        <CategoryCircle
+                            name={category.name}
+                            icon={category.icon}
+                            mainColor={readCategoryColor(category, "main")}
+                            secondColor={readCategoryColor(category, "second")}
+                            size="lg"
+                            hasChildren={(category.children?.length ?? 0) > 0}
+                            onClick={() =>
+                                navigate(`${paths.client.categories}?category=${category.id}`)
+                            }
+                        />
+                    )}
                     breakpoints={{
                         640: { slidesPerView: 3.5 },
                         768: { slidesPerView: 4.5 },

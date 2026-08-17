@@ -404,7 +404,8 @@
     "sortRecommended": "موصى به",
     "noProducts": "لم يتم العثور على منتجات في هذه الفئة",
     "categoriesTitle": "الفئات",
-    "showAllCategories": "عرض جميع الفئات"
+    "showAllCategories": "عرض جميع الفئات",
+    "back": "رجوع"
   },
   "product": {
     "color": "اللون",

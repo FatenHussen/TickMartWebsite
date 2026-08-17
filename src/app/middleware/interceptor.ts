@@ -19,8 +19,10 @@ function getAcceptLanguage(): string {
     return lang.startsWith("ar") ? "ar" : "en";
 }
 
+// Dev goes through the Vite proxy (see vite.config.ts) so the browser never
+// makes a cross-origin request and CORS preflight never happens.
 const BASE_URL = import.meta.env.DEV
-    ? "https://tickdash.tickmartsy.com/api"
+    ? "/api"
     : "https://tickdash.tickmartsy.com/api/";
 
 const _axios = axios.create({

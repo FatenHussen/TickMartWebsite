@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/context/ThemeContext";
@@ -24,13 +24,16 @@ import CategoriesSidebar from "../components/CategoriesSidebar";
 import ProductsHeader from "../components/ProductsHeader";
 import ProductCard from "@/shared/component/card/ProductCard";
 import ProductCardSkeleton from "@/shared/component/skeleton/ProductCardSkeleton";
-import CategoryTopNav from "@/shared/component/CategoryTopNav";
-import { useCategories } from "../hooks/useCategories";
+import CategoryCircleStrip from "@/shared/component/category/CategoryCircleStrip";
+import CategoryDrillHeader from "../components/CategoryDrillHeader";
+import { useCategoryLevels } from "../hooks/useCategoryLevels";
+import { parseCategoryTrail, writeCategoryTrail, isSameTrail } from "../lib/categoryTrail";
+import { readCategoryColor } from "@/shared/lib/categoryColors";
 import { _CategoriesApi } from "../api/categoriesApi";
 import { useInfiniteList } from "@/shared/hooks/useInfiniteList";
 import { useToggleFavorite } from "@/features/account/hooks/useFavorites";
 import { paths } from "@/app/routes/path/paths";
-import type { ApiCategory, ApiProduct, CategoryChild, ProductBadge } from "../types";
+import type { ApiProduct, ProductBadge } from "../types";
 import type { CategoryTypeFilter } from "../components/CategoryFilters";
 import {
     mapApiBottomBadgesToProductCard,
@@ -84,12 +87,21 @@ export default function CategoriesView() {
         return buildCategoriesLuxuryDarkSurface(main, second);
     }, [isDarkTheme, headlineSection, settingsPaletteForCategories]);
     const navigate = useNavigate();
-    const [searchParams] = useSearchParams();
-    const preselectedCategoryId = searchParams.get("category");
+    const [searchParams, setSearchParams] = useSearchParams();
 
-    const [showAllCategories, setShowAllCategories] = useState(false);
-    const [selectedCategory, setSelectedCategory] = useState<ApiCategory | null>(null);
-    const [selectedSubcategory, setSelectedSubcategory] = useState<CategoryChild | null>(null);
+    /** The drill-down path lives in the URL, so Back walks one level up for free. */
+    const trail = useMemo(() => parseCategoryTrail(searchParams), [searchParams]);
+    const {
+        breadcrumb,
+        currentNode,
+        currentChildren,
+        currentLoading,
+        resolvedTrail,
+    } = useCategoryLevels(trail);
+
+    const showAllCategories = trail.length === 0;
+    const selectedCategory = breadcrumb[0] ?? null;
+
     const [sortBy, setSortBy] = useState<string>("recommended");
     const [freeDeliveryOnly, setFreeDeliveryOnly] = useState(false);
     const [inStockOnly, setInStockOnly] = useState(false);
@@ -107,24 +119,6 @@ export default function CategoriesView() {
         if (!main && !second) return undefined;
         return { main, second };
     }, []);
-    const readCategoryColor = (
-        category: ApiCategory | null | undefined,
-        key: "main" | "second",
-    ) => {
-        if (!category) return undefined;
-        const source = category as ApiCategory & Record<string, unknown>;
-        const keys =
-            key === "main"
-                ? ["main_color", "mainColor", "color_main"]
-                : ["second_color", "secondColor", "color_second", "secondary_color"];
-
-        for (const candidate of keys) {
-            const value = source[candidate];
-            if (typeof value === "string" && value.trim()) return value.trim();
-        }
-
-        return undefined;
-    };
     const readProductColor = (
         product: ApiProduct,
         key: "main" | "second",
@@ -145,11 +139,11 @@ export default function CategoriesView() {
     const buildProductSurfaceGradient = (product: ApiProduct) => {
         const main =
             readProductColor(product, "main") ??
-            readCategoryColor(selectedCategory, "main") ??
+            readCategoryColor(currentNode ?? selectedCategory, "main") ??
             themeGradientColors?.main;
         const second =
             readProductColor(product, "second") ??
-            readCategoryColor(selectedCategory, "second") ??
+            readCategoryColor(currentNode ?? selectedCategory, "second") ??
             themeGradientColors?.second;
 
         if (isDarkTheme) {
@@ -164,13 +158,10 @@ export default function CategoriesView() {
         return `linear-gradient(145deg, color-mix(in srgb, ${start} 24%, #ffffff) 0%, color-mix(in srgb, ${start} 14%, #ffffff) 38%, color-mix(in srgb, ${end} 16%, #ffffff) 72%, color-mix(in srgb, ${end} 28%, #ffffff) 100%)`;
     };
 
-    const { data: categories = [], isLoading: categoriesLoading } = useCategories();
-
     const toggleFavorite = useToggleFavorite();
 
-    const categoryIdForProducts = showAllCategories
-        ? undefined
-        : (selectedSubcategory?.id || selectedCategory?.id);
+    /** Read straight off the trail: the id is known before the node resolves. */
+    const categoryIdForProducts = trail.length > 0 ? trail[trail.length - 1] : undefined;
 
     const sectionsFilters = useMemo((): SectionsFilters | undefined => {
         if (categoryIdForProducts == null) return undefined;
@@ -222,25 +213,18 @@ export default function CategoriesView() {
         enabled: true,
     });
 
-    const handleShowAllCategories = () => {
-        setShowAllCategories(true);
-        setSelectedCategory(null);
-        setSelectedSubcategory(null);
-    };
+    const pushTrail = useCallback(
+        (next: number[], options?: { replace?: boolean }) => {
+            setSearchParams(writeCategoryTrail(searchParams, next), options);
+        },
+        [searchParams, setSearchParams],
+    );
 
-    const handleCategorySelect = (category: ApiCategory) => {
-        setShowAllCategories(false);
-        setSelectedCategory(category);
-        if (category.children.length > 0) {
-            setSelectedSubcategory(category.children[0]);
-        } else {
-            setSelectedSubcategory(null);
-        }
-    };
+    /** Enter the next level down. */
+    const handleDrillInto = (categoryId: number) => pushTrail([...trail, categoryId]);
 
-    const handleSubcategorySelect = (subcategory: CategoryChild) => {
-        setSelectedSubcategory(subcategory);
-    };
+    /** Breadcrumb jump; `0` is the root level. */
+    const handleNavigateToDepth = (depth: number) => pushTrail(trail.slice(0, depth));
 
     const handleProductClick = (productId: number) => {
         navigate(paths.client.productDetails(productId));
@@ -269,37 +253,11 @@ export default function CategoriesView() {
         );
     };
 
+    /** A stale or hand-edited trail is trimmed to what actually resolves. */
     useEffect(() => {
-        if (categories.length === 0 || selectedCategory || showAllCategories) return;
-        const target = preselectedCategoryId
-            ? categories.find((c) => String(c.id) === preselectedCategoryId)
-            : null;
-        handleCategorySelect(target ?? categories[0]);
-    }, [categories]);
-
-    const subcategories = selectedCategory?.children ?? [];
-
-    const sidebarTitleColors = useMemo(() => {
-        if (!headlineSection || isDarkTheme) {
-            return { main: null as string | null, second: null as string | null };
-        }
-        const main =
-            headlineSection.main_color?.trim() ||
-            headlineSection.background_color?.trim() ||
-            null;
-        const second =
-            headlineSection.second_color?.trim() ||
-            getSectionCardSurfaceColor(headlineSection)?.trim() ||
-            null;
-        return { main, second };
-    }, [headlineSection, isDarkTheme]);
-
-    const sidebarTitleGradientColors = useMemo(() => {
-        if (categoriesDarkSurface) {
-            return { main: categoriesDarkSurface.main, second: categoriesDarkSurface.second };
-        }
-        return sidebarTitleColors;
-    }, [categoriesDarkSurface, sidebarTitleColors]);
+        if (isSameTrail(trail, resolvedTrail)) return;
+        pushTrail(resolvedTrail, { replace: true });
+    }, [trail, resolvedTrail, pushTrail]);
 
     const productsHighlightColors = useMemo(() => {
         if (isDarkTheme && categoriesDarkSurface) {
@@ -328,8 +286,9 @@ export default function CategoriesView() {
             }
             return { main: null as string | null, second: null as string | null };
         }
-        const main = readCategoryColor(selectedCategory, "main");
-        const second = readCategoryColor(selectedCategory, "second");
+        const node = currentNode ?? selectedCategory;
+        const main = readCategoryColor(node, "main");
+        const second = readCategoryColor(node, "second");
         if (main || second) {
             return { main: main ?? second ?? null, second: second ?? main ?? null };
         }
@@ -338,35 +297,28 @@ export default function CategoriesView() {
         isDarkTheme,
         showAllCategories,
         headlineSection,
+        currentNode,
         selectedCategory,
         categoriesDarkSurface,
     ]);
 
-    const subcategoryNavItems = [
-        {
-            id: 0,
-            name: t("common.all", "All"),
-            selected: !showAllCategories && selectedCategory != null && selectedSubcategory == null,
-        },
-        ...subcategories.map((subcategory) => ({
-            id: subcategory.id,
-            name: subcategory.name,
-            selected: selectedSubcategory?.id === subcategory.id,
-        })),
-    ];
+    const circleSize = trail.length === 0 ? "lg" : trail.length === 1 ? "md" : "sm";
+
+    const circleItems = useMemo(
+        () =>
+            currentChildren.map((child) => ({
+                id: child.id,
+                name: child.name,
+                icon: child.icon,
+                mainColor: readCategoryColor(child, "main"),
+                secondColor: readCategoryColor(child, "second"),
+                hasChildren: (child.children?.length ?? 0) > 0,
+            })),
+        [currentChildren],
+    );
 
     const sidebar = (
         <CategoriesSidebar
-            categories={categories}
-            selectedCategoryId={selectedCategory?.id}
-            selectedSubcategoryId={selectedSubcategory?.id}
-            onCategorySelect={handleCategorySelect}
-            onSubcategorySelect={handleSubcategorySelect}
-            onShowAllCategories={handleShowAllCategories}
-            isLoading={categoriesLoading}
-            title={headlineSection?.name?.trim() || undefined}
-            titleMainColor={sidebarTitleGradientColors.main}
-            titleSecondColor={sidebarTitleGradientColors.second}
             apiSurface={categoriesDarkSurface}
             categoryTypeFilter={categoryTypeFilter}
             onCategoryTypeFilterChange={setCategoryTypeFilter}
@@ -433,13 +385,23 @@ export default function CategoriesView() {
                         onButtonClick={() => console.log("Shop now clicked")}
                     /> */}
 
-                    {subcategoryNavItems.length > 0 && (
+                    <CategoryDrillHeader
+                        trail={breadcrumb}
+                        rootLabel={t("categories.categoriesTitle", "Categories")}
+                        onNavigateToDepth={handleNavigateToDepth}
+                        accentColor={productsHighlightColors.main}
+                        apiSurface={categoriesDarkSurface}
+                    />
+
+                    {(circleItems.length > 0 || currentLoading) && (
                         <div
+                            // Keyed on the level so each drill step re-runs the entrance.
+                            key={`level-${trail.join("-")}`}
                             className={cn(
-                                "flex justify-start rounded-3xl border p-5 shadow-[0_8px_32px_-12px_rgba(0,0,0,0.55)] backdrop-blur-xl",
+                                "animate-card-enter min-w-0 rounded-[20px] border p-5 sm:p-6",
                                 categoriesDarkSurface
-                                    ? "border-solid"
-                                    : "border-primary-light/15 bg-gradient-to-r from-blue-off via-blue-50/50 to-custom-card shadow-sm",
+                                    ? "border-solid shadow-[0_8px_32px_-12px_rgba(0,0,0,0.55)] backdrop-blur-xl"
+                                    : "border-slate-200/70 bg-custom-card shadow-[0_1px_3px_rgba(15,23,42,0.04),0_14px_36px_-22px_rgba(15,23,42,0.24)]",
                             )}
                             style={
                                 categoriesDarkSurface
@@ -453,23 +415,12 @@ export default function CategoriesView() {
                                     : undefined
                             }
                         >
-                            <CategoryTopNav
-                                categories={subcategoryNavItems}
+                            <CategoryCircleStrip
+                                items={circleItems}
+                                size={circleSize}
+                                isLoading={currentLoading}
+                                onSelect={handleDrillInto}
                                 apiSurface={categoriesDarkSurface}
-                                onCategoryClick={(subcategoryId) => {
-                                    if (subcategoryId === 0) {
-                                        setShowAllCategories(false);
-                                        setSelectedSubcategory(null);
-                                        return;
-                                    }
-
-                                    const subcategory = subcategories.find(
-                                        (item) => item.id === subcategoryId,
-                                    );
-                                    if (subcategory) {
-                                        handleSubcategorySelect(subcategory);
-                                    }
-                                }}
                             />
                         </div>
                     )}
@@ -478,9 +429,9 @@ export default function CategoriesView() {
                         categoryName={
                             showAllCategories
                                 ? t("categories.showAllCategories", "Show all categories")
-                                : selectedCategory?.name || ""
+                                : (currentNode?.name ?? "")
                         }
-                        subcategoryName={showAllCategories ? undefined : selectedSubcategory?.name}
+                        subcategoryName={undefined}
                         highlightMainColor={productsHighlightColors.main}
                         highlightSecondColor={productsHighlightColors.second}
                         apiSurface={categoriesDarkSurface}
@@ -554,9 +505,9 @@ export default function CategoriesView() {
                     ) : (
                         <div
                             className={cn(
-                                "flex h-64 items-center justify-center rounded-3xl border backdrop-blur-xl",
+                                "flex flex-col items-center justify-center gap-4 rounded-[20px] border px-6 py-14 text-center",
                                 !categoriesDarkSurface &&
-                                    "border-primary-light/15 bg-gradient-to-br from-custom-card to-blue-50/35",
+                                    "border-slate-200/70 bg-custom-card shadow-[0_1px_3px_rgba(15,23,42,0.04),0_14px_36px_-22px_rgba(15,23,42,0.24)]",
                             )}
                             style={
                                 categoriesDarkSurface
@@ -568,19 +519,55 @@ export default function CategoriesView() {
                                     : undefined
                             }
                         >
-                            <p
-                                className={cn(!categoriesDarkSurface && "text-custom-secondary")}
+                            <span
+                                aria-hidden
+                                className={cn(
+                                    "flex h-14 w-14 items-center justify-center rounded-full",
+                                    !categoriesDarkSurface &&
+                                        "bg-primary-light/10 text-primary-light",
+                                )}
                                 style={
                                     categoriesDarkSurface
-                                        ? { color: categoriesDarkSurface.mutedColor }
+                                        ? {
+                                              backgroundColor: `color-mix(in srgb, ${categoriesDarkSurface.main} 16%, transparent)`,
+                                              color: categoriesDarkSurface.pageColor,
+                                          }
                                         : undefined
                                 }
                             >
-                                {t(
-                                    "categories.noProducts",
-                                    "No products found in this category",
-                                )}
-                            </p>
+                                <svg
+                                    className="h-6 w-6"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={1.8}
+                                        d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                                    />
+                                </svg>
+                            </span>
+
+                            <div className="space-y-1.5">
+                                <p
+                                    className={cn(
+                                        "text-base font-semibold",
+                                        !categoriesDarkSurface && "text-custom-primary",
+                                    )}
+                                    style={
+                                        categoriesDarkSurface
+                                            ? { color: categoriesDarkSurface.pageColor }
+                                            : undefined
+                                    }
+                                >
+                                    {t(
+                                        "categories.noProducts",
+                                        "No products found in this category",
+                                    )}
+                                </p>
+                            </div>
                         </div>
                     )}
 

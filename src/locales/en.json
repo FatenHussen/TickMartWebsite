@@ -404,7 +404,8 @@
     "sortRecommended": "Recommended",
     "noProducts": "No products found in this category",
     "categoriesTitle": "Categories",
-    "showAllCategories": "Show all categories"
+    "showAllCategories": "Show all categories",
+    "back": "Back"
   },
   "product": {
     "color": "Color",

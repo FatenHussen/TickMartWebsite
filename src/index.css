@@ -1725,6 +1725,15 @@ html.dark #root {
   z-index: 20;
 }
 
+/**
+ * Slides that size themselves (`slidesPerView: "auto"`), e.g. the category
+ * circle strip. Swiper's own `.swiper-slide { width: 100% }` is imported after
+ * Tailwind, so this needs the extra class for specificity, not just a utility.
+ */
+.swiper-slide.slide-auto-width {
+  width: auto;
+}
+
 /* ============================================== */
 /* Order tracking card animations                 */
 /* ============================================== */

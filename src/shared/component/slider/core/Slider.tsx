@@ -1,6 +1,7 @@
 import { Swiper, SwiperSlide } from "swiper/react";
 import { FreeMode } from "swiper/modules";
-import { type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
+import type { Swiper as SwiperClass } from "swiper";
 import Button from "@/shared/ui/Button";
 import { useTheme } from "@/context/ThemeContext";
 import { cn } from "@/shared/lib/utils";
@@ -41,6 +42,8 @@ type SliderProps = {
      */
     edgeToEdgeSectionBackground?: boolean;
     removeVerticalSpacing?: boolean;
+    /** Opt-in prev/next arrows overlaid on the row edges; hidden when nothing overflows. */
+    showNavigation?: boolean;
 };
 
 export default function Slider({
@@ -64,9 +67,16 @@ export default function Slider({
     sectionBackgroundColor,
     edgeToEdgeSectionBackground = false,
     removeVerticalSpacing = false,
+    showNavigation = false,
 }: SliderProps) {
     const { theme } = useTheme();
     const isDarkTheme = theme === "dark";
+    const [swiperInstance, setSwiperInstance] = useState<SwiperClass | null>(null);
+    const [nav, setNav] = useState({ canPrev: false, canNext: false });
+
+    /** freeMode makes the active index unreliable, so read the edges directly. */
+    const syncNav = (swiper: SwiperClass) =>
+        setNav({ canPrev: !swiper.isBeginning, canNext: !swiper.isEnd });
 
     const defaultBreakpoints = breakpoints || {
         640: { slidesPerView: 2.5 },
@@ -214,7 +224,45 @@ export default function Slider({
             </>
         );
 
-    const swiper = (
+    const navButton = (direction: "prev" | "next") => {
+        const enabled = direction === "prev" ? nav.canPrev : nav.canNext;
+        return (
+            <button
+                type="button"
+                aria-label={direction === "prev" ? "Previous" : "Next"}
+                onClick={() =>
+                    direction === "prev"
+                        ? swiperInstance?.slidePrev()
+                        : swiperInstance?.slideNext()
+                }
+                disabled={!enabled}
+                className={cn(
+                    // Logical inset so RTL flips the pair automatically, matching
+                    // Swiper's own RTL translate.
+                    "absolute top-1/2 z-10 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200/80 bg-white/95 text-custom-primary shadow-md backdrop-blur-sm transition-all duration-200 hover:border-primary-light/45 hover:text-primary-light hover:shadow-lg active:scale-95 disabled:pointer-events-none disabled:opacity-0 sm:flex",
+                    "dark:border-white/10 dark:bg-white/10 dark:text-white dark:hover:bg-white/15",
+                    direction === "prev" ? "start-0 -ms-2" : "end-0 -me-2",
+                )}
+            >
+                <svg
+                    className={cn("h-4 w-4 rtl:rotate-180", direction === "prev" && "rotate-180")}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    aria-hidden
+                >
+                    <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2.5}
+                        d="M9 5l7 7-7 7"
+                    />
+                </svg>
+            </button>
+        );
+    };
+
+    const swiperEl = (
         <Swiper
             modules={[FreeMode]}
             spaceBetween={spaceBetween}
@@ -222,6 +270,10 @@ export default function Slider({
             breakpoints={defaultBreakpoints}
             freeMode={true}
             className="shared-swiper"
+            onSwiper={showNavigation ? (s) => { setSwiperInstance(s); syncNav(s); } : undefined}
+            onProgress={showNavigation ? syncNav : undefined}
+            onResize={showNavigation ? syncNav : undefined}
+            onSlidesLengthChange={showNavigation ? syncNav : undefined}
         >
             {children.map((child, index) => (
                 <SwiperSlide key={index} className={slideClassName}>
@@ -229,6 +281,16 @@ export default function Slider({
                 </SwiperSlide>
             ))}
         </Swiper>
+    );
+
+    const swiper = showNavigation ? (
+        <div className="relative min-w-0">
+            {swiperEl}
+            {navButton("prev")}
+            {navButton("next")}
+        </div>
+    ) : (
+        swiperEl
     );
 
     /**

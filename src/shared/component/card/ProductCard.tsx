@@ -286,7 +286,7 @@ export default function ProductCard({
                 <div className="mt-4 flex items-center gap-3">
                     {/* Price block */}
                     <div className="min-w-0 flex-1">
-                        <span className="block bg-gradient-to-br from-[var(--color-main)] to-[var(--color-api-second)] bg-clip-text text-xl font-extrabold tabular-nums tracking-tight text-transparent dark:from-white dark:to-white/80 sm:text-[1.45rem] sm:leading-none">
+                        <span className="block bg-gradient-to-br from-[color-mix(in_srgb,var(--color-main)_45%,black)] to-[color-mix(in_srgb,var(--color-api-second)_45%,black)] bg-clip-text text-xl font-extrabold tabular-nums tracking-tight text-transparent dark:from-white dark:to-white/80 sm:text-[1.45rem] sm:leading-none">
                             {price}
                         </span>
                         {originalPrice && (

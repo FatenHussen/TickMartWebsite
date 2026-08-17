@@ -4,7 +4,8 @@ export type AuthMethod ="email"|"phone";
 // ==================== Form Types ====================
 export type SignUpFormValues = {
  fullName: string;
- emailOrPhone: string;
+ phone: string;
+ email: string;
  password: string;
  confirmPassword: string;
  governorate: string;
@@ -30,8 +31,8 @@ export interface LoginPayload {
 
 export interface RegisterPayload {
  name: string;
+ phone: string;
  email?: string;
- phone?: string;
  password: string;
  city_id: number;
  governorate_id: number;

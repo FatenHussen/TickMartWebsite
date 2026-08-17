@@ -1,9 +1,18 @@
 // ============ API Response Types ============
 
 // Category child (subcategory)
+// Everything past `id`/`name` is optional: the nested `children[]` the list
+// endpoint returns carries only those two, while `?parent_id=` returns the same
+// nodes as full categories (icon, colors, their own children).
 export interface CategoryChild {
  id: number;
  name: string;
+ icon?: string | null;
+ main_color?: string | null;
+ second_color?: string | null;
+ mainColor?: string | null;
+ secondColor?: string | null;
+ children?: CategoryChild[];
 }
 
 // Category from API

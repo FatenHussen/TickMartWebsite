@@ -29,6 +29,8 @@ type SliderSectionProps<T extends { id: number | string }> = {
   sectionBackgroundColor?: string | null;
   edgeToEdgeSectionBackground?: boolean;
   removeVerticalSpacing?: boolean;
+  /** Opt-in prev/next arrows on the row edges. */
+  showNavigation?: boolean;
 };
 
 const defaultBreakpoints = {
@@ -65,6 +67,7 @@ export default function SliderSection<T extends { id: number | string }>({
   sectionBackgroundColor,
   edgeToEdgeSectionBackground,
   removeVerticalSpacing = false,
+  showNavigation = false,
 }: SliderSectionProps<T>) {
  const children = items.map((item) => {
  const rendered = renderItem(item);
@@ -100,6 +103,7 @@ export default function SliderSection<T extends { id: number | string }>({
       sectionBackgroundColor={sectionBackgroundColor}
       edgeToEdgeSectionBackground={edgeToEdgeSectionBackground}
       removeVerticalSpacing={removeVerticalSpacing}
+      showNavigation={showNavigation}
     >
       {children}
     </Slider>

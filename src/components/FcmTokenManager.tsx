@@ -6,9 +6,10 @@ import { useAuthStore } from"@/store/auth";
 const DEVICE_ID_KEY ="fcm_device_id";
 const LAST_TOKEN_KEY ="fcm_last_token";
 
+// Dev goes through the Vite proxy (see vite.config.ts) to avoid CORS.
 const BASE_URL = import.meta.env.DEV
- ?"https://tickdash.tickmartsy.com/api"
- :"https://tickdash.tickmartsy.com/api/";
+ ?"/api"
+ :"https://tickdash.tickmartsy.com/api";
 
 function getOrCreateDeviceId(): string {
  let id = localStorage.getItem(DEVICE_ID_KEY);
