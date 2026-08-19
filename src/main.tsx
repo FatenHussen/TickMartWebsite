@@ -6,6 +6,7 @@ import App from"./App.tsx";
 import { createBrowserRouter, Outlet, RouterProvider } from"react-router-dom";
 import { routesSection } from"./app/routes/section/index.tsx";
 import { QueryClient, QueryClientProvider } from"@tanstack/react-query";
+import RouteErrorFallback from"./shared/component/RouteErrorFallback";
 
 const queryClient = new QueryClient({
  defaultOptions: {
@@ -26,7 +27,7 @@ const router = createBrowserRouter([
  </App>
  </QueryClientProvider>
  ),
- errorElement: <h2>error element</h2>,
+ errorElement: <RouteErrorFallback />,
  children: routesSection,
  },
 ]);

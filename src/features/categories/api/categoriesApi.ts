@@ -1,6 +1,11 @@
 import _axios from"@/app/middleware/interceptor";
 import { apiRoutes } from"@/utils/apiRoutes";
-import type { CategoriesResponse, ProductsResponse } from"../types";
+import type { UserProductListFilters } from"@/utils/apiRoutes";
+import type {
+ CategoriesResponse,
+ CategoryPageResponse,
+ ProductsResponse,
+} from"../types";
 
 export interface CategoryFilters {
  name?: string;
@@ -11,6 +16,12 @@ export interface CategoryFilters {
  page?: number;
  per_page?: number;
 }
+
+/** Same product filters the listing sends — the page's API sections honor them too. */
+export type CategoryPageFilters = Omit<
+ UserProductListFilters,
+"category_id"|"page"|"per_page"
+>;
 
 export interface ProductListFilters {
  category_id?: number;
@@ -37,6 +48,16 @@ export const _CategoriesApi = {
  ): Promise<CategoriesResponse> => {
  const response = await _axios.get<CategoriesResponse>(
  apiRoutes.categories.list(filters)
+ );
+ return response.data;
+ },
+
+ getCategoryPage: async (
+ categoryId: number,
+ filters?: CategoryPageFilters
+ ): Promise<CategoryPageResponse> => {
+ const response = await _axios.get<CategoryPageResponse>(
+ apiRoutes.categories.page(categoryId, filters)
  );
  return response.data;
  },

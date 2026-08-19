@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/shared/lib/utils";
+import { ExpandableHtmlContent } from "@/shared/ui/ExpandableText";
+
+/** Dashboard descriptions may be rich text (`<p>…`) — render, don't print tags. */
+const HTML_TAG_RE = /<\/?[a-z][^>]*>/i;
 
 export type ProductDescriptionProps = {
     description?: string;
@@ -28,6 +32,23 @@ function DescriptionBlock({
             ? text
             : `${text.slice(0, maxLength)}...`;
 
+    if (HTML_TAG_RE.test(text)) {
+        return (
+            <div className="flex flex-col gap-2">
+                <h3 className="text-base font-bold text-text-primary">
+                    {label}
+                </h3>
+                <ExpandableHtmlContent
+                    html={text}
+                    lines={5}
+                    contentClassName="text-sm leading-relaxed text-custom-secondary"
+                    readMoreLabel={t("product.seeMore", "See More....")}
+                    readLessLabel={t("product.seeLess", "See Less")}
+                />
+            </div>
+        );
+    }
+
     return (
         <div className="flex flex-col gap-2">
             <h3 className="text-base font-bold text-text-primary">{label}</h3>
@@ -37,7 +58,7 @@ function DescriptionBlock({
                     <button
                         type="button"
                         onClick={() => setIsExpanded(!isExpanded)}
-                        className="ml-1 text-sm font-semibold text-text-primary underline hover:text-primary-light"
+                        className="ms-1 text-sm font-semibold text-text-primary underline hover:text-primary-light"
                     >
                         {isExpanded
                             ? t("product.seeLess", "See Less")

@@ -103,7 +103,9 @@
     "onFirstOrder": "On your first order!",
     "enterVerificationCode": "Enter verification code",
     "sentCodeTo": "We've sent a verification code to:",
+    "sentCodeToPhone": "We've sent a verification code to your phone number:",
     "changeEmailPhone": "Change email / phone",
+    "changePhoneNumber": "Change phone number",
     "resendCode": "Resend code",
     "resendCodeIn": "Resend code in",
     "sponsored": "Sponsored",
@@ -112,7 +114,8 @@
     "viewOffer": "View offer →",
     "manageCampaigns": "Manage all campaigns and offers directly from your dashboard.",
     "forgotPassword": "Forgot Password",
-    "forgotPasswordDescription": "Enter your email or phone number and we'll send you a code to reset your password.",
+    "forgotPasswordDescription": "Enter your phone number and we'll send you a code to reset your password. You can use your email instead if one is linked to your account.",
+    "phoneOrEmail": "Phone or Email",
     "sendResetCode": "Send Reset Code",
     "rememberPassword": "Remember your password?",
     "emailOrPhone": "Email or Phone",
@@ -405,6 +408,7 @@
     "noProducts": "No products found in this category",
     "categoriesTitle": "Categories",
     "showAllCategories": "Show all categories",
+    "category": "Category",
     "back": "Back"
   },
   "product": {
@@ -426,6 +430,10 @@
     "selectVariant": "Select a variant",
     "insufficientStock": "Not enough stock for this quantity.",
     "outOfStock": "Out of stock",
+    "unavailable": "Currently unavailable",
+    "notAvailableInBranch": "Not available in any branch",
+    "errorTitle": "Could not load this product",
+    "errorDescription": "An unexpected problem stopped this product page from loading. Please try again.",
     "shopVariants": "Shop variants",
     "shop": "Shop",
     "similarProducts": "Similar Products",
@@ -442,6 +450,7 @@
     "review": "review",
     "cashOnDelivery": "Cash on delivery",
     "description": "Description",
+    "fullDescription": "Full Description",
     "seeMore": "See More....",
     "seeLess": "See Less",
     "sku": "SKU",
@@ -801,6 +810,9 @@
       "passwordUpdateSuccess": "Password changed successfully",
       "passwordUpdateError": "Failed to change password",
       "updateEmail": "Update email",
+      "addEmail": "Add email",
+      "noEmail": "No email added",
+      "addEmailDesc": "Add an email to your account (optional).",
       "newEmail": "New email",
       "enterNewEmail": "Enter new email",
       "currentEmail": "Current email",
@@ -1607,6 +1619,16 @@
     "discountPercentOff": "{{value}}% OFF",
     "discountAmountOff": "{{value}} OFF"
   },
+  "sectionEmpty": {
+    "default": "Nothing to show here yet",
+    "category": "No subcategories",
+    "product": "No products",
+    "shop": "No shops",
+    "basket": "No baskets",
+    "scheduledBasket": "No scheduled baskets",
+    "brand": "No brands",
+    "recipe": "No recipes"
+  },
   "sections": {
     "account": "Account",
     "orders": "Orders",
@@ -1657,5 +1679,11 @@
     "privacyPolicy": "Privacy policy",
     "termsConditions": "Terms & conditions",
     "helpSupport": "Help & support"
+  },
+  "errors": {
+    "somethingWentWrong": "Something went wrong",
+    "pageLoadFailed": "We could not display this page. Please try again.",
+    "retry": "Try again",
+    "backHome": "Back to home"
   }
 }

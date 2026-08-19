@@ -2,7 +2,10 @@ import { useState } from "react";
 import type { CSSProperties } from "react";
 import { cn } from "@/shared/lib/utils";
 import { useTheme } from "@/context/ThemeContext";
-import { buildCategoryLabelGradient } from "@/shared/lib/categoryColors";
+import {
+    buildCategoryLabelGradient,
+    getCategoryFallbackTint,
+} from "@/shared/lib/categoryColors";
 import { getCategoryInitials } from "@/shared/lib/getCategoryInitials";
 import type { CategoriesApiDarkSurface } from "@/features/categories/lib/categoriesApiDarkSurface";
 
@@ -91,10 +94,20 @@ export default function CategoryCircle({
     const main = mainColor?.trim() || undefined;
     const second = secondColor?.trim() || undefined;
     const accent = apiSurface?.main ?? "var(--color-main)";
-    const ringColor = main ?? second ?? (selected ? "var(--color-main)" : undefined);
 
     const initials = getCategoryInitials(name);
     const showImage = Boolean(icon) && !imageFailed;
+
+    /**
+     * Discs the dashboard left without brand colors fall back to a name-derived
+     * hue, so an icon-less row stays a designed strip instead of identical gray
+     * blobs. Only the disc uses it — labels stay neutral unless the API colored them.
+     */
+    const fallbackTint =
+        !showImage && !main && !second ? getCategoryFallbackTint(name) : undefined;
+    const discMain = main ?? fallbackTint;
+    const discSecond = second ?? fallbackTint;
+    const ringColor = discMain ?? discSecond ?? (selected ? "var(--color-main)" : undefined);
 
     const labelGradient = !isDarkTheme ? buildCategoryLabelGradient(main, second) : null;
     const labelSolid = !isDarkTheme && !labelGradient ? (main ?? second) : undefined;
@@ -104,10 +117,10 @@ export default function CategoryCircle({
         ? {
               boxShadow: `inset 0 0 0 1px color-mix(in srgb, ${accent} 18%, transparent)`,
           }
-        : main || second
+        : discMain || discSecond
           ? {
-                background: `linear-gradient(135deg, color-mix(in srgb, ${main ?? second} 22%, #ffffff) 0%, color-mix(in srgb, ${second ?? main} 30%, #ffffff) 100%)`,
-                color: `color-mix(in srgb, ${main ?? second} 78%, #0f172a)`,
+                background: `linear-gradient(135deg, color-mix(in srgb, ${discMain ?? discSecond} 22%, #ffffff) 0%, color-mix(in srgb, ${discSecond ?? discMain} 30%, #ffffff) 100%)`,
+                color: `color-mix(in srgb, ${discMain ?? discSecond} 78%, #0f172a)`,
             }
           : undefined;
 
@@ -165,8 +178,6 @@ export default function CategoryCircle({
                             className={cn(
                                 "flex h-full w-full select-none items-center justify-center font-extrabold tracking-wide transition-transform duration-400 ease-out group-hover:scale-105",
                                 s.initials,
-                                !initialsStyle &&
-                                    "bg-gradient-to-br from-slate-100 to-slate-200 text-slate-600",
                                 "dark:bg-white/[0.06] dark:text-[#E4E4E7]",
                             )}
                             style={initialsStyle}
@@ -176,14 +187,21 @@ export default function CategoryCircle({
                     )}
                 </div>
 
-                {/* Drill-down affordance */}
+                {/* Drill-down affordance — tucked onto the disc rim. Pinned to the
+                    bounding box corner it floated in the empty space beside the
+                    circle and read as a stray chip rather than part of the avatar. */}
                 {hasChildren && (
                     <span
                         aria-hidden
                         className={cn(
-                            "absolute bottom-0 end-0 flex items-center justify-center rounded-full bg-white/90 shadow-sm ring-1 ring-black/5 dark:bg-white/10 dark:ring-white/10",
+                            "pointer-events-none absolute bottom-[7%] end-[7%] flex items-center justify-center rounded-full bg-white text-[color:var(--color-main)] shadow-[0_2px_6px_-1px_rgba(15,23,42,0.28)] ring-1 ring-black/[0.06] transition-transform duration-300 ease-out group-hover:scale-110 dark:bg-[#18181B] dark:text-white dark:shadow-none dark:ring-white/15",
                             s.badge,
                         )}
+                        style={
+                            !isDarkTheme && ringColor
+                                ? { color: ringColor }
+                                : undefined
+                        }
                     >
                         <svg
                             className={cn("rtl:rotate-180", s.badgeIcon)}
@@ -194,7 +212,7 @@ export default function CategoryCircle({
                             <path
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
-                                strokeWidth={3}
+                                strokeWidth={2.5}
                                 d="M9 5l7 7-7 7"
                             />
                         </svg>

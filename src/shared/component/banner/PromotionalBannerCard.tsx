@@ -1,124 +1,65 @@
-import { useNavigate } from"react-router-dom";
-import Button from"@/shared/ui/Button";
-import LazyImage from"@/shared/component/LazyImage";
-import { cn } from"@/shared/lib/utils";
-import type { SectionItemBase } from"@/features/home/types";
+import { useNavigate } from "react-router-dom";
+import BannerHero from "./BannerHero";
+import { cn } from "@/shared/lib/utils";
+import { openSectionLink } from "@/shared/lib/sectionLink";
+import type { SectionItemBase } from "@/features/home/types";
+import "./promotional-banner.css";
 
 type PromotionalBannerCardProps = {
- item: SectionItemBase;
- link?: string;
- onClick?: () => void;
- className?: string;
+    item: SectionItemBase;
+    link?: string;
+    onClick?: () => void;
+    className?: string;
 };
 
+/**
+ * A single promotional banner - the one-item counterpart to
+ * {@link PromotionalHeroSlider}, rendering the same {@link BannerHero} frame
+ * without the carousel around it. `promo-banner-static` is what tells the CSS
+ * to run the entrance animations here, since there is no active Swiper slide to
+ * hang them on.
+ */
 export default function PromotionalBannerCard({
- item,
- link,
- onClick,
- className,
+    item,
+    link,
+    onClick,
+    className,
 }: PromotionalBannerCardProps) {
- const navigate = useNavigate();
+    const navigate = useNavigate();
 
- const handleClick = () => {
- if (onClick) {
- onClick();
- } else if (link) {
- navigate(link);
- }
- };
+    const interactive = Boolean(onClick || link);
 
- const title = item.title ||"";
- const description = item.desc ||"";
- const image = item.image ||"";
- const buttonText ="Shop Now";
+    const handleClick = () => {
+        if (onClick) {
+            onClick();
+        } else if (link) {
+            openSectionLink(link, navigate);
+        }
+    };
 
- return (
- <div
- className={cn(
-"relative overflow-hidden cursor-pointer transition-shadow hover:shadow-xl w-full rounded-2xl",
- className,
- )}
- onClick={handleClick}
- role="button"
- tabIndex={0}
- onKeyDown={(e) => {
- if (e.key ==="Enter"|| e.key ==="") {
- handleClick();
- }
- }}
- style={{
- background:"linear-gradient(135deg, #E8DFD0 0%, #D4C9B8 100%)",
- }}
- >
- {/* Large Overlay Text - Semi-transparent (Fashion / Sale) */}
- <div className="absolute inset-0 flex items-center justify-center overflow-hidden pointer-events-none select-none">
- <span
- className="absolute text-[120px] md:text-[180px] lg:text-[220px] font-bold italic tracking-wider opacity-[0.08] whitespace-nowrap"
- style={{
- top:"5%",
- right:"-5%",
- color:"#8B7355",
- transform:"rotate(-5deg)",
- }}
- >
- Fashion
- </span>
- <span
- className="absolute text-[100px] md:text-[150px] lg:text-[180px] font-bold italic tracking-wider opacity-[0.08] whitespace-nowrap"
- style={{
- bottom:"10%",
- right:"10%",
- color:"#8B7355",
- transform:"rotate(-5deg)",
- }}
- >
- Sale
- </span>
- </div>
-
- {/* Content Container */}
- <div className="relative z-10 py-10 md:py-14 lg:py-16 px-6 md:px-8 lg:px-12">
- <div className="grid h-full grid-cols-1 gap-6 md:grid-cols-2 items-center">
- {/* Left Side - Text Content */}
- <div className="flex flex-col justify-center gap-3 md:gap-4">
- <h2 className="text-2xl font-bold text-slate-800 md:text-3xl lg:text-4xl">
- {title ||"Spring Collection 2024"}
- </h2>
- {description && (
- <p className="text-sm text-slate-600 md:text-base lg:text-lg max-w-sm">
- {description}
- </p>
- )}
- <div className="mt-3">
- <Button
- type="button"
- variant="secondary"
- size="lg"
- onClick={(e) => {
- e.stopPropagation();
- handleClick();
- }}
- className="rounded-full bg-custom-card px-8 py-3 text-sm font-semibold text-slate-900 shadow-md hover:bg-custom-light transition-all hover:shadow-lg border border-custom-primary"
- >
- {buttonText}
- </Button>
- </div>
- </div>
-
- {/* Right Side - Illustration Image */}
- <div className="flex items-center justify-center md:justify-end">
- {image ? (
- <LazyImage
- src={image}
- alt={title}
- className="h-auto max-h-[280px] md:max-h-80 lg:max-h-[380px] w-full object-contain drop-shadow-lg"
- />
- ) : (
- <div className="h-56 w-full max-w-sm rounded-lg bg-custom-card/20 md:h-72"/>
- )}
- </div>
- </div>
- </div>
- </div>
- );
+    return (
+        <div
+            className={cn(
+                "promo-banner-frame promo-banner-static",
+                interactive &&
+                    "cursor-pointer transition-shadow duration-200 hover:shadow-xl",
+                className,
+            )}
+            onClick={interactive ? handleClick : undefined}
+            role={interactive ? "button" : undefined}
+            tabIndex={interactive ? 0 : undefined}
+            onKeyDown={
+                interactive
+                    ? (e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              handleClick();
+                          }
+                      }
+                    : undefined
+            }
+        >
+            <BannerHero item={item} />
+        </div>
+    );
 }

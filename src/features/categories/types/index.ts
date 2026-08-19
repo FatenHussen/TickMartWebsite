@@ -1,5 +1,7 @@
 // ============ API Response Types ============
 
+import type { Section } from"@/features/home/types";
+
 // Category child (subcategory)
 // Everything past `id`/`name` is optional: the nested `children[]` the list
 // endpoint returns carries only those two, while `?parent_id=` returns the same
@@ -35,6 +37,22 @@ export interface CategoriesResponse {
  items: ApiCategory[];
  pagination: Pagination;
  };
+}
+
+// Category page (GET /user/categories/{id}/page) — one page per category at any
+// level. `sections` shares the shape of every other page's sections and renders
+// through the same ApiSectionsRenderer. `name` fields may arrive either resolved
+// (string) or localized (`{ ar, en }`); useCategoryPage normalizes them before
+// they reach any component.
+export interface CategoryPageData {
+ category: ApiCategory;
+ sections: Section[];
+}
+
+export interface CategoryPageResponse {
+ status: boolean;
+ message?: string;
+ data: CategoryPageData;
 }
 
 // Product badge

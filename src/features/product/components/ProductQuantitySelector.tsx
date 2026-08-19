@@ -8,6 +8,8 @@ export type ProductQuantitySelectorProps = {
  onQuantityChange?: (quantity: number) => void;
  onAddToCart?: () => void;
  addToCartText?: string;
+ /** Blocks the add-to-cart button (e.g. product not linked to a branch). */
+ addToCartDisabled?: boolean;
  className?: string;
 };
 
@@ -18,6 +20,7 @@ export default function ProductQuantitySelector({
  onQuantityChange,
  onAddToCart,
  addToCartText ="Add To Cart",
+ addToCartDisabled = false,
  className,
 }: ProductQuantitySelectorProps) {
     const handleDecrease = () => {
@@ -72,6 +75,7 @@ export default function ProductQuantitySelector({
                 <button
                     type="button"
                     onClick={onAddToCart}
+                    disabled={addToCartDisabled}
                     className={cn(
                         "inline-flex h-10 min-w-[240px] cursor-pointer items-center justify-center gap-2 rounded-xl border border-primary/20 bg-primary px-8",
                         "text-base font-semibold text-white",
@@ -79,7 +83,9 @@ export default function ProductQuantitySelector({
                         "transition-[background-color,box-shadow,transform] duration-200",
                         "hover:border-primary/30 hover:bg-[var(--color-primary-dark)] hover:shadow-lg",
                         "active:scale-[0.99] focus:outline-none focus-visible:ring-2",
-                        "focus-visible:ring-primary/40 focus-visible:ring-offset-2"
+                        "focus-visible:ring-primary/40 focus-visible:ring-offset-2",
+                        "disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none",
+                        "disabled:hover:border-primary/20 disabled:hover:bg-primary"
                     )}
                 >
                     <HiShoppingCart className="h-5 w-5 shrink-0" aria-hidden />

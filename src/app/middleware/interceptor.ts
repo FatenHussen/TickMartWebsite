@@ -25,13 +25,15 @@ const BASE_URL = import.meta.env.DEV
     ? "/api"
     : "https://tickdash.tickmartsy.com/api/";
 
+// No `Accept-Language` default here on purpose: the request interceptor fills it
+// in from the active language, and leaving it unset is what lets a caller pass
+// its own value per request (see `navMenuApi`) without the default masking it.
 const _axios = axios.create({
     baseURL: BASE_URL,
     headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
         "X-CLIENT": "web",
-        "Accept-Language": "en",
     },
 });
 
@@ -42,7 +44,12 @@ _axios.interceptors.request.use(
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
-        config.headers["Accept-Language"] = getAcceptLanguage();
+        // A caller that set the header itself knows which language it wants —
+        // `i18n.language` can still be the previous one at that moment, so an
+        // explicit value must not be overwritten here.
+        if (!config.headers["Accept-Language"]) {
+            config.headers["Accept-Language"] = getAcceptLanguage();
+        }
         // Let the browser set Content-Type with boundary when sending FormData
         if (config.data instanceof FormData) {
             delete config.headers["Content-Type"];

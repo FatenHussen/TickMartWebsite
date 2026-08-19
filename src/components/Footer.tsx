@@ -6,7 +6,6 @@ import {
     HiTruck,
     HiShieldCheck,
     HiRefresh,
-    HiSparkles,
     HiBadgeCheck,
 } from "react-icons/hi";
 import { FaApple, FaGooglePlay } from "react-icons/fa6";
@@ -60,7 +59,6 @@ export default function Footer() {
         { icon: HiTruck, label: t("footer.trustFastDelivery") },
         { icon: HiShieldCheck, label: t("footer.trustSecurePayments") },
         { icon: HiRefresh, label: t("footer.trustEasyReturns") },
-        { icon: HiSparkles, label: t("footer.trustFreshProducts") },
         { icon: HiBadgeCheck, label: t("footer.trustQuality") },
     ];
 

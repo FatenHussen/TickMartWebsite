@@ -44,6 +44,20 @@ type SliderProps = {
     removeVerticalSpacing?: boolean;
     /** Opt-in prev/next arrows overlaid on the row edges; hidden when nothing overflows. */
     showNavigation?: boolean;
+    /**
+     * `grid` swaps the scrollable row for a static responsive grid. Everything
+     * else — header, flash-sale chrome, full-bleed band, spacing — is identical,
+     * so a section can switch layout without changing how it reads.
+     */
+    layout?: "slider" | "grid";
+    /** Tailwind column/gap classes applied when `layout === "grid"`. */
+    gridClassName?: string;
+    /**
+     * Rendered in place of the row when there are no children. A caller that
+     * opts in keeps the section heading and states why the row is bare, instead
+     * of the section disappearing or leaving an empty track behind.
+     */
+    emptyState?: ReactNode;
 };
 
 /**
@@ -78,6 +92,9 @@ export default function Slider({
     edgeToEdgeSectionBackground = false,
     removeVerticalSpacing = false,
     showNavigation = false,
+    layout = "slider",
+    gridClassName,
+    emptyState,
 }: SliderProps) {
     const { theme } = useTheme();
     const isDarkTheme = theme === "dark";
@@ -120,26 +137,20 @@ export default function Slider({
         ? flashSaleSecondColor?.trim() || "#ffb703"
         : titleSecondColor?.trim() || titleMainColor?.trim() || "var(--color-gradient-to, var(--color-main))";
 
-    /** Campaign gradient driving the flash-sale accents (matches the badge/cards). */
-    const flashGradientPrimary = flashSaleMainColor?.trim() || "#ff4d6d";
-    const flashGradientSecond = flashSaleSecondColor?.trim() || "#ffb703";
-
     /**
      * "⚡ Fast discounts • Up to X%" highlight shown above the flash-sale title.
-     * White text on the campaign gradient so it stays legible on the light band.
+     * Light pill matching the countdown badge chrome, with the discount value in
+     * red — the number is what should catch the eye, not the campaign gradient.
      */
     const discountHeadline = isFlashSale && flashSaleDiscountLabel && (
-        <div
-            className="mb-3 inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-bold text-white shadow-sm"
-            style={{
-                background: `linear-gradient(105deg, ${flashGradientPrimary}, ${flashGradientSecond})`,
-            }}
-        >
+        <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-stone-200/70 bg-white/80 px-3 py-1 text-xs font-bold shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-white/[0.05]">
             <span aria-hidden="true">⚡</span>
             {flashSaleFastDiscountsLabel && (
-                <span className="opacity-95">{flashSaleFastDiscountsLabel}</span>
+                <span className="text-stone-500 dark:text-zinc-400">
+                    {flashSaleFastDiscountsLabel}
+                </span>
             )}
-            <span className="rounded-full bg-white/25 px-2 py-0.5">
+            <span className="rounded-full bg-red-500/10 px-2 py-0.5 text-red-600 dark:bg-red-500/15 dark:text-red-400">
                 {flashSaleDiscountLabel}
             </span>
         </div>
@@ -161,14 +172,7 @@ export default function Slider({
                                 }}
                             />
                             {isFlashSale ? (
-                                <h2
-                                    className="text-2xl font-extrabold tracking-tight bg-clip-text text-transparent sm:text-[1.7rem]"
-                                    style={{
-                                        backgroundImage: `linear-gradient(105deg, ${flashGradientPrimary}, ${flashGradientSecond})`,
-                                        WebkitBackgroundClip: "text",
-                                        backgroundClip: "text",
-                                    }}
-                                >
+                                <h2 className="text-2xl font-extrabold tracking-tight text-stone-900 sm:text-[1.7rem] dark:text-[color:var(--color-text,var(--color-text-primary))]">
                                     {title}
                                 </h2>
                             ) : useTitleGradient ? (
@@ -259,13 +263,23 @@ export default function Slider({
                 className={cn(
                     // Logical inset so RTL flips the pair automatically, matching
                     // Swiper's own RTL translate.
-                    "absolute top-1/2 z-10 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200/80 bg-white/95 text-custom-primary shadow-md backdrop-blur-sm transition-all duration-200 hover:border-primary-light/45 hover:text-primary-light hover:shadow-lg active:scale-95 disabled:pointer-events-none disabled:opacity-0 sm:flex",
-                    "dark:border-white/10 dark:bg-white/10 dark:text-white dark:hover:bg-white/15",
-                    direction === "prev" ? "start-0 -ms-2" : "end-0 -me-2",
+                    "absolute top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-stone-200/70 bg-white/90 text-custom-primary shadow-[0_6px_20px_-8px_rgba(0,0,0,0.35)] backdrop-blur-md transition-all duration-200 hover:border-primary-light/45 hover:bg-white hover:text-primary-light hover:shadow-[0_10px_26px_-8px_rgba(0,0,0,0.45)] active:scale-95 disabled:pointer-events-none disabled:opacity-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 sm:flex",
+                    "dark:border-white/10 dark:bg-white/[0.08] dark:text-white dark:hover:bg-white/15",
+                    direction === "prev" ? "start-0 -ms-3" : "end-0 -me-3",
                 )}
             >
+                {/*
+                 * Each direction draws its own chevron, then RTL mirrors the pair
+                 * with `scaleX(-1)` — the same trick the promo banner arrows use.
+                 *
+                 * The previous version drew one right-pointing chevron and stacked
+                 * `rtl:rotate-180` on top of a conditional `rotate-180`. Tailwind
+                 * emits both as the same `rotate` declaration, so they never
+                 * cancelled: in Arabic the "previous" arrow stayed flipped and both
+                 * ends of the row pointed the same way.
+                 */}
                 <svg
-                    className={cn("h-4 w-4 rtl:rotate-180", direction === "prev" && "rotate-180")}
+                    className="h-[18px] w-[18px] rtl:scale-x-[-1]"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -274,8 +288,8 @@ export default function Slider({
                     <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        strokeWidth={2.5}
-                        d="M9 5l7 7-7 7"
+                        strokeWidth={2.2}
+                        d={direction === "prev" ? "M15 5l-7 7 7 7" : "M9 5l7 7-7 7"}
                     />
                 </svg>
             </button>
@@ -313,6 +327,22 @@ export default function Slider({
         swiperEl
     );
 
+    /** Grid rows never overflow horizontally, so the arrows have nothing to do. */
+    const body =
+        children.length === 0 && emptyState ? (
+            emptyState
+        ) : layout === "grid" ? (
+            <div className={cn("grid min-w-0", gridClassName)}>
+                {children.map((child, index) => (
+                    <div key={index} className={slideClassName}>
+                        {child}
+                    </div>
+                ))}
+            </div>
+        ) : (
+            swiper
+        );
+
     /**
      * Flash-sale rows group every element (headline, title, timer, "view all"
      * and the products) into one `<section>` wrapper, but otherwise flow through
@@ -322,22 +352,45 @@ export default function Slider({
     const inner = isFlashSale ? (
         <section data-flash-section className="relative">
             {header}
-            {swiper}
+            {body}
         </section>
     ) : (
         <>
             {header}
-            {swiper}
+            {body}
         </>
     );
 
-    /** Full-viewport tint while keeping title + swiper aligned to `.page-container`. */
-    if (sectionBackgroundColor) {   
+    /**
+     * Full-viewport tint while keeping title + swiper aligned to `.page-container`.
+     *
+     * Light rows ease the tint in at the top and out at the bottom instead of
+     * butting a saturated slab against the white row above it — the seam between
+     * two stacked sections was a hard color step. Dark rows keep the flat charcoal
+     * band; `getDarkSectionBackground()` hands us a gradient string, so the
+     * shorthand (not `backgroundColor`, which silently dropped it) has to carry it.
+     */
+    if (sectionBackgroundColor) {
+        const bandBackground = isDarkTheme
+            ? sectionBackgroundColor
+            : [
+                  "linear-gradient(180deg,",
+                  `color-mix(in srgb, ${sectionBackgroundColor} 28%, #ffffff) 0%,`,
+                  `${sectionBackgroundColor} 16%,`,
+                  `${sectionBackgroundColor} 84%,`,
+                  `color-mix(in srgb, ${sectionBackgroundColor} 55%, #ffffff) 100%)`,
+              ].join(" ");
+
         return (
             <div className={`${removeVerticalSpacing ? "mt-0" : "mt-8"} w-full min-w-0 ${className}`}>
                 <div
-                    className="relative w-screen max-w-[100vw] py-4 sm:py-5 [margin-inline-start:calc(50%-50vw)]"
-                    style={{ backgroundColor: sectionBackgroundColor }}
+                    className="relative w-screen max-w-[100vw] py-7 sm:py-9 [margin-inline-start:calc(50%-50vw)]"
+                    style={{
+                        background: bandBackground,
+                        boxShadow: isDarkTheme
+                            ? "inset 0 1px 0 0 rgba(255,255,255,0.085), inset 0 -1px 0 0 rgba(0,0,0,0.35)"
+                            : undefined,
+                    }}
                 >
                     <div className="page-container">{inner}</div>
                 </div>

@@ -102,12 +102,9 @@ export default function FlashSaleCard({
                         aria-hidden
                     />
 
-                    {/* Discount badge — flame chip in campaign colors (top-start) */}
+                    {/* Discount badge — flame chip, always red so the saving reads as a discount (top-start) */}
                     {discountLabel && (
-                        <div
-                            className="absolute start-3 top-3 z-10 inline-flex items-center gap-1 rounded-xl px-2.5 py-1 text-[11px] font-extrabold tracking-tight text-white shadow-lg shadow-black/10 ring-1 ring-white/25 backdrop-blur-[2px]"
-                            style={{ background: primary }}
-                        >
+                        <div className="absolute start-3 top-3 z-10 inline-flex items-center gap-1 rounded-xl bg-red-600 px-2.5 py-1 text-[11px] font-extrabold tracking-tight text-white shadow-lg shadow-black/10 ring-1 ring-white/25 backdrop-blur-[2px]">
                             <Flame className="h-3.5 w-3.5 drop-shadow-sm" />
                             {discountLabel}
                         </div>

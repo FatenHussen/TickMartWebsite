@@ -47,12 +47,14 @@ export function useVariantSelector({
 
  const firstVariant = shopVariants[0];
  const initialAttrs: SelectedAttributes = {};
- firstVariant.attributes.forEach((attr) => {
+ (firstVariant.attributes ?? []).forEach((attr) => {
  initialAttrs[attr.attribute] = attr.value;
  });
 
  const hasMatch = shopVariants.some((v) =>
- v.attributes.every((attr) => selectedAttributes[attr.attribute] === attr.value)
+ (v.attributes ?? []).every(
+ (attr) => selectedAttributes[attr.attribute] === attr.value
+ )
  );
  if (!hasMatch) {
  setSelectedAttributes(initialAttrs);
@@ -64,7 +66,7 @@ export function useVariantSelector({
  (attributeName: string, value: string) => {
  // Find first variant that has this attribute value
  const variantWithValue = shopVariants.find((variant) =>
- variant.attributes.some(
+ (variant.attributes ?? []).some(
  (attr) => attr.attribute === attributeName && attr.value === value
  )
  );
@@ -72,7 +74,7 @@ export function useVariantSelector({
  if (variantWithValue) {
  // Set all attributes from this variant
  const newAttrs: SelectedAttributes = {};
- variantWithValue.attributes.forEach((attr) => {
+ (variantWithValue.attributes ?? []).forEach((attr) => {
  newAttrs[attr.attribute] = attr.value;
  });
  setSelectedAttributes(newAttrs);
@@ -92,7 +94,7 @@ export function useVariantSelector({
  attr.values.forEach((value) => {
  // Check if there's ANY variant with this value (regardless of other attributes)
  const hasAnyVariant = shopVariants.some((variant) =>
- variant.attributes.some(
+ (variant.attributes ?? []).some(
  (a) => a.attribute === attr.attribute && a.value === value
  )
  );
@@ -114,13 +116,20 @@ export function useVariantSelector({
 
  // Find the matching variant based on selected attributes
  const selectedVariant = useMemo(() => {
- if (attributesMap.length === 0 || shopVariants.length === 0) {
+ if (shopVariants.length === 0) {
  return null;
+ }
+
+ // No attribute matrix → the product has a single option (possibly the
+ // API's synthetic fallback variant), so use it directly instead of
+ // falling back to the parent product's price/stock.
+ if (attributesMap.length === 0) {
+ return shopVariants.find((v) => v.quantity > 0) ?? shopVariants[0];
  }
 
  return (
  shopVariants.find((variant) => {
- return variant.attributes.every((attr) => {
+ return (variant.attributes ?? []).every((attr) => {
  return selectedAttributes[attr.attribute] === attr.value;
  });
  }) || null
@@ -134,6 +143,10 @@ export function useVariantSelector({
 
  // Current price after discount
  const currentPriceAfterDiscount = useMemo(() => {
+ // The API sends the discounted price per variant; prefer it when present.
+ if (selectedVariant?.price_after_discount != null) {
+ return selectedVariant.price_after_discount;
+ }
  if (selectedVariant && basePrice > 0) {
  // Calculate discount ratio and apply to variant price
  const discountRatio = basePriceAfterDiscount / basePrice;
@@ -142,12 +155,12 @@ export function useVariantSelector({
  return basePriceAfterDiscount;
  }, [selectedVariant, basePrice, basePriceAfterDiscount]);
 
- // Current images - from variant or default
+ // Current images - from variant, then the product's own images
  const currentImages = useMemo(() => {
  if (selectedVariant?.images && selectedVariant.images.length > 0) {
  return selectedVariant.images.map((img) => img.path);
  }
- return defaultImages.map((img) => img.path);
+ return (defaultImages ?? []).map((img) => img.path);
  }, [selectedVariant, defaultImages]);
 
  // Current quantity

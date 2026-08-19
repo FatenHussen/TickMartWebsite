@@ -1,23 +1,8 @@
 import { useTranslation } from "react-i18next";
 import { HiMinus, HiPlus } from "react-icons/hi";
 import { cn } from "@/shared/lib/utils";
-import type { ExtraDetail, LocalizedOrString } from "../types/productDetails";
-
-function resolveLocalizedOrString(
-    value: LocalizedOrString | number,
-    language: string
-): string {
-    if (value == null) return "";
-    if (typeof value === "string") return value;
-    if (typeof value === "number") return String(value);
-    if (typeof value === "object") {
-        const isArabic = language.toLowerCase().startsWith("ar");
-        return (
-            (isArabic ? value.ar : value.en) ?? value.en ?? value.ar ?? ""
-        );
-    }
-    return "";
-}
+import type { ExtraDetail } from "../types/productDetails";
+import { resolveLocalizedOrString } from "../lib/resolveLocalizedOrString";
 
 function minQtyForDetail(detail: ExtraDetail): number {
     return Math.max(1, detail.quantity ?? 1);

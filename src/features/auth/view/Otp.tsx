@@ -131,7 +131,7 @@ export default function Otp() {
                         {t("auth.enterVerificationCode")}
                     </h1>
                     <p className="text-sm text-custom-secondary">
-                        {t("auth.sentCodeTo")} {OTP_LENGTH}-digit
+                        {phone ? t("auth.sentCodeToPhone") : t("auth.sentCodeTo")}
                     </p>
                     <p className="text-sm font-medium text-custom-primary">
                         {getMaskedContact()}
@@ -170,7 +170,7 @@ export default function Otp() {
                         to={paths.auth.jwt.signUp}
                         className="text-primary font-medium hover:underline"
                     >
-                        {t("auth.changeEmailPhone")}
+                        {phone ? t("auth.changePhoneNumber") : t("auth.changeEmailPhone")}
                     </Link>
                     <button
                         type="button"

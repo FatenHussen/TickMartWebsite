@@ -82,7 +82,9 @@ export default function Home() {
                 )}
 
                 <div className="min-w-0">
-                    <Categories sectionPaddingClass="pt-4 pb-0 sm:pt-5 sm:pb-0" />
+                    {/* Bottom padding is the seam with the next API row: with `pb-0`
+                        the category labels sat ~10px above the tinted band edge. */}
+                    <Categories sectionPaddingClass="pt-4 pb-6 sm:pt-5 sm:pb-8" />
                 </div>
 
                 <ScreenPromotions pageSlug="home" placement="bottom" />

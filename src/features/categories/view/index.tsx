@@ -1,9 +1,8 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/context/ThemeContext";
 import { useAppSettings } from "@/features/account/hooks/useAppSettings";
-import type { SectionsFilters } from "@/features/home/api/sections.service";
 import { useSections, useSectionsByPosition } from "@/features/home/hooks/useSections";
 import { pickHomeSectionBySeeMorePageSlug } from "@/features/home/lib/homeStaticSectionSurface";
 import ApiSectionsRenderer from "@/shared/component/sections/ApiSectionsRenderer";
@@ -27,7 +26,9 @@ import ProductCardSkeleton from "@/shared/component/skeleton/ProductCardSkeleton
 import CategoryCircleStrip from "@/shared/component/category/CategoryCircleStrip";
 import CategoryDrillHeader from "../components/CategoryDrillHeader";
 import { useCategoryLevels } from "../hooks/useCategoryLevels";
-import { parseCategoryTrail, writeCategoryTrail, isSameTrail } from "../lib/categoryTrail";
+import { useCategoryPage } from "../hooks/useCategoryPage";
+import { parseCategoryTrail, writeCategoryTrail } from "../lib/categoryTrail";
+import { selectRenderableCategorySections } from "../lib/categoryPageSections";
 import { readCategoryColor } from "@/shared/lib/categoryColors";
 import { _CategoriesApi } from "../api/categoriesApi";
 import { useInfiniteList } from "@/shared/hooks/useInfiniteList";
@@ -96,11 +97,9 @@ export default function CategoriesView() {
         currentNode,
         currentChildren,
         currentLoading,
-        resolvedTrail,
     } = useCategoryLevels(trail);
 
     const showAllCategories = trail.length === 0;
-    const selectedCategory = breadcrumb[0] ?? null;
 
     const [sortBy, setSortBy] = useState<string>("recommended");
     const [freeDeliveryOnly, setFreeDeliveryOnly] = useState(false);
@@ -139,11 +138,11 @@ export default function CategoriesView() {
     const buildProductSurfaceGradient = (product: ApiProduct) => {
         const main =
             readProductColor(product, "main") ??
-            readCategoryColor(currentNode ?? selectedCategory, "main") ??
+            readCategoryColor(activeCategory, "main") ??
             themeGradientColors?.main;
         const second =
             readProductColor(product, "second") ??
-            readCategoryColor(currentNode ?? selectedCategory, "second") ??
+            readCategoryColor(activeCategory, "second") ??
             themeGradientColors?.second;
 
         if (isDarkTheme) {
@@ -163,20 +162,14 @@ export default function CategoriesView() {
     /** Read straight off the trail: the id is known before the node resolves. */
     const categoryIdForProducts = trail.length > 0 ? trail[trail.length - 1] : undefined;
 
-    const sectionsFilters = useMemo((): SectionsFilters | undefined => {
-        if (categoryIdForProducts == null) return undefined;
-        return { category_id: categoryIdForProducts };
-    }, [categoryIdForProducts]);
-
-    const { beforeSections, afterSections } = useSectionsByPosition(
-        "categories",
-        sectionsFilters,
-    );
-    const bannerSections = beforeSections.filter((s) => s.display_type_id === 1);
-    const otherBeforeSections = beforeSections.filter((s) => s.display_type_id !== 1);
-
     const { sortField, sortOrder } = useMemo(() => mapSortToApi(sortBy), [sortBy]);
 
+    /**
+     * One filter set for the whole page. The sections get it too: their
+     * `type: "api"` rows resolve items through the same product query, so
+     * leaving the filters out of those query keys is what makes a filter change
+     * refresh the grid while the sections keep their unfiltered items.
+     */
     const productFilters = useMemo(
         () => ({
             sortField,
@@ -189,6 +182,49 @@ export default function CategoriesView() {
         }),
         [sortField, sortOrder, freeDeliveryOnly, inStockOnly, categoryTypeFilter, minPrice, maxPrice],
     );
+
+    // Root view keeps the generic `page_slug=categories` sections; a selected
+    // category (any level) gets its own page from /categories/{id}/page, whose
+    // sections render through the same ApiSectionsRenderer.
+    const { beforeSections: rootBeforeSections, afterSections: rootAfterSections } =
+        useSectionsByPosition("categories", productFilters);
+    const { data: categoryPage } = useCategoryPage(categoryIdForProducts, productFilters);
+
+    /**
+     * The category this page is showing. `/categories/{id}/page` answers for any
+     * level, so its own record wins over the root-down `?parent_id=` walk, which
+     * cannot resolve an id that was deep-linked from a nav menu or a card. Never
+     * an ancestor: labelling the page with the root category while a deeper one
+     * is being browsed is worse than waiting a beat for the real name.
+     */
+    const activeCategory =
+        categoryIdForProducts == null
+            ? null
+            : (categoryPage?.category ?? currentNode);
+
+    const { beforeSections, afterSections } = useMemo(() => {
+        if (categoryIdForProducts == null) {
+            return {
+                beforeSections: rootBeforeSections,
+                afterSections: rootAfterSections,
+            };
+        }
+        // Admin-added sections only, in their `order` — the backend's own
+        // subcategories and products rows are dropped, since this page already
+        // draws both (drill strip, filterable grid). Sections without a
+        // `position` render above the listing.
+        const sections = selectRenderableCategorySections(
+            categoryPage?.sections,
+            categoryIdForProducts,
+        );
+        return {
+            beforeSections: sections.filter((s) => s.position !== "after"),
+            afterSections: sections.filter((s) => s.position === "after"),
+        };
+    }, [categoryIdForProducts, categoryPage, rootBeforeSections, rootAfterSections]);
+
+    const bannerSections = beforeSections.filter((s) => s.display_type_id === 1);
+    const otherBeforeSections = beforeSections.filter((s) => s.display_type_id !== 1);
 
     const {
         items: products,
@@ -253,12 +289,6 @@ export default function CategoriesView() {
         );
     };
 
-    /** A stale or hand-edited trail is trimmed to what actually resolves. */
-    useEffect(() => {
-        if (isSameTrail(trail, resolvedTrail)) return;
-        pushTrail(resolvedTrail, { replace: true });
-    }, [trail, resolvedTrail, pushTrail]);
-
     const productsHighlightColors = useMemo(() => {
         if (isDarkTheme && categoriesDarkSurface) {
             return { main: categoriesDarkSurface.main, second: categoriesDarkSurface.second };
@@ -286,7 +316,7 @@ export default function CategoriesView() {
             }
             return { main: null as string | null, second: null as string | null };
         }
-        const node = currentNode ?? selectedCategory;
+        const node = categoryPage?.category ?? currentNode;
         const main = readCategoryColor(node, "main");
         const second = readCategoryColor(node, "second");
         if (main || second) {
@@ -297,24 +327,51 @@ export default function CategoriesView() {
         isDarkTheme,
         showAllCategories,
         headlineSection,
+        categoryPage,
         currentNode,
-        selectedCategory,
         categoriesDarkSurface,
     ]);
 
     const circleSize = trail.length === 0 ? "lg" : trail.length === 1 ? "md" : "sm";
 
+    /**
+     * Once the category page resolves, its `children` are the authority for the
+     * drill strip (the `?parent_id=` levels can degrade to name-only nodes).
+     */
+    const pageChildren =
+        categoryIdForProducts != null ? categoryPage?.category.children : undefined;
+    const childrenForStrip = pageChildren?.length ? pageChildren : currentChildren;
+
     const circleItems = useMemo(
         () =>
-            currentChildren.map((child) => ({
+            childrenForStrip.map((child) => ({
                 id: child.id,
                 name: child.name,
-                icon: child.icon,
+                icon: child.icon ?? null,
                 mainColor: readCategoryColor(child, "main"),
                 secondColor: readCategoryColor(child, "second"),
                 hasChildren: (child.children?.length ?? 0) > 0,
             })),
-        [currentChildren],
+        [childrenForStrip],
+    );
+
+    /**
+     * One crumb per trail id, so a crumb index is its depth. Ancestors resolve
+     * root-down and can come back nameless (the root list is paginated, a
+     * `?parent_id=` level degraded, or the link jumped straight to a
+     * subcategory); the page endpoint names the deepest one, and anything still
+     * unknown keeps a neutral label rather than dropping a level.
+     */
+    const headerTrail = useMemo(
+        () =>
+            breadcrumb.map((crumb, index) => {
+                const isDeepest = index === breadcrumb.length - 1;
+                const page = categoryPage?.category;
+                const name =
+                    crumb.name || (isDeepest && page?.id === crumb.id ? page.name : "");
+                return { id: crumb.id, name: name || t("categories.category", "Category") };
+            }),
+        [breadcrumb, categoryPage, t],
     );
 
     const sidebar = (
@@ -351,7 +408,10 @@ export default function CategoriesView() {
         >
             {bannerSections.length > 0 && (
                 <div className="w-full">
-                    <ApiSectionsRenderer sections={bannerSections} />
+                    <ApiSectionsRenderer
+                        sections={bannerSections}
+                        onCategoryItemClick={handleDrillInto}
+                    />
                 </div>
             )}
 
@@ -362,14 +422,20 @@ export default function CategoriesView() {
                 header={
                     otherBeforeSections.length > 0 ? (
                         <FullBleedSection>
-                            <ApiSectionsRenderer sections={otherBeforeSections} />
+                            <ApiSectionsRenderer
+                                sections={otherBeforeSections}
+                                onCategoryItemClick={handleDrillInto}
+                            />
                         </FullBleedSection>
                     ) : undefined
                 }
                 footer={
                     afterSections.length > 0 ? (
                         <FullBleedSection>
-                            <ApiSectionsRenderer sections={afterSections} />
+                            <ApiSectionsRenderer
+                                sections={afterSections}
+                                onCategoryItemClick={handleDrillInto}
+                            />
                         </FullBleedSection>
                     ) : undefined
                 }
@@ -386,7 +452,7 @@ export default function CategoriesView() {
                     /> */}
 
                     <CategoryDrillHeader
-                        trail={breadcrumb}
+                        trail={headerTrail}
                         rootLabel={t("categories.categoriesTitle", "Categories")}
                         onNavigateToDepth={handleNavigateToDepth}
                         accentColor={productsHighlightColors.main}
@@ -429,7 +495,7 @@ export default function CategoriesView() {
                         categoryName={
                             showAllCategories
                                 ? t("categories.showAllCategories", "Show all categories")
-                                : (currentNode?.name ?? "")
+                                : (activeCategory?.name ?? "")
                         }
                         subcategoryName={undefined}
                         highlightMainColor={productsHighlightColors.main}

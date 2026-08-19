@@ -1,14 +1,14 @@
-import { useRef } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination, Navigation } from "swiper/modules";
-import { HiChevronLeft, HiChevronRight, HiArrowRight } from "react-icons/hi2";
-import Button from "@/shared/ui/Button";
-import type { SectionItemBase } from "@/features/home/types";
+import { HiChevronLeft, HiChevronRight } from "react-icons/hi2";
+import BannerHero from "./BannerHero";
+import { openSectionLink } from "@/shared/lib/sectionLink";
+import type { SectionItem, SectionItemBase } from "@/features/home/types";
 import { getItemData } from "./utils";
-import type { SectionItem } from "@/features/home/types";
-import "./promotional-hero-slider.css";
+import "./promotional-banner.css";
 
 type PromotionalHeroSliderProps = {
     items: SectionItem[];
@@ -26,6 +26,14 @@ function getItemLink(
     return undefined;
 }
 
+/**
+ * Carousel of CMS promo banners — the multi-item counterpart to
+ * {@link PromotionalBannerCard}. Each slide is the landscape artwork the CMS
+ * uploaded with the slide's own title, description and button text layered over
+ * it by {@link BannerHero}; when the artwork is missing or 404s that copy
+ * carries the slide on its own.
+ * Autoplay plus arrows and dots, per the sections contract.
+ */
 export default function PromotionalHeroSlider({
     items,
     getLink,
@@ -33,8 +41,14 @@ export default function PromotionalHeroSlider({
 }: PromotionalHeroSliderProps) {
     const navigate = useNavigate();
     const { t } = useTranslation();
-    const prevRef = useRef<HTMLButtonElement | null>(null);
-    const nextRef = useRef<HTMLButtonElement | null>(null);
+    /**
+     * State, not refs: Swiper needs the real elements in its `navigation`
+     * params, and a ref's `current` is still null on the render that builds
+     * them. Setting state from the ref callback re-renders once the buttons
+     * exist, so Swiper wires the arrows up on that pass.
+     */
+    const [prevEl, setPrevEl] = useState<HTMLButtonElement | null>(null);
+    const [nextEl, setNextEl] = useState<HTMLButtonElement | null>(null);
 
     const handleSlideClick = (item: SectionItem) => {
         if (onItemClick) {
@@ -42,26 +56,28 @@ export default function PromotionalHeroSlider({
             return;
         }
         const link = getItemLink(item, getLink);
-        if (link) navigate(link);
+        if (link) openSectionLink(link, navigate);
     };
 
     if (!items.length) return null;
 
     return (
-        <div className="promo-hero-wrap py-8">
+        <div className="promo-banner-wrap">
             <button
-                ref={prevRef}
-                className="promo-hero-nav promo-hero-nav-prev"
+                ref={setPrevEl}
+                type="button"
+                className="promo-banner-nav promo-banner-nav-prev"
                 aria-label={t("hero.prevSlide", "Previous slide")}
             >
-                <HiChevronLeft className="promo-hero-nav-icon" />
+                <HiChevronLeft className="promo-banner-nav-icon" />
             </button>
             <button
-                ref={nextRef}
-                className="promo-hero-nav promo-hero-nav-next"
+                ref={setNextEl}
+                type="button"
+                className="promo-banner-nav promo-banner-nav-next"
                 aria-label={t("hero.nextSlide", "Next slide")}
             >
-                <HiChevronRight className="promo-hero-nav-icon" />
+                <HiChevronRight className="promo-banner-nav-icon" />
             </button>
 
             <Swiper
@@ -74,30 +90,18 @@ export default function PromotionalHeroSlider({
                 }}
                 pagination={{
                     clickable: true,
-                    bulletClass: "promo-hero-bullet",
-                    bulletActiveClass: "promo-hero-bullet-active",
+                    bulletClass: "promo-banner-bullet",
+                    bulletActiveClass: "promo-banner-bullet-active",
                 }}
-                navigation={{
-                    prevEl: prevRef.current,
-                    nextEl: nextRef.current,
-                }}
-                onBeforeInit={(swiper) => {
-                    (swiper.params.navigation as any).prevEl = prevRef.current;
-                    (swiper.params.navigation as any).nextEl = nextRef.current;
-                }}
-                className="promo-hero-swiper"
+                navigation={{ prevEl, nextEl }}
+                className="promo-banner-swiper"
             >
                 {items.map((item) => {
                     const data = getItemData(item) as SectionItemBase;
-                    const title = data.title || t("hero.titleFallback", "Fresh Groceries Delivered");
-                    const subtitle = data.desc || "";
-                    const image = data.image || "";
-                    const link = getItemLink(item, getLink);
-
                     return (
                         <SwiperSlide key={data.id}>
                             <div
-                                className="promo-hero-slide"
+                                className="promo-banner-slide promo-banner-frame"
                                 onClick={() => handleSlideClick(item)}
                                 role="button"
                                 tabIndex={0}
@@ -108,59 +112,7 @@ export default function PromotionalHeroSlider({
                                     }
                                 }}
                             >
-                                {/* Background - full image or gradient (slow zoom) */}
-                                <div
-                                    className="promo-hero-slide-bg"
-                                    style={
-                                        image
-                                            ? {
-                                                  backgroundImage: `url(${image})`,
-                                                  backgroundSize: "cover",
-                                                  backgroundPosition: "center",
-                                              }
-                                            : undefined
-                                    }
-                                />
-                                {/* Scrim - darker on the start side for text readability */}
-                                <div className="promo-hero-overlay" />
-
-                                {/* Content */}
-                                <div className="promo-hero-content">
-                                    <span className="promo-hero-eyebrow">
-                                        <span className="promo-hero-eyebrow-dot" aria-hidden />
-                                        {t("hero.eyebrow", "Fast local delivery")}
-                                    </span>
-                                    <h1 className="promo-hero-title">
-                                        {title}
-                                        {subtitle ? (
-                                            <>
-                                                <br />
-                                                <span className="promo-hero-title-sub">
-                                                    {subtitle}
-                                                </span>
-                                            </>
-                                        ) : null}
-                                    </h1>
-                                    <p className="promo-hero-desc">
-                                        {t(
-                                            "hero.description",
-                                            "Order from your favorite local stores and get everything delivered to your door.",
-                                        )}
-                                    </p>
-                                    <Button
-                                        className="promo-hero-btn"
-                                        variant="secondary"
-                                        size="lg"
-                                        rightIcon={<HiArrowRight className="promo-hero-btn-icon" />}
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            if (onItemClick) onItemClick(item);
-                                            else if (link) navigate(link);
-                                        }}
-                                    >
-                                        {t("hero.shopNow", "Shop Now")}
-                                    </Button>
-                                </div>
+                                <BannerHero item={data} />
                             </div>
                         </SwiperSlide>
                     );

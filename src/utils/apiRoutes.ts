@@ -203,6 +203,18 @@ export const apiRoutes = {
         },
         attributes: (categoryId: number) =>
             `/user/categories/${categoryId}/attributes` as const,
+        /**
+         * Category page (any level): `{ category, sections }` rendered by the shared
+         * sections renderer. Product filters are forwarded because the page's `type: "api"`
+         * sections resolve their items through the same product query — without them the
+         * sections keep showing unfiltered items while the listing below is filtered.
+         */
+        page: (categoryId: number, filters?: UserProductListFilters) => {
+            const params = new URLSearchParams();
+            appendUserProductListFilters(params, filters);
+            const qs = params.toString();
+            return `/user/categories/${categoryId}/page${qs ? `?${qs}` : ""}` as const;
+        },
     },
 
     /**
@@ -634,6 +646,14 @@ export const apiRoutes = {
     */
     quickActions: {
         list: "/user/quick-actions" as const,
+    },
+
+    /**
+    * Dashboard-managed top navigation bar (public — no auth required).
+    * Returns enabled items only, sorted by `order`; titles follow Accept-Language.
+    */
+    navMenu: {
+        list: "/user/nav-menu" as const,
     },
 
     /**

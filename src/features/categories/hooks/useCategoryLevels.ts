@@ -31,6 +31,14 @@ function toApiCategory(child: CategoryChild): ApiCategory {
 }
 
 /**
+ * A trail id the local level list cannot confirm. It is still browsed — only its
+ * label/colors are unknown until `/categories/{id}/page` answers.
+ */
+function unresolvedCategory(id: number): ApiCategory {
+    return { id, name: "", icon: null, children: [] };
+}
+
+/**
  * `?parent_id=` is supported by the route builder but has never been exercised
  * against the backend, so a level is only trusted when the response actually
  * looks like the children of `parent`. Otherwise we degrade to the `children[]`
@@ -98,10 +106,9 @@ export function useCategoryLevels(trail: number[]) {
         const rootIds = new Set(rootItems.map((c) => c.id));
 
         const levels: CategoryLevel[] = [];
+        /** One entry per trail id, so crumb index === depth even when a level is unknown. */
         const breadcrumb: ApiCategory[] = [];
-        let resolvedTrail = trail;
         let parent: ApiCategory | null = null;
-        let stillContiguous = true;
 
         for (let i = 0; i < parentIds.length; i++) {
             const result = results[i];
@@ -128,34 +135,30 @@ export function useCategoryLevels(trail: number[]) {
 
             if (i >= trail.length) break;
 
+            // The id in the URL is authoritative and is never trimmed here: the
+            // products endpoint accepts a category at any depth, while this level
+            // list can legitimately fail to contain it — the root list is
+            // paginated, `?parent_id=` may degrade to name-only `children[]`, and
+            // nav-menu/section links deep-link straight to a subcategory.
             const next: ApiCategory | null =
                 items.find((c) => c.id === trail[i]) ?? null;
-            if (next) {
-                if (stillContiguous) breadcrumb.push(next);
-            } else if (!isLoading && stillContiguous) {
-                // The id in the URL does not exist at this depth — cut the trail here.
-                resolvedTrail = trail.slice(0, i);
-                stillContiguous = false;
-            } else {
-                stillContiguous = false;
-            }
+            breadcrumb.push(next ?? unresolvedCategory(trail[i]));
             parent = next;
         }
 
         const current = levels[levels.length - 1];
+        const deepest = breadcrumb[breadcrumb.length - 1];
 
         return {
             levels,
             rootCategories: rootItems,
             rootLoading: Boolean(results[0]?.isPending),
             breadcrumb,
-            /** Resolved node for the deepest trail id — null while it is still loading. */
-            currentNode: breadcrumb.length ? breadcrumb[breadcrumb.length - 1] : null,
+            /** Deepest trail node — null until this level list actually resolves it. */
+            currentNode: deepest?.name ? deepest : null,
             currentChildren: current?.items ?? [],
             currentLoading: Boolean(current?.isLoading),
             currentDegraded: Boolean(current?.isDegraded),
-            resolvedTrail,
         };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [results, parentIds, trail]);
 }

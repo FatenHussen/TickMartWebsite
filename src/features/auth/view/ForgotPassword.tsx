@@ -55,8 +55,8 @@ export default function ForgotPassword() {
  <EmailOrPhoneInput
  name="emailOrPhone"
  control={control}
- label={t("auth.emailOrPhone")}
- placeholder="your.email@example.com / +963xxxxxxxxx"
+ label={t("auth.phoneOrEmail")}
+ placeholder="+963xxxxxxxxx / your.email@example.com"
  error={errors.emailOrPhone}
  required
  />

@@ -103,7 +103,9 @@
     "onFirstOrder": "على طلبك الأول!",
     "enterVerificationCode": "أدخل رمز التحقق",
     "sentCodeTo": "لقد أرسلنا رمز التحقق إلى:",
+    "sentCodeToPhone": "لقد أرسلنا رمز التحقق إلى رقم هاتفك:",
     "changeEmailPhone": "تغيير البريد الإلكتروني / الهاتف",
+    "changePhoneNumber": "تغيير رقم الهاتف",
     "resendCode": "إعادة إرسال الرمز",
     "resendCodeIn": "إعادة الإرسال خلال",
     "sponsored": "مدعوم",
@@ -112,7 +114,8 @@
     "viewOffer": "عرض العرض →",
     "manageCampaigns": "أدر جميع الحملات والعروض مباشرة من لوحة التحكم الخاصة بك.",
     "forgotPassword": "نسيت كلمة المرور",
-    "forgotPasswordDescription": "أدخل بريدك الإلكتروني أو رقم هاتفك وسنرسل لك رمزاً لإعادة تعيين كلمة المرور.",
+    "forgotPasswordDescription": "أدخل رقم هاتفك وسنرسل لك رمزاً لإعادة تعيين كلمة المرور. يمكنك استخدام بريدك الإلكتروني إذا كان مضافاً إلى حسابك.",
+    "phoneOrEmail": "رقم الهاتف أو البريد الإلكتروني",
     "sendResetCode": "إرسال رمز إعادة التعيين",
     "rememberPassword": "تذكرت كلمة المرور؟",
     "emailOrPhone": "البريد الإلكتروني أو الهاتف",
@@ -405,6 +408,7 @@
     "noProducts": "لم يتم العثور على منتجات في هذه الفئة",
     "categoriesTitle": "الفئات",
     "showAllCategories": "عرض جميع الفئات",
+    "category": "فئة",
     "back": "رجوع"
   },
   "product": {
@@ -426,6 +430,10 @@
     "selectVariant": "اختر أحد المتغيرات",
     "insufficientStock": "الكمية غير متوفرة بالمخزون.",
     "outOfStock": "غير متوفر",
+    "unavailable": "غير متوفر حالياً",
+    "notAvailableInBranch": "غير متاح في أي فرع",
+    "errorTitle": "تعذر تحميل هذا المنتج",
+    "errorDescription": "حدثت مشكلة غير متوقعة منعت تحميل صفحة المنتج. حاول مرة أخرى.",
     "shopVariants": "متغيرات الفرع",
     "shop": "فرع",
     "similarProducts": "منتجات مشابهة",
@@ -442,6 +450,7 @@
     "review": "تقييم",
     "cashOnDelivery": "الدفع عند الاستلام",
     "description": "الوصف",
+    "fullDescription": "تفاصيل المنتج",
     "seeMore": "عرض المزيد....",
     "seeLess": "عرض أقل",
     "sku": "رمز المنتج",
@@ -801,6 +810,9 @@
       "passwordUpdateSuccess": "تم تغيير كلمة المرور بنجاح",
       "passwordUpdateError": "فشل تغيير كلمة المرور",
       "updateEmail": "تحديث البريد الإلكتروني",
+      "addEmail": "إضافة بريد إلكتروني",
+      "noEmail": "لم تتم إضافة بريد إلكتروني",
+      "addEmailDesc": "أضف بريداً إلكترونياً لحسابك (اختياري).",
       "newEmail": "البريد الإلكتروني الجديد",
       "enterNewEmail": "أدخل البريد الإلكتروني الجديد",
       "currentEmail": "البريد الإلكتروني الحالي",
@@ -1613,6 +1625,16 @@
     "discountPercentOff": "خصم {{value}}%",
     "discountAmountOff": "خصم {{value}}"
   },
+  "sectionEmpty": {
+    "default": "لا توجد عناصر لعرضها",
+    "category": "لا توجد أقسام فرعية",
+    "product": "لا توجد منتجات",
+    "shop": "لا توجد متاجر",
+    "basket": "لا توجد سلال",
+    "scheduledBasket": "لا توجد سلال مجدولة",
+    "brand": "لا توجد علامات تجارية",
+    "recipe": "لا توجد وصفات"
+  },
   "sections": {
     "account": "الحساب",
     "orders": "الطلبات",
@@ -1663,5 +1685,11 @@
     "privacyPolicy": "سياسة الخصوصية",
     "termsConditions": "الشروط والأحكام",
     "helpSupport": "المساعدة والدعم"
+  },
+  "errors": {
+    "somethingWentWrong": "حدث خطأ ما",
+    "pageLoadFailed": "تعذر عرض هذه الصفحة. حاول مرة أخرى.",
+    "retry": "إعادة المحاولة",
+    "backHome": "العودة للصفحة الرئيسية"
   }
 }

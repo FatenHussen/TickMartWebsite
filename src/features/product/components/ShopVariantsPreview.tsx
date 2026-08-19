@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { cn } from "@/shared/lib/utils";
 import type { AvailableShop, ShopVariant, VariantAttribute } from "../types/productDetails";
+import { isPurchasableVariant } from "../types/productDetails";
 
 export type ShopVariantsPreviewProps = {
     variants: ShopVariant[];
@@ -56,15 +57,20 @@ export default function ShopVariantsPreview({
                 </p>
             )}
             <ul className="flex max-h-[min(320px,40vh)] flex-col gap-3 overflow-y-auto pr-1">
-                {variants.map((v) => {
+                {variants.map((v, index) => {
                     const thumb = v.images?.[0]?.path;
-                    const shopName = availableShops?.find((s) => s.id === v.shop_id)
-                        ?.name;
+                    const shopName =
+                        v.shop_id != null
+                            ? availableShops?.find((s) => s.id === v.shop_id)?.name
+                            : undefined;
                     const priceLabel =
                         v.price_formatted ??
                         `${v.currency_symbol ?? ""}${v.price.toFixed(2)}`;
-                    const outOfStock = v.quantity <= 0;
-                    const isSelected = selectedId === v.id;
+                    // `shop_id`/`id` are null when the API falls back to the
+                    // parent product: displayable, but not selectable.
+                    const purchasable = isPurchasableVariant(v);
+                    const outOfStock = !purchasable;
+                    const isSelected = v.id != null && selectedId === v.id;
 
                     const rowClass = cn(
                         "flex w-full gap-3 rounded-xl border p-3 text-start transition-all",
@@ -93,9 +99,9 @@ export default function ShopVariantsPreview({
                             )}
                             <div className="min-w-0 flex-1 space-y-2">
                                 <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-                                    {v.attributes.map((attr) => (
+                                    {(v.attributes ?? []).map((attr) => (
                                         <div
-                                            key={`${v.id}-${attr.attribute}`}
+                                            key={`${v.id ?? index}-${attr.attribute}`}
                                             className="flex items-center gap-2"
                                         >
                                             <span className="text-xs text-custom-secondary">
@@ -113,13 +119,20 @@ export default function ShopVariantsPreview({
                                         {t("product.quantity", "Quantity")}:{" "}
                                         {v.quantity}
                                     </span>
-                                    <span className="text-xs text-custom-secondary">
-                                        {shopName ??
-                                            `${t("product.shop", "Shop")} · #${v.shop_id}`}
-                                    </span>
+                                    {v.shop_id != null && (
+                                        <span className="text-xs text-custom-secondary">
+                                            {shopName ??
+                                                `${t("product.shop", "Shop")} · #${v.shop_id}`}
+                                        </span>
+                                    )}
                                     {outOfStock && (
                                         <span className="text-xs font-medium text-red-600">
-                                            {t("product.outOfStock", "Out of stock")}
+                                            {v.shop_id == null || v.id == null
+                                                ? t(
+                                                      "product.notAvailableInBranch",
+                                                      "Not available in any branch",
+                                                  )
+                                                : t("product.outOfStock", "Out of stock")}
                                         </span>
                                     )}
                                 </div>
@@ -144,12 +157,16 @@ export default function ShopVariantsPreview({
                     );
 
                     return (
-                        <li key={v.id}>
+                        <li key={v.id ?? `variant-${index}`}>
                             {selectable ? (
                                 <button
                                     type="button"
                                     disabled={outOfStock}
-                                    onClick={() => !outOfStock && onSelect?.(v.id)}
+                                    onClick={() =>
+                                        purchasable &&
+                                        v.id != null &&
+                                        onSelect?.(v.id)
+                                    }
                                     className={rowClass}
                                 >
                                     {inner}

@@ -176,7 +176,9 @@ export default function MobileAccountMenu({ user }: MobileAccountMenuProps) {
                 </div>
                 <div>
                   <p className="font-semibold">{currentUser.fullName}</p>
-                  <p className="text-sm text-white/80">{currentUser.email}</p>
+                  {currentUser.email && (
+                    <p className="text-sm text-white/80">{currentUser.email}</p>
+                  )}
                 </div>
               </div>
               <button

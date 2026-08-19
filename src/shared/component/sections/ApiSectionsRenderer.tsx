@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuthStore } from "@/store/auth";
@@ -11,13 +11,19 @@ import BasketCard from "../card/BasketCard";
 import ShopCard from "../card/ShopCard";
 import PromotionalBannerCard from "../banner/PromotionalBannerCard";
 import PromotionalHeroSlider from "../banner/PromotionalHeroSlider";
+import CategoryCircle from "../category/CategoryCircle";
+import { readCategoryColor } from "@/shared/lib/categoryColors";
+import { normalizeSectionsLocalization } from "@/shared/lib/sectionLocalization";
+import { openSectionLink } from "@/shared/lib/sectionLink";
+import { buildCategoryTrailSearch } from "@/features/categories/lib/categoryTrail";
+import { paths } from "@/app/routes/path/paths";
 import LazyImage from "@/shared/component/LazyImage";
 import FavoriteButton from "@/shared/component/FavoriteButton";
 import Button from "@/shared/ui/Button";
 import type {
     Section,
     SectionItem,
-    SectionItemManual,
+    SectionItemBase,
     SectionItemBadge,
     BrandItem,
     RecipeItem,
@@ -43,6 +49,14 @@ import {
     getDarkCardSurface,
     getDarkCardSurfaceGradient,
 } from "./sectionCardVariant";
+import {
+    getItemData,
+    getSectionKind,
+    isManualItem,
+    withResolvedDisplayType,
+    type SectionKind,
+} from "./sectionKind";
+import { DISPLAY_TYPE } from "@/features/home/types";
 import { useTheme } from "@/context/ThemeContext";
 
 function getFlashSaleEndDate(endDate?: string | null): string | null {
@@ -285,12 +299,13 @@ type ApiSectionsRendererProps = {
     /** Optional class applied to each slider section wrapper. */
     sectionClassName?: string;
     removeSectionVerticalSpacing?: boolean;
+    /**
+     * Where a click on a category card navigates. Defaults to the category's
+     * own page (`/categories?trail={id}`); the categories view passes its
+     * drill handler so clicks extend the current trail instead.
+     */
+    onCategoryItemClick?: (categoryId: number) => void;
 };
-
-// Helper to check if item is manual type
-function isManualItem(item: SectionItem): item is SectionItemManual {
-    return "item" in item && "link" in item;
-}
 
 // Type guards for different item types
 function isBrandItem(item: SectionItem): item is BrandItem {
@@ -343,35 +358,33 @@ function isShopItem(item: SectionItem): item is ShopItem {
     );
 }
 
-// Helper to get item data regardless of type
-function getItemData(item: SectionItem) {
-    if (isManualItem(item)) {
-        return item.item;
-    }
-    return item;
-}
-
-// Display type constants
-const DISPLAY_TYPES = {
-    BANNER: 1,
-    PRODUCT: 2,
-    SHOP: 3,
-    BASKET: 4,
-    SCHEDULED_BASKET: 5,
-    BRAND: 6,
-    RECIPE: 7,
-} as const;
+/**
+ * Every section is a scrollable row with prev/next arrows — products, shops
+ * ("Nearby Shops"), baskets, recipes, brands and category circles alike.
+ *
+ * The dashboard's `variant` used to double as a layout switch, turning
+ * `vertical`/`square` sections into static grids. A grid renders a section's
+ * whole item list at once, so rows stacked down the page and buried everything
+ * after them, with no way to scroll sideways. `variant` now only picks card
+ * shape and slide density, via `getSectionCardVariant` and
+ * `getSliderPresetForSection`.
+ *
+ * Arrows come from {@link Slider}: desktop-only, RTL-aware, and self-hiding
+ * when the row has nothing left to scroll.
+ */
+const SECTION_ROW_PROPS = { layout: "slider", showNavigation: true } as const;
 
 export default function ApiSectionsRenderer({
-    sections,
+    sections: apiSections,
     edgeToEdgeSectionBackgrounds = false,
     skipInnerPageContainer = false,
     brandDefaultsWhenApiMissing,
     sectionClassName,
     removeSectionVerticalSpacing = false,
+    onCategoryItemClick,
 }: ApiSectionsRendererProps) {
     const navigate = useNavigate();
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const { theme } = useTheme();
     const isDarkTheme = theme === "dark";
     const authenticated = useAuthStore((s) => s.authenticated);
@@ -379,6 +392,17 @@ export default function ApiSectionsRenderer({
     const { data: favoriteRecipes = [] } = useFavorites("recipe", false);
     const { data: favoriteBaskets = [] } = useFavorites("basket", false);
     const { data: favoriteShops = [] } = useFavorites("shop", false);
+    const language = i18n.language || "en";
+    // Every sections endpoint may send `name` (and item `title`/`description`)
+    // as `{ ar, en }` — the dashboard saves a section's name override as that
+    // object and the public payload hands it straight back. Resolving here, at
+    // the one component all fourteen callers share, keeps a localized value from
+    // ever reaching JSX as a raw object ("Objects are not valid as a React
+    // child"). Payloads already normalized upstream pass through unchanged.
+    const sections = useMemo(
+        () => normalizeSectionsLocalization(apiSections, language),
+        [apiSections, language]
+    );
     const toggleFavorite = useToggleFavorite();
     const productFavoriteIds = favoriteProducts.map((f) => f.id);
     const recipeFavoriteIds = favoriteRecipes.map((f) => f.id);
@@ -411,7 +435,8 @@ export default function ApiSectionsRenderer({
 
     const handleItemClick = (section: Section, item: SectionItem) => {
         if (isManualItem(item) && item.link) {
-            navigate(item.link);
+            // A manual item's link may point outside the app (banners often do).
+            openSectionLink(item.link, navigate);
         } else if (section.action?.page_slug) {
             const itemData = getItemData(item);
             const route = mapActionPageSlugToRoute(
@@ -420,6 +445,20 @@ export default function ApiSectionsRenderer({
             );
             navigate(route);
         }
+    };
+
+    const handleCategoryItemClick = (item: SectionItem) => {
+        if (isManualItem(item) && item.link) {
+            openSectionLink(item.link, navigate);
+            return;
+        }
+        const id = Number((getItemData(item) as { id?: number | string }).id);
+        if (!Number.isFinite(id)) return;
+        if (onCategoryItemClick) {
+            onCategoryItemClick(id);
+            return;
+        }
+        navigate(`${paths.client.categories}${buildCategoryTrailSearch([id])}`);
     };
 
     const handleToggleFavorite = (
@@ -448,19 +487,16 @@ export default function ApiSectionsRenderer({
         });
     };
 
-    const visibleSections = sections.filter(
-        (section) => Array.isArray(section.items) && section.items.length > 0
-    );
-
     return (
         <>
-            {visibleSections.map((section, index) => (
+            {sections.map((section, index) => (
                 <LazySection key={section.id} eager={index < 2}>
                     <SectionByDisplayType
                         section={section}
                         isDarkTheme={isDarkTheme}
                         onViewAll={() => handleViewAll(section)}
                         onItemClick={(item) => handleItemClick(section, item)}
+                        onCategoryClick={handleCategoryItemClick}
                         t={t}
                         edgeToEdgeSectionBackgrounds={edgeToEdgeSectionBackgrounds}
                         skipInnerPageContainer={skipInnerPageContainer}
@@ -495,6 +531,8 @@ type SectionByDisplayTypeProps = {
     isDarkTheme: boolean;
     onViewAll: () => void;
     onItemClick: (item: SectionItem) => void;
+    /** Click handler for items inside category-card sections. */
+    onCategoryClick: (item: SectionItem) => void;
     t: (key: string) => string;
     edgeToEdgeSectionBackgrounds?: boolean;
     skipInnerPageContainer?: boolean;
@@ -511,11 +549,76 @@ type SectionByDisplayTypeProps = {
     onToggleShopFavorite: (id: number, currentIsFavorite: boolean) => void;
 };
 
-function SectionByDisplayType({
+/** Nothing to render, but `SliderSection` still wants a typed items array. */
+const NO_ITEMS: SectionItem[] = [];
+
+/** What an empty row says, per kind of card it would have held. */
+const EMPTY_MESSAGE_KEY_BY_KIND: Record<SectionKind, string> = {
+    banner: "sectionEmpty.default",
+    product: "sectionEmpty.product",
+    shop: "sectionEmpty.shop",
+    basket: "sectionEmpty.basket",
+    scheduled_basket: "sectionEmpty.scheduledBasket",
+    brand: "sectionEmpty.brand",
+    recipe: "sectionEmpty.recipe",
+    category: "sectionEmpty.category",
+};
+
+/**
+ * A section the API answered with no items: the same chrome as a filled row
+ * (accent bar, title, colored band) with one line where the cards would be. A
+ * category that has no children reads as "no subcategories" instead of a row
+ * that silently went missing between two others.
+ */
+function EmptySection({
     section,
+    kind,
+    isDarkTheme,
+    t,
+    edgeToEdgeSectionBackgrounds,
+    sectionClassName,
+    removeSectionVerticalSpacing,
+}: {
+    section: Section;
+    kind: SectionKind | null;
+    isDarkTheme: boolean;
+    t: (key: string) => string;
+    edgeToEdgeSectionBackgrounds?: boolean;
+    sectionClassName?: string;
+    removeSectionVerticalSpacing?: boolean;
+}) {
+    // Read for the band tint only — the countdown is deliberately left off, a
+    // flash-sale row with no deals under it should not be ticking down.
+    const flashSaleEndDate = getFlashSaleEndDate(section.end_date);
+
+    return (
+        <SliderSection
+            title={section.name}
+            items={NO_ITEMS}
+            renderItem={() => null}
+            sectionBackgroundColor={getSectionBandBackground(
+                section,
+                isDarkTheme,
+                flashSaleEndDate
+            )}
+            edgeToEdgeSectionBackground={edgeToEdgeSectionBackgrounds}
+            className={sectionClassName}
+            removeVerticalSpacing={removeSectionVerticalSpacing}
+            emptyState={
+                <p className="rounded-2xl border border-dashed border-stone-200/90 bg-white/50 px-4 py-10 text-center text-sm font-medium text-stone-500 dark:border-white/10 dark:bg-white/[0.03] dark:text-zinc-400">
+                    {t(kind ? EMPTY_MESSAGE_KEY_BY_KIND[kind] : "sectionEmpty.default")}
+                </p>
+            }
+        />
+    );
+}
+
+function SectionByDisplayType({
+    section: apiSection,
     isDarkTheme,
     onViewAll,
     onItemClick,
+    onCategoryClick,
     t,
     edgeToEdgeSectionBackgrounds,
     skipInnerPageContainer,
@@ -531,11 +634,55 @@ function SectionByDisplayType({
     onToggleBasketFavorite,
     onToggleShopFavorite,
 }: SectionByDisplayTypeProps) {
-    const showViewAll = section.type === "api" && section.see_more;
-    const displayTypeId = Number(section.display_type_id);
+    // An empty section keeps its heading and says why the row is bare, instead
+    // of vanishing and leaving a gap nobody can explain. Two rows still drop
+    // out entirely: a banner is full-bleed artwork with no heading to hang a
+    // message on, and a section the API sent unnamed has nothing to show at all.
+    if (!apiSection.items?.length) {
+        const emptyKind = getSectionKind(apiSection);
+        if (emptyKind === "banner" || !apiSection.name?.trim()) return null;
+        return (
+            <EmptySection
+                section={apiSection}
+                kind={emptyKind}
+                isDarkTheme={isDarkTheme}
+                t={t}
+                edgeToEdgeSectionBackgrounds={edgeToEdgeSectionBackgrounds}
+                sectionClassName={sectionClassName}
+                removeSectionVerticalSpacing={removeSectionVerticalSpacing}
+            />
+        );
+    }
 
-    switch (displayTypeId) {
-        case DISPLAY_TYPES.BANNER:
+    // `see_more` alone decides the "view all" button. Gating it on
+    // `type === "api"` swallowed the button on manual sections, which the
+    // dashboard is free to attach a `see_more` target to as well.
+    const showViewAll = Boolean(apiSection.see_more?.page_slug);
+    // Not a plain `display_type_id` switch: `content_type` is the field the API
+    // sets on every section, while `manual_model` is null on `type: "api"` rows
+    // and an unseeded host can still send a `null` display type. Cards
+    // downstream still read `display_type_id`, hence the section is handed on
+    // with the id its kind implies.
+    const kind = getSectionKind(apiSection);
+    const section = withResolvedDisplayType(apiSection, kind);
+
+    switch (kind) {
+        case "category":
+            return (
+                <CategorySection
+                    section={section}
+                    isDarkTheme={isDarkTheme}
+                    showViewAll={showViewAll}
+                    onViewAll={onViewAll}
+                    onItemClick={onCategoryClick}
+                    t={t}
+                    edgeToEdgeSectionBackgrounds={edgeToEdgeSectionBackgrounds}
+                    sectionClassName={sectionClassName}
+                    removeSectionVerticalSpacing={removeSectionVerticalSpacing}
+                />
+            );
+
+        case "banner":
             return (
                 <BannerSection
                     section={section}
@@ -547,7 +694,7 @@ function SectionByDisplayType({
                 />
             );
 
-        case DISPLAY_TYPES.PRODUCT:
+        case "product":
             return (
                 <ProductSection
                     section={section}
@@ -564,7 +711,7 @@ function SectionByDisplayType({
                 />
             );
 
-        case DISPLAY_TYPES.SHOP:
+        case "shop":
             return (
                 <ShopSection
                     section={section}
@@ -581,8 +728,8 @@ function SectionByDisplayType({
                 />
             );
 
-        case DISPLAY_TYPES.BASKET:
-        case DISPLAY_TYPES.SCHEDULED_BASKET:
+        case "basket":
+        case "scheduled_basket":
             return (
                 <BasketSection
                     section={section}
@@ -599,7 +746,7 @@ function SectionByDisplayType({
                 />
             );
 
-        case DISPLAY_TYPES.BRAND:
+        case "brand":
             return (
                 <BrandSection
                     section={section}
@@ -615,7 +762,7 @@ function SectionByDisplayType({
                 />
             );
 
-        case DISPLAY_TYPES.RECIPE:
+        case "recipe":
             return (
                 <RecipeSection
                     section={section}
@@ -633,8 +780,11 @@ function SectionByDisplayType({
             );
 
         default:
+            // Items are present (empty sections returned above) but nothing
+            // identifies them — drawing a placeholder card here would put a
+            // broken row on a live page, so the section is skipped and logged.
             console.warn(
-                `[ApiSectionsRenderer] Unknown display_type_id: ${section.display_type_id}`
+                `[ApiSectionsRenderer] Section ${apiSection.id} ("${apiSection.name}") has no recognizable card type (content_type: ${apiSection.content_type ?? "—"}, manual_model: ${apiSection.manual_model ?? "—"}, display_type_id: ${apiSection.display_type_id}, items: ${apiSection.items.length})`
             );
             return null;
     }
@@ -825,7 +975,7 @@ function BannerSection({
                 )}
                 <div className={innerMax}>
                     <PromotionalBannerCard
-                        item={itemData as any}
+                        item={itemData as SectionItemBase}
                         link={link}
                         onClick={() => onItemClick(item)}
                         className="w-full"
@@ -858,6 +1008,77 @@ function BannerSection({
                 onItemClick={onItemClick}
             />
         </div>
+    );
+}
+
+/** Compact circle cards — denser rows than any product/card preset. */
+const CATEGORY_SLIDER_PRESET = {
+    slidesPerView: 3.2,
+    spaceBetween: 12,
+    breakpoints: {
+        480: { slidesPerView: 4.2 },
+        640: { slidesPerView: 5 },
+        768: { slidesPerView: 6 },
+        1024: { slidesPerView: 8 },
+    },
+};
+
+/**
+ * Category-card section (`manual_model === "category"`): a slider of the same
+ * circular category avatars used on the categories page. Clicking a card opens
+ * that category's own page (`/user/categories/{id}/page` on the backend).
+ */
+function CategorySection({
+    section,
+    isDarkTheme = false,
+    showViewAll,
+    onViewAll,
+    onItemClick,
+    t,
+    edgeToEdgeSectionBackgrounds,
+    sectionClassName,
+    removeSectionVerticalSpacing,
+}: SectionProps) {
+    return (
+        <SliderSection
+            title={section.name}
+            viewAllLabel={showViewAll ? t("common.viewAll") : undefined}
+            onViewAllClick={showViewAll ? onViewAll : undefined}
+            items={section.items}
+            slidesPerView={CATEGORY_SLIDER_PRESET.slidesPerView}
+            breakpoints={CATEGORY_SLIDER_PRESET.breakpoints}
+            spaceBetween={CATEGORY_SLIDER_PRESET.spaceBetween}
+            sectionBackgroundColor={getSectionBandBackground(section, isDarkTheme, null)}
+            edgeToEdgeSectionBackground={edgeToEdgeSectionBackgrounds}
+            className={sectionClassName}
+            removeVerticalSpacing={removeSectionVerticalSpacing}
+            {...SECTION_ROW_PROPS}
+            renderItem={(item) => {
+                const data = getItemData(item) as unknown as {
+                    id?: number | string;
+                    name?: string | null;
+                    title?: string | null;
+                    icon?: string | null;
+                    image?: string | null;
+                    children?: unknown[];
+                };
+                if (data.id == null) return null;
+                return (
+                    <CategoryCircle
+                        key={String(data.id)}
+                        name={data.name ?? data.title ?? ""}
+                        icon={data.icon ?? data.image ?? null}
+                        mainColor={readCategoryColor(data, "main")}
+                        secondColor={readCategoryColor(data, "second")}
+                        size="md"
+                        hasChildren={
+                            Array.isArray(data.children) && data.children.length > 0
+                        }
+                        onClick={() => onItemClick(item)}
+                    />
+                );
+            }}
+        />
     );
 }
 
@@ -903,6 +1124,7 @@ function ProductSection({
             edgeToEdgeSectionBackground={edgeToEdgeSectionBackgrounds}
             className={sectionClassName}
             removeVerticalSpacing={removeSectionVerticalSpacing}
+            {...SECTION_ROW_PROPS}
             renderItem={(item) => {
                 if (isProductItem(item)) {
                     const hasDiscount = hasProductDiscount(item);
@@ -1120,6 +1342,7 @@ function RecipeSection({
             edgeToEdgeSectionBackground={edgeToEdgeSectionBackgrounds}
             className={sectionClassName}
             removeVerticalSpacing={removeSectionVerticalSpacing}
+            {...SECTION_ROW_PROPS}
             renderItem={(item) => {
                 if (isRecipeItem(item)) {
                     const hasDiscount = item.discount && parseFloat(item.discount) > 0;
@@ -1289,10 +1512,11 @@ function BasketSection({
             edgeToEdgeSectionBackground={edgeToEdgeSectionBackgrounds}
             className={sectionClassName}
             removeVerticalSpacing={removeSectionVerticalSpacing}
+            {...SECTION_ROW_PROPS}
             renderItem={(item) => {
                 if (isBasketItem(item)) {
                     const isScheduledBasket =
-                        displayTypeId === DISPLAY_TYPES.SCHEDULED_BASKET;
+                        displayTypeId === DISPLAY_TYPE.SCHEDULED_BASKET;
                     const saveAmount =
                         item.saving > 0 ? `${t("baskets.save")} ${item.saving}` : undefined;
                     const savings =
@@ -1443,6 +1667,7 @@ function ShopSection({
             edgeToEdgeSectionBackground={edgeToEdgeSectionBackgrounds}
             className={sectionClassName}
             removeVerticalSpacing={removeSectionVerticalSpacing}
+            {...SECTION_ROW_PROPS}
             renderItem={(item) => {
                 const shopCardData = mapSectionItemToShopCardData(item);
                 if (!shopCardData) return null;
@@ -1527,6 +1752,7 @@ function BrandSection({
             edgeToEdgeSectionBackground={edgeToEdgeSectionBackgrounds}
             className={sectionClassName}
             removeVerticalSpacing={removeSectionVerticalSpacing}
+            {...SECTION_ROW_PROPS}
             renderItem={(item) => {
                 if (isBrandItem(item)) {
                     return (

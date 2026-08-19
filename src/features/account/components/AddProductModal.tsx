@@ -10,6 +10,7 @@ import { _ProductsApi } from "@/features/home/api/products.service";
 import { _ProductApi } from "@/features/product/api/productApi";
 import { queryKeys } from "@/utils/queryKeys";
 import ShopVariantsPreview from "@/features/product/components/ShopVariantsPreview";
+import { isPurchasableVariant } from "@/features/product/types/productDetails";
 import { PremiumInlineLoader } from "@/shared/component/loading";
 import type { ScheduledBasketDetail } from "../types/scheduledBasket";
 import type { ScheduledBasketExtraItem } from "../types/scheduledBasket";
@@ -112,13 +113,22 @@ export default function AddProductModal({
         enabled: isOpen && detailProductId != null,
     });
 
+    /**
+     * `shop_variants` always has at least one entry now: when the product is
+     * not linked to a branch the API synthesises one from the parent product
+     * with `id`/`shop_id` null. Those cannot be ordered (the basket needs a
+     * real `shop_product_variant_id`), so only purchasable ones count here.
+     */
+    const purchasableVariants = useMemo(
+        () => (productDetails?.shop_variants ?? []).filter(isPurchasableVariant),
+        [productDetails?.shop_variants],
+    );
+
     useEffect(() => {
-        if (!productDetails?.shop_variants?.length) return;
-        const inStock = productDetails.shop_variants.filter((v) => v.quantity > 0);
-        if (inStock.length === 1) {
-            setSelectedVariantId(inStock[0].id);
+        if (purchasableVariants.length === 1) {
+            setSelectedVariantId(purchasableVariants[0].id);
         }
-    }, [productDetails?.id, productDetails?.shop_variants]);
+    }, [productDetails?.id, purchasableVariants]);
 
     const existingProductIds = useMemo(() => {
         const ids = new Set(basket.items.map((i) => i.product.id));
@@ -139,11 +149,15 @@ export default function AddProductModal({
 
     const resolveVariantIdForAdd = (): number | null => {
         if (selectedVariantId != null) return selectedVariantId;
-        const variants = productDetails?.shop_variants;
-        if (variants?.length === 1 && variants[0].quantity > 0) {
-            return variants[0].id;
+        if (purchasableVariants.length === 1) {
+            return purchasableVariants[0].id;
         }
-        if (!variants?.length && listProductForDetail?.shop_product_variant_id != null) {
+        // Nothing orderable in the details response — fall back to the offer the
+        // list endpoint already resolved for this product, if any.
+        if (
+            purchasableVariants.length === 0 &&
+            listProductForDetail?.shop_product_variant_id != null
+        ) {
             return listProductForDetail.shop_product_variant_id;
         }
         return null;
@@ -221,8 +235,7 @@ export default function AddProductModal({
         return vid != null;
     })();
 
-    const showVariantPicker =
-        (productDetails?.shop_variants?.length ?? 0) > 0;
+    const showVariantPicker = purchasableVariants.length > 0;
 
     return (
         <BasePopup
@@ -297,8 +310,8 @@ export default function AddProductModal({
 
                             {showVariantPicker ? (
                                 <ShopVariantsPreview
-                                    variants={productDetails!.shop_variants}
-                                    availableShops={productDetails!.available_shops}
+                                    variants={purchasableVariants}
+                                    availableShops={productDetails?.available_shops}
                                     selectedId={selectedVariantId}
                                     onSelect={(id) => setSelectedVariantId(id)}
                                 />

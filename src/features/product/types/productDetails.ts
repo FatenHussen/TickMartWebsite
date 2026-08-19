@@ -22,17 +22,44 @@ export interface VariantAttribute {
  type:"color"|"square";
 }
 
+/**
+ * A shop variant. The API always returns at least one entry, falling back to a
+ * synthetic variant built from the parent product when nothing is linked to a
+ * branch. In that fallback `id` / `variant_id` / `shop_id` are `null`, which
+ * means the variant is displayable but **not purchasable** (the cart needs a
+ * real `shop_product_variant_id`).
+ */
 export interface ShopVariant {
- id: number;
- variant_id: number;
+ id: number | null;
+ variant_id: number | null;
+ sku?: string;
+ model?: string;
+ barcode?: string;
  attributes: VariantAttribute[];
  price: number;
  currency?: string;
  currency_symbol?: string;
  price_formatted?: string;
+ discount?: number;
+ price_after_discount?: number;
+ price_after_discount_formatted?: string;
  quantity: number;
- shop_id: number;
+ shop_id: number | null;
+ is_restaurant?: boolean;
+ city_id?: number | null;
  images: ProductImage[];
+}
+
+/** True when a variant can actually be added to the cart. */
+export function isPurchasableVariant(
+    variant: ShopVariant | null | undefined
+): variant is ShopVariant & { id: number; shop_id: number } {
+    return (
+        variant != null &&
+        variant.id != null &&
+        variant.shop_id != null &&
+        variant.quantity > 0
+    );
 }
 
 export interface AvailableShop {
@@ -50,6 +77,20 @@ export interface CategoryDetail {
 export type LocalizedOrString =
     | string
     | { ar?: string | null; en?: string | null }
+    | null
+    | undefined;
+
+/**
+ * `country` may come back as a plain string or as the full country record
+ * (`{ id, name: { ar, en }, code, ... }`) depending on the endpoint.
+ */
+export type ProductCountry =
+    | string
+    | {
+          id?: number;
+          name?: LocalizedOrString;
+          code?: string | null;
+      }
     | null
     | undefined;
 
@@ -91,7 +132,7 @@ export interface BoughtWithProduct {
  name: string;
  description?: string;
  category?: string;
- country?: string;
+ country?: ProductCountry;
  price: number;
  price_after_discount?: number;
  price_formatted?: string;
@@ -120,7 +161,7 @@ export interface ProductDetailsData {
  name: string;
  description?: string;
  full_description?: string;
- country: string;
+ country: ProductCountry;
  price: number;
  currency_symbol?: string;
  price_formatted?: string;
@@ -137,6 +178,8 @@ export interface ProductDetailsData {
  is_instant_delivery: number;
  rating: number;
  rating_breakdown: number[];
+ /** Single fallback image, used when `images` / variant images are empty. */
+ thumbnail?: string | null;
  sold_number?: number;
  is_most_ordered?: number;
  product_type?: string;

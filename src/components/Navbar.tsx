@@ -37,6 +37,8 @@ import { useTheme } from "@/context/ThemeContext";
 import { NavbarSearch } from "@/features/search";
 import AffiliatePackagesPopup from "@/components/AffiliatePackagesPopup";
 import { usePackages } from "@/features/account/hooks/usePackages";
+import { NavMenuLink, useNavMenu } from "@/features/navigation";
+import { PremiumSkeletonBlock } from "@/shared/component/loading";
 import { cn } from "@/shared/lib/utils";
 
 /** Keep in sync with `.page-container` in `index.css`. */
@@ -201,23 +203,28 @@ export default function Navbar() {
 
     const navLinkClass = (active: boolean) =>
         cn(
-            "navbar-premium-nav-link inline-flex items-center rounded-full px-3.5 py-2 text-sm font-medium whitespace-nowrap shrink-0 transition-[color,background-color,transform] duration-200 ease-out active:scale-[0.97]",
+            "navbar-premium-nav-link inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-medium whitespace-nowrap shrink-0 transition-[color,background-color,transform] duration-200 ease-out active:scale-[0.97]",
             active && "navbar-premium-nav-link--active",
             active
                 ? "bg-primary/10 text-primary"
                 : "text-text-secondary hover:bg-primary/[0.06] hover:text-primary",
         );
 
-    const navItems = [
-        { path: paths.client.home, label: t("home.home") || "Home" },
-        { path: paths.client.categories, label: t("categories.mainCategories") || "Main Categories" },
-        { path: paths.client.brands, label: t("home.brands") || "Brands" },
-        { path: paths.client.store, label: t("store.allShops") || "All shops" },
-        { path: paths.client.baskets, label: t("account.menu.myBaskets") || "My baskets" },
-        { path: paths.account.pointsRewards, label: t("account.menu.pointsRewards") || "Points & rewards" },
-        { path: paths.account.helpSupport, label: t("account.menu.helpSupport") || "Help & support" },
-    ];
-    const navItemsAfterCategories = navItems.slice(2);
+    const mobileNavLinkClass = (active: boolean) =>
+        cn(
+            "flex w-full items-center gap-2.5 rounded-lg px-4 py-3 text-start font-medium transition-colors",
+            active
+                ? "text-primary-light bg-primary-light/10"
+                : "text-custom-primary hover:bg-blue-off",
+        );
+
+    // The bar's items, their order and their titles all come from the dashboard
+    // (`GET /user/nav-menu`) — nothing about it is hardcoded here anymore.
+    const { items: navMenuItems, isLoading: navMenuLoading } = useNavMenu();
+    const navMenuPending = navMenuLoading && navMenuItems.length === 0;
+    const showMarketerCta = showBecomeMarketer || isApprovedMarketer;
+    /** An empty menu hides the row rather than leaving an empty bar behind. */
+    const showSubNavRow = navMenuPending || navMenuItems.length > 0 || showMarketerCta;
 
     // Account dropdown items with icons (main sections for creative dropdown)
     const baseAccountItems = [
@@ -620,6 +627,8 @@ export default function Navbar() {
                 </div>
                 </div>
 
+                {showSubNavRow && (
+                <>
                 <hr
                     className="navbar-divider m-0 hidden w-full border-0 border-t lg:block"
                     aria-hidden
@@ -632,30 +641,25 @@ export default function Navbar() {
                             className="navbar-main-nav scrollbar-custom flex min-w-0 flex-nowrap items-center gap-3 overflow-x-auto pb-0.5 sm:gap-4 xl:gap-6"
                             aria-label="Main"
                         >
-                            <Link
-                                to={paths.client.categories}
-                                className={navLinkClass(isActive(paths.client.categories))}
-                            >
-                                {t("categories.mainCategories") || "Categories"}
-                            </Link>
-                            {navItemsAfterCategories.map((item) => (
-                                <Link
-                                    key={item.path}
-                                    to={item.path}
-                                    className={navLinkClass(isActive(item.path))}
-                                >
-                                    {item.label}
-                                </Link>
-                            ))}
-                            <button
-                                type="button"
-                                onClick={() => setPackagesPopupOpen(true)}
-                                className={navLinkClass(false)}
-                            >
-                                {t("packagesPopup.navTab", "Subscription packages")}
-                            </button>
+                            {navMenuPending
+                                ? Array.from({ length: 6 }).map((_, i) => (
+                                    <PremiumSkeletonBlock
+                                        key={i}
+                                        className="h-9 w-24 shrink-0"
+                                        rounded="rounded-full"
+                                    />
+                                ))
+                                : navMenuItems.map(({ item, destination }) => (
+                                    <NavMenuLink
+                                        key={item.id}
+                                        item={item}
+                                        destination={destination}
+                                        getClassName={navLinkClass}
+                                        onOpenModal={() => setPackagesPopupOpen(true)}
+                                    />
+                                ))}
                         </nav>
-                        {(showBecomeMarketer || isApprovedMarketer) && (
+                        {showMarketerCta && (
                             <div className="flex shrink-0 items-center gap-2 sm:gap-3">
                                 {showBecomeMarketer && (
                                     <Link
@@ -680,6 +684,8 @@ export default function Navbar() {
                     </div>
                 </div>
                 </div>
+                </>
+                )}
 
                 <hr
                     className="navbar-bottom-edge m-0 w-full border-0 border-b-2"
@@ -851,29 +857,24 @@ export default function Navbar() {
                             {/* Navigation Items */}
                             <div className="flex-1 overflow-y-auto py-2">
                                 <div className="px-2">
-                                    {navItems.map((item) => (
-                                        <Link
-                                            key={item.path}
-                                            to={item.path}
-                                            onClick={() => setIsMobileMenuOpen(false)}
-                                            className={`block px-4 py-3 rounded-lg font-medium transition-colors ${isActive(item.path)
-                                                ? "text-primary-light bg-primary-light/10"
-                                                : "text-custom-primary hover:bg-blue-off"
-                                                }`}
-                                        >
-                                            {item.label}
-                                        </Link>
-                                    ))}
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            setIsMobileMenuOpen(false);
-                                            setPackagesPopupOpen(true);
-                                        }}
-                                        className="block w-full text-left px-4 py-3 rounded-lg font-medium transition-colors text-custom-primary hover:bg-blue-off"
-                                    >
-                                        {t("packagesPopup.navTab", "Subscription packages")}
-                                    </button>
+                                    {navMenuPending
+                                        ? Array.from({ length: 6 }).map((_, i) => (
+                                            <PremiumSkeletonBlock
+                                                key={i}
+                                                className="mx-2 my-1.5 h-11"
+                                                rounded="rounded-lg"
+                                            />
+                                        ))
+                                        : navMenuItems.map(({ item, destination }) => (
+                                            <NavMenuLink
+                                                key={item.id}
+                                                item={item}
+                                                destination={destination}
+                                                getClassName={mobileNavLinkClass}
+                                                onNavigate={() => setIsMobileMenuOpen(false)}
+                                                onOpenModal={() => setPackagesPopupOpen(true)}
+                                            />
+                                        ))}
                                 </div>
 
                                 {/* Account Section - Mobile (creative style with icons) */}

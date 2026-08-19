@@ -81,7 +81,7 @@ export function ProfileFormFields({
 
             <div className="relative space-y-2 mb-1">
                 <label className="block text-sm font-medium text-custom-primary">
-                    {t("account.profile.emailAddress")}
+                    {t("account.profile.emailAddress")} ({t("common.optional")})
                 </label>
                 <div className="relative">
                     <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
@@ -90,7 +90,8 @@ export function ProfileFormFields({
                     <input
                         readOnly
                         value={displayEmail}
-                        className="w-full pl-11 pr-4 py-3 rounded-xl border border-border-accent-light dark:border-border-accent bg-bg-input text-custom-primary cursor-default focus:outline-none"
+                        placeholder={t("account.profile.noEmail")}
+                        className="w-full pl-11 pr-4 py-3 rounded-xl border border-border-accent-light dark:border-border-accent bg-bg-input text-custom-primary placeholder:text-text-tertiary cursor-default focus:outline-none"
                     />
                 </div>
             </div>

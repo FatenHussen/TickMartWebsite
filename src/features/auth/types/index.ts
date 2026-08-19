@@ -1,6 +1,3 @@
-// ==================== Auth Method Types ====================
-export type AuthMethod ="email"|"phone";
-
 // ==================== Form Types ====================
 export type SignUpFormValues = {
  fullName: string;

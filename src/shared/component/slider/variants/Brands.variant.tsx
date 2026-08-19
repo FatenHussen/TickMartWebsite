@@ -66,6 +66,7 @@ export default function BrandsVariant({
  title={title}
  viewAllLabel={viewAllLabel}
  items={limitedItems}
+ showNavigation
  slidesPerView={2.5}
  breakpoints={
  ui?.breakpoints || {

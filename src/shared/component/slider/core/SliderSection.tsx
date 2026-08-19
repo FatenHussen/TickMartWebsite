@@ -31,6 +31,12 @@ type SliderSectionProps<T extends { id: number | string }> = {
   removeVerticalSpacing?: boolean;
   /** Opt-in prev/next arrows on the row edges. */
   showNavigation?: boolean;
+  /** `grid` renders a static responsive grid instead of the scrollable row. */
+  layout?: "slider" | "grid";
+  /** Tailwind column/gap classes used when `layout === "grid"`. */
+  gridClassName?: string;
+  /** Shown in place of the row when `items` is empty (see `Slider`). */
+  emptyState?: ReactNode;
 };
 
 const defaultBreakpoints = {
@@ -68,6 +74,9 @@ export default function SliderSection<T extends { id: number | string }>({
   edgeToEdgeSectionBackground,
   removeVerticalSpacing = false,
   showNavigation = false,
+  layout,
+  gridClassName,
+  emptyState,
 }: SliderSectionProps<T>) {
  const children = items.map((item) => {
  const rendered = renderItem(item);
@@ -104,6 +113,9 @@ export default function SliderSection<T extends { id: number | string }>({
       edgeToEdgeSectionBackground={edgeToEdgeSectionBackground}
       removeVerticalSpacing={removeVerticalSpacing}
       showNavigation={showNavigation}
+      layout={layout}
+      gridClassName={gridClassName}
+      emptyState={emptyState}
     >
       {children}
     </Slider>

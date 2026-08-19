@@ -173,6 +173,8 @@ export interface SectionItemBase {
  id: number;
  title: string | null;
  desc: string | null;
+ /** Banner CTA label from the dashboard; absent on non-banner items. */
+ button_text?: string | null;
  image: string | null;
  price: number | null;
  price_after_discount?: number | null;
@@ -216,13 +218,50 @@ export type SectionCardVariant = "horizontal" | "vertical" | "square";
 
 export interface Section {
  id: number;
+ /**
+  * Section title. Typed as a string because that is what consumers may render,
+  * but the API also sends it as `{ ar, en }` when an admin set a name override
+  * in the dashboard — `ApiSectionsRenderer` resolves it for the active language
+  * before anything reads it. Never render a raw section straight from an API
+  * response.
+  */
  name: string;
  /** Optional subtitle under the section title (when provided by CMS). */
  description?: string | null;
  type:"api"|"manual";
  position:"before"|"after";
  order: number;
- display_type_id: number;
+ /**
+  * Card layout behind the section, seeded to a fixed id per kind in every
+  * environment (see `DISPLAY_TYPE`). A host whose `DisplayTypeSeeder` has not
+  * run can still send `null` here, or the old `firstOrCreate`d id of the
+  * subcategories row, so resolve it through `getSectionKind` /
+  * `withResolvedDisplayType` rather than switching on it directly.
+  */
+ display_type_id: number | null;
+ /**
+  * What the section's items are (e.g. "category", "product", "banner") — the
+  * one discriminator the API sets on *every* section, `api` and `manual` alike.
+  * Prefer it over the two fields below. Optional in the type only because an
+  * un-migrated API host omits it; `getSectionKind` falls back for those.
+  */
+ content_type?: string | null;
+ /**
+  * Backend model behind the section's items (e.g. "category", "product") — set
+  * on `type: "manual"` sections and `null` on `type: "api"` ones, so it cannot
+  * answer for every section on its own.
+  */
+ manual_model?: string | null;
+ /** Backend data source for `type: "api"` sections (e.g. "categories", "products"). */
+ api_method?: string | null;
+ /**
+  * True for a section the backend generates itself (the subcategories and
+  * products rows of a category page), false for one an admin built in the
+  * dashboard. `selectRenderableCategorySections` drops the generated ones —
+  * the category page draws its own drill strip and filterable grid instead.
+  * Still optional: an un-migrated host omits it, and nothing is dropped then.
+  */
+ is_default?: boolean | null;
  background_color: string | null;
  background_crad_color: string | null;
  /** Preferred spelling; falls back to `background_crad_color` in helpers */
@@ -238,6 +277,12 @@ export interface Section {
  text_color?: string | null;
  see_more: SectionSeeMore | null;
  action: SectionAction;
+ /**
+  * Display conditions. An empty object — what the backend sends today — means
+  * "always show". No condition keys are specified yet, so nothing evaluates
+  * this: a section is never hidden because of a rule this client can't read.
+  */
+ show_when?: Record<string, unknown> | null;
  items: SectionItem[];
 }
 
@@ -257,6 +302,10 @@ export const DISPLAY_TYPE = {
  SCHEDULED_BASKET: 5,
  BRAND: 6,
  RECIPE: 7,
+ CATEGORY: 8,
+ /** Dashboard welcome / intro banner rows — both render as banners. */
+ WELCOME_BANNER: 9,
+ INTRO_BANNER: 10,
 } as const;
 
 export type DisplayTypeId = (typeof DISPLAY_TYPE)[keyof typeof DISPLAY_TYPE];

@@ -19,6 +19,8 @@ export function ProfileSecuritySection({
     onOpenUpdatePhone,
 }: ProfileSecuritySectionProps) {
     const { t } = useTranslation();
+    // Email is optional on registration, so an account may have no email yet.
+    const hasEmail = !!displayEmail?.trim();
 
     return (
         <ProfileSectionShell>
@@ -56,10 +58,14 @@ export function ProfileSecuritySection({
                     </div>
                     <div>
                         <h3 className="font-semibold text-custom-primary">
-                            {t("account.profile.updateEmail")}
+                            {hasEmail
+                                ? t("account.profile.updateEmail")
+                                : t("account.profile.addEmail")}
                         </h3>
                         <p className="text-sm text-custom-secondary">
-                            {t("account.profile.currentEmail")}: {displayEmail}
+                            {hasEmail
+                                ? `${t("account.profile.currentEmail")}: ${displayEmail}`
+                                : t("account.profile.noEmail")}
                         </p>
                     </div>
                 </div>
@@ -68,7 +74,9 @@ export function ProfileSecuritySection({
                     onClick={onOpenUpdateEmail}
                     className={API_SECOND_BUTTON_CLASS}
                 >
-                    {t("account.profile.updateEmail")}
+                    {hasEmail
+                        ? t("account.profile.updateEmail")
+                        : t("account.profile.addEmail")}
                 </button>
             </div>
 

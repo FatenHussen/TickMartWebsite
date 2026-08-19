@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/shared/lib/utils";
 import Rating from "@/shared/component/Rating";
 import Badge from "@/shared/component/Badge";
@@ -41,6 +42,7 @@ export default function ProductInfo({
     topRightSlot,
     className,
 }: ProductInfoProps) {
+    const { t } = useTranslation();
     return (
         <div className={cn("flex flex-col gap-4", className)}>
             {/* Top badges row */}
@@ -83,15 +85,15 @@ export default function ProductInfo({
                 <div className="flex flex-col gap-1.5 text-sm">
                     {sku && (
                         <div className="flex items-center gap-1">
-                            <span className="text-gray">SKU:</span>
-                            <span className="font-semibold text-primary-light underline underline-offset-2 decoration-1">
+                            <span className="text-gray">{t("product.sku", "SKU")}:</span>
+                            <span dir="ltr" className="font-semibold text-primary-light underline underline-offset-2 decoration-1">
                                 {sku}
                             </span>
                         </div>
                     )}
                     {origin && (
                         <div className="flex items-center gap-1">
-                            <span className="text-gray">Origin:</span>
+                            <span className="text-gray">{t("product.origin", "Origin")}:</span>
                             <span className="font-semibold text-primary-light">{origin}</span>
                         </div>
                     )}
@@ -120,7 +122,7 @@ export default function ProductInfo({
                 {(sold !== undefined || rating !== undefined) && (
                     <div className="flex items-center gap-3 text-base">
                         {sold !== undefined && (
-                            <span className="text-gray">{sold.toLocaleString()} Sold</span>
+                            <span className="text-gray">{sold.toLocaleString()} {t("product.sold", "Sold")}</span>
                         )}
                         {sold !== undefined && rating !== undefined && (
                             <span className="text-[#D7A800] dark:text-[color-mix(in_srgb,#D7A800_72%,var(--color-text))]">|</span>

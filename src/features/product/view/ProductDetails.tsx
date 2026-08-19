@@ -31,6 +31,8 @@ import { useAuthStore } from "@/store/auth";
 import type { CartItem, CartExtraLine } from "@/features/cart/types";
 import { extrasLineKeyFromExtras } from "@/features/cart/utils/cartExtras";
 import { paths } from "@/app/routes/path/paths";
+import { resolveProductCountry } from "../lib/resolveLocalizedOrString";
+import { isPurchasableVariant } from "../types/productDetails";
 import { useFavorites, useToggleFavorite } from "@/features/account/hooks/useFavorites";
 import { useCanRate } from "@/features/account/hooks/useRatings";
 import { RatingFormModal } from "@/features/account/components";
@@ -51,7 +53,7 @@ function ProductDetails() {
     const { productId } = useParams<{ productId: string }>();
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
-    const { isRTL } = useLanguage();
+    const { isRTL, language } = useLanguage();
 
     const lat = parseFloat(searchParams.get("lat") || "33.51380000");
     const lng = parseFloat(searchParams.get("lng") || "36.27650000");
@@ -164,10 +166,11 @@ function ProductDetails() {
             return;
         }
         const variants = boughtWithPreview.shop_variants;
-        const firstOk = variants.find((x) => x.quantity > 0) ?? variants[0];
+        // Only variants linked to a branch can be selected/ordered.
+        const firstOk = variants.find(isPurchasableVariant);
         setPreviewSelectedShopVariantId((prev) => {
             if (prev != null && variants.some((v) => v.id === prev)) return prev;
-            return firstOk.id;
+            return firstOk?.id ?? null;
         });
     }, [boughtWithPreview]);
 
@@ -250,62 +253,79 @@ function ProductDetails() {
         product?.is_favorite ?? favoriteProducts.some((f) => f.id === productIdNum);
     const addItem = useCartStore((s) => s.addItem);
 
+    /**
+     * `shop_variants` may hold the API's fallback entry (`id`/`shop_id` null),
+     * which renders fine but has no `shop_product_variant_id` for the cart.
+     */
+    const productVariants = product?.shop_variants ?? [];
+    const hasPurchasableVariant = productVariants.some(isPurchasableVariant);
+    const canAddToCart = isPurchasableVariant(selectedVariant);
+    const cannotAddToCartReason = !hasPurchasableVariant
+        ? t("product.notAvailableInBranch", "Not available in any branch")
+        : selectedVariant == null
+          ? t("product.selectVariant", "Select a variant")
+          : t("product.outOfStock", "Out of stock");
+
+    /** Variant images → product images → single thumbnail. */
+    const galleryImages =
+        currentImages.length > 0
+            ? currentImages
+            : product?.thumbnail
+              ? [product.thumbnail]
+              : [];
+
     const handleAddPreviewToCart = useCallback(() => {
         if (!boughtWithPreview) return;
         const variants = boughtWithPreview.shop_variants ?? [];
-        const v =
-            variants.length > 0
-                ? variants.find((x) => x.id === previewSelectedShopVariantId)
-                : undefined;
+        const v = variants.find((x) => x.id === previewSelectedShopVariantId);
 
-        if (variants.length > 0) {
-            if (!v) {
-                toast.error(
-                    t("product.selectVariant", "Select a variant"),
-                );
-                return;
-            }
-            if (v.quantity <= 0) {
-                toast.error(t("product.outOfStock", "Out of stock"));
-                return;
-            }
-            if (previewQuantity > v.quantity) {
-                toast.error(
-                    t(
-                        "product.insufficientStock",
-                        "Not enough stock for this quantity.",
-                    ),
-                );
-                return;
-            }
+        // The cart line needs a real `shop_product_variant_id`, so a product
+        // that is not linked to a branch cannot be ordered.
+        if (!isPurchasableVariant(v)) {
+            toast.error(
+                variants.some(isPurchasableVariant)
+                    ? t("product.selectVariant", "Select a variant")
+                    : t(
+                          "product.notAvailableInBranch",
+                          "Not available in any branch",
+                      ),
+            );
+            return;
+        }
+        if (previewQuantity > v!.quantity) {
+            toast.error(
+                t(
+                    "product.insufficientStock",
+                    "Not enough stock for this quantity.",
+                ),
+            );
+            return;
         }
 
         const sym =
-            v?.currency_symbol ?? boughtWithPreview.currency_symbol ?? "£";
-        const unitPrice = v
-            ? v.price
-            : boughtWithPreview.price_after_discount ??
-              boughtWithPreview.price;
-        const priceStr =
-            v?.price_formatted ?? `${sym}${unitPrice.toFixed(2)}`;
+            v.currency_symbol ?? boughtWithPreview.currency_symbol ?? "£";
+        const unitPrice = v.price;
+        const priceStr = v.price_formatted ?? `${sym}${unitPrice.toFixed(2)}`;
         const subtotalNum = unitPrice * previewQuantity;
         const subtotalStr = `${sym}${subtotalNum.toFixed(2)}`;
 
         const imagePath =
-            v?.images?.[0]?.path ?? boughtWithPreview.images?.[0]?.path ?? "";
+            v.images?.[0]?.path ??
+            boughtWithPreview.images?.[0]?.path ??
+            boughtWithPreview.thumbnail ??
+            "";
 
-        const lineId =
-            v != null ? `spv-${v.id}` : `${boughtWithPreview.id}-base`;
+        const lineId = `spv-${v.id}`;
 
         let selectedAttrs: Record<string, string> | undefined;
-        if (v?.attributes?.length) {
+        if (v.attributes?.length) {
             selectedAttrs = {};
             for (const a of v.attributes) {
                 selectedAttrs[a.attribute] = a.value;
             }
         }
 
-        const shopIdForLine = v?.shop_id ?? selectedShopId;
+        const shopIdForLine = v.shop_id;
         const selectedShop = boughtWithPreview.available_shops?.find(
             (s) => s.id === shopIdForLine,
         );
@@ -328,23 +348,11 @@ function ProductDetails() {
                 : undefined,
             is_instant_delivery: !!boughtWithPreview.is_instant_delivery,
             productId: boughtWithPreview.id,
-            variantId: v?.variant_id,
-            shop_product_variant_id: v?.id,
+            variantId: v.variant_id ?? undefined,
+            shop_product_variant_id: v.id,
             shopId: shopIdForLine,
             selectedAttributes: selectedAttrs,
         };
-
-        if (
-            !v &&
-            boughtWithPreview.price > boughtWithPreview.price_after_discount
-        ) {
-            cartItem.originalPrice =
-                boughtWithPreview.price_formatted ??
-                `${sym}${boughtWithPreview.price.toFixed(2)}`;
-            cartItem.savingsText = `${t("product.youSaved", "You saved")} ${sym}${(
-                boughtWithPreview.price - boughtWithPreview.price_after_discount
-            ).toFixed(2)}`;
-        }
 
         const result = addItem(cartItem);
         if (result === "success") {
@@ -431,13 +439,17 @@ function ProductDetails() {
             .filter((p) => p.id !== product?.id)
             .map((p) => {
                 const pi = p as ProductItem;
+                const sym =
+                    pi.currency_symbol ?? product?.currency_symbol ?? "£";
                 return {
                     id: p.id,
                     name: p.name,
-                    price: `£${p.price_after_discount.toFixed(2)}`,
+                    price:
+                        pi.price_after_discount_formatted ??
+                        `${sym}${p.price_after_discount.toFixed(2)}`,
                     originalPrice:
                         p.price > p.price_after_discount
-                            ? `£${p.price.toFixed(2)}`
+                            ? pi.price_formatted ?? `${sym}${p.price.toFixed(2)}`
                             : undefined,
                     rating: p.rating || 0,
                     image: p.image,
@@ -445,7 +457,7 @@ function ProductDetails() {
                     sold: p.sold_number,
                     savings:
                         p.amount_saved > 0
-                            ? `${t("product.youSaved", "You saved")} £${p.amount_saved.toFixed(2)}`
+                            ? `${t("product.youSaved", "You saved")} ${pi.amount_saved_formatted ?? `${sym}${p.amount_saved.toFixed(2)}`}`
                             : undefined,
                     badge: mapApiTopBadgesToProductCard(
                         pi.top_badges?.length ? pi.top_badges : pi.budges
@@ -456,20 +468,24 @@ function ProductDetails() {
                         favoriteIds.includes(p.id),
                 };
             });
-    }, [similarProducts, product?.id, t, favoriteIds]);
+    }, [similarProducts, product?.id, product?.currency_symbol, t, favoriteIds]);
 
     const sellerProductItems = useMemo(() => {
         return sellerProducts
             .filter((p) => p.id !== product?.id)
             .map((p) => {
                 const pi = p as ProductItem;
+                const sym =
+                    pi.currency_symbol ?? product?.currency_symbol ?? "£";
                 return {
                     id: p.id,
                     name: p.name,
-                    price: `£${p.price_after_discount.toFixed(2)}`,
+                    price:
+                        pi.price_after_discount_formatted ??
+                        `${sym}${p.price_after_discount.toFixed(2)}`,
                     originalPrice:
                         p.price > p.price_after_discount
-                            ? `£${p.price.toFixed(2)}`
+                            ? pi.price_formatted ?? `${sym}${p.price.toFixed(2)}`
                             : undefined,
                     rating: p.rating || 0,
                     image: p.image,
@@ -477,7 +493,7 @@ function ProductDetails() {
                     sold: p.sold_number,
                     savings:
                         p.amount_saved > 0
-                            ? `${t("product.youSaved", "You saved")} £${p.amount_saved.toFixed(2)}`
+                            ? `${t("product.youSaved", "You saved")} ${pi.amount_saved_formatted ?? `${sym}${p.amount_saved.toFixed(2)}`}`
                             : undefined,
                     badge: mapApiTopBadgesToProductCard(
                         pi.top_badges?.length ? pi.top_badges : pi.budges
@@ -488,12 +504,20 @@ function ProductDetails() {
                         favoriteIds.includes(p.id),
                 };
             });
-    }, [sellerProducts, product?.id, t, favoriteIds]);
+    }, [sellerProducts, product?.id, product?.currency_symbol, t, favoriteIds]);
 
     const handleAddToCart = () => {
         if (!product) return;
+        // Checkout drops any line without a real `shop_product_variant_id`, so
+        // a product that is not linked to a branch cannot be ordered at all.
+        if (!isPurchasableVariant(selectedVariant)) {
+            toast.error(cannotAddToCartReason);
+            return;
+        }
         const baseUnit = currentPriceAfterDiscount ?? currentPrice ?? 0;
         const price = baseUnit + (isFoodProduct ? 0 : extraDetailsUnitAddon);
+        const cartCurrencySymbol =
+            selectedVariant.currency_symbol ?? product.currency_symbol ?? "£";
         const extraLinesForCart: CartExtraLine[] = isFoodProduct
             ? selectedExtraIds.map((id) => ({ id, quantity: 1 }))
             : Object.entries(extraDetailQtyById).map(([id, q]) => ({
@@ -501,14 +525,12 @@ function ProductDetails() {
                   quantity: q,
               }));
         const extrasKey = extrasLineKeyFromExtras(extraLinesForCart);
-        const lineId =
-            selectedVariant?.id != null
-                ? `spv-${selectedVariant.id}${extrasKey}`
-                : `${product.id}-${selectedVariant?.variant_id ?? "base"}${extrasKey}`;
-        const imagePath = currentImages?.[0] ?? product?.images?.[0]?.path ?? "";
+        const lineId = `spv-${selectedVariant.id}${extrasKey}`;
+        const imagePath = galleryImages[0] ?? "";
         const isInstant = !!product.is_instant_delivery;
+        const shopIdForLine = selectedVariant.shop_id;
         const selectedShop = product.available_shops?.find(
-            (s) => s.id === selectedShopId
+            (s) => s.id === shopIdForLine
         );
         const cartItem: CartItem = {
             id: lineId,
@@ -518,17 +540,17 @@ function ProductDetails() {
             category_id: product.category?.id,
             image: imagePath,
             store: selectedShop?.name,
-            price: `£${price.toFixed(2)}`,
+            price: `${cartCurrencySymbol}${price.toFixed(2)}`,
             priceNumeric: price,
             quantity,
-            subtotal: `£${(price * quantity).toFixed(2)}`,
-            storeId: selectedShopId,
+            subtotal: `${cartCurrencySymbol}${(price * quantity).toFixed(2)}`,
+            storeId: shopIdForLine,
             hasFreeDelivery: isInstant ? true : undefined,
             is_instant_delivery: isInstant,
             productId: product.id,
-            variantId: selectedVariant?.variant_id,
-            shop_product_variant_id: selectedVariant?.id,
-            shopId: selectedVariant?.shop_id ?? selectedShopId,
+            variantId: selectedVariant.variant_id ?? undefined,
+            shop_product_variant_id: selectedVariant.id,
+            shopId: shopIdForLine,
             selectedAttributes:
                 Object.keys(selectedAttributes).length > 0
                     ? { ...selectedAttributes }
@@ -548,8 +570,8 @@ function ProductDetails() {
             currentPrice != null &&
             currentPriceAfterDiscount < currentPrice
         ) {
-            cartItem.originalPrice = `£${currentPrice.toFixed(2)}`;
-            cartItem.savingsText = `${t("product.youSaved", "You saved")} £${(
+            cartItem.originalPrice = `${cartCurrencySymbol}${currentPrice.toFixed(2)}`;
+            cartItem.savingsText = `${t("product.youSaved", "You saved")} ${cartCurrencySymbol}${(
                 currentPrice - currentPriceAfterDiscount
             ).toFixed(2)}`;
         }
@@ -667,14 +689,26 @@ function ProductDetails() {
         });
     }
 
+    // The API prices are per-currency (`currency_symbol`, e.g. "$") — never a
+    // hardcoded "£". Variant symbol wins over the product's.
+    const currencySymbol =
+        selectedVariant?.currency_symbol ?? product.currency_symbol ?? "£";
+    const formatPrice = (price: number) =>
+        `${currencySymbol}${price.toFixed(2)}`;
+
     const savings =
         product.price > product.price_after_discount
-            ? `${t("product.youSaved", "You saved")} £${(
-                product.price - product.price_after_discount
-            ).toFixed(2)}`
+            ? `${t("product.youSaved", "You saved")} ${formatPrice(
+                  product.price - product.price_after_discount
+              )}`
             : undefined;
 
-    const formatPrice = (price: number) => `£${price.toFixed(2)}`;
+    /** API returns `country` as either a string or `{ name: { ar, en } }`. */
+    const countryName = resolveProductCountry(product.country, language);
+    const previewCountryName = resolveProductCountry(
+        boughtWithPreview?.country,
+        language
+    );
 
     const hasShops =
         !isFood &&
@@ -689,7 +723,7 @@ function ProductDetails() {
                     <div className="flex flex-col gap-8">
                         <ProductImageGallery
                             key={selectedVariant?.id ?? "base"}
-                            images={currentImages}
+                            images={galleryImages}
                             isFavorite={isFavorite}
                             onToggleFavorite={handleToggleFavorite}
                             onShare={handleShare}
@@ -742,7 +776,7 @@ function ProductDetails() {
                             category={product.category?.name}
                             name={product.name}
                             sku={isFood ? undefined : product.sku}
-                            origin={isFood ? undefined : product.country}
+                            origin={isFood ? undefined : countryName || undefined}
                             price={formatPrice(
                                 (currentPriceAfterDiscount ?? currentPrice) +
                                     (isFood ? 0 : extraDetailsUnitAddon)
@@ -861,14 +895,33 @@ function ProductDetails() {
                         )}
 
                         {/* Quantity + Add to Cart */}
-                        <ProductQuantitySelector
-                            quantity={quantity}
-                            min={1}
-                            max={currentQuantity || 10}
-                            onQuantityChange={setQuantity}
-                            onAddToCart={handleAddToCart}
-                            addToCartText={t("product.addToCart", "Add To Cart")}
-                        />
+                        <div className="flex flex-col gap-2">
+                            <ProductQuantitySelector
+                                quantity={quantity}
+                                min={1}
+                                max={
+                                    currentQuantity > 0
+                                        ? currentQuantity
+                                        : product.quantity || 1
+                                }
+                                onQuantityChange={setQuantity}
+                                onAddToCart={handleAddToCart}
+                                addToCartDisabled={!canAddToCart}
+                                addToCartText={
+                                    canAddToCart
+                                        ? t("product.addToCart", "Add To Cart")
+                                        : t(
+                                              "product.unavailable",
+                                              "Currently unavailable",
+                                          )
+                                }
+                            />
+                            {!canAddToCart && (
+                                <p className="text-sm text-custom-secondary dark:text-[#A1A1AA]">
+                                    {cannotAddToCartReason}
+                                </p>
+                            )}
+                        </div>
 
                         <ProductActions
                             icons={product.icons}
@@ -1045,13 +1098,9 @@ function ProductDetails() {
                                         />
                                     }
                                     disabled={
-                                        (boughtWithPreview.shop_variants
-                                            ?.length ?? 0) > 0
-                                            ? !previewSelectedVariant ||
-                                              previewSelectedVariant.quantity <=
-                                                  0 ||
-                                              previewQuantity < 1
-                                            : false
+                                        !isPurchasableVariant(
+                                            previewSelectedVariant
+                                        ) || previewQuantity < 1
                                     }
                                     className="cursor-pointer rounded-xl border border-primary/20 bg-primary shadow-md shadow-[0_8px_28px_-6px_var(--color-shadow-accent)] !opacity-100 transition duration-200 hover:!border-primary/30 hover:!bg-[var(--color-primary-dark)] hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50"
                                     onClick={handleAddPreviewToCart}
@@ -1126,6 +1175,7 @@ function ProductDetails() {
                                                     ?.path ??
                                                 boughtWithPreview.images?.[0]
                                                     ?.path ??
+                                                boughtWithPreview.thumbnail ??
                                                 ""
                                             }
                                             alt=""
@@ -1138,12 +1188,12 @@ function ProductDetails() {
                                                 {boughtWithPreview.category.name}
                                             </span>
                                         )}
-                                        {boughtWithPreview.country && (
+                                        {previewCountryName && (
                                             <span>
                                                 {boughtWithPreview.category?.name
                                                     ? "· "
                                                     : ""}
-                                                {boughtWithPreview.country}
+                                                {previewCountryName}
                                             </span>
                                         )}
                                     </div>

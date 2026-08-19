@@ -100,6 +100,10 @@ export const queryKeys = {
  params
  ? (["categories","list", params] as const)
  : (["categories","list"] as const),
+ page: (categoryId?: number, filters?: Record<string, unknown>) =>
+ categoryId !== undefined
+ ? (["categories","page", categoryId, filters ?? {}] as const)
+ : (["categories","page"] as const),
  },
 
  /**
@@ -435,6 +439,18 @@ export const queryKeys = {
  all: () => ["notifications"] as const,
  list: (params?: { read?: boolean; page?: number; target_page?: string }) =>
  params ? (["notifications","list", params] as const) : (["notifications","list"] as const),
+ },
+
+ /**
+ * Top navigation bar query keys.
+ * Keyed by language — item titles come back in the requested language only.
+ */
+ navMenu: {
+ all: () => ["navMenu"] as const,
+ list: (language?: string) =>
+ language
+ ? (["navMenu","list", language] as const)
+ : (["navMenu","list"] as const),
  },
 
  /**

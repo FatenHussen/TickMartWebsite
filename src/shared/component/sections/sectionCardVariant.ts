@@ -44,6 +44,46 @@ export function getSectionCardVariant(section: Pick<Section, "variant">): Sectio
     return "square";
 }
 
+/**
+ * NOT WIRED UP — `ApiSectionsRenderer` renders every section as a scrolling row
+ * (`SECTION_ROW_PROPS`). Reconnecting this is what made rows stack their whole
+ * item list down the page with no sideways scroll and no arrows; the product
+ * call is that sections always scroll, whatever `variant` the dashboard sends.
+ *
+ * Kept for reference on what the dashboard means by `variant`: `horizontal`
+ * ("سلايدر أفقي") scrolls, `vertical` ("شبكة رأسية") and `square` ("مربعات")
+ * were grids. `variant` still drives card shape and slide density through
+ * {@link getSectionCardVariant} and {@link getSliderPresetForSection}.
+ */
+export function getSectionLayoutMode(
+    section: Pick<Section, "variant">
+): "slider" | "grid" {
+    return section.variant === "vertical" || section.variant === "square"
+        ? "grid"
+        : "slider";
+}
+
+/**
+ * Grid columns for a section rendered as a grid — the same card counts per
+ * breakpoint the matching slider preset shows, so switching `variant` changes
+ * whether the row scrolls without resizing its cards.
+ */
+export function getSectionGridClassName(variant: SectionCardVariant): string {
+    switch (variant) {
+        case "horizontal":
+            return "grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 lg:gap-6";
+        case "vertical":
+            return "grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 md:gap-4 lg:grid-cols-5";
+        case "square":
+        default:
+            return "grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 md:gap-4";
+    }
+}
+
+/** Circle cards pack far denser than any product grid — matches their slider. */
+export const CATEGORY_GRID_CLASS_NAME =
+    "grid-cols-3 gap-3 min-[480px]:grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8";
+
 /** Prefer API `background_card_color`, fall back to legacy typo field on `Section` */
 export function getSectionCardSurfaceColor(section: Section): string | null {
     const s = section as Section & { background_card_color?: string | null };
@@ -91,7 +131,7 @@ function sliderPresetForCardVariant(v: SectionCardVariant): SectionSliderPreset 
 
 /** Swiper density for a home section row */
 export function getSliderPresetForSection(
-    displayTypeId: number,
+    displayTypeId: number | null,
     variant: SectionCardVariant
 ): SectionSliderPreset {
     switch (displayTypeId) {
