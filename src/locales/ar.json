@@ -409,7 +409,8 @@
     "categoriesTitle": "الفئات",
     "showAllCategories": "عرض جميع الفئات",
     "category": "فئة",
-    "back": "رجوع"
+    "back": "رجوع",
+    "attributesFilter": "الخصائص"
   },
   "product": {
     "color": "اللون",

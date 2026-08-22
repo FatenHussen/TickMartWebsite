@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef } from"react";
 import { useTranslation } from"react-i18next";
+import { useQuery } from"@tanstack/react-query";
 import { cn } from"@/shared/lib/utils";
+import { _CategoriesApi } from"@/features/home/api/categories.service";
+import CategoryAttributeFilters from"@/features/product/components/CategoryAttributeFilters";
 import type { CategoriesApiDarkSurface } from"../lib/categoriesApiDarkSurface";
 
 export type CategoryTypeFilter ="new"|"most_popular"|"top_rated"| undefined;
@@ -11,6 +14,11 @@ type CategoryFiltersProps = {
  minPrice?: number;
  maxPrice?: number;
  onPriceChange?: (price: { minPrice?: number; maxPrice?: number }) => void;
+ /** The category being browsed — attribute filters are fetched per category. */
+ categoryId?: number;
+ /** Selected attribute *value* ids, the shape `attribute_values` is sent in. */
+ attributeValues?: number[];
+ onAttributeValuesChange?: (values: number[]) => void;
  apiSurface?: CategoriesApiDarkSurface | null;
 };
 
@@ -27,6 +35,9 @@ export default function CategoryFilters({
  minPrice,
  maxPrice,
  onPriceChange,
+ categoryId,
+ attributeValues,
+ onAttributeValuesChange,
  apiSurface,
 }: CategoryFiltersProps) {
  const { t } = useTranslation();
@@ -43,6 +54,31 @@ export default function CategoryFilters({
  useEffect(() => {
  setLocalMaxPrice(maxPrice?.toString() ??"");
  }, [maxPrice]);
+
+ // Size/color/… chips for this category. Same query key as the products-page
+ // sidebar, so drilling between the two pages reuses one cached answer.
+ const {
+ data: attributes = [],
+ isLoading: attributesLoading,
+ error: attributesError,
+ } = useQuery({
+ queryKey: ["categories","attributes", categoryId],
+ queryFn: async () => (await _CategoriesApi.getCategoryAttributes(categoryId as number)).data,
+ enabled: categoryId != null && categoryId > 0,
+ });
+
+ // A category with no attributes shows nothing at all — no header, no "none"
+ // line. The sidebar is short and every filter in it is one the visitor can act
+ // on; a permanent empty block is just noise above the price inputs.
+ const showAttributes =
+ categoryId != null && (attributesLoading || Boolean(attributesError) || attributes.length > 0);
+
+ const handleToggleAttributeValue = (valueId: number) => {
+ const next = new Set(attributeValues ?? []);
+ if (next.has(valueId)) next.delete(valueId);
+ else next.add(valueId);
+ onAttributeValuesChange?.([...next]);
+ };
 
  const priceDebounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
@@ -87,6 +123,7 @@ export default function CategoryFilters({
  setLocalMaxPrice("");
  onTypeFilterChange?.(undefined);
  onPriceChange?.({ minPrice: undefined, maxPrice: undefined });
+ onAttributeValuesChange?.([]);
  };
 
  return (
@@ -207,6 +244,25 @@ export default function CategoryFilters({
  />
  </div>
  </section>
+
+ {/* Category attributes (size, color, …) */}
+ {showAttributes && (
+ <section className="space-y-3">
+ <p
+ className={cn("text-[11px] font-semibold uppercase tracking-[0.07em]", !apiSurface && "text-custom-secondary")}
+ style={apiSurface ? { color: apiSurface.pageColor } : undefined}
+ >
+ {t("categories.attributesFilter","Attributes")}
+ </p>
+ <CategoryAttributeFilters
+ attributes={attributes}
+ selectedIds={attributeValues ?? []}
+ onToggleValue={handleToggleAttributeValue}
+ isLoading={attributesLoading}
+ error={attributesError}
+ />
+ </section>
+ )}
 
  {/* Action Buttons */}
  <div className="space-y-2.5 pt-1">

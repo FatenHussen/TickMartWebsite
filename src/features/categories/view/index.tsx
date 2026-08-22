@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/context/ThemeContext";
@@ -107,6 +107,10 @@ export default function CategoriesView() {
     const [categoryTypeFilter, setCategoryTypeFilter] = useState<CategoryTypeFilter>(undefined);
     const [minPrice, setMinPrice] = useState<number | undefined>(undefined);
     const [maxPrice, setMaxPrice] = useState<number | undefined>(undefined);
+    // Attribute *value* ids from the sidebar chips. Attributes are defined per
+    // category, so a value picked one level up means nothing here — the effect
+    // below clears them whenever the browsed category changes.
+    const [attributeValues, setAttributeValues] = useState<number[]>([]);
     const [favoriteStates, setFavoriteStates] = useState<Record<number, boolean>>({});
     const themeGradientColors = useMemo(() => {
         if (typeof window === "undefined") return undefined;
@@ -179,9 +183,23 @@ export default function CategoriesView() {
             type: categoryTypeFilter,
             price_min: minPrice,
             price_max: maxPrice,
+            attribute_values: attributeValues.length ? attributeValues : undefined,
         }),
-        [sortField, sortOrder, freeDeliveryOnly, inStockOnly, categoryTypeFilter, minPrice, maxPrice],
+        [
+            sortField,
+            sortOrder,
+            freeDeliveryOnly,
+            inStockOnly,
+            categoryTypeFilter,
+            minPrice,
+            maxPrice,
+            attributeValues,
+        ],
     );
+
+    useEffect(() => {
+        setAttributeValues([]);
+    }, [categoryIdForProducts]);
 
     // Root view keeps the generic `page_slug=categories` sections; a selected
     // category (any level) gets its own page from /categories/{id}/page, whose
@@ -385,6 +403,9 @@ export default function CategoriesView() {
                 setMinPrice(nextMin);
                 setMaxPrice(nextMax);
             }}
+            categoryId={categoryIdForProducts}
+            attributeValues={attributeValues}
+            onAttributeValuesChange={setAttributeValues}
         />
     );
 

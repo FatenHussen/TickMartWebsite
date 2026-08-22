@@ -7,9 +7,11 @@ const DEVICE_ID_KEY ="fcm_device_id";
 const LAST_TOKEN_KEY ="fcm_last_token";
 
 // Dev goes through the Vite proxy (see vite.config.ts) to avoid CORS.
-const BASE_URL = import.meta.env.DEV
- ?"/api"
- :"https://tickdash.tickmartsy.com/api";
+const prodApiBase =
+  import.meta.env.VITE_SERVER_URL?.replace(/\/user\/?$/, "") ||
+  "https://tickdash.tickmartsy.com/api";
+
+const BASE_URL = import.meta.env.DEV ? "/api" : prodApiBase.replace(/\/$/, "");
 
 function getOrCreateDeviceId(): string {
  let id = localStorage.getItem(DEVICE_ID_KEY);

@@ -31,9 +31,9 @@ type SliderSectionProps<T extends { id: number | string }> = {
   removeVerticalSpacing?: boolean;
   /** Opt-in prev/next arrows on the row edges. */
   showNavigation?: boolean;
-  /** `grid` renders a static responsive grid instead of the scrollable row. */
-  layout?: "slider" | "grid";
-  /** Tailwind column/gap classes used when `layout === "grid"`. */
+  /** `list` stacks items one per row and `grid` tiles them, instead of scrolling. */
+  layout?: "slider" | "list" | "grid";
+  /** Tailwind column/gap classes used by the `list` and `grid` layouts. */
   gridClassName?: string;
   /** Shown in place of the row when `items` is empty (see `Slider`). */
   emptyState?: ReactNode;

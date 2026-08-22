@@ -1,5 +1,4 @@
-import type { Section, SectionCardVariant } from "@/features/home/types";
-import { DISPLAY_TYPE } from "@/features/home/types";
+import type { Section, SectionCardVariant, SectionLayout } from "@/features/home/types";
 
 /**
  * Dark-mode row behind home API sliders — deep charcoal carrying a faint wash of the
@@ -37,36 +36,79 @@ export type SectionSliderPreset = {
     spaceBetween?: number;
 };
 
+/**
+ * The shape of a single card *inside* a section — the API's `variant`, and
+ * nothing else. It never decides whether the section scrolls; that is
+ * {@link getSectionLayout}.
+ *
+ * A section that sends no `variant` draws `horizontal` cards, the contract's
+ * default.
+ */
 export function getSectionCardVariant(section: Pick<Section, "variant">): SectionCardVariant {
     const v = section.variant;
     if (v === "vertical" || v === "square" || v === "horizontal") return v;
-    /** No `variant` in payload — keep previous home slider density */
-    return "square";
+    return "horizontal";
 }
 
 /**
- * NOT WIRED UP — `ApiSectionsRenderer` renders every section as a scrolling row
- * (`SECTION_ROW_PROPS`). Reconnecting this is what made rows stack their whole
- * item list down the page with no sideways scroll and no arrows; the product
- * call is that sections always scroll, whatever `variant` the dashboard sends.
+ * How a whole section is laid out — the API's `layout`, and nothing else.
  *
- * Kept for reference on what the dashboard means by `variant`: `horizontal`
- * ("سلايدر أفقي") scrolls, `vertical` ("شبكة رأسية") and `square` ("مربعات")
- * were grids. `variant` still drives card shape and slide density through
- * {@link getSectionCardVariant} and {@link getSliderPresetForSection}.
+ * These are three independent fields, and each answers exactly one question:
+ * `layout` picks slider / list / grid, `variant` picks the shape of one card
+ * inside that layout ({@link getSectionCardVariant}), and `display_type_id`
+ * only says what kind of thing the items are (`getSectionKind`). Never read
+ * one to stand in for another — `horizontal` in particular is a card shape,
+ * not a scrolling row.
+ *
+ * A payload that predates the field — or carries a value this client does not
+ * know — falls back to `"slider"`, which is what every section used to be.
  */
-export function getSectionLayoutMode(
-    section: Pick<Section, "variant">
-): "slider" | "grid" {
-    return section.variant === "vertical" || section.variant === "square"
-        ? "grid"
-        : "slider";
+export function getSectionLayout(section: Pick<Section, "layout">): SectionLayout {
+    const l = section.layout;
+    if (l === "slider" || l === "list" || l === "grid") return l;
+    return "slider";
+}
+
+/** Vertical stack: one item per row, so only the gap needs saying. */
+const SECTION_LIST_CLASS_NAME = "gap-4 md:gap-5";
+
+/** What `SliderSection` needs to draw a section in the layout the API asked for. */
+export type SectionRowLayoutProps = {
+    layout: SectionLayout;
+    gridClassName?: string;
+    showNavigation: boolean;
+};
+
+/**
+ * The layout props a section row hands to `SliderSection`.
+ *
+ * Arrows belong to a slider alone — a list or a grid lays every item out at
+ * once and has nothing left to scroll sideways — so navigation is on for
+ * `slider` and off for the other two, where the column/gap classes of the card
+ * variant take over instead. `gridClassNameOverride` is for rows whose cards
+ * pack at their own density (category circles).
+ */
+export function getSectionRowProps(
+    section: Pick<Section, "layout">,
+    variant: SectionCardVariant,
+    gridClassNameOverride?: string
+): SectionRowLayoutProps {
+    const layout = getSectionLayout(section);
+    if (layout === "slider") return { layout, showNavigation: true };
+    return {
+        layout,
+        gridClassName:
+            layout === "list"
+                ? SECTION_LIST_CLASS_NAME
+                : gridClassNameOverride ?? getSectionGridClassName(variant),
+        showNavigation: false,
+    };
 }
 
 /**
- * Grid columns for a section rendered as a grid — the same card counts per
- * breakpoint the matching slider preset shows, so switching `variant` changes
- * whether the row scrolls without resizing its cards.
+ * Grid columns for a section whose `layout` is `grid` — the same card counts
+ * per breakpoint the matching slider preset shows, so a section that switches
+ * `layout` stops scrolling without its cards changing size.
  */
 export function getSectionGridClassName(variant: SectionCardVariant): string {
     switch (variant) {
@@ -129,20 +171,17 @@ function sliderPresetForCardVariant(v: SectionCardVariant): SectionSliderPreset 
     }
 }
 
-/** Swiper density for a home section row */
+/**
+ * Swiper density for a section row, from the card variant alone.
+ *
+ * It used to switch on `display_type_id` first and only consult `variant` for
+ * the six card kinds it listed. That id says what the items *are*, never how
+ * they are laid out, and every caller had already resolved the kind before
+ * getting here — so the switch could only ever agree with `variant` or
+ * contradict it.
+ */
 export function getSliderPresetForSection(
-    displayTypeId: number | null,
     variant: SectionCardVariant
 ): SectionSliderPreset {
-    switch (displayTypeId) {
-        case DISPLAY_TYPE.PRODUCT:
-        case DISPLAY_TYPE.RECIPE:
-        case DISPLAY_TYPE.SHOP:
-        case DISPLAY_TYPE.BASKET:
-        case DISPLAY_TYPE.SCHEDULED_BASKET:
-        case DISPLAY_TYPE.BRAND:
-            return sliderPresetForCardVariant(variant);
-        default:
-            return sliderPresetForCardVariant("square");
-    }
+    return sliderPresetForCardVariant(variant);
 }

@@ -409,7 +409,8 @@
     "categoriesTitle": "Categories",
     "showAllCategories": "Show all categories",
     "category": "Category",
-    "back": "Back"
+    "back": "Back",
+    "attributesFilter": "Attributes"
   },
   "product": {
     "color": "Color",

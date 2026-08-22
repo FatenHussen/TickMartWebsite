@@ -216,6 +216,14 @@ export interface SectionAction {
 /** Home section card shape — drives Swiper density + card aspect */
 export type SectionCardVariant = "horizontal" | "vertical" | "square";
 
+/**
+ * How a whole section is laid out — API `layout`. Orthogonal to
+ * {@link SectionCardVariant}, which only says what a single card looks like
+ * inside that layout, and to `display_type_id`, which only says what the items
+ * are.
+ */
+export type SectionLayout = "slider" | "list" | "grid";
+
 export interface Section {
  id: number;
  /**
@@ -257,16 +265,25 @@ export interface Section {
  /**
   * True for a section the backend generates itself (the subcategories and
   * products rows of a category page), false for one an admin built in the
-  * dashboard. `selectRenderableCategorySections` drops the generated ones —
-  * the category page draws its own drill strip and filterable grid instead.
-  * Still optional: an un-migrated host omits it, and nothing is dropped then.
+  * dashboard. Informational only — **every** section renders, generated or
+  * not; a generated row nobody wants is deleted in the dashboard, which is the
+  * one place that owns that call.
   */
  is_default?: boolean | null;
  background_color: string | null;
  background_crad_color: string | null;
  /** Preferred spelling; falls back to `background_crad_color` in helpers */
  background_card_color?: string | null;
- /** API `variant` — card layout for product/brand/etc. sliders */
+ /**
+  * API `layout` — how the whole section is laid out: a horizontal slider, a
+  * vertical list, or a grid. Read it through `getSectionLayout`, which falls
+  * back to `"slider"` for a host that does not send the field yet.
+  */
+ layout?: SectionLayout | null;
+ /**
+  * API `variant` — the shape of a single card *inside* the layout, never the
+  * layout itself. Read it through `getSectionCardVariant`.
+  */
  variant?: SectionCardVariant | null;
  end_date?: string | null;
  /** Section-level flash-sale discount applied to every item. */

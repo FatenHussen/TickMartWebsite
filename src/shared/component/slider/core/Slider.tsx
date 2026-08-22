@@ -45,12 +45,16 @@ type SliderProps = {
     /** Opt-in prev/next arrows overlaid on the row edges; hidden when nothing overflows. */
     showNavigation?: boolean;
     /**
-     * `grid` swaps the scrollable row for a static responsive grid. Everything
-     * else — header, flash-sale chrome, full-bleed band, spacing — is identical,
-     * so a section can switch layout without changing how it reads.
+     * How the items are laid out: `slider` scrolls them sideways, `list` stacks
+     * them one per row, `grid` tiles them. Everything else — header, flash-sale
+     * chrome, full-bleed band, spacing — is identical in all three, so a section
+     * can switch layout without changing how it reads.
      */
-    layout?: "slider" | "grid";
-    /** Tailwind column/gap classes applied when `layout === "grid"`. */
+    layout?: "slider" | "list" | "grid";
+    /**
+     * Tailwind classes for the non-slider layouts: columns and gap for `grid`,
+     * gap alone for `list` (one item per row needs no columns).
+     */
     gridClassName?: string;
     /**
      * Rendered in place of the row when there are no children. A caller that
@@ -327,20 +331,25 @@ export default function Slider({
         swiperEl
     );
 
-    /** Grid rows never overflow horizontally, so the arrows have nothing to do. */
+    /** List and grid rows never overflow sideways, so the arrows have nothing to do. */
     const body =
         children.length === 0 && emptyState ? (
             emptyState
-        ) : layout === "grid" ? (
-            <div className={cn("grid min-w-0", gridClassName)}>
+        ) : layout === "slider" ? (
+            swiper
+        ) : (
+            <div
+                className={cn(
+                    layout === "list" ? "flex min-w-0 flex-col" : "grid min-w-0",
+                    gridClassName
+                )}
+            >
                 {children.map((child, index) => (
                     <div key={index} className={slideClassName}>
                         {child}
                     </div>
                 ))}
             </div>
-        ) : (
-            swiper
         );
 
     /**

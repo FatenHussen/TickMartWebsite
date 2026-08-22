@@ -139,12 +139,20 @@ export default function ProductsHeader({
  <span>{t("product.filters.inStockOnly","In stock")}</span>
  </label>
 
- <div className="relative">
- <select
- value={sortBy}
- onChange={(e) => onSortChange?.(e.target.value)}
- className={cn(
-"appearance-none rounded-full border px-4 py-2 pr-9 text-sm font-semibold shadow-sm transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2",
+		 <div className="flex items-center gap-2">
+		 <span
+		 className={cn("text-sm whitespace-nowrap", !apiSurface && "text-custom-secondary")}
+		 style={apiSurface ? { color: apiSurface.mutedColor } : undefined}
+		 >
+		 {t("categories.sortBy", "Sort by")}:
+		 </span>
+		 <div className="relative">
+		 <select
+		 value={sortBy}
+		 onChange={(e) => onSortChange?.(e.target.value)}
+		 aria-label={t("categories.sortBy", "Sort by")}
+		 className={cn(
+"appearance-none rounded-full border px-4 py-2 pe-9 ps-3 text-sm font-semibold shadow-sm transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2",
  !apiSurface &&
  "border-slate-200/80 bg-white text-custom-primary hover:border-primary-light/45 focus:ring-primary-light/20",
  )}
@@ -173,11 +181,12 @@ export default function ProductsHeader({
  >
  <svg className="h-4 w-4"fill="none"stroke="currentColor"viewBox="0 0 24 24">
  <path strokeLinecap="round"strokeLinejoin="round"strokeWidth={2} d="M19 9l-7 7-7-7"/>
- </svg>
- </div>
- </div>
- </div>
- </div>
- </div>
+		 </svg>
+		 </div>
+		 </div>
+		 </div>
+		 </div>
+		 </div>
+		 </div>
  );
 }

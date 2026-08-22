@@ -146,3 +146,6 @@ export function selectRenderableCategorySections(
                   !isGeneratedProductsRow(section, categoryId),
         );
 }
+
+/** @deprecated Use `selectRenderableCategorySections`. */
+export const prepareCategoryPageSections = selectRenderableCategorySections;

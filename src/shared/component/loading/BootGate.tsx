@@ -1,6 +1,9 @@
-import { useRef, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useAppSettings } from "@/features/account/hooks/useAppSettings";
 import { PremiumAppLoader } from "./PremiumAppLoader";
+
+/** Never block the shell longer than this — a dead proxy looks like a white page. */
+const BOOT_TIMEOUT_MS = 12_000;
 
 /**
  * Global first-open gate. Shows a full-screen loader on cold start until the
@@ -10,10 +13,18 @@ import { PremiumAppLoader } from "./PremiumAppLoader";
  * settings (that surfaces as `isFetching`, not `isLoading`).
  */
 export function BootGate({ children }: { children: ReactNode }) {
-  const { isLoading } = useAppSettings();
+  const { isLoading, isFetched } = useAppSettings();
   const hasBooted = useRef(false);
+  const [timedOut, setTimedOut] = useState(false);
 
-  if (!hasBooted.current && isLoading) {
+  useEffect(() => {
+    const timer = window.setTimeout(() => setTimedOut(true), BOOT_TIMEOUT_MS);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  const waitingOnBootstrap = isLoading && !isFetched && !timedOut;
+
+  if (!hasBooted.current && waitingOnBootstrap) {
     return <PremiumAppLoader minHeight="min-h-screen" />;
   }
   hasBooted.current = true;

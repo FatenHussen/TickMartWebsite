@@ -10,6 +10,9 @@ type CategoriesSidebarProps = {
     minPrice?: number;
     maxPrice?: number;
     onPriceFilterChange?: (price: { minPrice?: number; maxPrice?: number }) => void;
+    categoryId?: number;
+    attributeValues?: number[];
+    onAttributeValuesChange?: (values: number[]) => void;
 };
 
 /**
@@ -23,6 +26,9 @@ export default function CategoriesSidebar({
     minPrice,
     maxPrice,
     onPriceFilterChange,
+    categoryId,
+    attributeValues,
+    onAttributeValuesChange,
 }: CategoriesSidebarProps) {
     const cardShell = cn(
         "rounded-[20px] border p-5 shadow-[0_1px_3px_rgba(15,23,42,0.04),0_14px_36px_-22px_rgba(15,23,42,0.24)]",
@@ -48,6 +54,9 @@ export default function CategoriesSidebar({
                     minPrice={minPrice}
                     maxPrice={maxPrice}
                     onPriceChange={onPriceFilterChange}
+                    categoryId={categoryId}
+                    attributeValues={attributeValues}
+                    onAttributeValuesChange={onAttributeValuesChange}
                     apiSurface={apiSurface}
                 />
             </div>
