@@ -1,0 +1,94 @@
+import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { Zap, PenLine, BadgeDollarSign, Truck, ArrowLeft, ArrowRight } from "lucide-react";
+import { useLanguage } from "@/context/LanguageContext";
+import { paths } from "@/app/routes/path/paths";
+import { cn } from "@/shared/lib/utils";
+
+const STEPS = [
+  { key: "stepWrite", hintKey: "stepWriteHint", Icon: PenLine },
+  { key: "stepPrice", hintKey: "stepPriceHint", Icon: BadgeDollarSign },
+  { key: "stepDeliver", hintKey: "stepDeliverHint", Icon: Truck },
+] as const;
+
+export default function QuickOrderHomeBanner() {
+  const { t } = useTranslation();
+  const { isRTL } = useLanguage();
+  const Arrow = isRTL ? ArrowLeft : ArrowRight;
+
+  return (
+    <section
+      className="quick-order-home relative mb-4 overflow-hidden rounded-[1.75rem] sm:mb-6"
+      dir={isRTL ? "rtl" : "ltr"}
+      aria-labelledby="quick-order-home-title"
+    >
+      <div className="relative isolate overflow-hidden bg-gradient-to-br from-[#fff7f0] via-[#ffe8d6] to-[color-mix(in_srgb,var(--color-primary)_16%,#fff1e6)] px-5 py-6 sm:px-8 sm:py-8 dark:from-[#1a1410] dark:via-[#241910] dark:to-[#2e1c12]">
+        <div
+          className="pointer-events-none absolute -top-20 end-[-3rem] h-56 w-56 rounded-full opacity-40 blur-3xl dark:opacity-30"
+          style={{ background: "var(--color-primary)" }}
+          aria-hidden
+        />
+        <div
+          className="pointer-events-none absolute -bottom-24 start-[-2rem] h-48 w-48 rounded-full bg-[#ffb347]/30 blur-3xl dark:bg-[var(--color-primary)]/20"
+          aria-hidden
+        />
+
+        <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between lg:gap-10">
+          <div className="min-w-0 max-w-2xl">
+            <p className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-[color-mix(in_srgb,var(--color-primary)_25%,transparent)] bg-white/75 px-3 py-1 text-[11px] font-bold text-[var(--color-primary)] shadow-sm backdrop-blur-sm dark:border-white/10 dark:bg-white/10 dark:text-[var(--color-primary-light)]">
+              <Zap className="h-3.5 w-3.5 fill-current" aria-hidden />
+              {t("customOrder.homeBanner.kicker")}
+            </p>
+            <h2
+              id="quick-order-home-title"
+              className="text-[1.85rem] font-extrabold leading-[1.15] tracking-tight text-slate-900 sm:text-4xl dark:text-white"
+            >
+              {t("customOrder.homeBanner.headline")}
+            </h2>
+            <p className="mt-2.5 max-w-xl text-[15px] leading-relaxed text-slate-600 sm:text-base dark:text-white/75">
+              {t("customOrder.homeBanner.hint")}
+            </p>
+
+            <ol className="mt-5 grid grid-cols-1 gap-2.5 sm:grid-cols-3 sm:gap-3">
+              {STEPS.map(({ key, hintKey, Icon }, index) => (
+                <li
+                  key={key}
+                  className="flex items-center gap-3 rounded-2xl border border-white/80 bg-white/80 px-3.5 py-3 shadow-[0_8px_24px_-16px_rgba(180,80,20,0.35)] backdrop-blur-sm dark:border-white/10 dark:bg-white/[0.07] dark:shadow-none"
+                >
+                  <span className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--color-primary)] text-white shadow-[0_10px_20px_-10px_var(--color-primary)]">
+                    <Icon className="h-5 w-5" aria-hidden />
+                    <span className="absolute -end-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-slate-900 px-1 text-[10px] font-bold text-white dark:bg-white dark:text-slate-900">
+                      {index + 1}
+                    </span>
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block text-sm font-bold text-slate-900 dark:text-white">
+                      {t(`customOrder.homeBanner.${key}`)}
+                    </span>
+                    <span className="mt-0.5 block text-xs text-slate-500 dark:text-white/55">
+                      {t(`customOrder.homeBanner.${hintKey}`)}
+                    </span>
+                  </span>
+                </li>
+              ))}
+            </ol>
+          </div>
+
+          <Link
+            to={paths.client.customOrderCreate}
+            className={cn(
+              "group inline-flex min-h-[3.25rem] shrink-0 items-center justify-center gap-2 self-start rounded-full px-7 py-3.5 text-base font-extrabold text-white",
+              "bg-[var(--color-primary)]",
+              "shadow-[0_16px_36px_-14px_color-mix(in_srgb,var(--color-primary)_75%,transparent)]",
+              "transition-transform duration-200 hover:-translate-y-0.5 active:translate-y-0",
+            )}
+          >
+            <Zap className="h-5 w-5 fill-current transition-transform duration-200 group-hover:scale-110" />
+            {t("customOrder.homeBanner.cta")}
+            <Arrow className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5" />
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}

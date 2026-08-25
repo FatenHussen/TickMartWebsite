@@ -12,6 +12,10 @@ export interface NotificationItem {
   is_fixed: number;
   read: boolean;
   created_at: string;
+  /** Optional deep-link path from API / push payload */
+  target_page?: string | null;
+  related_id?: number | string | null;
+  status?: string | null;
 }
 
 /**

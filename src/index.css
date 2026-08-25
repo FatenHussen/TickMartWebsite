@@ -2042,7 +2042,26 @@ html.dark #root {
   padding-bottom: 0.45rem;
 }
 
+@keyframes quick-order-cta-pulse {
+  0%,
+  100% {
+    box-shadow: 0 8px 22px -12px color-mix(in srgb, var(--color-main) 45%, transparent);
+  }
+  50% {
+    box-shadow:
+      0 0 0 5px color-mix(in srgb, var(--color-main) 16%, transparent),
+      0 12px 28px -12px color-mix(in srgb, var(--color-main) 55%, transparent);
+  }
+}
+
+.quick-order-nav-cta {
+  animation: quick-order-cta-pulse 1.8s ease-in-out 3;
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .quick-order-nav-cta {
+    animation: none;
+  }
   .navbar-elevate,
   .navbar-top-row,
   .navbar-sub-row {

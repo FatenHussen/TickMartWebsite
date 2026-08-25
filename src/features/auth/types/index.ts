@@ -1,6 +1,8 @@
 // ==================== Form Types ====================
 export type SignUpFormValues = {
  fullName: string;
+ phoneCountry: string;
+ phoneCountryCode: string;
  phone: string;
  email: string;
  password: string;

@@ -1,9 +1,11 @@
 import { useForm } from "react-hook-form";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
+import { HiEye, HiEyeOff } from "react-icons/hi";
 import AuthLayout from "@/features/auth/layout/Auth-Layout";
 import AuthRoleToggle from "@/features/auth/components/AuthRoleToggle";
+import PhoneInput, { normalizePhoneWithCountry } from "@/features/auth/components/PhoneInput";
 import InputField from "@/shared/ui/InputField";
 import Button from "@/shared/ui/Button";
 import Label from "@/shared/ui/Label";
@@ -22,6 +24,7 @@ type CustomerSignUpProps = {
 export default function CustomerSignUp({ role, setRole }: CustomerSignUpProps) {
     const { t } = useTranslation();
     const { mutate: registerUser, isPending } = useRegister();
+    const [showPassword, setShowPassword] = useState(false);
     const selectClasses =
         "w-full appearance-none rounded-lg border border-custom-secondary bg-custom-card px-4 py-2.5 pe-10 text-sm text-custom-primary transition-colors focus:border-[var(--color-main)] focus:outline-none focus:ring-2 focus:ring-[color-mix(in_srgb,var(--color-main)_22%,transparent)]";
     const disabledSelectClasses =
@@ -32,10 +35,13 @@ export default function CustomerSignUp({ role, setRole }: CustomerSignUpProps) {
         handleSubmit,
         watch,
         setValue,
+        control,
         formState: { errors },
     } = useForm<SignUpFormValues>({
         defaultValues: {
             fullName: "",
+            phoneCountry: "",
+            phoneCountryCode: "+963",
             phone: "",
             email: "",
             password: "",
@@ -43,18 +49,6 @@ export default function CustomerSignUp({ role, setRole }: CustomerSignUpProps) {
             governorate: "",
             city: "",
             agree: false,
-        },
-    });
-
-    const phoneField = register("phone", {
-        required: t("validation.required"),
-        pattern: {
-            value: /^\d+$/,
-            message: t("validation.phoneInvalid"),
-        },
-        minLength: {
-            value: 8,
-            message: t("validation.phoneMinLength"),
         },
     });
 
@@ -115,7 +109,7 @@ export default function CustomerSignUp({ role, setRole }: CustomerSignUpProps) {
     const onSubmit = async (data: SignUpFormValues) => {
         const payload: RegisterPayload = {
             name: data.fullName,
-            phone: data.phone.replace(/\D/g, ""),
+            phone: normalizePhoneWithCountry(data.phoneCountryCode, data.phone),
             password: data.password,
             city_id: Number(data.city),
             governorate_id: Number(data.governorate),
@@ -160,18 +154,13 @@ export default function CustomerSignUp({ role, setRole }: CustomerSignUpProps) {
                     </div>
 
                     <div className="space-y-1.5">
-                        <InputField
+                        <PhoneInput
+                            control={control}
+                            setValue={setValue}
                             label={t("auth.phoneNumber")}
-                            type="tel"
-                            inputMode="numeric"
-                            placeholder="0501234567"
                             required
-                            {...phoneField}
-                            onChange={(e) => {
-                                e.target.value = e.target.value.replace(/\D/g, "");
-                                phoneField.onChange(e);
-                            }}
-                            error={errors.phone}
+                            countryError={errors.phoneCountry}
+                            phoneError={errors.phone}
                         />
                     </div>
 
@@ -195,7 +184,7 @@ export default function CustomerSignUp({ role, setRole }: CustomerSignUpProps) {
                     <div className="space-y-1.5">
                         <InputField
                             label={t("common.password")}
-                            type="password"
+                            type={showPassword ? "text" : "password"}
                             placeholder={t("auth.createPassword")}
                             required
                             {...register("password", {
@@ -207,6 +196,24 @@ export default function CustomerSignUp({ role, setRole }: CustomerSignUpProps) {
                             })}
                             error={errors.password}
                             helperText={t("auth.passwordHelper")}
+                            rightIcon={
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword((prev) => !prev)}
+                                    className="text-custom-tertiary hover:text-custom-primary transition-colors"
+                                    aria-label={
+                                        showPassword
+                                            ? t("auth.hidePassword")
+                                            : t("auth.showPassword")
+                                    }
+                                >
+                                    {showPassword ? (
+                                        <HiEyeOff className="h-5 w-5" aria-hidden />
+                                    ) : (
+                                        <HiEye className="h-5 w-5" aria-hidden />
+                                    )}
+                                </button>
+                            }
                         />
                     </div>
 

@@ -11,6 +11,7 @@ import { SectionsRoutes } from"./sections";
 import { StoreRoutes } from"./store";
 import { CartRoutes } from"./cart";
 import { TrackOrderRoutes } from"./trackOrder";
+import { CustomOrderRoutes } from"./customOrder";
 import { AccountRoutes } from"./account";
 import { MarketerRoutes } from"./marketer";
 import { VendorRoutes } from"./vendor";
@@ -42,6 +43,9 @@ export const routesSection: RouteObject[] = [
 
  // Track Order
  ...TrackOrderRoutes,
+
+ // Custom / quick orders
+ ...CustomOrderRoutes,
 
  // Account
  ...AccountRoutes,

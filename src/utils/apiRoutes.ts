@@ -465,6 +465,23 @@ export const apiRoutes = {
     },
 
     /**
+    * Custom / quick order request endpoints
+    */
+    customOrderRequests: {
+        list: (filters?: { status?: string; page?: number; per_page?: number }) => {
+            const params = new URLSearchParams();
+            if (filters?.status) params.append("status", filters.status);
+            if (filters?.page) params.append("page", String(filters.page));
+            if (filters?.per_page) params.append("per_page", String(filters.per_page));
+            return `/user/custom-order-requests${params.toString() ? `?${params.toString()}` : ""}` as const;
+        },
+        create: "/user/custom-order-requests" as const,
+        details: (id: number | string) => `/user/custom-order-requests/${id}` as const,
+        approve: (id: number | string) => `/user/custom-order-requests/${id}/approve` as const,
+        cancel: (id: number | string) => `/user/custom-order-requests/${id}/cancel` as const,
+    },
+
+    /**
     * Order endpoints
     */
     orders: {

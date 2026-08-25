@@ -406,6 +406,21 @@ export const queryKeys = {
  },
 
  /**
+ * Custom / quick order request query keys
+ */
+ customOrderRequests: {
+ all: () => ["customOrderRequests"] as const,
+ list: (params?: object) =>
+ params
+ ? (["customOrderRequests", "list", params] as const)
+ : (["customOrderRequests", "list"] as const),
+ details: (id?: number | string) =>
+ id !== undefined
+ ? (["customOrderRequests", "details", id] as const)
+ : (["customOrderRequests", "details"] as const),
+ },
+
+ /**
  * Complaints query keys
  */
  complaints: {

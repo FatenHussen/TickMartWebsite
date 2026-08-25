@@ -12,6 +12,7 @@ import {
   CreditCard,
   ShoppingBag,
   ShoppingCart,
+  Zap,
   Package,
   Heart,
   Gift,
@@ -43,6 +44,7 @@ const ALL_MENU_ITEMS = [
   { id: "paymentMethods", icon: CreditCard, path: "/account/payment-methods" },
   { id: "marketerDashboard", icon: TrendingUp, path: "/account/marketer-dashboard" },
   { id: "myOrders", icon: ShoppingBag, path: "/account/orders" },
+  { id: "quickOrders", icon: Zap, path: "/custom-orders" },
   { id: "myBaskets", icon: ShoppingCart, path: "/account/baskets" },
   { id: "myPackages", icon: Package, path: "/account/packages" },
   { id: "wishlist", icon: Heart, path: "/account/wishlist" },
@@ -60,7 +62,7 @@ const SECTION_GROUPS = [
   },
   {
     labelKey: "sections.orders",
-    itemIds: ["myOrders", "myBaskets", "myPackages"],
+    itemIds: ["myOrders", "quickOrders", "myBaskets", "myPackages"],
   },
   {
     labelKey: "sections.activity",

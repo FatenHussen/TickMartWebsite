@@ -7,6 +7,7 @@ export const ROOTS = {
     CART: "/cart",
     
     TRACK_ORDER: "/track-order",
+    CUSTOM_ORDERS: "/custom-orders",
     ACCOUNT: "/account",
 };
 
@@ -32,6 +33,7 @@ export const paths = {
         store: ROOTS.STORE,
         brandProducts: "/brand/:brandId/products",
         trackOrder: "/track-order/:orderId",
+        trackOrderById: (id: number | string) => `/track-order/${id}`,
         // New routes for sections API
         brands: "/brands",
         recipes: "/recipes",
@@ -44,6 +46,9 @@ export const paths = {
         shopDetails: (id: number | string) => `/shop_details/${id}`,
         privacyPolicy: "/privacy",
         termsConditions: "/terms",
+        customOrders: ROOTS.CUSTOM_ORDERS,
+        customOrderCreate: `${ROOTS.CUSTOM_ORDERS}/new`,
+        customOrderDetails: (id: number | string) => `${ROOTS.CUSTOM_ORDERS}/${id}`,
     },
     becomeVendor: "/become-vendor",
     becomeMarketer: "/become-marketer",

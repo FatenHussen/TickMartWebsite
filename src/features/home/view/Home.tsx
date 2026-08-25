@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useLanguage } from "@/context/LanguageContext";
 import Categories from "../components/Categories";
 import InfoCards from "../components/InfoCards";
+import QuickOrderHomeBanner from "../components/QuickOrderHomeBanner";
 import AllProductsSection from "../components/AllProductsSection";
 import ApiSectionsRenderer from "@/shared/component/sections/ApiSectionsRenderer";
 import { useSectionsByPosition } from "../hooks/useSections";
@@ -53,13 +54,8 @@ export default function Home() {
         >
             {/* One `.page-container` for the whole home column (matches Navbar width). */}
             <div className="page-container flex flex-col gap-0 pb-12 pt-4  sm:pt-6">
-                {/* <PromotionalHeroSlider
- items={heroItems}
- getLink={heroBannerSection ? undefined : getHeroLink}
- onItemClick={
- heroBannerSection ? handleHeroItemClick : handleDefaultHeroClick
- }
- /> */}
+                <QuickOrderHomeBanner />
+
                 <InfoCards />
 
                 <ScreenPromotions pageSlug="home" placement="top" />

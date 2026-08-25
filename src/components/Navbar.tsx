@@ -24,6 +24,7 @@ import {
     HiCog,
     HiTrendingUp,
     HiTag,
+    HiLightningBolt,
 } from "react-icons/hi";
 import { paths } from "@/app/routes/path/paths";
 import { useState, useEffect, useMemo, useRef } from "react";
@@ -232,6 +233,7 @@ export default function Navbar() {
         { path: paths.account.addresses, label: t("account.menu.addresses") || "Addresses", icon: HiLocationMarker },
         { path: paths.account.paymentMethods, label: t("account.menu.paymentMethods") || "Payment methods", icon: HiCreditCard },
         { path: paths.account.orders, label: t("account.menu.myOrders") || "My orders", icon: HiShoppingBag },
+        { path: paths.client.customOrders, label: t("account.menu.quickOrders") || "Quick orders", icon: HiLightningBolt },
         { path: paths.account.baskets, label: t("account.menu.myBaskets") || "My baskets", icon: HiShoppingCart },
         { path: paths.account.packages, label: t("account.menu.myPackages") || "My packages", icon: HiCube },
         { path: paths.account.wishlist, label: t("account.menu.wishlist") || "Wishlist", icon: HiHeart },
@@ -396,6 +398,26 @@ export default function Navbar() {
                         </button>
 
                         <div className="flex shrink-0 items-center gap-3 sm:gap-3 lg:gap-3">
+                            <Link
+                                to={paths.client.customOrderCreate}
+                                title={t("navbar.quickOrderHint")}
+                                className="quick-order-nav-cta group relative inline-flex shrink-0 items-center gap-2.5 overflow-hidden rounded-full border border-[color-mix(in_srgb,var(--color-primary)_28%,transparent)] bg-gradient-to-br from-[#fff8f2] via-white to-[#ffe8d4] pe-4 ps-1.5 py-1.5 shadow-[0_8px_22px_-12px_color-mix(in_srgb,var(--color-primary)_45%,transparent)] transition-transform duration-200 hover:-translate-y-0.5"
+                            >
+                                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--color-primary)] text-white shadow-[0_6px_14px_-6px_var(--color-primary)] ring-2 ring-white">
+                                    <HiLightningBolt className="h-[18px] w-[18px] transition-transform duration-200 group-hover:scale-110 group-hover:rotate-6" />
+                                </span>
+                                <span className="flex min-w-0 flex-col items-start pe-0.5 leading-tight">
+                                    <span className="text-[10px] font-bold tracking-[0.08em] text-[var(--color-primary)]">
+                                        {t("navbar.quickOrderBadge")}
+                                    </span>
+                                    <span className="text-sm font-extrabold text-slate-900">
+                                        {t("navbar.quickOrder")}
+                                    </span>
+                                </span>
+                                <span className="quick-order-nav-hint pointer-events-none absolute top-full z-50 mt-2 hidden w-max max-w-[220px] rounded-xl bg-slate-900 px-2.5 py-1.5 text-[11px] font-medium leading-snug text-white shadow-lg group-hover:block ltr:left-0 rtl:right-0">
+                                    {t("navbar.quickOrderHint")}
+                                </span>
+                            </Link>
                             <div className="hidden items-center gap-3 lg:flex">
                                 {desktopShortcutItems.map((item) => {
                                     const Icon = item.icon;
@@ -755,6 +777,26 @@ export default function Navbar() {
                                 </div>
                             </div>
 
+                            <div className="px-4 pt-4">
+                                <Link
+                                    to={paths.client.customOrderCreate}
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    className="flex w-full items-center justify-center gap-2.5 rounded-2xl border border-[color-mix(in_srgb,var(--color-primary)_28%,transparent)] bg-gradient-to-br from-[#fff8f2] via-white to-[#ffe8d4] px-4 py-3.5 shadow-[0_10px_24px_-14px_color-mix(in_srgb,var(--color-primary)_50%,transparent)]"
+                                >
+                                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-primary)] text-white">
+                                        <HiLightningBolt className="h-5 w-5" />
+                                    </span>
+                                    <span className="flex flex-col items-start leading-tight">
+                                        <span className="text-[11px] font-bold text-[var(--color-primary)]">
+                                            {t("navbar.quickOrderBadge")}
+                                        </span>
+                                        <span className="text-base font-extrabold text-slate-900">
+                                            {t("navbar.quickOrder")}
+                                        </span>
+                                    </span>
+                                </Link>
+                            </div>
+
                             {/* Delivery Address - Mobile */}
                             <div className="p-4 border-b border-custom-primary">
                                 {authenticated ? (
@@ -909,7 +951,7 @@ export default function Navbar() {
                                     </>
                                 )}
 
-                                {/* Become a Marketer - Mobile (only when logged in and not yet approved marketer) */}
+                                {/* Become marketer CTAs - Mobile */}
                                 {(showBecomeMarketer || isApprovedMarketer) && (
                                     <div className="px-4 py-2 mt-4 border-t border-custom-primary space-y-2">
                                         {showBecomeMarketer && (

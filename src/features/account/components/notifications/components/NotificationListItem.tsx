@@ -90,7 +90,7 @@ export function NotificationListItem({
             {notification.body ?? ""}
           </p>
 
-          <div className="mt-3 flex items-center gap-2">
+          <div className="mt-3 flex flex-wrap items-center gap-2">
             {isUnread ? (
               <span className="inline-flex items-center gap-1 rounded-full bg-[color-mix(in_srgb,var(--color-api-second)_14%,var(--color-bg-card))] px-2 py-0.5 text-[11px] font-semibold text-[var(--color-api-second)] shadow-sm">
                 <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-api-second)]" aria-hidden />
@@ -102,6 +102,12 @@ export function NotificationListItem({
                 {t("account.notificationsPage.badgeRead")}
               </span>
             )}
+            {notification.type === "custom_order_request" &&
+              notification.status === "waiting_approval" && (
+                <span className="inline-flex items-center rounded-full bg-primary/15 px-2 py-0.5 text-[11px] font-semibold text-primary">
+                  {t("customOrder.openToApprove")}
+                </span>
+              )}
           </div>
         </div>
       </div>
