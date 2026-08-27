@@ -25,6 +25,10 @@ import { useProductRatings } from "../hooks/useProductRatings";
 import { useVariantSelector } from "../hooks/useVariantSelector";
 import { useSimilarProducts } from "../hooks/useSimilarProducts";
 import { useProductsFromSameSeller } from "../hooks/useProductsFromSameSeller";
+import {
+    resolveDisplayListPrice,
+    resolveDisplaySalePrice,
+} from "@/shared/lib/formatApiPrice";
 import { toast } from "sonner";
 import { useCartStore } from "@/store/cart";
 import { useAuthStore } from "@/store/auth";
@@ -689,19 +693,37 @@ function ProductDetails() {
         });
     }
 
-    // The API prices are per-currency (`currency_symbol`, e.g. "$") — never a
-    // hardcoded "£". Variant symbol wins over the product's.
+    // Prefer API `*_formatted` / `*_currencies` — never invent FX locally.
+    // Extra-detail addons force a numeric compose because formatted fields are
+    // for the base variant only.
     const currencySymbol =
-        selectedVariant?.currency_symbol ?? product.currency_symbol ?? "£";
+        selectedVariant?.currency_symbol ?? product.currency_symbol ?? "";
     const formatPrice = (price: number) =>
-        `${currencySymbol}${price.toFixed(2)}`;
+        `${currencySymbol}${Number(price).toFixed(2)}`;
+
+    const extraAddon = isFood ? 0 : extraDetailsUnitAddon;
+    const priceSource = selectedVariant ?? product;
+    const displaySalePrice =
+        extraAddon > 0
+            ? formatPrice(
+                  (currentPriceAfterDiscount ?? currentPrice) + extraAddon,
+              )
+            : resolveDisplaySalePrice(priceSource) ||
+              formatPrice(currentPriceAfterDiscount ?? currentPrice);
+    const displayListPrice =
+        extraAddon > 0
+            ? currentPriceAfterDiscount < currentPrice
+                ? formatPrice(currentPrice + extraAddon)
+                : undefined
+            : resolveDisplayListPrice(priceSource);
 
     const savings =
-        product.price > product.price_after_discount
-            ? `${t("product.youSaved", "You saved")} ${formatPrice(
-                  product.price - product.price_after_discount
-              )}`
-            : undefined;
+        product.amount_saved_formatted?.trim() ||
+        (product.price > product.price_after_discount
+            ? `${t("product.youSaved", "You saved")} ${
+                  formatPrice(product.price - product.price_after_discount)
+              }`
+            : undefined);
 
     /** API returns `country` as either a string or `{ name: { ar, en } }`. */
     const countryName = resolveProductCountry(product.country, language);
@@ -777,18 +799,8 @@ function ProductDetails() {
                             name={product.name}
                             sku={isFood ? undefined : product.sku}
                             origin={isFood ? undefined : countryName || undefined}
-                            price={formatPrice(
-                                (currentPriceAfterDiscount ?? currentPrice) +
-                                    (isFood ? 0 : extraDetailsUnitAddon)
-                            )}
-                            originalPrice={
-                                currentPriceAfterDiscount < currentPrice
-                                    ? formatPrice(
-                                          currentPrice +
-                                              (isFood ? 0 : extraDetailsUnitAddon)
-                                      )
-                                    : undefined
-                            }
+                            price={displaySalePrice}
+                            originalPrice={displayListPrice}
                             savings={savings}
                             sold={product.sold_number}
                             rating={product.rating}

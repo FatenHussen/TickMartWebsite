@@ -5,8 +5,6 @@ const SORT_VALUES = [
     "price_asc",
     "newest",
     "oldest",
-    "rating_desc",
-    "rating_asc",
     "rating",
 ] as const;
 
@@ -69,7 +67,6 @@ export function parseProductListingParams(searchParams: URLSearchParams): Produc
         price_min: parseIntOpt(searchParams.get("price_min")),
         price_max: parseIntOpt(searchParams.get("price_max")),
         country: searchParams.get("country")?.trim() || undefined,
-        name: searchParams.get("name")?.trim() || undefined,
         type: parseType(searchParams.get("type")),
         search: searchParams.get("search")?.trim() || undefined,
         sort_by: parseSortBy(searchParams.get("sort_by")),
@@ -82,7 +79,7 @@ export function parseProductListingParams(searchParams: URLSearchParams): Produc
 }
 
 function appendBool(params: URLSearchParams, key: string, v: boolean | undefined) {
-    if (v === true) params.set(key, "1");
+    if (v === true) params.set(key, "true");
 }
 
 /** Serialize filters to query string (omit undefined / false flags). */
@@ -95,7 +92,6 @@ export function serializeProductListingParams(f: ProductsFilters): string {
     if (f.price_min != null) params.set("price_min", String(f.price_min));
     if (f.price_max != null) params.set("price_max", String(f.price_max));
     if (f.country) params.set("country", f.country.trim());
-    if (f.name) params.set("name", f.name.trim());
     if (f.type) params.set("type", f.type);
     if (f.search) params.set("search", f.search.trim());
     if (f.sort_by) params.set("sort_by", f.sort_by);

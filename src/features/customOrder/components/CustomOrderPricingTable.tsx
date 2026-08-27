@@ -11,6 +11,15 @@ type CustomOrderPricingTableProps = {
 function formatDualPrices(
   item: CustomOrderLinkedOrder["items"][number]
 ): string | null {
+  // Prefer API-formatted dual currencies when present.
+  const currencies = (item as { price_currencies?: Record<string, { formatted?: string }> })
+    .price_currencies;
+  if (currencies) {
+    const parts = [currencies.USD?.formatted, currencies.SYP?.formatted]
+      .filter(Boolean) as string[];
+    if (parts.length) return parts.join(" / ");
+  }
+
   const parts: string[] = [];
   if (typeof item.price_syp === "number") parts.push(`${item.price_syp.toLocaleString()} ل.س`);
   if (typeof item.price_usd === "number") parts.push(`$${item.price_usd.toLocaleString()}`);

@@ -16,6 +16,7 @@ import { AccountRoutes } from"./account";
 import { MarketerRoutes } from"./marketer";
 import { VendorRoutes } from"./vendor";
 import { LegalRoutes } from"./legal";
+import { CmsPageRoutes } from"./cmsPage";
 
 // ----------------------------------------------------------------------
 
@@ -34,6 +35,9 @@ export const routesSection: RouteObject[] = [
 
  // Sections (Brands, Recipes, Products, Baskets)
  ...SectionsRoutes,
+
+ // CMS Page Builder (`/pages/:slug`)
+ ...CmsPageRoutes,
 
  // Store
  ...StoreRoutes,

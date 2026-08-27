@@ -126,7 +126,7 @@ export function PremiumAppLoader({
             {!logoError ? (
               <img
                 src="/images/shared/logo.png"
-                alt="Tikmart"
+                alt="TickMart"
                 className="h-12 w-12 object-contain"
                 onError={() => setLogoError(true)}
               />

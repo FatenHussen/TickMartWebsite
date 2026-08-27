@@ -104,6 +104,9 @@ export const queryKeys = {
  categoryId !== undefined
  ? (["categories","page", categoryId, filters ?? {}] as const)
  : (["categories","page"] as const),
+ /** Attribute chips cached by root category id (same attrs for the whole tree). */
+ attributesRoot: (rootCategoryId: number) =>
+ ["categories", "attributes", "root", rootCategoryId] as const,
  },
 
  /**

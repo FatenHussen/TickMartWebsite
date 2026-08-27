@@ -107,12 +107,18 @@ export function resolveNavMenuItem(item: NavMenuItem): NavMenuDestination | null
         }
 
         case "page": {
-            // No Page Builder renderer exists on web (`/pages/:slug` is unrouted),
-            // so a page item only resolves when its slug names a real app page.
-            const slug = target?.slug?.trim();
+            // Prefer CMS Page Builder `/pages/{slug}`; fall back to a known
+            // app route when the slug matches NAV_ROUTE_MAP (e.g. "brands").
+            const slug =
+                target?.slug?.trim() ||
+                (target?.page_id != null ? String(target.page_id) : "");
             if (!slug) return null;
-            const to = NAV_ROUTE_MAP[normalizeKey(slug)];
-            return to ? { kind: "internal", to } : null;
+            const mapped = NAV_ROUTE_MAP[normalizeKey(slug)];
+            if (mapped) return { kind: "internal", to: mapped };
+            return {
+                kind: "internal",
+                to: paths.client.cmsPageBySlug(slug),
+            };
         }
 
         case "url": {

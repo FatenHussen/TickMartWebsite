@@ -14,5 +14,8 @@ export function useCategories(filters?: CategoryTypeFilter | CategoryFilters) {
  queryKey: queryKeys.categories.list(normalised),
  queryFn: () => _CategoriesApi.getCategories(normalised),
  select: (response) => response.data.items,
+ staleTime: 30_000,
+ refetchOnWindowFocus: true,
+ refetchOnMount: "always",
  });
 }

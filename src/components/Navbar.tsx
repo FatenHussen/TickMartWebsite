@@ -39,6 +39,7 @@ import { NavbarSearch } from "@/features/search";
 import AffiliatePackagesPopup from "@/components/AffiliatePackagesPopup";
 import { usePackages } from "@/features/account/hooks/usePackages";
 import { NavMenuLink, useNavMenu } from "@/features/navigation";
+import { useQuickOrderSettings } from "@/features/account/hooks/useQuickOrderSettings";
 import { PremiumSkeletonBlock } from "@/shared/component/loading";
 import { cn } from "@/shared/lib/utils";
 
@@ -222,6 +223,8 @@ export default function Navbar() {
     // The bar's items, their order and their titles all come from the dashboard
     // (`GET /user/nav-menu`) — nothing about it is hardcoded here anymore.
     const { items: navMenuItems, isLoading: navMenuLoading } = useNavMenu();
+    const { quickOrder } = useQuickOrderSettings();
+    const showQuickOrderCta = quickOrder.isEnabled;
     const navMenuPending = navMenuLoading && navMenuItems.length === 0;
     const showMarketerCta = showBecomeMarketer || isApprovedMarketer;
     /** An empty menu hides the row rather than leaving an empty bar behind. */
@@ -233,7 +236,9 @@ export default function Navbar() {
         { path: paths.account.addresses, label: t("account.menu.addresses") || "Addresses", icon: HiLocationMarker },
         { path: paths.account.paymentMethods, label: t("account.menu.paymentMethods") || "Payment methods", icon: HiCreditCard },
         { path: paths.account.orders, label: t("account.menu.myOrders") || "My orders", icon: HiShoppingBag },
-        { path: paths.client.customOrders, label: t("account.menu.quickOrders") || "Quick orders", icon: HiLightningBolt },
+        ...(showQuickOrderCta
+            ? [{ path: paths.client.customOrders, label: t("account.menu.quickOrders") || "Quick orders", icon: HiLightningBolt }]
+            : []),
         { path: paths.account.baskets, label: t("account.menu.myBaskets") || "My baskets", icon: HiShoppingCart },
         { path: paths.account.packages, label: t("account.menu.myPackages") || "My packages", icon: HiCube },
         { path: paths.account.wishlist, label: t("account.menu.wishlist") || "Wishlist", icon: HiHeart },
@@ -275,12 +280,12 @@ export default function Navbar() {
                             <Link
                                 to={paths.client.home}
                                 className="flex shrink-0 items-center gap-2"
-                                aria-label="Tikmart Home"
+                                aria-label="TickMart Home"
                             >
                                 {!logoError ? (
                                     <img
                                         src="/images/shared/logo.png"
-                                        alt="Tikmart"
+                                        alt="TickMart"
                                         className="h-16 w-auto max-w-[min(480px,56vw)] object-contain sm:h-[4.5rem] md:h-24 lg:h-18 xl:h-22 md:max-w-[min(500px,92vw)]"
                                         onError={() => setLogoError(true)}
                                     />
@@ -398,6 +403,7 @@ export default function Navbar() {
                         </button>
 
                         <div className="flex shrink-0 items-center gap-3 sm:gap-3 lg:gap-3">
+                            {showQuickOrderCta && (
                             <Link
                                 to={paths.client.customOrderCreate}
                                 title={t("navbar.quickOrderHint")}
@@ -418,6 +424,7 @@ export default function Navbar() {
                                     {t("navbar.quickOrderHint")}
                                 </span>
                             </Link>
+                            )}
                             <div className="hidden items-center gap-3 lg:flex">
                                 {desktopShortcutItems.map((item) => {
                                     const Icon = item.icon;
@@ -778,6 +785,7 @@ export default function Navbar() {
                             </div>
 
                             <div className="px-4 pt-4">
+                                {showQuickOrderCta && (
                                 <Link
                                     to={paths.client.customOrderCreate}
                                     onClick={() => setIsMobileMenuOpen(false)}
@@ -795,6 +803,7 @@ export default function Navbar() {
                                         </span>
                                     </span>
                                 </Link>
+                                )}
                             </div>
 
                             {/* Delivery Address - Mobile */}

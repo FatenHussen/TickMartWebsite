@@ -6,6 +6,7 @@ import { cn } from "@/shared/lib/utils";
 import { LogoutPopup } from "@/shared/component";
 import { useLogout } from "@/features/auth/hooks/useAuth";
 import { useAuthStore } from "@/store/auth";
+import { useQuickOrderSettings } from "@/features/account/hooks/useQuickOrderSettings";
 import {
   User,
   MapPin,
@@ -337,10 +338,14 @@ export default function AccountSidebar({
     authUser?.affiliate?.is_affiliate === true &&
     authUser?.affiliate?.approved === true;
 
+  const { quickOrder } = useQuickOrderSettings();
+
   const visibleIds = new Set(
-    ALL_MENU_ITEMS.filter(
-      (item) => item.id !== "marketerDashboard" || isApprovedMarketer
-    ).map((item) => item.id)
+    ALL_MENU_ITEMS.filter((item) => {
+      if (item.id === "marketerDashboard" && !isApprovedMarketer) return false;
+      if (item.id === "quickOrders" && !quickOrder.isEnabled) return false;
+      return true;
+    }).map((item) => item.id)
   );
 
   const currentUser = user ?? {

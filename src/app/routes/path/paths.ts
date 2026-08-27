@@ -46,6 +46,9 @@ export const paths = {
         shopDetails: (id: number | string) => `/shop_details/${id}`,
         privacyPolicy: "/privacy",
         termsConditions: "/terms",
+        /** CMS Page Builder pages from nav `type: "page"`. */
+        cmsPage: "/pages/:slug",
+        cmsPageBySlug: (slug: string | number) => `/pages/${slug}`,
         customOrders: ROOTS.CUSTOM_ORDERS,
         customOrderCreate: `${ROOTS.CUSTOM_ORDERS}/new`,
         customOrderDetails: (id: number | string) => `${ROOTS.CUSTOM_ORDERS}/${id}`,

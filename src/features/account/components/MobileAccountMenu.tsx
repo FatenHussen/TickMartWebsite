@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContext";
 import { cn } from "@/shared/lib/utils";
 import { useAuthStore } from "@/store/auth";
+import { useQuickOrderSettings } from "@/features/account/hooks/useQuickOrderSettings";
 import {
   User,
   MapPin,
@@ -60,13 +61,19 @@ export default function MobileAccountMenu({ user }: MobileAccountMenuProps) {
     authUser?.affiliate?.is_affiliate === true &&
     authUser?.affiliate?.approved === true;
 
+  const { quickOrder } = useQuickOrderSettings();
+
+  const baseItems = BASE_MENU_ITEMS.filter(
+    (item) => item.id !== "quickOrders" || quickOrder.isEnabled,
+  );
+
   const menuItems = isApprovedMarketer
     ? [
-        BASE_MENU_ITEMS[0],
+        baseItems[0],
         { id: "marketerDashboard", icon: TrendingUp, path: "/account/marketer-dashboard" },
-        ...BASE_MENU_ITEMS.slice(1),
+        ...baseItems.slice(1),
       ]
-    : BASE_MENU_ITEMS;
+    : baseItems;
 
   const currentUser = user || {
     fullName: authUser?.name ?? "User",

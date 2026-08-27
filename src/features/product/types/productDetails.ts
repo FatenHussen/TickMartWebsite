@@ -43,6 +43,17 @@ export interface ShopVariant {
  discount?: number;
  price_after_discount?: number;
  price_after_discount_formatted?: string;
+ /** Dual-currency map from API — prefer over local FX. */
+ price_currencies?: {
+  USD?: { formatted?: string | null };
+  SYP?: { formatted?: string | null };
+  [code: string]: { formatted?: string | null } | null | undefined;
+ };
+ price_after_discount_currencies?: {
+  USD?: { formatted?: string | null };
+  SYP?: { formatted?: string | null };
+  [code: string]: { formatted?: string | null } | null | undefined;
+ };
  quantity: number;
  shop_id: number | null;
  is_restaurant?: boolean;
@@ -167,6 +178,17 @@ export interface ProductDetailsData {
  price_formatted?: string;
  price_after_discount: number;
  price_after_discount_formatted?: string;
+ price_currencies?: {
+  USD?: { formatted?: string | null };
+  SYP?: { formatted?: string | null };
+  [code: string]: { formatted?: string | null } | null | undefined;
+ };
+ price_after_discount_currencies?: {
+  USD?: { formatted?: string | null };
+  SYP?: { formatted?: string | null };
+  [code: string]: { formatted?: string | null } | null | undefined;
+ };
+ amount_saved_formatted?: string;
  quantity: number;
  /** Max units of the main product per order line (when returned by API). */
  max_purchase_quantity?: number;

@@ -4,8 +4,11 @@ import { queryKeys } from "@/utils/queryKeys";
 import { _CategoriesApi } from "../api/categoriesApi";
 import type { ApiCategory, CategoriesResponse, CategoryChild } from "../types";
 
-/** Long enough that walking back up the trail is a pure cache hit. */
-const LEVEL_STALE_TIME = 5 * 60_000;
+/**
+ * Short enough that a dashboard delete/create shows up after a quick revisit,
+ * but long enough that walking back up the trail is usually a cache hit.
+ */
+const LEVEL_STALE_TIME = 30_000;
 
 export type CategoryLevel = {
     /** `undefined` for the root level. */
@@ -96,6 +99,8 @@ export function useCategoryLevels(trail: number[]) {
                 ),
             select: (response: CategoriesResponse) => response.data.items,
             staleTime: LEVEL_STALE_TIME,
+            refetchOnWindowFocus: true,
+            refetchOnMount: "always",
         })),
         // The queries array is dynamic, so annotate rather than let TS chase the
         // per-index tuple inference (which loops back through this hook's return).

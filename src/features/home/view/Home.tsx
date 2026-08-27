@@ -54,7 +54,7 @@ export default function Home() {
         >
             {/* One `.page-container` for the whole home column (matches Navbar width). */}
             <div className="page-container flex flex-col gap-0 pb-12 pt-4  sm:pt-6">
-                <QuickOrderHomeBanner />
+                <QuickOrderHomeBanner pageSlug="home" />
 
                 <InfoCards />
 

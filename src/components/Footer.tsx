@@ -75,7 +75,7 @@ export default function Footer() {
                         <Link to={paths.client.home} className="inline-flex items-center">
                             <img
                                 src="/images/shared/logo.png"
-                                alt="Tikmart"
+                                alt="TickMart"
                                 className="h-14 w-auto object-contain sm:h-[3.75rem]"
                             />
                         </Link>

@@ -125,7 +125,38 @@ export default function ProductImageGallery({
  }, [safeImages.length]);
 
  if (safeImages.length === 0) {
-  return null;
+  return (
+   <div className={cn("flex flex-col gap-4", className)}>
+    <div className="relative w-full overflow-hidden rounded-2xl bg-slate-100 dark:bg-[color-mix(in_srgb,var(--color-api-second)_14%,#10121a)]">
+     <div className="flex aspect-[1/1] w-full items-center justify-center text-sm text-slate-400 dark:text-[color-mix(in_srgb,var(--color-text)_55%,transparent)]">
+      No image
+     </div>
+     <div className="absolute right-4 top-4 z-10 flex gap-2">
+      {onShare && (
+       <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        aria-label="Share product"
+        onClick={onShare}
+        className="h-10 w-10 rounded-xl bg-custom-card/95 dark:bg-[color-mix(in_srgb,var(--color-main)_22%,#0e1017)]/90 p-0 shadow-sm ring-1 ring-slate-200 dark:ring-[color-mix(in_srgb,var(--color-api-second)_28%,transparent)] hover:bg-custom-card dark:hover:bg-[color-mix(in_srgb,var(--color-main)_28%,#0e1017)]"
+       >
+        <HiShare className="h-5 w-5 text-slate-700 dark:text-[var(--color-text)]"/>
+       </Button>
+      )}
+      {onToggleFavorite && (
+       <FavoriteButton
+        isFavorite={isFavorite}
+        onToggle={onToggleFavorite}
+        size="md"
+        ariaLabel="Toggle favorite"
+        className="rounded-xl bg-custom-card/95 dark:bg-[color-mix(in_srgb,var(--color-main)_22%,#0e1017)]/90 shadow-sm ring-1 ring-slate-200 dark:ring-[color-mix(in_srgb,var(--color-api-second)_28%,transparent)] hover:bg-custom-card dark:hover:bg-[color-mix(in_srgb,var(--color-main)_28%,#0e1017)] border-0"
+       />
+      )}
+     </div>
+    </div>
+   </div>
+  );
  }
 
  return (

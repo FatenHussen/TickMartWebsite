@@ -17,8 +17,6 @@ export type ProductSortBy =
     | "price_asc"
     | "newest"
     | "oldest"
-    | "rating_desc"
-    | "rating_asc"
     | "rating";
 
 export interface ProductsFilters {
@@ -26,7 +24,6 @@ export interface ProductsFilters {
     brand_id?: number;
     shop_id?: number;
     country?: string;
-    name?: string;
     price_min?: number;
     price_max?: number;
     is_free_delivery?: boolean | 0 | 1;

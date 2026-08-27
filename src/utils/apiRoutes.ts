@@ -3,9 +3,8 @@ export type UserProductListFilters = {
     category_id?: number;
     brand_id?: number;
     shop_id?: number;
-    country_id?: number;
+    /** Prefer `country` (name string). `country_id` is not sent on `/products`. */
     country?: string;
-    name?: string;
     price_min?: number;
     price_max?: number;
     is_free_delivery?: boolean | 0 | 1;
@@ -21,15 +20,14 @@ export type UserProductListFilters = {
         | "recommended"
         | "for_you"
         | "search_based"
-        | "most_popular";
+        | "most_popular"
+        | "latest_flash_sale";
     search?: string;
     sort_by?:
         | "price_desc"
         | "price_asc"
         | "newest"
         | "oldest"
-        | "rating_desc"
-        | "rating_asc"
         | "rating";
     sortField?: string;
     sortOrder?: "asc" | "desc";
@@ -45,26 +43,17 @@ function appendUserProductListFilters(
         params.append("category_id", String(filters.category_id));
     if (filters?.brand_id != null) params.append("brand_id", String(filters.brand_id));
     if (filters?.shop_id != null) params.append("shop_id", String(filters.shop_id));
-    if (filters?.country_id != null)
-        params.append("country_id", String(filters.country_id));
     if (filters?.country) params.append("country", filters.country.trim());
-    if (filters?.name) params.append("name", filters.name.trim());
     if (filters?.price_min != null) params.append("price_min", String(filters.price_min));
     if (filters?.price_max != null) params.append("price_max", String(filters.price_max));
     if (filters?.is_free_delivery === true || filters?.is_free_delivery === 1)
-        params.append("is_free_delivery", "1");
-    if (filters?.is_instant_delivery != null) {
-        const inst =
-            filters.is_instant_delivery === true
-                ? 1
-                : filters.is_instant_delivery === false
-                  ? 0
-                  : filters.is_instant_delivery;
-        params.append("is_instant_delivery", String(inst));
-    }
-    if (filters?.on_sale === true || filters?.on_sale === 1) params.append("on_sale", "1");
+        params.append("is_free_delivery", "true");
+    if (filters?.is_instant_delivery === true || filters?.is_instant_delivery === 1)
+        params.append("is_instant_delivery", "true");
+    if (filters?.on_sale === true || filters?.on_sale === 1)
+        params.append("on_sale", "true");
     if (filters?.in_stock_only === true || filters?.in_stock_only === 1)
-        params.append("in_stock_only", "1");
+        params.append("in_stock_only", "true");
     if (filters?.attribute_values?.length) {
         filters.attribute_values.forEach((v) =>
             params.append("attribute_values[]", String(v)),

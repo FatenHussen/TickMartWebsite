@@ -9,6 +9,10 @@ export function useCategories() {
  queryKey: queryKeys.categories.list(),
  queryFn: () => _CategoriesApi.getCategories(),
  select: (response) => response.data.items,
+ // Catalog changes from the dashboard; don't keep a deleted category for minutes.
+ staleTime: 30_000,
+ refetchOnWindowFocus: true,
+ refetchOnMount: "always",
  });
 }
 

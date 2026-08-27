@@ -3,7 +3,8 @@ import { useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/shared/lib/utils";
-import { _CategoriesApi } from "@/features/home/api/categories.service";
+import { useCategoryAttributes } from "@/features/home/hooks/useCategoryAttributes";
+import { _LocationApi } from "@/features/auth/api/location.service";
 import type { Category } from "@/features/home/types";
 import type {
     ProductsFilters,
@@ -17,19 +18,15 @@ const PRODUCT_TYPE_OPTIONS: { value: ProductListType; labelKey: string }[] = [
     { value: "trend", labelKey: "productsListing.typeTrend" },
     { value: "top_rated", labelKey: "productsListing.typeTopRated" },
     { value: "offers", labelKey: "productsListing.typeOffers" },
-    { value: "recommended", labelKey: "productsListing.typeRecommended" },
-    { value: "for_you", labelKey: "productsListing.typeForYou" },
-    { value: "search_based", labelKey: "productsListing.typeSearchBased" },
     { value: "most_popular", labelKey: "productsListing.typeMostPopular" },
+    { value: "search_based", labelKey: "productsListing.typeSearchBased" },
 ];
 
 const SORT_OPTIONS: { value: ProductSortBy; labelKey: string }[] = [
-    { value: "price_desc", labelKey: "productsListing.sortPriceDesc" },
     { value: "price_asc", labelKey: "productsListing.sortPriceAsc" },
+    { value: "price_desc", labelKey: "productsListing.sortPriceDesc" },
     { value: "newest", labelKey: "productsListing.sortNewest" },
     { value: "oldest", labelKey: "productsListing.sortOldest" },
-    { value: "rating_desc", labelKey: "productsListing.sortRatingDesc" },
-    { value: "rating_asc", labelKey: "productsListing.sortRatingAsc" },
     { value: "rating", labelKey: "productsListing.sortRating" },
 ];
 
@@ -113,17 +110,22 @@ export default function ProductFiltersSidebar({
 
     const subcategoryOptions = selectedParentCategory?.children ?? [];
 
+    /** Root of the selected tree — attributes are identical for the whole subtree. */
+    const attributesRootId = selectedParentCategory?.id ?? categoryId;
+
     const {
         data: categoryAttributes = [],
         isLoading: isAttributesLoading,
         error: attributesError,
-    } = useQuery({
-        queryKey: ["categories", "attributes", categoryId],
+    } = useCategoryAttributes(categoryId, attributesRootId);
+
+    const { data: countries = [] } = useQuery({
+        queryKey: ["location", "countries", "products-filter"],
         queryFn: async () => {
-            const res = await _CategoriesApi.getCategoryAttributes(categoryId!);
-            return res.data;
+            const res = await _LocationApi.getCountries();
+            return res.data?.items ?? [];
         },
-        enabled: categoryId != null && categoryId > 0,
+        staleTime: 1000 * 60 * 30,
     });
 
     const toggleAttributeValue = (valueId: number) => {
@@ -133,15 +135,8 @@ export default function ProductFiltersSidebar({
         apply({ attribute_values: cur.size ? [...cur] : undefined });
     };
 
-    // Parents with children must filter by a child id in the products/sections APIs.
-    useEffect(() => {
-        if (!selectedParentCategory?.children?.length || categoryId == null) return;
-        if (categoryId !== selectedParentCategory.id) return;
-        onApplyDraft({
-            ...draftRef.current,
-            category_id: selectedParentCategory.children[0].id,
-        });
-    }, [selectedParentCategory, categoryId, onApplyDraft]);
+    // Keep subcategory dropdown optional — parents are valid `category_id`s
+    // (backend returns the whole subtree). Do NOT force a leaf.
 
     const inputCls = cn(
         "w-full rounded-lg border border-sky-200/90 bg-white/80 px-3 py-2.5 text-sm text-slate-800",
@@ -178,7 +173,7 @@ export default function ProductFiltersSidebar({
                 <div>
                     <FieldLabel>{t("categories.categories", "Category")}</FieldLabel>
                     <select
-                        value={selectedParentCategory?.id ?? ""}
+                        value={selectedParentCategory?.id ?? categoryId ?? ""}
                         onChange={(e) => {
                             const v = e.target.value;
                             if (!v) {
@@ -188,14 +183,8 @@ export default function ProductFiltersSidebar({
                                 });
                                 return;
                             }
-                            const parent = categoryItems.find(
-                                (c) => c.id === Number(v)
-                            );
-                            const nextCategoryId = parent?.children?.length
-                                ? parent.children[0].id
-                                : Number(v);
                             apply({
-                                category_id: nextCategoryId,
+                                category_id: Number(v),
                                 attribute_values: undefined,
                             });
                         }}
@@ -227,17 +216,22 @@ export default function ProductFiltersSidebar({
                             value={
                                 subcategoryOptions.some((sub) => sub.id === categoryId)
                                     ? categoryId
-                                    : subcategoryOptions[0]?.id ?? ""
+                                    : ""
                             }
                             onChange={(e) => {
                                 const v = e.target.value;
                                 apply({
-                                    category_id: Number(v),
+                                    category_id: v
+                                        ? Number(v)
+                                        : selectedParentCategory.id,
                                     attribute_values: undefined,
                                 });
                             }}
                             className={selectCls}
                         >
+                            <option value="">
+                                {t("categories.allSubcategories", "All subcategories")}
+                            </option>
                             {subcategoryOptions.map((sub) => (
                                 <option key={sub.id} value={sub.id}>
                                     {sub.name}
@@ -254,6 +248,7 @@ export default function ProductFiltersSidebar({
                         onToggleValue={toggleAttributeValue}
                         isLoading={isAttributesLoading}
                         error={attributesError}
+                        hideEmptyMessage
                     />
                 ) : (
                     <p className="text-xs text-slate-500 dark:text-[color-mix(in_srgb,var(--color-text)_70%,transparent)]">
@@ -357,28 +352,22 @@ export default function ProductFiltersSidebar({
 
                 <div>
                     <FieldLabel>{t("productsListing.countryLabel", "Country")}</FieldLabel>
-                    <input
-                        type="text"
+                    <select
                         value={draft.country ?? ""}
                         onChange={(e) =>
-                            applyDebounced({ country: e.target.value.trim() || undefined })
+                            apply({ country: e.target.value.trim() || undefined })
                         }
-                        maxLength={100}
-                        className={inputCls}
-                    />
-                </div>
-
-                <div>
-                    <FieldLabel>{t("productsListing.nameLabel", "Name")}</FieldLabel>
-                    <input
-                        type="text"
-                        value={draft.name ?? ""}
-                        onChange={(e) =>
-                            applyDebounced({ name: e.target.value.trim() || undefined })
-                        }
-                        maxLength={100}
-                        className={inputCls}
-                    />
+                        className={selectCls}
+                    >
+                        <option value="">
+                            {t("productsListing.allCountries", "All countries")}
+                        </option>
+                        {countries.map((c) => (
+                            <option key={c.id} value={c.name}>
+                                {c.name}
+                            </option>
+                        ))}
+                    </select>
                 </div>
 
                 <div>

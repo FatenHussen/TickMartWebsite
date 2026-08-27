@@ -6,6 +6,7 @@ import { useAppSettings } from "@/features/account/hooks/useAppSettings";
 import { useSections, useSectionsByPosition } from "@/features/home/hooks/useSections";
 import { pickHomeSectionBySeeMorePageSlug } from "@/features/home/lib/homeStaticSectionSurface";
 import ApiSectionsRenderer from "@/shared/component/sections/ApiSectionsRenderer";
+import QuickOrderHomeBanner from "@/features/home/components/QuickOrderHomeBanner";
 import FullBleedSection from "@/shared/component/FullBleedSection";
 import {
     getSectionCardSurfaceColor,
@@ -41,20 +42,21 @@ import {
     mapApiTopBadgesToProductCard,
 } from "@/shared/lib/mapProductBadges";
 
-// Map UI sortBy value → API sortField / sortOrder
+// Map UI sortBy value → API `sort_by`
 function mapSortToApi(sortBy: string): {
-    sortField?: string;
-    sortOrder?: "asc" | "desc";
+    sort_by?: "price_asc" | "price_desc" | "newest" | "oldest" | "rating";
 } {
     switch (sortBy) {
         case "priceLow":
-            return { sortField: "price", sortOrder: "asc" };
+            return { sort_by: "price_asc" };
         case "priceHigh":
-            return { sortField: "price", sortOrder: "desc" };
+            return { sort_by: "price_desc" };
         case "rating":
-            return { sortField: "rating", sortOrder: "desc" };
+            return { sort_by: "rating" };
         case "newest":
-            return { sortField: "created_at", sortOrder: "desc" };
+            return { sort_by: "newest" };
+        case "oldest":
+            return { sort_by: "oldest" };
         default:
             return {};
     }
@@ -103,13 +105,17 @@ export default function CategoriesView() {
 
     const [sortBy, setSortBy] = useState<string>("recommended");
     const [freeDeliveryOnly, setFreeDeliveryOnly] = useState(false);
+    const [instantDeliveryOnly, setInstantDeliveryOnly] = useState(false);
+    const [onSaleOnly, setOnSaleOnly] = useState(false);
     const [inStockOnly, setInStockOnly] = useState(false);
     const [categoryTypeFilter, setCategoryTypeFilter] = useState<CategoryTypeFilter>(undefined);
     const [minPrice, setMinPrice] = useState<number | undefined>(undefined);
     const [maxPrice, setMaxPrice] = useState<number | undefined>(undefined);
+    const [countryFilter, setCountryFilter] = useState<string | undefined>(undefined);
+    const [searchFilter, setSearchFilter] = useState<string | undefined>(undefined);
     // Attribute *value* ids from the sidebar chips. Attributes are defined per
-    // category, so a value picked one level up means nothing here — the effect
-    // below clears them whenever the browsed category changes.
+    // category tree (root), so a value picked one level up still applies — but
+    // we clear them when the browsed category changes to avoid stale chips.
     const [attributeValues, setAttributeValues] = useState<number[]>([]);
     const [favoriteStates, setFavoriteStates] = useState<Record<number, boolean>>({});
     const themeGradientColors = useMemo(() => {
@@ -166,7 +172,7 @@ export default function CategoriesView() {
     /** Read straight off the trail: the id is known before the node resolves. */
     const categoryIdForProducts = trail.length > 0 ? trail[trail.length - 1] : undefined;
 
-    const { sortField, sortOrder } = useMemo(() => mapSortToApi(sortBy), [sortBy]);
+    const { sort_by } = useMemo(() => mapSortToApi(sortBy), [sortBy]);
 
     /**
      * One filter set for the whole page. The sections get it too: their
@@ -176,23 +182,29 @@ export default function CategoriesView() {
      */
     const productFilters = useMemo(
         () => ({
-            sortField,
-            sortOrder,
-            is_free_delivery: freeDeliveryOnly ? (1 as const) : undefined,
-            in_stock_only: inStockOnly ? (1 as const) : undefined,
+            sort_by,
+            is_free_delivery: freeDeliveryOnly ? true : undefined,
+            is_instant_delivery: instantDeliveryOnly ? true : undefined,
+            on_sale: onSaleOnly ? true : undefined,
+            in_stock_only: inStockOnly ? true : undefined,
             type: categoryTypeFilter,
             price_min: minPrice,
             price_max: maxPrice,
+            country: countryFilter,
+            search: searchFilter,
             attribute_values: attributeValues.length ? attributeValues : undefined,
         }),
         [
-            sortField,
-            sortOrder,
+            sort_by,
             freeDeliveryOnly,
+            instantDeliveryOnly,
+            onSaleOnly,
             inStockOnly,
             categoryTypeFilter,
             minPrice,
             maxPrice,
+            countryFilter,
+            searchFilter,
             attributeValues,
         ],
     );
@@ -403,7 +415,12 @@ export default function CategoriesView() {
                 setMinPrice(nextMin);
                 setMaxPrice(nextMax);
             }}
+            country={countryFilter}
+            onCountryChange={setCountryFilter}
+            search={searchFilter}
+            onSearchChange={setSearchFilter}
             categoryId={categoryIdForProducts}
+            rootCategoryId={trail[0]}
             attributeValues={attributeValues}
             onAttributeValuesChange={setAttributeValues}
         />
@@ -427,6 +444,10 @@ export default function CategoriesView() {
             )}
             style={pageRootStyle}
         >
+            <div className="page-container pt-4 sm:pt-6">
+                <QuickOrderHomeBanner pageSlug="categories" />
+            </div>
+
             {bannerSections.length > 0 && (
                 <div className="w-full">
                     <ApiSectionsRenderer
@@ -526,6 +547,10 @@ export default function CategoriesView() {
                         onSortChange={setSortBy}
                         freeDeliveryOnly={freeDeliveryOnly}
                         onFreeDeliveryToggle={(v) => setFreeDeliveryOnly(v)}
+                        instantDeliveryOnly={instantDeliveryOnly}
+                        onInstantDeliveryToggle={(v) => setInstantDeliveryOnly(v)}
+                        onSaleOnly={onSaleOnly}
+                        onOnSaleToggle={(v) => setOnSaleOnly(v)}
                         inStockOnly={inStockOnly}
                         onInStockToggle={(v) => setInStockOnly(v)}
                     />

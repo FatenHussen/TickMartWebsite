@@ -10,7 +10,13 @@ type CategoriesSidebarProps = {
     minPrice?: number;
     maxPrice?: number;
     onPriceFilterChange?: (price: { minPrice?: number; maxPrice?: number }) => void;
+    country?: string;
+    onCountryChange?: (country: string | undefined) => void;
+    search?: string;
+    onSearchChange?: (search: string | undefined) => void;
     categoryId?: number;
+    /** Root of the current trail — attributes cache key. */
+    rootCategoryId?: number;
     attributeValues?: number[];
     onAttributeValuesChange?: (values: number[]) => void;
 };
@@ -26,7 +32,12 @@ export default function CategoriesSidebar({
     minPrice,
     maxPrice,
     onPriceFilterChange,
+    country,
+    onCountryChange,
+    search,
+    onSearchChange,
     categoryId,
+    rootCategoryId,
     attributeValues,
     onAttributeValuesChange,
 }: CategoriesSidebarProps) {
@@ -37,15 +48,13 @@ export default function CategoriesSidebar({
 
     const cardStyle = apiSurface
         ? {
-            backgroundColor: apiSurface.cardBackground,
-            borderColor: apiSurface.cardBorder,
-            color: apiSurface.mutedColor,
-        }
+              backgroundColor: apiSurface.cardBackground,
+              borderColor: apiSurface.cardBorder,
+              color: apiSurface.mutedColor,
+          }
         : undefined;
 
     return (
-        // Filters are the only card left here, so pin them instead of letting
-        // them float against a long product grid.
         <div className="space-y-6 lg:sticky lg:top-24">
             <div className={cardShell} style={cardStyle}>
                 <CategoryFilters
@@ -54,7 +63,12 @@ export default function CategoriesSidebar({
                     minPrice={minPrice}
                     maxPrice={maxPrice}
                     onPriceChange={onPriceFilterChange}
+                    country={country}
+                    onCountryChange={onCountryChange}
+                    search={search}
+                    onSearchChange={onSearchChange}
                     categoryId={categoryId}
+                    rootCategoryId={rootCategoryId}
                     attributeValues={attributeValues}
                     onAttributeValuesChange={onAttributeValuesChange}
                     apiSurface={apiSurface}
