@@ -1,5 +1,6 @@
-import { cn } from"@/shared/lib/utils";
-import type { AttributeOption } from"../types";
+import { cn } from "@/shared/lib/utils";
+import { cssColorForAttributeLabel } from "../lib/attributeValueColor";
+import type { AttributeOption } from "../types";
 
 export type { AttributeOption };
 
@@ -33,12 +34,12 @@ export default function AttributeSelector({
 
  {/* Options */}
  <div className="flex flex-wrap items-center gap-2">
- {attribute.values.map((value) => {
+ {attribute.values.map((value, index) => {
  const isSelected = selectedValue === value;
  const isDisabled = disabledValues.includes(value);
 
  if (isColorType) {
- // Color selector - circular buttons
+ // Color selector — names from attributes_map (no hex in shop_variants)
  return (
  <button
  key={value}
@@ -53,7 +54,7 @@ export default function AttributeSelector({
  :"border-custom-primary hover:border-custom-secondary",
  isDisabled &&"opacity-30 cursor-not-allowed"
  )}
- style={{ backgroundColor: value }}
+ style={{ backgroundColor: cssColorForAttributeLabel(index, value) }}
  aria-label={`Select color ${value}`}
  title={value}
  />

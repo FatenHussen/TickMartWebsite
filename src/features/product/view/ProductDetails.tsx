@@ -36,6 +36,9 @@ import type { CartItem, CartExtraLine } from "@/features/cart/types";
 import { extrasLineKeyFromExtras } from "@/features/cart/utils/cartExtras";
 import { paths } from "@/app/routes/path/paths";
 import { resolveProductCountry } from "../lib/resolveLocalizedOrString";
+import {
+    resolveVariantPriceDisplay,
+} from "../lib/variantPriceDisplay";
 import { isPurchasableVariant } from "../types/productDetails";
 import { useFavorites, useToggleFavorite } from "@/features/account/hooks/useFavorites";
 import { useCanRate } from "@/features/account/hooks/useRatings";
@@ -240,6 +243,16 @@ function ProductDetails() {
             999
         );
     }, [product, selectedVariant]);
+
+    /** Max units per order line — variant stock capped by product.max_purchase_quantity. */
+    const maxOrderQuantity = useMemo(() => {
+        if (!product) return 1;
+        const stock =
+            currentQuantity > 0 ? currentQuantity : product.quantity ?? 0;
+        if (stock <= 0) return 1;
+        const cap = product.max_purchase_quantity;
+        return Math.min(stock, cap != null && cap > 0 ? cap : stock);
+    }, [product, currentQuantity]);
 
     const extraDetailsUnitAddon = useMemo(() => {
         if (!product?.extra_details?.length || isFoodProduct) return 0;
@@ -666,14 +679,24 @@ function ProductDetails() {
 
     const isFood = product.product_type === "food";
 
-    // Build badges array from API fields
+    const variantPriceDisplay = selectedVariant
+        ? resolveVariantPriceDisplay(selectedVariant, t)
+        : null;
+
+    // Build badges — prefer variant-level discount from API
     const badges: Array<{ label: string; className?: string }> = [];
-    if (product.price > product.price_after_discount) {
-        const pct = Math.round(
-            ((product.price - product.price_after_discount) / product.price) * 100
-        );
+    const discountBadgeLabel =
+        variantPriceDisplay?.badge ??
+        (product.price > product.price_after_discount
+            ? `${Math.round(
+                  ((product.price - product.price_after_discount) /
+                      product.price) *
+                      100,
+              )}% OFF`
+            : null);
+    if (discountBadgeLabel) {
         badges.push({
-            label: `${pct}% OFF`,
+            label: discountBadgeLabel,
             className:
                 "bg-primary-light text-white dark:bg-[color-mix(in_srgb,var(--color-main)_32%,#242428)] dark:text-white",
         });
@@ -718,12 +741,17 @@ function ProductDetails() {
             : resolveDisplayListPrice(priceSource);
 
     const savings =
-        product.amount_saved_formatted?.trim() ||
-        (product.price > product.price_after_discount
-            ? `${t("product.youSaved", "You saved")} ${
-                  formatPrice(product.price - product.price_after_discount)
-              }`
-            : undefined);
+        variantPriceDisplay?.savedLabel
+            ? `${t("product.youSaved", "You saved")} ${variantPriceDisplay.savedLabel}`
+            : product.amount_saved_formatted?.trim() ||
+              (product.price > product.price_after_discount
+                  ? `${t("product.youSaved", "You saved")} ${formatPrice(
+                        product.price - product.price_after_discount,
+                    )}`
+                  : undefined);
+
+    const deliveryEstimate =
+        product.delivery_time?.trim() || product.time_prepare?.trim() || null;
 
     /** API returns `country` as either a string or `{ name: { ar, en } }`. */
     const countryName = resolveProductCountry(product.country, language);
@@ -816,6 +844,15 @@ function ProductDetails() {
                                 ) : undefined
                             }
                         />
+
+                        {deliveryEstimate && (
+                            <p className="text-sm text-custom-secondary dark:text-[#A1A1AA]">
+                                {t("product.deliveryTime", "Delivery")}:{" "}
+                                <span className="font-medium text-custom-primary dark:text-[#E4E4E7]">
+                                    {deliveryEstimate}
+                                </span>
+                            </p>
+                        )}
 
                         {/* Attribute Selectors (color, size, etc.) */}
                         {availableAttributes.map((attribute) => (
@@ -911,11 +948,7 @@ function ProductDetails() {
                             <ProductQuantitySelector
                                 quantity={quantity}
                                 min={1}
-                                max={
-                                    currentQuantity > 0
-                                        ? currentQuantity
-                                        : product.quantity || 1
-                                }
+                                max={maxOrderQuantity}
                                 onQuantityChange={setQuantity}
                                 onAddToCart={handleAddToCart}
                                 addToCartDisabled={!canAddToCart}

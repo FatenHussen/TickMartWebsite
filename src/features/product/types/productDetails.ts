@@ -1,5 +1,7 @@
 // Product Details API Response Types
 
+import type { ApiDualCurrencies } from "@/shared/lib/formatApiPrice";
+
 export interface ProductImage {
  id: number;
  path: string;
@@ -16,10 +18,12 @@ export interface AttributeMapItem {
  values: string[];
 }
 
+export type VariantDiscountType = "none" | "percentage" | "fixed";
+
 export interface VariantAttribute {
  attribute: string;
  value: string;
- type:"color"|"square";
+ type: "color" | "square" | "circle" | string;
 }
 
 /**
@@ -32,28 +36,26 @@ export interface VariantAttribute {
 export interface ShopVariant {
  id: number | null;
  variant_id: number | null;
- sku?: string;
- model?: string;
- barcode?: string;
+ sku?: string | null;
+ model?: string | null;
+ barcode?: string | null;
  attributes: VariantAttribute[];
  price: number;
  currency?: string;
  currency_symbol?: string;
  price_formatted?: string;
+ /** Admin-entered discount (10 = 10% or 10 units when fixed). */
+ discount_value?: number;
+ discount_type?: VariantDiscountType | string;
+ /** Computed discount amount (USD base + discount_currencies). */
  discount?: number;
+ discount_formatted?: string | null;
+ discount_currencies?: ApiDualCurrencies | null;
  price_after_discount?: number;
  price_after_discount_formatted?: string;
  /** Dual-currency map from API — prefer over local FX. */
- price_currencies?: {
-  USD?: { formatted?: string | null };
-  SYP?: { formatted?: string | null };
-  [code: string]: { formatted?: string | null } | null | undefined;
- };
- price_after_discount_currencies?: {
-  USD?: { formatted?: string | null };
-  SYP?: { formatted?: string | null };
-  [code: string]: { formatted?: string | null } | null | undefined;
- };
+ price_currencies?: ApiDualCurrencies;
+ price_after_discount_currencies?: ApiDualCurrencies;
  quantity: number;
  shop_id: number | null;
  is_restaurant?: boolean;
@@ -195,7 +197,12 @@ export interface ProductDetailsData {
  sku: string;
  model: string;
  barcode: string;
+ /** Legacy field — prefer `delivery_time` when present. */
  time_prepare: string;
+ /** Product-level delivery estimate (not per variant). */
+ delivery_time?: string | null;
+ /** Product-level discount metadata — do not mix with variant discount. */
+ discount_type?: VariantDiscountType | string;
  bought_with: BoughtWithProduct[];
  is_instant_delivery: number;
  rating: number;

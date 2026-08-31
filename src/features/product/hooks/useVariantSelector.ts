@@ -83,17 +83,23 @@ export function useVariantSelector({
  [shopVariants]
  );
 
- // Calculate available values for each attribute
- // A value is available if it exists in ANY variant (not restricted by other selections)
- // This allows users to always change any attribute freely
+ // Calculate available values — filter by other selected attributes (no Cartesian)
  const availableAttributes = useMemo((): AvailableAttribute[] => {
  return attributesMap.map((attr) => {
  const availableValues: string[] = [];
  const disabledValues: string[] = [];
 
+ const matchingVariants = shopVariants.filter((variant) =>
+ Object.entries(selectedAttributes).every(([name, val]) => {
+ if (!val || name === attr.attribute) return true;
+ return (variant.attributes ?? []).some(
+ (a) => a.attribute === name && a.value === val
+ );
+ })
+ );
+
  attr.values.forEach((value) => {
- // Check if there's ANY variant with this value (regardless of other attributes)
- const hasAnyVariant = shopVariants.some((variant) =>
+ const hasAnyVariant = matchingVariants.some((variant) =>
  (variant.attributes ?? []).some(
  (a) => a.attribute === attr.attribute && a.value === value
  )
@@ -112,7 +118,7 @@ export function useVariantSelector({
  disabledValues,
  };
  });
- }, [attributesMap, shopVariants]);
+ }, [attributesMap, shopVariants, selectedAttributes]);
 
  // Find the matching variant based on selected attributes
  const selectedVariant = useMemo(() => {
@@ -141,19 +147,13 @@ export function useVariantSelector({
  return selectedVariant?.price ?? basePrice;
  }, [selectedVariant, basePrice]);
 
- // Current price after discount
+ // Current price after discount — API-computed only (no local ratio)
  const currentPriceAfterDiscount = useMemo(() => {
- // The API sends the discounted price per variant; prefer it when present.
  if (selectedVariant?.price_after_discount != null) {
  return selectedVariant.price_after_discount;
  }
- if (selectedVariant && basePrice > 0) {
- // Calculate discount ratio and apply to variant price
- const discountRatio = basePriceAfterDiscount / basePrice;
- return Math.round(selectedVariant.price * discountRatio);
- }
  return basePriceAfterDiscount;
- }, [selectedVariant, basePrice, basePriceAfterDiscount]);
+ }, [selectedVariant, basePriceAfterDiscount]);
 
  // Current images - from variant, then the product's own images
  const currentImages = useMemo(() => {
