@@ -401,6 +401,7 @@
     "drinks": "مشروبات",
     "minPrice": "الحد الأدنى",
     "maxPrice": "الحد الأقصى",
+    "priceRange": "نطاق السعر",
     "showingProductsIn": "عرض المنتجات في",
     "filters": "الفلاتر",
     "applyFilters": "تطبيق الفلاتر",

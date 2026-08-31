@@ -423,6 +423,14 @@ export default function CategoriesView() {
             rootCategoryId={trail[0]}
             attributeValues={attributeValues}
             onAttributeValuesChange={setAttributeValues}
+            freeDeliveryOnly={freeDeliveryOnly}
+            onFreeDeliveryToggle={setFreeDeliveryOnly}
+            instantDeliveryOnly={instantDeliveryOnly}
+            onInstantDeliveryToggle={setInstantDeliveryOnly}
+            onSaleOnly={onSaleOnly}
+            onOnSaleToggle={setOnSaleOnly}
+            inStockOnly={inStockOnly}
+            onInStockToggle={setInStockOnly}
         />
     );
 
@@ -545,14 +553,6 @@ export default function CategoriesView() {
                         apiSurface={categoriesDarkSurface}
                         sortBy={sortBy}
                         onSortChange={setSortBy}
-                        freeDeliveryOnly={freeDeliveryOnly}
-                        onFreeDeliveryToggle={(v) => setFreeDeliveryOnly(v)}
-                        instantDeliveryOnly={instantDeliveryOnly}
-                        onInstantDeliveryToggle={(v) => setInstantDeliveryOnly(v)}
-                        onSaleOnly={onSaleOnly}
-                        onOnSaleToggle={(v) => setOnSaleOnly(v)}
-                        inStockOnly={inStockOnly}
-                        onInStockToggle={(v) => setInStockOnly(v)}
                     />
 
                     {productsLoading && products.length === 0 ? (

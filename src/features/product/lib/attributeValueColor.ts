@@ -37,6 +37,18 @@ export function cssColorForAttributeLabel(id: number, label: string): string {
     const raw = label.trim().toLowerCase();
 
     const entries: { keys: string[]; hsl: string }[] = [
+        { keys: ["gold", "ذهبي", "ذهب"], hsl: "hsl(43 74% 49%)" },
+        { keys: ["silver", "فضي", "فضة"], hsl: "hsl(0 0% 75%)" },
+        { keys: ["navy", "كحلي", "كحلي"], hsl: "hsl(222 47% 28%)" },
+        { keys: ["beige", "بيج"], hsl: "hsl(39 43% 82%)" },
+        { keys: ["cream", "كريمي", "عاجي"], hsl: "hsl(40 50% 90%)" },
+        { keys: ["maroon", "نبيذي", "خمري"], hsl: "hsl(345 70% 28%)" },
+        { keys: ["olive", "زيتي", "زيتوني"], hsl: "hsl(80 30% 36%)" },
+        { keys: ["teal", "تركواز", "فيروزي"], hsl: "hsl(174 72% 40%)" },
+        { keys: ["cyan", "سماوي"], hsl: "hsl(187 80% 42%)" },
+        { keys: ["indigo", "نيلي"], hsl: "hsl(243 54% 49%)" },
+        { keys: ["magenta", "فوشيا", "فوشي"], hsl: "hsl(300 76% 47%)" },
+        { keys: ["copper", "نحاسي", "نحاسي"], hsl: "hsl(18 65% 48%)" },
         { keys: ["black", "أسود"], hsl: "hsl(0 0% 10%)" },
         { keys: ["white", "أبيض"], hsl: "hsl(0 0% 100%)" },
         { keys: ["red", "أحمر"], hsl: "hsl(4 90% 58%)" },
@@ -56,4 +68,18 @@ export function cssColorForAttributeLabel(id: number, label: string): string {
 
     const hue = (id * 47) % 360;
     return `hsl(${hue} 58% 46%)`;
+}
+
+/** Light fills need a visible rim + dark check, not a white glyph. */
+export function isLightSwatchFill(fill: string): boolean {
+    const s = fill.toLowerCase();
+    if (s.includes("255 255 255") || s.includes("255,255,255")) return true;
+    const hsl = s.match(/hsl\(\s*[\d.]+\s+[\d.]+%\s+(\d+(?:\.\d+)?)%\s*\)/);
+    if (hsl) return Number(hsl[1]) >= 78;
+    const rgb = s.match(/rgb\(\s*(\d+)\s+(\d+)\s+(\d+)\s*\)/);
+    if (rgb) {
+        const [r, g, b] = rgb.slice(1).map(Number);
+        return (r * 299 + g * 587 + b * 114) / 1000 > 210;
+    }
+    return false;
 }

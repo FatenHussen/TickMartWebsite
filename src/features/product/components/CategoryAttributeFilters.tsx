@@ -5,6 +5,7 @@ import { resolveLocalizedText } from "@/shared/lib/localizedText";
 import {
     cssColorForAttributeLabel,
     isLikelyHexColorLabel,
+    isLightSwatchFill,
 } from "@/features/product/lib/attributeValueColor";
 import type {
     CategoryAttribute,
@@ -20,6 +21,8 @@ type CategoryAttributeFiltersProps = {
     error?: unknown;
     /** When true, empty list renders nothing (root has no attributes — not an error). */
     hideEmptyMessage?: boolean;
+    /** Skip the extra top rule — parent already draws a section divider. */
+    embedded?: boolean;
 };
 
 function normalizeType(t: string): CategoryAttributeUiType {
@@ -42,6 +45,7 @@ export default function CategoryAttributeFilters({
     isLoading,
     error,
     hideEmptyMessage = false,
+    embedded = false,
 }: CategoryAttributeFiltersProps) {
     const { t } = useTranslation();
     const labelOf = useAttrLabel();
@@ -76,8 +80,14 @@ export default function CategoryAttributeFilters({
     }
 
     return (
-        <div className="space-y-5 border-t border-sky-200/60 dark:border-[color-mix(in_srgb,var(--color-main)_22%,#1f2230)] pt-4">
-            {attributes.map((attr) => {
+        <div
+            className={cn(
+                "space-y-5",
+                !embedded &&
+                    "border-t border-sky-200/60 pt-4 dark:border-[color-mix(in_srgb,var(--color-main)_22%,#1f2230)]",
+            )}
+        >
+            {attributes.map((attr, index) => {
                 const type = normalizeType(String(attr.type));
                 const values = attr.values.map((v) => ({
                     id: v.id,
@@ -85,8 +95,23 @@ export default function CategoryAttributeFilters({
                 }));
 
                 return (
-                    <section key={attr.id} className="flex flex-col gap-3">
-                        <h3 className="text-sm font-bold text-slate-800 dark:text-[var(--color-text)]">
+                    <section
+                        key={attr.id}
+                        className={cn(
+                            "flex flex-col",
+                            embedded ? "gap-2.5" : "gap-3",
+                            embedded &&
+                                index > 0 &&
+                                "border-t border-slate-200/80 pt-4 dark:border-[color-mix(in_srgb,var(--color-main)_22%,#1f2230)]",
+                        )}
+                    >
+                        <h3
+                            className={cn(
+                                embedded
+                                    ? "text-xs font-semibold text-custom-secondary dark:text-[color-mix(in_srgb,var(--color-text)_82%,transparent)]"
+                                    : "text-sm font-bold text-slate-800 dark:text-[var(--color-text)]",
+                            )}
+                        >
                             {labelOf(attr.name)}
                         </h3>
                         {type === "square" && (
@@ -170,36 +195,61 @@ function ColorValues({
     onToggle: (id: number) => void;
 }) {
     return (
-        <div className="flex flex-wrap gap-x-4 gap-y-3">
+        <div className="grid grid-cols-4 gap-x-2 gap-y-3" role="list">
             {values.map((v) => {
                 const active = selected.has(v.id);
                 const fill = cssColorForAttributeLabel(v.id, v.name);
                 const hideLabel = isLikelyHexColorLabel(v.name);
-                const isLight =
-                    fill.includes("0% 100%)") || fill.includes("255 255 255");
+                const light = isLightSwatchFill(fill);
                 return (
                     <button
                         key={v.id}
                         type="button"
+                        role="listitem"
+                        title={v.name}
+                        aria-label={v.name}
+                        aria-pressed={active}
                         onClick={() => onToggle(v.id)}
-                        className={cn(
-                            "flex items-center gap-2 rounded-lg transition-colors",
-                            active &&
-                                "ring-2 ring-[#00ACC1] ring-offset-1 ring-offset-[#E5F3FF] dark:ring-[color-mix(in_srgb,var(--color-main)_45%,transparent)] dark:ring-offset-[color-mix(in_srgb,var(--color-main)_18%,#13151c)]",
-                        )}
+                        className="flex min-w-0 flex-col items-center gap-1.5 rounded-lg py-0.5 transition-transform active:scale-[0.97]"
                     >
                         <span
                             className={cn(
-                                "h-9 w-9 shrink-0 rounded-full border-2 border-slate-600/25 dark:border-[color-mix(in_srgb,var(--color-main)_22%,#1f2230)]",
-                                isLight &&
-                                    "ring-1 ring-slate-300/90 dark:ring-[color-mix(in_srgb,var(--color-api-second)_28%,transparent)]",
+                                "relative grid h-8 w-8 place-items-center rounded-full border shadow-[inset_0_0_0_1px_rgba(15,23,42,0.06)]",
+                                light
+                                    ? "border-slate-300 dark:border-white/35"
+                                    : "border-black/10 dark:border-white/15",
+                                active &&
+                                    "ring-2 ring-[var(--color-main,#00ACC1)] ring-offset-2 ring-offset-[var(--color-bg-card,#fff)]",
                             )}
                             style={{ background: fill }}
-                            title={hideLabel ? undefined : v.name}
-                            aria-label={v.name}
-                        />
+                        >
+                            {active && (
+                                <svg
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="3"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    className={cn(
+                                        "h-3.5 w-3.5",
+                                        light ? "text-slate-800" : "text-white",
+                                    )}
+                                    aria-hidden
+                                >
+                                    <path d="M5 12.5 9.5 17 19 7.5" />
+                                </svg>
+                            )}
+                        </span>
                         {!hideLabel && (
-                            <span className="max-w-[140px] text-left text-sm text-slate-800 dark:text-[var(--color-text)]">
+                            <span
+                                className={cn(
+                                    "w-full truncate text-center text-[11px] leading-tight",
+                                    active
+                                        ? "font-semibold text-custom-primary dark:text-[var(--color-text)]"
+                                        : "text-custom-secondary dark:text-[color-mix(in_srgb,var(--color-text)_75%,transparent)]",
+                                )}
+                            >
                                 {v.name}
                             </span>
                         )}
@@ -244,7 +294,7 @@ function CircleValues({
                             )}
                             aria-hidden
                         />
-                        <span className="max-w-[140px] text-left text-sm text-slate-800 dark:text-[var(--color-text)]">
+                        <span className="max-w-[140px] text-start text-sm text-slate-800 dark:text-[var(--color-text)]">
                             {v.name}
                         </span>
                     </button>

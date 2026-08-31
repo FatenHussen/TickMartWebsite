@@ -7,7 +7,9 @@ import AnimatedButton from "../../ui/AnimatedButton";
 import Button from "@/shared/ui/Button";
 import Badge from "@/shared/component/Badge";
 import FavoriteButton from "@/shared/component/FavoriteButton";
+import FormattedPrice from "@/shared/component/FormattedPrice";
 import LazyImage from "@/shared/component/LazyImage";
+import { splitSavingsLabel } from "@/shared/lib/formatApiPrice";
 
 export type ProductCardBadge = {
     label: string;
@@ -183,9 +185,9 @@ export default function ProductCard({
                         aria-hidden
                     />
 
-                    {/* Left Badges (top-left, stacked vertically) */}
+                    {/* Start-side badges (top-start — right in RTL) */}
                     {leftBadges.length > 0 && (
-                        <div className="absolute left-3 top-3 z-10 flex flex-col gap-1.5">
+                        <div className="absolute start-3 top-3 z-10 flex flex-col gap-1.5">
                             {leftBadges.map((b, idx) => (
                                 <Badge
                                     key={idx}
@@ -203,9 +205,9 @@ export default function ProductCard({
                         </div>
                     )}
 
-                    {/* Right Badges (top-right, stacked vertically under favorite) */}
+                    {/* End-side badges (top-end — left in RTL, under favorite) */}
                     {rightBadges.length > 0 && (
-                        <div className="absolute right-3 top-14 z-10 flex flex-col items-end gap-1.5">
+                        <div className="absolute end-3 top-14 z-10 flex flex-col items-end gap-1.5">
                             {rightBadges.map((b, idx) => (
                                 <Badge
                                     key={idx}
@@ -223,8 +225,8 @@ export default function ProductCard({
                         </div>
                     )}
 
-                    {/* Favorite — frosted chip */}
-                    <div className="absolute right-3 top-3 z-20 rounded-full bg-white/90 p-0.5 shadow-lg ring-1 ring-stone-900/8 backdrop-blur-md transition-transform duration-300 hover:scale-110 dark:bg-[rgba(16,17,20,0.92)] dark:ring-white/[0.08]">
+                    {/* Favorite — frosted chip, inline-end so it flips in RTL */}
+                    <div className="absolute end-3 top-3 z-20 rounded-full bg-white/90 p-0.5 shadow-lg ring-1 ring-stone-900/8 backdrop-blur-md transition-transform duration-300 hover:scale-110 dark:bg-[rgba(16,17,20,0.92)] dark:ring-white/[0.08]">
                         <FavoriteButton
                             isFavorite={isFavorite}
                             onToggle={(e) => {
@@ -261,8 +263,11 @@ export default function ProductCard({
                         : undefined
                 }
             >
-                {/* Rating — floats up over the image/content seam (panel isn't clipped) */}
-                <div className="absolute -top-5 left-4 z-30 rounded-full bg-white px-3 py-1.5 shadow-[0_8px_20px_-6px_rgba(15,23,42,0.4)] ring-1 ring-stone-900/[0.06] dark:bg-[rgba(20,21,24,0.97)] dark:ring-white/[0.1]">
+                {/* Rating — floats on the content-start edge (right in RTL) */}
+                <div
+                    dir="ltr"
+                    className="absolute -top-5 start-4 z-30 rounded-full bg-white px-3 py-1.5 shadow-[0_8px_20px_-6px_rgba(15,23,42,0.4)] ring-1 ring-stone-900/[0.06] dark:bg-[rgba(20,21,24,0.97)] dark:ring-white/[0.1]"
+                >
                     <Rating
                         rating={rating}
                         size="sm"
@@ -282,23 +287,27 @@ export default function ProductCard({
                     </p>
                 )}
 
-                {/* Price + sold row */}
-                <div className="mt-4 flex items-center gap-3">
-                    {/* Price block */}
-                    <div className="min-w-0 flex-1">
-                        <span className="block bg-gradient-to-br from-[color-mix(in_srgb,var(--color-main)_45%,black)] to-[color-mix(in_srgb,var(--color-api-second)_45%,black)] bg-clip-text text-xl font-extrabold tabular-nums tracking-tight text-transparent dark:from-white dark:to-white/80 sm:text-[1.45rem] sm:leading-none">
-                            {price}
-                        </span>
-                        {originalPrice && (
-                            <span className="mt-1 block text-sm text-custom-tertiary/90 line-through decoration-custom-tertiary/50 dark:text-zinc-500 dark:decoration-zinc-600">
-                                {originalPrice}
-                            </span>
-                        )}
+                {/* Price + sold — sale and compare prices share one baseline; sold uses logical border */}
+                <div className="mt-4 flex items-end justify-between gap-3">
+                    <div className="min-w-0">
+                        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                            <FormattedPrice
+                                value={price}
+                                prominent
+                                className="text-xl font-extrabold tracking-tight text-[color-mix(in_srgb,var(--color-main)_38%,#1c1917)] dark:text-white sm:text-[1.45rem]"
+                            />
+                            {originalPrice && (
+                                <FormattedPrice
+                                    value={originalPrice}
+                                    strikethrough
+                                    className="text-[13px] font-medium text-custom-tertiary/90 decoration-custom-tertiary/50 dark:text-zinc-500 dark:decoration-zinc-600"
+                                />
+                            )}
+                        </div>
                     </div>
 
-                    {/* Sold block — bag icon + count, divider on its left */}
                     {sold != null && (
-                        <div className="flex shrink-0 items-center gap-2.5 self-stretch border-l border-stone-200/70 pl-3 dark:border-white/10">
+                        <div className="flex shrink-0 items-center gap-2 self-stretch border-s border-stone-200/70 ps-3 dark:border-white/10">
                             <span
                                 className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[color-mix(in_srgb,var(--color-main)_10%,transparent)] text-[var(--color-main)]"
                                 aria-hidden
@@ -317,36 +326,19 @@ export default function ProductCard({
                                     <path d="M16 10a4 4 0 0 1-8 0" />
                                 </svg>
                             </span>
-                            <span className="text-sm font-bold uppercase tracking-wide leading-tight text-custom-primary dark:text-white">
-                                {sold.toLocaleString()}{" "}
-                                {t?.("product.sold") || "Sold"}
+                            <span className="inline-flex items-baseline gap-1 text-sm font-bold leading-tight text-custom-primary dark:text-white">
+                                <span dir="ltr" className="tabular-nums">
+                                    {sold.toLocaleString()}
+                                </span>
+                                <span>{t?.("product.sold") || "Sold"}</span>
                             </span>
                         </div>
                     )}
                 </div>
 
-                {/* Savings — own full-width row so it never collides with the sold block */}
                 {savings && (
-                    <div className="mt-2.5">
-                        <span className="inline-flex max-w-full items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-600/20 dark:bg-emerald-400/10 dark:text-emerald-300 dark:ring-emerald-400/25">
-                            <svg
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                className="h-3.5 w-3.5 shrink-0"
-                                aria-hidden
-                            >
-                                <path d="M20 12v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8" />
-                                <path d="M2 7h20v5H2z" />
-                                <path d="M12 22V7" />
-                                <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7Z" />
-                                <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7Z" />
-                            </svg>
-                            <span className="truncate">{savings}</span>
-                        </span>
+                    <div className="mt-2">
+                        <SavingsChip savings={savings} />
                     </div>
                 )}
 
@@ -399,5 +391,31 @@ export default function ProductCard({
                 )}
             </div>
         </div>
+    );
+}
+
+function SavingsChip({ savings }: { savings: string }) {
+    const { label, amount } = splitSavingsLabel(savings);
+    return (
+        <span className="inline-flex max-w-full items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-600/20 dark:bg-emerald-400/10 dark:text-emerald-300 dark:ring-emerald-400/25">
+            <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-3.5 w-3.5 shrink-0"
+                aria-hidden
+            >
+                <path d="M20 12v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8" />
+                <path d="M2 7h20v5H2z" />
+                <path d="M12 22V7" />
+                <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7Z" />
+                <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7Z" />
+            </svg>
+            {label ? <span>{label}</span> : null}
+            <FormattedPrice value={amount} className="text-xs font-semibold" />
+        </span>
     );
 }

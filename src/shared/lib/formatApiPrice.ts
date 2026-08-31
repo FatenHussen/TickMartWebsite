@@ -87,3 +87,60 @@ export function resolveDisplayListPrice(
     }
     return undefined;
 }
+
+const LATIN_CURRENCY = "\\$|€|£|¥|₹|USD|EUR|GBP";
+const ARABIC_CURRENCY = "ل\\.س|ر\\.س|د\\.إ|ج\\.م|SYP|SAR|AED";
+const ANY_CURRENCY = `${LATIN_CURRENCY}|${ARABIC_CURRENCY}`;
+const AMOUNT = "[\\d][\\d,]*(?:\\.\\d+)?";
+
+export type ParsedPriceParts =
+    | { kind: "parts"; amount: string; symbol: string; symbolFirst: boolean }
+    | { kind: "raw"; value: string };
+
+/**
+ * Split a formatted price so the UI can lock LTR order (e.g. `$8.82` not `8.82 $` in RTL).
+ * Latin symbols sit before the amount; Arabic units (ل.س …) stay after it.
+ */
+export function parsePriceParts(value: string): ParsedPriceParts {
+    const s = value.trim();
+    if (!s || s.includes(" / ")) return { kind: "raw", value: s };
+
+    const prefix = s.match(new RegExp(`^(${ANY_CURRENCY})\\s*(${AMOUNT})$`, "i"));
+    if (prefix) {
+        const symbol = prefix[1];
+        return {
+            kind: "parts",
+            symbol,
+            amount: prefix[2],
+            symbolFirst: !new RegExp(`^(?:${ARABIC_CURRENCY})$`, "i").test(symbol),
+        };
+    }
+
+    const suffix = s.match(new RegExp(`^(${AMOUNT})\\s*(${ANY_CURRENCY})$`, "i"));
+    if (suffix) {
+        const symbol = suffix[2];
+        return {
+            kind: "parts",
+            amount: suffix[1],
+            symbol,
+            symbolFirst: !new RegExp(`^(?:${ARABIC_CURRENCY})$`, "i").test(symbol),
+        };
+    }
+
+    return { kind: "raw", value: s };
+}
+
+/** `"وفرت 0.18 $"` / `"You saved $0.18"` → label + money token. */
+export function splitSavingsLabel(raw: string): { label: string; amount: string } {
+    const s = raw.trim();
+    const end = s.match(
+        new RegExp(
+            `^(.*?)\\s*((?:${ANY_CURRENCY})\\s*${AMOUNT}|${AMOUNT}\\s*(?:${ANY_CURRENCY}))$`,
+            "i",
+        ),
+    );
+    if (end && end[1].trim()) {
+        return { label: end[1].trim(), amount: end[2].trim() };
+    }
+    return { label: "", amount: s };
+}

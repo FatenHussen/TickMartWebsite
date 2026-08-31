@@ -401,6 +401,7 @@
     "drinks": "Drinks",
     "minPrice": "Min",
     "maxPrice": "Max",
+    "priceRange": "Price range",
     "showingProductsIn": "Showing products in",
     "filters": "Filters",
     "applyFilters": "Apply filters",

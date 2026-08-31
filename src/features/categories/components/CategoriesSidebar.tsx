@@ -15,10 +15,17 @@ type CategoriesSidebarProps = {
     search?: string;
     onSearchChange?: (search: string | undefined) => void;
     categoryId?: number;
-    /** Root of the current trail — attributes cache key. */
     rootCategoryId?: number;
     attributeValues?: number[];
     onAttributeValuesChange?: (values: number[]) => void;
+    freeDeliveryOnly?: boolean;
+    onFreeDeliveryToggle?: (checked: boolean) => void;
+    instantDeliveryOnly?: boolean;
+    onInstantDeliveryToggle?: (checked: boolean) => void;
+    onSaleOnly?: boolean;
+    onOnSaleToggle?: (checked: boolean) => void;
+    inStockOnly?: boolean;
+    onInStockToggle?: (checked: boolean) => void;
 };
 
 /**
@@ -40,9 +47,17 @@ export default function CategoriesSidebar({
     rootCategoryId,
     attributeValues,
     onAttributeValuesChange,
+    freeDeliveryOnly,
+    onFreeDeliveryToggle,
+    instantDeliveryOnly,
+    onInstantDeliveryToggle,
+    onSaleOnly,
+    onOnSaleToggle,
+    inStockOnly,
+    onInStockToggle,
 }: CategoriesSidebarProps) {
     const cardShell = cn(
-        "rounded-[20px] border p-5 shadow-[0_1px_3px_rgba(15,23,42,0.04),0_14px_36px_-22px_rgba(15,23,42,0.24)]",
+        "rounded-[20px] border p-4 sm:p-5 shadow-[0_1px_3px_rgba(15,23,42,0.04),0_14px_36px_-22px_rgba(15,23,42,0.24)]",
         apiSurface ? "border-solid" : "border-slate-200/70 bg-custom-card",
     );
 
@@ -55,7 +70,7 @@ export default function CategoriesSidebar({
         : undefined;
 
     return (
-        <div className="space-y-6 lg:sticky lg:top-24">
+        <div className="lg:sticky lg:top-24">
             <div className={cardShell} style={cardStyle}>
                 <CategoryFilters
                     typeFilter={categoryTypeFilter}
@@ -71,6 +86,14 @@ export default function CategoriesSidebar({
                     rootCategoryId={rootCategoryId}
                     attributeValues={attributeValues}
                     onAttributeValuesChange={onAttributeValuesChange}
+                    freeDeliveryOnly={freeDeliveryOnly}
+                    onFreeDeliveryToggle={onFreeDeliveryToggle}
+                    instantDeliveryOnly={instantDeliveryOnly}
+                    onInstantDeliveryToggle={onInstantDeliveryToggle}
+                    onSaleOnly={onSaleOnly}
+                    onOnSaleToggle={onOnSaleToggle}
+                    inStockOnly={inStockOnly}
+                    onInStockToggle={onInStockToggle}
                     apiSurface={apiSurface}
                 />
             </div>
