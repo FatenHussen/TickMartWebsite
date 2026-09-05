@@ -125,7 +125,11 @@ function parseSummary(raw: unknown): CustomBasketSummary {
         total_quantity: asNumber(row.total_quantity) ?? 0,
         original_price_formatted: asString(row.original_price_formatted),
         discount_value: asNumber(row.discount_value),
-        discount_type: asString(row.discount_type),
+        discount_type:
+            asString(row.discount_type) === "percentage" ||
+            asString(row.discount_type) === "fixed"
+                ? (asString(row.discount_type) as "percentage" | "fixed")
+                : null,
         savings_formatted: asString(row.savings_formatted),
         final_price_formatted:
             asString(row.final_price_formatted) ??
@@ -158,7 +162,10 @@ export function parseCustomBasket(
         summary.total_quantity = items.reduce((sum, i) => sum + i.quantity, 0);
     }
 
-    return { schedule, items, summary };
+    const isDraftRaw = basket.is_draft ?? obj.is_draft;
+    const is_draft = isDraftRaw === false ? false : true;
+
+    return { schedule, items, summary, is_draft };
 }
 
 function parseCartItem(raw: unknown): ConfirmCartItem | null {
@@ -177,10 +184,14 @@ export function parseConfirmResult(payload: unknown): ConfirmCustomBasketResult 
         (Array.isArray(asRecord(obj.data)?.cart_items) &&
             (asRecord(obj.data)?.cart_items as unknown[])) ||
         [];
+    const scheduledRaw = obj.scheduled ?? asRecord(obj.data)?.scheduled;
+    const nextRun = asString(obj.next_run_date) ?? asString(asRecord(obj.data)?.next_run_date);
     return {
         cart_items: rawList
             .map(parseCartItem)
             .filter((i): i is ConfirmCartItem => i != null),
+        scheduled: scheduledRaw === true,
+        next_run_date: nextRun,
         raw: payload,
     };
 }

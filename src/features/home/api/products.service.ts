@@ -10,7 +10,8 @@ export type ProductListType =
     | "recommended"
     | "for_you"
     | "search_based"
-    | "most_popular";
+    | "most_popular"
+    | "latest_flash_sale";
 
 export type ProductSortBy =
     | "price_desc"

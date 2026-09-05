@@ -1,4 +1,5 @@
 import type { CartItem } from "@/features/cart/types";
+import { postCartItemsSafe } from "@/features/cart/api/cartApi";
 import { useCartStore } from "@/store/cart";
 import type { ConfirmCartItem, CustomBasketLine } from "../types";
 
@@ -44,5 +45,13 @@ export function pushConfirmItemsToCart(lines: CartItem[]): "ok" | "replaced" {
     for (const line of lines) {
         store.addItem(line);
     }
+    postCartItemsSafe(
+        lines
+            .filter((line) => line.shop_product_variant_id != null)
+            .map((line) => ({
+                shop_product_variant_id: line.shop_product_variant_id as number,
+                quantity: line.quantity,
+            })),
+    );
     return replaced;
 }

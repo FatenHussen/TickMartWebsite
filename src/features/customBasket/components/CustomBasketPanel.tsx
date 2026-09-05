@@ -135,18 +135,21 @@ export default function CustomBasketPanel({
                                                 })
                                             }
                                         />
-                                        {(item.line_total_formatted ||
-                                            item.original_price_formatted) && (
-                                            <FormattedPrice
-                                                value={
-                                                    item.line_total_formatted ??
-                                                    item.original_price_formatted ??
-                                                    ""
-                                                }
-                                                prominent
-                                                className="text-base font-bold text-custom-primary dark:text-white"
-                                            />
-                                        )}
+                                        <div className="text-end">
+                                            {item.original_price_formatted && (
+                                                <FormattedPrice
+                                                    value={item.original_price_formatted}
+                                                    className="block text-xs text-custom-secondary"
+                                                />
+                                            )}
+                                            {item.line_total_formatted && (
+                                                <FormattedPrice
+                                                    value={item.line_total_formatted}
+                                                    prominent
+                                                    className="text-base font-bold text-custom-primary dark:text-white"
+                                                />
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             </li>

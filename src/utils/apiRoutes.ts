@@ -111,6 +111,13 @@ export const apiRoutes = {
     },
 
     /**
+    * Site cart — add lines without a client-calculated price.
+    */
+    cart: {
+        items: "/user/cart/items" as const,
+    },
+
+    /**
     * Address endpoints
     */
     addresses: {
@@ -434,6 +441,7 @@ export const apiRoutes = {
     baskets: {
         list: (filters?: {
             is_schedule?: 0 | 1;
+            schedule_id?: number;
             category_id?: number;
             price_min?: number;
             price_max?: number;
@@ -447,6 +455,8 @@ export const apiRoutes = {
             const params = new URLSearchParams();
             if (filters?.is_schedule !== undefined)
                 params.append("is_schedule", String(filters.is_schedule));
+            if (filters?.schedule_id != null)
+                params.append("schedule_id", String(filters.schedule_id));
             if (filters?.category_id) params.append("category_id", String(filters.category_id));
             if (filters?.price_min != null) params.append("price_min", String(filters.price_min));
             if (filters?.price_max != null) params.append("price_max", String(filters.price_max));

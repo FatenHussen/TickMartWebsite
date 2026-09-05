@@ -6,6 +6,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { useAuthStore } from "@/store/auth";
 import { paths } from "@/app/routes/path/paths";
 import { toast } from "sonner";
+import axios from "axios";
 import Button from "@/shared/ui/Button";
 import { PremiumInlineLoader } from "@/shared/component/loading";
 import { useInfiniteList } from "@/shared/hooks/useInfiniteList";
@@ -618,6 +619,16 @@ export default function ScheduleCustomize() {
                         {
                             onSuccess: (res) =>
                                 finishConfirm(res.cart_items, snapshot),
+                            onError: (error) => {
+                                if (
+                                    axios.isAxiosError(error) &&
+                                    error.response?.status === 422
+                                ) {
+                                    toast.error(
+                                        t("customBasket.addAtLeastOne"),
+                                    );
+                                }
+                            },
                         },
                     );
                 }}
@@ -628,6 +639,16 @@ export default function ScheduleCustomize() {
                         {
                             onSuccess: (res) =>
                                 finishConfirm(res.cart_items, snapshot),
+                            onError: (error) => {
+                                if (
+                                    axios.isAxiosError(error) &&
+                                    error.response?.status === 422
+                                ) {
+                                    toast.error(
+                                        t("customBasket.addAtLeastOne"),
+                                    );
+                                }
+                            },
                         },
                     );
                 }}

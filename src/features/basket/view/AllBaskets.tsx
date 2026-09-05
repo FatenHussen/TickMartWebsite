@@ -17,6 +17,8 @@ import { useInfiniteScroll } from "@/shared/hooks/useInfiniteScroll";
 import SideContentLayout from "@/layout/SideContentLayout";
 import BasketFiltersSidebar from "../components/BasketFiltersSidebar";
 import type { BasketItem, BasketFilters } from "../types/basket";
+import { useScheduleCatalog } from "@/features/customBasket/hooks/useScheduleCatalog";
+import { cn } from "@/shared/lib/utils";
 import {
     mapApiBottomBadgesToProductCard,
     mapApiTopBadgesToProductCard,
@@ -38,12 +40,18 @@ export default function AllBaskets() {
     const [favoriteStates, setFavoriteStates] = useState<Record<number, boolean>>({});
 
     // Build API filter object from UI filter state
+    const { items: scheduleTabs } = useScheduleCatalog();
+
+    const scheduleId =
+        filters.basketType === "custom" ? undefined : filters.scheduleId;
     const isSchedule =
-        filters.basketType === "all"
-            ? undefined
-            : filters.basketType === "subscription"
-                ? (1 as const)
-                : (0 as const);
+        scheduleId != null
+            ? (1 as const)
+            : filters.basketType === "all"
+                ? undefined
+                : filters.basketType === "subscription"
+                    ? (1 as const)
+                    : (0 as const);
 
     const {
         data: basketsData,
@@ -51,6 +59,7 @@ export default function AllBaskets() {
         error: basketsError,
     } = useBaskets({
         is_schedule: isSchedule,
+        schedule_id: scheduleId,
         price_min: filters.priceMin,
         price_max: filters.priceMax,
         rating_min: filters.ratingMin,
@@ -164,6 +173,48 @@ export default function AllBaskets() {
                         <p className="text-sm text-custom-secondary mt-2">
                             {t("baskets.browseDescription")}
                         </p>
+                        {scheduleTabs.length > 0 && (
+                            <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        setFilters((prev) => ({
+                                            ...prev,
+                                            scheduleId: undefined,
+                                        }))
+                                    }
+                                    className={cn(
+                                        "shrink-0 rounded-full px-3.5 py-1.5 text-sm font-medium transition",
+                                        filters.scheduleId == null
+                                            ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900"
+                                            : "bg-stone-100 text-stone-600 dark:bg-white/10 dark:text-zinc-300",
+                                    )}
+                                >
+                                    {t("baskets.allIntervals")}
+                                </button>
+                                {scheduleTabs.map((schedule) => (
+                                    <button
+                                        type="button"
+                                        key={schedule.id}
+                                        onClick={() =>
+                                            setFilters((prev) => ({
+                                                ...prev,
+                                                scheduleId: schedule.id,
+                                                basketType: "subscription",
+                                            }))
+                                        }
+                                        className={cn(
+                                            "shrink-0 rounded-full px-3.5 py-1.5 text-sm font-medium transition",
+                                            filters.scheduleId === schedule.id
+                                                ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900"
+                                                : "bg-stone-100 text-stone-600 dark:bg-white/10 dark:text-zinc-300",
+                                        )}
+                                    >
+                                        {schedule.name}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
                         <button
                             type="button"
                             onClick={() => navigate(paths.client.schedules)}

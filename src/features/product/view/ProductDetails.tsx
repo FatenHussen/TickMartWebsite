@@ -39,7 +39,8 @@ import { resolveProductCountry } from "../lib/resolveLocalizedOrString";
 import {
     resolveVariantPriceDisplay,
 } from "../lib/variantPriceDisplay";
-import { isPurchasableVariant, variantOrderLimit, exceedsVariantStock } from "../types/productDetails";
+import { isPurchasableVariant, variantOrderLimit, exceedsVariantStock, warrantyTitle, warrantyBody } from "../types/productDetails";
+import { postCartItemsSafe } from "@/features/cart/api/cartApi";
 import { useFavorites, useToggleFavorite } from "@/features/account/hooks/useFavorites";
 import { useCanRate } from "@/features/account/hooks/useRatings";
 import { RatingFormModal } from "@/features/account/components";
@@ -270,6 +271,12 @@ function ProductDetails() {
     const productVariants = product?.shop_variants ?? [];
     const hasPurchasableVariant = productVariants.some(isPurchasableVariant);
     const canAddToCart = isPurchasableVariant(selectedVariant);
+    const warrantyName = product
+        ? warrantyTitle(product, (months) =>
+              t("product.warrantyMonths", { count: months }),
+          )
+        : null;
+    const warrantyDescription = product ? warrantyBody(product) : null;
     const cannotAddToCartReason = !hasPurchasableVariant
         ? t("product.notAvailableInBranch", "Not available in any branch")
         : selectedVariant == null
@@ -366,6 +373,12 @@ function ProductDetails() {
 
         const result = addItem(cartItem);
         if (result === "success") {
+            postCartItemsSafe([
+                {
+                    shop_product_variant_id: v.id,
+                    quantity: previewQuantity,
+                },
+            ]);
             toast.success(t("cart.addedToCart", "Added to cart"));
         } else if (result === "wrong_cart_type") {
             toast.error(
@@ -593,6 +606,12 @@ function ProductDetails() {
         }
         const result = addItem(cartItem);
         if (result === "success") {
+            postCartItemsSafe([
+                {
+                    shop_product_variant_id: selectedVariant.id,
+                    quantity,
+                },
+            ]);
             toast.success(t("cart.addedToCart", "Added to cart"));
         } else if (result === "wrong_cart_type") {
             toast.error(
@@ -853,15 +872,15 @@ function ProductDetails() {
                             </p>
                         )}
 
-                        {product.warranty?.name && (
+                        {warrantyName && (
                             <div className="rounded-2xl border border-custom-primary/15 bg-custom-secondary/40 px-4 py-3 dark:border-white/10 dark:bg-white/[0.04]">
                                 <p className="text-sm font-semibold text-custom-primary dark:text-white">
                                     {t("product.warranty", "Warranty")}:{" "}
-                                    {product.warranty.name}
+                                    {warrantyName}
                                 </p>
-                                {product.warranty.description ? (
+                                {warrantyDescription ? (
                                     <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-custom-secondary">
-                                        {product.warranty.description}
+                                        {warrantyDescription}
                                     </p>
                                 ) : null}
                             </div>
@@ -974,6 +993,13 @@ function ProductDetails() {
                                           )
                                 }
                             />
+                            {canAddToCart && selectedVariant?.quantity != null ? (
+                                <p className="text-sm text-custom-secondary dark:text-[#A1A1AA]">
+                                    {t("product.inStockCount", {
+                                        count: selectedVariant.quantity,
+                                    })}
+                                </p>
+                            ) : null}
                             {!canAddToCart && (
                                 <p className="text-sm text-custom-secondary dark:text-[#A1A1AA]">
                                     {cannotAddToCartReason}

@@ -12,10 +12,14 @@ import { DISPLAY_TYPE } from "@/features/home/types";
  * `manual` alike; `manual_model` says the same thing but only for manual
  * sections (it is `null` whenever `type` is `"api"`), and both are backed by a
  * `display_type_id` seeded to a fixed id per kind in every environment (1
- * banner … 8 category, plus 9/10 for the welcome and intro banner rows). All
- * three were absent or environment-specific until recently, so the order stays
- * `content_type` → `manual_model` → a known `display_type_id` → the item shape:
- * that is what keeps an API host whose seeder has not run yet rendering.
+ * banner … 8 category, plus 9/10 for welcome/intro banners, 11 schedule
+ * categories). All three were absent or environment-specific until recently,
+ * so the order stays `content_type` → `api_method` → `manual_model` → a known
+ * `display_type_id` → the item shape: that is what keeps an API host whose
+ * seeder has not run yet rendering.
+ *
+ * `schedule` (11) is a customize-your-own interval card. `scheduled_basket` (5)
+ * is an admin-filled basket — never open `/schedules/{id}` for those.
  */
 export type SectionKind =
     | "banner"
@@ -23,6 +27,7 @@ export type SectionKind =
     | "shop"
     | "basket"
     | "scheduled_basket"
+    | "schedule"
     | "brand"
     | "recipe"
     | "category";
@@ -51,6 +56,7 @@ const KIND_BY_DISPLAY_TYPE: Record<number, SectionKind> = {
     [DISPLAY_TYPE.CATEGORY]: "category",
     [DISPLAY_TYPE.WELCOME_BANNER]: "banner",
     [DISPLAY_TYPE.INTRO_BANNER]: "banner",
+    [DISPLAY_TYPE.SCHEDULE]: "schedule",
 };
 
 /** Shared vocabulary of `content_type` and `manual_model` — same value space. */
@@ -60,11 +66,18 @@ const KIND_BY_CONTENT_NAME: Record<string, SectionKind> = {
     shop: "shop",
     vendor: "shop",
     basket: "basket",
+    schedule: "schedule",
     "schedule-basket": "scheduled_basket",
     scheduled_basket: "scheduled_basket",
     brand: "brand",
     recipe: "recipe",
     banner: "banner",
+};
+
+/** `api_method` uses the list endpoint name (`schedules`), not `content_type`. */
+const KIND_BY_API_METHOD: Record<string, SectionKind> = {
+    schedules: "schedule",
+    "schedule-basket": "scheduled_basket",
 };
 
 const DISPLAY_TYPE_BY_KIND: Partial<Record<SectionKind, number>> = {
@@ -73,6 +86,7 @@ const DISPLAY_TYPE_BY_KIND: Partial<Record<SectionKind, number>> = {
     shop: DISPLAY_TYPE.SHOP,
     basket: DISPLAY_TYPE.BASKET,
     scheduled_basket: DISPLAY_TYPE.SCHEDULED_BASKET,
+    schedule: DISPLAY_TYPE.SCHEDULE,
     brand: DISPLAY_TYPE.BRAND,
     recipe: DISPLAY_TYPE.RECIPE,
     category: DISPLAY_TYPE.CATEGORY,
@@ -104,6 +118,7 @@ function inferKindFromItem(item: SectionItem): SectionKind | null {
     if ("sold_number" in data) return "product";
     if ("is_open_now" in data || "vendor" in data) return "shop";
     if ("orders_count" in data && "price" in data) return "recipe";
+    if ("interval_days" in data) return "schedule";
     if (isManualItem(item)) return "banner";
     if ("image" in data && "name" in data && !("price" in data)) return "brand";
     return null;
@@ -119,15 +134,21 @@ function inferKindFromItems(items: SectionItem[] | undefined): SectionKind | nul
 
 /**
  * The kind of cards a section holds — `content_type` when the backend sends it,
- * then `manual_model`, then a known `display_type_id`, then the shape of the
- * items. `null` only when the section is empty or carries an unrecognizable
- * payload.
+ * then `api_method`, then `manual_model`, then a known `display_type_id`, then
+ * the shape of the items. `null` only when the section is empty or carries an
+ * unrecognizable payload.
  */
 export function getSectionKind(section: Section): SectionKind | null {
     const fromContentType = section.content_type
         ? KIND_BY_CONTENT_NAME[section.content_type]
         : undefined;
     if (fromContentType) return fromContentType;
+
+    const fromApiMethod = section.api_method
+        ? KIND_BY_API_METHOD[section.api_method] ??
+          KIND_BY_CONTENT_NAME[section.api_method]
+        : undefined;
+    if (fromApiMethod) return fromApiMethod;
 
     const fromModel = section.manual_model
         ? KIND_BY_CONTENT_NAME[section.manual_model]

@@ -17,6 +17,7 @@ const emptyBasket = (schedule?: ScheduleItem | null): CustomBasketState => ({
         savings_formatted: null,
         final_price_formatted: null,
     },
+    is_draft: true,
 });
 
 export function useCustomBasket(

@@ -2,7 +2,7 @@ import type { ScheduleBadge, ScheduleItem } from "@/features/cart/types";
 
 export type { ScheduleBadge, ScheduleItem };
 
-export type ScheduleDiscountType = "percentage" | "fixed" | "none" | string;
+export type ScheduleDiscountType = "percentage" | "fixed" | null;
 
 export interface CustomBasketProduct {
     id?: number;
@@ -42,6 +42,7 @@ export interface CustomBasketState {
     schedule: ScheduleItem | null;
     items: CustomBasketLine[];
     summary: CustomBasketSummary;
+    is_draft: boolean;
 }
 
 export interface ConfirmCustomBasketPayload {
@@ -56,5 +57,7 @@ export interface ConfirmCartItem {
 
 export interface ConfirmCustomBasketResult {
     cart_items: ConfirmCartItem[];
+    scheduled?: boolean;
+    next_run_date?: string | null;
     raw: unknown;
 }

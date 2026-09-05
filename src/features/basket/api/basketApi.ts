@@ -4,6 +4,7 @@ import type { BasketsResponse, BasketDetailsResponse } from"../types/basket";
 
 export interface BasketApiFilters {
  is_schedule?: 0 | 1;
+ schedule_id?: number;
  category_id?: number;
  price_min?: number;
  price_max?: number;

@@ -8,6 +8,14 @@ import {
     unwrapApiObject,
 } from "./unwrapApi";
 
+function parseDiscountType(
+    raw: unknown,
+): ScheduleItem["discount_type"] {
+    const value = asString(raw);
+    if (value === "percentage" || value === "fixed") return value;
+    return null;
+}
+
 function parseBadges(raw: unknown): ScheduleBadge[] {
     if (!Array.isArray(raw)) return [];
     return raw
@@ -22,22 +30,19 @@ function parseBadges(raw: unknown): ScheduleBadge[] {
                 image: toStorageUrl(asString(row.image)) ?? asString(row.image),
                 color: asString(row.color),
                 type: asString(row.type),
+                position: asString(row.position),
             };
         })
         .filter((b): b is ScheduleBadge => b != null);
 }
 
+/** Contract fields only: `image` and `images[]` as URL strings. No aliases. */
 function parseImageList(raw: unknown, fallback?: string | null): string[] {
     const urls: string[] = [];
     if (Array.isArray(raw)) {
         for (const item of raw) {
-            const path =
-                typeof item === "string"
-                    ? item
-                    : asString(asRecord(item)?.path) ??
-                      asString(asRecord(item)?.url) ??
-                      asString(asRecord(item)?.image);
-            const url = toStorageUrl(path) ?? path;
+            if (typeof item !== "string" || !item.trim()) continue;
+            const url = toStorageUrl(item) ?? item;
             if (url) urls.push(url);
         }
     }
@@ -54,26 +59,15 @@ export function parseScheduleItem(raw: unknown): ScheduleItem | null {
     const name = asString(row.name);
     if (id == null || !name) return null;
 
-    const image =
-        toStorageUrl(asString(row.image)) ??
-        toStorageUrl(asString(row.cover_image)) ??
-        toStorageUrl(asString(row.photo)) ??
-        toStorageUrl(asString(row.thumbnail)) ??
-        asString(row.image) ??
-        asString(row.cover_image) ??
-        asString(row.photo) ??
-        asString(row.thumbnail);
-    const images = parseImageList(
-        row.images ?? row.gallery ?? row.media,
-        image,
-    );
+    const image = toStorageUrl(asString(row.image)) ?? asString(row.image);
+    const images = parseImageList(row.images, image);
 
     return {
         id,
         name,
         description: asString(row.description),
         interval_days: asNumber(row.interval_days) ?? 0,
-        discount_type: asString(row.discount_type) ?? "none",
+        discount_type: parseDiscountType(row.discount_type),
         discount_value: asNumber(row.discount_value) ?? 0,
         is_active: row.is_active === false ? false : true,
         image,

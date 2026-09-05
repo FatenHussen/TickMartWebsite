@@ -127,6 +127,8 @@ export type BasketSortType ="new"|"best_selling"|"top_rated";
 
 export interface BasketFilters {
  basketType: BasketType;
+ /** Admin ready baskets linked to a schedule category (`GET /schedules`). */
+ scheduleId?: number;
  sortType?: BasketSortType;
  priceMin?: number;
  priceMax?: number;

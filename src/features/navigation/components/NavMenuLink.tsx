@@ -73,7 +73,7 @@ export default function NavMenuLink({
                 href={destination.href}
                 className={className}
                 target={newTab ? "_blank" : undefined}
-                rel={newTab ? "noopener noreferrer" : undefined}
+                rel="noopener noreferrer"
                 onClick={() => onNavigate?.()}
             >
                 {content}

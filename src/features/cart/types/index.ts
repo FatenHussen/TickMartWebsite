@@ -50,6 +50,7 @@ export interface ScheduleBadge {
  image?: string | null;
  color?: string | null;
  type?: string | null;
+ position?: string | null;
 }
 
 /** Schedule item from GET user/schedules (catalog categories) */
@@ -57,7 +58,7 @@ export interface ScheduleItem {
  id: number;
  name: string;
  interval_days: number;
- discount_type: "percentage" | "fixed" | "none" | string;
+ discount_type: "percentage" | "fixed" | null;
  discount_value: number;
  /** Omitted on some API responses; treat missing as active */
  is_active?: boolean;

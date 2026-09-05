@@ -61,6 +61,7 @@ export function mapPageSlugToRoute(
  products: paths.client.products,
  baskets: paths.client.baskets,
  categories: paths.client.categories,
+ schedules: paths.client.schedules,
  };
 
  const baseRoute = routeMap[pageSlug] || `/${pageSlug}`;
@@ -85,6 +86,7 @@ export function mapActionPageSlugToRoute(
  recipe_details: paths.client.recipeDetails,
  basket_details: paths.client.basketDetails,
  shop_details: paths.client.shopDetails,
+ schedule_details: paths.client.scheduleCustomize,
  };
 
  const routeBuilder = routeMap[actionPageSlug];

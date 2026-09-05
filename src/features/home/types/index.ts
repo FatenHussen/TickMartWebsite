@@ -323,6 +323,8 @@ export const DISPLAY_TYPE = {
  /** Dashboard welcome / intro banner rows — both render as banners. */
  WELCOME_BANNER: 9,
  INTRO_BANNER: 10,
+ /** Schedule category cards — customize at `/schedules/{id}`. Not admin baskets. */
+ SCHEDULE: 11,
 } as const;
 
 export type DisplayTypeId = (typeof DISPLAY_TYPE)[keyof typeof DISPLAY_TYPE];

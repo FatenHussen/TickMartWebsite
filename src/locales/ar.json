@@ -467,6 +467,8 @@
     "youSaved": "وفرت",
     "deliveryTime": "التسليم",
     "warranty": "الضمان",
+    "warrantyMonths": "{{count}} شهر",
+    "inStockCount": "متوفر: {{count}}",
     "stockUnspecified": "—",
     "orderNow": "اطلب الآن",
     "noReviewsMatch": "لا توجد تقييمات تطابق الفلتر الخاص بك.",
@@ -1570,6 +1572,7 @@
     "allBaskets": "جميع السلال",
     "customBaskets": "سلال مخصصة",
     "subscriptionBaskets": "سلال الاشتراك",
+    "allIntervals": "كل الفئات",
     "basketType": "نوع السلة",
     "noBasketsFound": "لم يتم العثور على سلال",
     "failedToLoad": "فشل تحميل السلال",
@@ -1692,7 +1695,8 @@
     "pickProductsHint": "{{count}} للاختيار",
     "ctaFromBaskets": "ابنِ سلتك المجدولة بنفسك",
     "ctaFromBasketsBody": "اختَر أسبوعي أو شهري أو أي فترة، ثم حدّد المنتجات أنت.",
-    "cartReplaced": "تم استبدال سلة التسوق السابقة بهذه السلة."
+    "cartReplaced": "تم استبدال سلة التسوق السابقة بهذه السلة.",
+    "addAtLeastOne": "أضيفوا منتج واحد على الأقل قبل التأكيد."
   },
   "sectionEmpty": {
     "default": "لا توجد عناصر لعرضها",
@@ -1701,6 +1705,7 @@
     "shop": "لا توجد متاجر",
     "basket": "لا توجد سلال",
     "scheduledBasket": "لا توجد سلال مجدولة",
+    "schedule": "لا توجد فئات جدولة",
     "brand": "لا توجد علامات تجارية",
     "recipe": "لا توجد وصفات"
   },

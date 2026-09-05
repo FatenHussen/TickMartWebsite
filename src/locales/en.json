@@ -467,6 +467,8 @@
     "youSaved": "You saved",
     "deliveryTime": "Delivery",
     "warranty": "Warranty",
+    "warrantyMonths": "{{count}} months",
+    "inStockCount": "In stock: {{count}}",
     "stockUnspecified": "—",
     "orderNow": "Order Now",
     "noReviewsMatch": "No reviews match your filter.",
@@ -1564,6 +1566,7 @@
     "allBaskets": "All Baskets",
     "customBaskets": "Custom baskets",
     "subscriptionBaskets": "Subscription baskets",
+    "allIntervals": "All intervals",
     "basketType": "Basket type",
     "noBasketsFound": "No baskets found",
     "failedToLoad": "Failed to load baskets",
@@ -1686,7 +1689,8 @@
     "pickProductsHint": "{{count}} to choose from",
     "ctaFromBaskets": "Build your own recurring basket",
     "ctaFromBasketsBody": "Pick weekly, monthly, or any interval — then choose the products yourself.",
-    "cartReplaced": "Your previous cart was replaced with this basket."
+    "cartReplaced": "Your previous cart was replaced with this basket.",
+    "addAtLeastOne": "Add at least one product before confirming."
   },
   "sectionEmpty": {
     "default": "Nothing to show here yet",
@@ -1695,6 +1699,7 @@
     "shop": "No shops",
     "basket": "No baskets",
     "scheduledBasket": "No scheduled baskets",
+    "schedule": "No delivery intervals",
     "brand": "No brands",
     "recipe": "No recipes"
   },
@@ -1709,7 +1714,7 @@
     "shopping": "Shopping",
     "partners": "Partners",
     "legal": "Legal & support",
-    "tagline": "Everything you love, delivered with a smile. Fresh finds, great deals, and a little joy in every basket.",
+    "tagline": "Everything you love, delivered with a smile. Great deals, and a little joy in every basket.",
     "madeWith": "Made with",
     "forYou": "for you",
     "newsletterBadge": "Newsletter",

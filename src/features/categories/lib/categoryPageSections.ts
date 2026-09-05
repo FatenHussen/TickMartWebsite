@@ -7,7 +7,7 @@ import { toStorageUrl } from "@/shared/lib/storageUrl";
  * Deliberately not 8/9/10: on a host that has not been seeded yet, an id
  * outside this set can only be the `firstOrCreate`d subcategories row.
  */
-const STABLE_DISPLAY_TYPE_IDS = new Set<number>([1, 2, 3, 4, 5, 6, 7]);
+const STABLE_DISPLAY_TYPE_IDS = new Set<number>([1, 2, 3, 4, 5, 6, 7, 11]);
 
 /** `null` for the `null` / `""` an unseeded host can still send instead of an id. */
 function readDisplayTypeId(section: Section): number | null {

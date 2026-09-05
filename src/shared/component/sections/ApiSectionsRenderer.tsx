@@ -60,6 +60,8 @@ import {
 } from "./sectionKind";
 import { DISPLAY_TYPE } from "@/features/home/types";
 import { useTheme } from "@/context/ThemeContext";
+import ScheduleCatalogCard from "@/features/customBasket/components/ScheduleCatalogCard";
+import { parseScheduleItem } from "@/features/customBasket/lib/parseSchedule";
 
 function getFlashSaleEndDate(endDate?: string | null): string | null {
     if (!endDate) return null;
@@ -649,6 +651,21 @@ function SectionByDisplayType({
                 />
             );
 
+        case "schedule":
+            return (
+                <ScheduleSection
+                    section={section}
+                    isDarkTheme={isDarkTheme}
+                    showViewAll={showViewAll}
+                    onViewAll={onViewAll}
+                    onItemClick={onItemClick}
+                    t={t}
+                    edgeToEdgeSectionBackgrounds={edgeToEdgeSectionBackgrounds}
+                    sectionClassName={sectionClassName}
+                    removeSectionVerticalSpacing={removeSectionVerticalSpacing}
+                />
+            );
+
         case "basket":
         case "scheduled_basket":
             return (
@@ -1023,6 +1040,62 @@ function CategorySection({
                             Array.isArray(data.children) && data.children.length > 0
                         }
                         onClick={() => onItemClick(item)}
+                    />
+                );
+            }}
+        />
+    );
+}
+
+/**
+ * Schedule category cards (`content_type === "schedule"` / `display_type_id === 11`).
+ * Vertical by default, circular image, click → `/schedules/{id}`. Never the
+ * admin ready-basket path (`display_type_id === 5`).
+ */
+function getScheduleCardVariant(section: Section) {
+    const v = section.variant;
+    if (v === "vertical" || v === "horizontal" || v === "square") return v;
+    return "vertical" as const;
+}
+
+function ScheduleSection({
+    section,
+    isDarkTheme = false,
+    showViewAll,
+    onViewAll,
+    t,
+    edgeToEdgeSectionBackgrounds,
+    sectionClassName,
+    removeSectionVerticalSpacing,
+}: SectionProps) {
+    const navigate = useNavigate();
+    const cardVariant = getScheduleCardVariant(section);
+    const sliderPreset = getSliderPresetForSection(cardVariant);
+
+    return (
+        <SliderSection
+            title={section.name}
+            viewAllLabel={t("common.viewAll")}
+            onViewAllClick={
+                showViewAll ? onViewAll : () => navigate(paths.client.schedules)
+            }
+            items={section.items}
+            slidesPerView={sliderPreset.slidesPerView}
+            breakpoints={sliderPreset.breakpoints}
+            spaceBetween={sliderPreset.spaceBetween}
+            sectionBackgroundColor={getSectionBandBackground(section, isDarkTheme, null)}
+            edgeToEdgeSectionBackground={edgeToEdgeSectionBackgrounds}
+            className={sectionClassName}
+            removeVerticalSpacing={removeSectionVerticalSpacing}
+            {...getSectionRowProps(section, cardVariant)}
+            renderItem={(item) => {
+                const schedule = parseScheduleItem(getItemData(item));
+                if (!schedule) return null;
+                return (
+                    <ScheduleCatalogCard
+                        key={schedule.id}
+                        schedule={schedule}
+                        appearance="section"
                     />
                 );
             }}

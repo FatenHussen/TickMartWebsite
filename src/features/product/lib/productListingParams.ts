@@ -17,6 +17,7 @@ const TYPE_VALUES = [
     "for_you",
     "search_based",
     "most_popular",
+    "latest_flash_sale",
 ] as const;
 
 function parseSortBy(v: string | null): ProductsFilters["sort_by"] | undefined {
