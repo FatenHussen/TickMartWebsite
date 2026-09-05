@@ -39,7 +39,7 @@ import { resolveProductCountry } from "../lib/resolveLocalizedOrString";
 import {
     resolveVariantPriceDisplay,
 } from "../lib/variantPriceDisplay";
-import { isPurchasableVariant } from "../types/productDetails";
+import { isPurchasableVariant, variantOrderLimit, exceedsVariantStock } from "../types/productDetails";
 import { useFavorites, useToggleFavorite } from "@/features/account/hooks/useFavorites";
 import { useCanRate } from "@/features/account/hooks/useRatings";
 import { RatingFormModal } from "@/features/account/components";
@@ -183,8 +183,8 @@ function ProductDetails() {
 
     useEffect(() => {
         const v = previewSelectedVariant;
-        if (!v || v.quantity <= 0) return;
-        if (previewQuantity > v.quantity) {
+        if (!v) return;
+        if (v.quantity != null && v.quantity > 0 && previewQuantity > v.quantity) {
             setPreviewQuantity(v.quantity);
         }
     }, [previewSelectedVariant, previewQuantity]);
@@ -220,7 +220,6 @@ function ProductDetails() {
         currentPrice,
         currentPriceAfterDiscount,
         currentImages,
-        currentQuantity,
         selectedVariant,
         availableAttributes,
     } = useVariantSelector({
@@ -235,24 +234,18 @@ function ProductDetails() {
 
     const extraQuantityMax = useMemo(() => {
         if (!product) return 999;
-        const stock = selectedVariant?.quantity ?? 9999;
-        const cap = product.max_purchase_quantity;
-        return Math.min(
-            stock > 0 ? stock : 9999,
-            cap != null && cap > 0 ? cap : 9999,
-            999
+        const stockCap = variantOrderLimit(
+            selectedVariant,
+            product.max_purchase_quantity,
         );
+        return Math.min(stockCap, 999);
     }, [product, selectedVariant]);
 
     /** Max units per order line — variant stock capped by product.max_purchase_quantity. */
     const maxOrderQuantity = useMemo(() => {
         if (!product) return 1;
-        const stock =
-            currentQuantity > 0 ? currentQuantity : product.quantity ?? 0;
-        if (stock <= 0) return 1;
-        const cap = product.max_purchase_quantity;
-        return Math.min(stock, cap != null && cap > 0 ? cap : stock);
-    }, [product, currentQuantity]);
+        return variantOrderLimit(selectedVariant, product.max_purchase_quantity);
+    }, [product, selectedVariant]);
 
     const extraDetailsUnitAddon = useMemo(() => {
         if (!product?.extra_details?.length || isFoodProduct) return 0;
@@ -309,7 +302,7 @@ function ProductDetails() {
             );
             return;
         }
-        if (previewQuantity > v!.quantity) {
+        if (exceedsVariantStock(v, previewQuantity)) {
             toast.error(
                 t(
                     "product.insufficientStock",
@@ -359,7 +352,7 @@ function ProductDetails() {
             priceNumeric: unitPrice,
             quantity: previewQuantity,
             subtotal: subtotalStr,
-            storeId: shopIdForLine,
+            storeId: shopIdForLine ?? 0,
             hasFreeDelivery: boughtWithPreview.is_instant_delivery
                 ? true
                 : undefined,
@@ -367,7 +360,7 @@ function ProductDetails() {
             productId: boughtWithPreview.id,
             variantId: v.variant_id ?? undefined,
             shop_product_variant_id: v.id,
-            shopId: shopIdForLine,
+            shopId: shopIdForLine ?? undefined,
             selectedAttributes: selectedAttrs,
         };
 
@@ -531,6 +524,12 @@ function ProductDetails() {
             toast.error(cannotAddToCartReason);
             return;
         }
+        if (exceedsVariantStock(selectedVariant, quantity)) {
+            toast.error(
+                t("product.insufficientStock", "Not enough stock for this quantity."),
+            );
+            return;
+        }
         const baseUnit = currentPriceAfterDiscount ?? currentPrice ?? 0;
         const price = baseUnit + (isFoodProduct ? 0 : extraDetailsUnitAddon);
         const cartCurrencySymbol =
@@ -561,13 +560,13 @@ function ProductDetails() {
             priceNumeric: price,
             quantity,
             subtotal: `${cartCurrencySymbol}${(price * quantity).toFixed(2)}`,
-            storeId: shopIdForLine,
+            storeId: shopIdForLine ?? 0,
             hasFreeDelivery: isInstant ? true : undefined,
             is_instant_delivery: isInstant,
             productId: product.id,
             variantId: selectedVariant.variant_id ?? undefined,
             shop_product_variant_id: selectedVariant.id,
-            shopId: shopIdForLine,
+            shopId: shopIdForLine ?? undefined,
             selectedAttributes:
                 Object.keys(selectedAttributes).length > 0
                     ? { ...selectedAttributes }
@@ -852,6 +851,20 @@ function ProductDetails() {
                                     {deliveryEstimate}
                                 </span>
                             </p>
+                        )}
+
+                        {product.warranty?.name && (
+                            <div className="rounded-2xl border border-custom-primary/15 bg-custom-secondary/40 px-4 py-3 dark:border-white/10 dark:bg-white/[0.04]">
+                                <p className="text-sm font-semibold text-custom-primary dark:text-white">
+                                    {t("product.warranty", "Warranty")}:{" "}
+                                    {product.warranty.name}
+                                </p>
+                                {product.warranty.description ? (
+                                    <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-custom-secondary">
+                                        {product.warranty.description}
+                                    </p>
+                                ) : null}
+                            </div>
                         )}
 
                         {/* Attribute Selectors (color, size, etc.) */}
@@ -1303,11 +1316,10 @@ function ProductDetails() {
                                         <ProductQuantitySelector
                                             quantity={previewQuantity}
                                             min={1}
-                                            max={
-                                                previewSelectedVariant
-                                                    ? previewSelectedVariant.quantity
-                                                    : boughtWithPreview.quantity
-                                            }
+                                            max={variantOrderLimit(
+                                                previewSelectedVariant,
+                                                boughtWithPreview.max_purchase_quantity,
+                                            )}
                                             onQuantityChange={setPreviewQuantity}
                                         />
                                     </div>

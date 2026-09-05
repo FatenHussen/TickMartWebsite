@@ -173,7 +173,7 @@ export const queryKeys = {
  },
 
  /**
- * Schedules query keys (delivery frequency options)
+ * Schedules query keys (catalog + custom-basket drafts)
  */
  schedules: {
  all: () => ["schedules"] as const,
@@ -181,6 +181,15 @@ export const queryKeys = {
  page !== undefined
  ? (["schedules","list", page] as const)
  : (["schedules","list"] as const),
+ catalog: () => ["schedules", "catalog"] as const,
+ details: (id?: number | string) =>
+ id !== undefined
+ ? (["schedules", "details", id] as const)
+ : (["schedules", "details"] as const),
+ customBasket: (id?: number | string) =>
+ id !== undefined
+ ? (["schedules", "customBasket", id] as const)
+ : (["schedules", "customBasket"] as const),
  },
 
  /**

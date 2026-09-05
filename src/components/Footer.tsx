@@ -31,6 +31,7 @@ export default function Footer() {
             { label: t("footer.products"), path: paths.client.products },
             { label: t("footer.brands"), path: paths.client.brands },
             { label: t("footer.baskets"), path: paths.client.baskets },
+            { label: t("footer.customBaskets"), path: paths.client.schedules },
             { label: t("footer.recipes"), path: paths.client.recipes },
         ],
         shopping: [

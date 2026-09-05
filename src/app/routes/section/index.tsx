@@ -17,6 +17,7 @@ import { MarketerRoutes } from"./marketer";
 import { VendorRoutes } from"./vendor";
 import { LegalRoutes } from"./legal";
 import { CmsPageRoutes } from"./cmsPage";
+import { ScheduleRoutes } from"./schedules";
 
 // ----------------------------------------------------------------------
 
@@ -50,6 +51,9 @@ export const routesSection: RouteObject[] = [
 
  // Custom / quick orders
  ...CustomOrderRoutes,
+
+ // Custom scheduled baskets (`/schedules`, `/schedules/:id`)
+ ...ScheduleRoutes,
 
  // Account
  ...AccountRoutes,

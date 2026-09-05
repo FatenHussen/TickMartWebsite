@@ -29,9 +29,10 @@ export interface VariantAttribute {
 /**
  * A shop variant. The API always returns at least one entry, falling back to a
  * synthetic variant built from the parent product when nothing is linked to a
- * branch. In that fallback `id` / `variant_id` / `shop_id` are `null`, which
- * means the variant is displayable but **not purchasable** (the cart needs a
- * real `shop_product_variant_id`).
+ * branch. In that fallback `id` is `null`, which means the variant is
+ * displayable but **not purchasable** (the cart needs a real
+ * `shop_product_variant_id`). Platform offers may have `shop_id: null` with a
+ * real `id`. `quantity` may be `null` when the admin left stock empty.
  */
 export interface ShopVariant {
  id: number | null;
@@ -56,23 +57,59 @@ export interface ShopVariant {
  /** Dual-currency map from API — prefer over local FX. */
  price_currencies?: ApiDualCurrencies;
  price_after_discount_currencies?: ApiDualCurrencies;
- quantity: number;
+ quantity: number | null;
  shop_id: number | null;
  is_restaurant?: boolean;
  city_id?: number | null;
  images: ProductImage[];
 }
 
-/** True when a variant can actually be added to the cart. */
+/** Null stock means the admin left quantity empty — treat as unlimited. */
+export function isVariantInStock(
+    variant: ShopVariant | null | undefined,
+): boolean {
+    if (!variant) return false;
+    return variant.quantity == null || variant.quantity > 0;
+}
+
+/**
+ * Max units the quantity stepper should allow. Null stock uses
+ * `max_purchase_quantity` (or 999). Zero stock still returns 1 so the
+ * control is not empty — `isPurchasableVariant` disables add-to-cart.
+ */
+export function variantOrderLimit(
+    variant: ShopVariant | null | undefined,
+    productMax?: number | null,
+    unlimitedCap = 999,
+): number {
+    const cap =
+        productMax != null && productMax > 0
+            ? Math.min(productMax, unlimitedCap)
+            : unlimitedCap;
+    if (!variant) return cap;
+    if (variant.quantity == null) return cap;
+    if (variant.quantity <= 0) return 1;
+    return Math.min(variant.quantity, cap);
+}
+
+export function exceedsVariantStock(
+    variant: ShopVariant | null | undefined,
+    qty: number,
+): boolean {
+    if (!variant || variant.quantity == null) return false;
+    return qty > variant.quantity;
+}
+
+/**
+ * True when a variant can actually be added to the cart.
+ * Platform offers may have `shop_id: null` but still carry a real
+ * `shop_product_variant_id` (`id`). Empty stock is not purchasable;
+ * unspecified (`null`) stock is.
+ */
 export function isPurchasableVariant(
     variant: ShopVariant | null | undefined
-): variant is ShopVariant & { id: number; shop_id: number } {
-    return (
-        variant != null &&
-        variant.id != null &&
-        variant.shop_id != null &&
-        variant.quantity > 0
-    );
+): variant is ShopVariant & { id: number } {
+    return variant != null && variant.id != null && isVariantInStock(variant);
 }
 
 export interface AvailableShop {
@@ -169,6 +206,12 @@ export interface ProductExtra {
  price: number | string;
 }
 
+export interface ProductWarranty {
+ id: number;
+ name: string;
+ description?: string | null;
+}
+
 export interface ProductDetailsData {
  id: number;
  name: string;
@@ -222,6 +265,7 @@ export interface ProductDetailsData {
  available_shops: AvailableShop[];
  is_favorite?: boolean;
  icons?: ProductIcon[];
+ warranty?: ProductWarranty | null;
 }
 
 export interface ProductDetailsResponse {

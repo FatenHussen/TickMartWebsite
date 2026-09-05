@@ -5,6 +5,7 @@ import type {
  ProductImage,
  SelectedAttributes,
 } from"../types/productDetails";
+import { isPurchasableVariant, isVariantInStock } from"../types/productDetails";
 
 interface UseVariantSelectorParams {
  attributesMap: AttributeMapItem[];
@@ -26,7 +27,7 @@ interface UseVariantSelectorReturn {
  currentPrice: number;
  currentPriceAfterDiscount: number;
  currentImages: string[];
- currentQuantity: number;
+ currentQuantity: number | null;
  isVariantSelected: boolean;
  availableAttributes: AvailableAttribute[];
 }
@@ -130,7 +131,9 @@ export function useVariantSelector({
  // API's synthetic fallback variant), so use it directly instead of
  // falling back to the parent product's price/stock.
  if (attributesMap.length === 0) {
- return shopVariants.find((v) => v.quantity > 0) ?? shopVariants[0];
+ return shopVariants.find(isPurchasableVariant)
+ ?? shopVariants.find(isVariantInStock)
+ ?? shopVariants[0];
  }
 
  return (
@@ -165,15 +168,12 @@ export function useVariantSelector({
 
  // Current quantity
  const currentQuantity = useMemo(() => {
- return selectedVariant?.quantity ?? 0;
+ return selectedVariant?.quantity ?? null;
  }, [selectedVariant]);
 
  // Check if all attributes are selected
  const isVariantSelected = useMemo(() => {
- return (
- attributesMap.length === 0 ||
- (selectedVariant !== null && selectedVariant.quantity > 0)
- );
+ return attributesMap.length === 0 || selectedVariant !== null;
  }, [attributesMap, selectedVariant]);
 
  return {

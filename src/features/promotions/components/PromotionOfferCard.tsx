@@ -127,7 +127,7 @@ export function PromotionOfferCard({
 
                 {title ? (
                     <h3
-                        className={`mt-2 text-base font-extrabold leading-snug tracking-tight sm:text-lg ${isDark ? "text-white" : "text-custom-primary"}`}
+                        className={`brand-display mt-2 text-base font-semibold leading-snug tracking-tight sm:text-lg ${isDark ? "text-white" : "text-custom-primary"}`}
                     >
                         {title}
                     </h3>

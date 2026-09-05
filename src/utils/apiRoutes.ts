@@ -398,11 +398,20 @@ export const apiRoutes = {
     },
 
     /**
-    * Schedule endpoints (delivery frequency options)
+    * Schedule catalog + user custom-basket (per schedule_id draft)
     */
     schedules: {
         list: (page?: number) =>
             `/user/schedules${page ? `?page=${page}` : ""}` as const,
+        details: (id: number | string) => `/user/schedules/${id}` as const,
+        customBasket: (id: number | string) =>
+            `/user/schedules/${id}/custom-basket` as const,
+        customBasketItems: (id: number | string) =>
+            `/user/schedules/${id}/custom-basket/items` as const,
+        customBasketItem: (id: number | string, itemId: number | string) =>
+            `/user/schedules/${id}/custom-basket/items/${itemId}` as const,
+        customBasketConfirm: (id: number | string) =>
+            `/user/schedules/${id}/custom-basket/confirm` as const,
     },
 
     /**

@@ -43,23 +43,38 @@ export type CartItem = {
 
 export type CartType ="default"|"recipe"|"basket"|"schedule_admin_cart";
 
-/** Schedule item from GET user/schedules */
+/** Badge on a schedule catalog card */
+export interface ScheduleBadge {
+ id?: number;
+ name: string;
+ image?: string | null;
+ color?: string | null;
+ type?: string | null;
+}
+
+/** Schedule item from GET user/schedules (catalog categories) */
 export interface ScheduleItem {
  id: number;
  name: string;
  interval_days: number;
- discount_type:"percentage"|"fixed";
+ discount_type: "percentage" | "fixed" | "none" | string;
  discount_value: number;
  /** Omitted on some API responses; treat missing as active */
  is_active?: boolean;
+ description?: string | null;
+ image?: string | null;
+ images?: string[];
+ top_badges?: ScheduleBadge[];
+ bottom_badges?: ScheduleBadge[];
 }
 
 export interface SchedulesResponse {
- status: boolean;
+ status?: boolean;
+ success?: boolean;
  message: string;
  data: {
  items: ScheduleItem[];
- pagination: {
+ pagination?: {
  current_page: number;
  last_page: number;
  per_page: number;

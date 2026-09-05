@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
+import { paths } from "@/app/routes/path/paths";
 import { useLanguage } from "@/context/LanguageContext";
 import { useBaskets } from "../hooks/useBaskets";
 import { useToggleFavorite } from "@/features/account/hooks/useFavorites";
@@ -163,6 +164,18 @@ export default function AllBaskets() {
                         <p className="text-sm text-custom-secondary mt-2">
                             {t("baskets.browseDescription")}
                         </p>
+                        <button
+                            type="button"
+                            onClick={() => navigate(paths.client.schedules)}
+                            className="mt-4 w-full rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/10 to-transparent p-4 text-start transition hover:border-primary/40 dark:from-primary/15"
+                        >
+                            <p className="font-bold text-custom-primary dark:text-white">
+                                {t("customBasket.ctaFromBaskets")}
+                            </p>
+                            <p className="mt-1 text-sm text-custom-secondary">
+                                {t("customBasket.ctaFromBasketsBody")}
+                            </p>
+                        </button>
                     </div>
 
                     {basketsError ? (

@@ -90,7 +90,7 @@ export default function QuickOrderHomeBanner({
                         </p>
                         <h2
                             id="quick-order-home-title"
-                            className="text-[1.85rem] font-extrabold leading-[1.15] tracking-tight text-slate-900 sm:text-4xl dark:text-white"
+                            className="brand-display text-[1.85rem] font-semibold leading-[1.15] tracking-tight text-slate-900 sm:text-4xl dark:text-white"
                         >
                             {title}
                         </h2>
@@ -173,7 +173,7 @@ export default function QuickOrderHomeBanner({
                     <Link
                         to={paths.client.customOrderCreate}
                         className={cn(
-                            "group inline-flex min-h-[3.25rem] shrink-0 items-center justify-center gap-2 self-start rounded-full px-7 py-3.5 text-base font-extrabold text-white",
+                            "brand-display group inline-flex min-h-[3.25rem] shrink-0 items-center justify-center gap-2 self-start rounded-full px-7 py-3.5 text-base font-semibold text-white",
                             "bg-[var(--color-primary)]",
                             "shadow-[0_16px_36px_-14px_color-mix(in_srgb,var(--color-primary)_75%,transparent)]",
                             "transition-transform duration-200 hover:-translate-y-0.5 active:translate-y-0",

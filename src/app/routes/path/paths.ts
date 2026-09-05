@@ -39,6 +39,8 @@ export const paths = {
         recipes: "/recipes",
         products: "/products",
         baskets: "/baskets",
+        schedules: "/schedules",
+        scheduleCustomize: (id: number | string) => `/schedules/${id}`,
         brandDetails: (id: number | string) => `/brand/${id}/products`,
         productDetails: (id: number | string) => `${ROOTS.PRODUCT}/${id}`,
         recipeDetails: (id: number | string) => `/recipe/${id}`,

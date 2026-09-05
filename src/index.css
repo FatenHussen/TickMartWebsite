@@ -17,6 +17,14 @@ html {
   color: var(--color-text-primary);
 }
 
+.brand-display {
+  font-family: "Cormorant Garamond", "Amiri", Georgia, "Times New Roman", serif;
+}
+
+[dir="rtl"] .brand-display {
+  font-family: "Amiri", "Cormorant Garamond", Georgia, "Times New Roman", serif;
+}
+
 body,
 #root {
   min-height: 100dvh;
@@ -2066,5 +2074,253 @@ html.dark #root {
   .navbar-top-row,
   .navbar-sub-row {
     transition: none;
+  }
+}
+
+.schedules-hero {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #e7d8c6;
+  background:
+    linear-gradient(165deg, #fffbf6 0%, #f7efe4 52%, #f1e6d6 100%);
+  box-shadow:
+    0 1px 0 rgba(255, 252, 247, 0.9) inset,
+    0 22px 48px -28px rgba(92, 58, 28, 0.28),
+    0 6px 16px -8px rgba(28, 25, 23, 0.08);
+}
+
+.schedules-hero::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset-inline-end: -3rem;
+  top: -3.5rem;
+  height: 11rem;
+  width: 11rem;
+  border-radius: 999px;
+  background: rgb(232 201 160 / 0.28);
+  filter: blur(42px);
+}
+
+.schedules-hero::after {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset-inline-start: -2.5rem;
+  bottom: -2rem;
+  height: 8rem;
+  width: 8rem;
+  border-radius: 999px;
+  background: rgb(240 224 204 / 0.45);
+  filter: blur(36px);
+}
+
+.dark .schedules-hero {
+  border-color: rgb(255 255 255 / 0.1);
+  background: linear-gradient(165deg, #1c1917 0%, #18181b 100%);
+  box-shadow: none;
+}
+
+@keyframes schedules-orb {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(4%, -6%, 0) scale(1.08);
+  }
+}
+
+.animate-schedules-orb {
+  animation: schedules-orb 14s ease-in-out infinite;
+}
+
+@keyframes schedules-header-in {
+  0% {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-schedules-header {
+  animation: schedules-header-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes schedules-mark-in {
+  0% {
+    opacity: 0;
+    transform: translateY(14px) scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-schedules-mark {
+  animation: schedules-mark-in 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.06s both;
+}
+
+@keyframes schedules-copy-in {
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-schedules-copy {
+  animation: schedules-copy-in 0.65s cubic-bezier(0.22, 1, 0.36, 1) 0.16s both;
+}
+
+@keyframes schedules-chip-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.84);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-schedules-chip {
+  animation: schedules-chip-in 0.5s cubic-bezier(0.34, 1.25, 0.64, 1) 0.32s both;
+}
+
+@keyframes schedules-title-in {
+  0% {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes schedules-title-bar {
+  0% {
+    transform: scaleX(0);
+  }
+  100% {
+    transform: scaleX(1);
+  }
+}
+
+.animate-schedules-title {
+  animation: schedules-title-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-schedules-title-bar {
+  transform-origin: left center;
+  animation: schedules-title-bar 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.12s both;
+}
+
+[dir="rtl"] .animate-schedules-title {
+  animation-name: schedules-title-in-rtl;
+}
+
+[dir="rtl"] .animate-schedules-title-bar {
+  transform-origin: right center;
+}
+
+@keyframes schedules-title-in-rtl {
+  0% {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes schedules-beat {
+  0%,
+  100% {
+    opacity: 0.22;
+    transform: scale(0.82);
+  }
+  28% {
+    opacity: 1;
+    transform: scale(1.18);
+  }
+}
+
+.schedules-beat-dot {
+  height: 0.4rem;
+  width: 0.4rem;
+  border-radius: 999px;
+  background: #f59e0b;
+  animation: schedules-beat 1.8s ease-in-out infinite;
+}
+
+.schedules-beat-dot:nth-child(2) {
+  animation-delay: 0.28s;
+}
+
+.schedules-beat-dot:nth-child(3) {
+  animation-delay: 0.56s;
+}
+
+@keyframes schedules-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.animate-schedules-float {
+  animation: schedules-float 3.4s ease-in-out infinite;
+}
+
+@keyframes schedules-soft-in {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.schedules-stagger > * {
+  animation: schedules-soft-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.schedules-stagger > *:nth-child(1) { animation-delay: 0.04s; }
+.schedules-stagger > *:nth-child(2) { animation-delay: 0.08s; }
+.schedules-stagger > *:nth-child(3) { animation-delay: 0.12s; }
+.schedules-stagger > *:nth-child(4) { animation-delay: 0.16s; }
+.schedules-stagger > *:nth-child(5) { animation-delay: 0.2s; }
+.schedules-stagger > *:nth-child(6) { animation-delay: 0.24s; }
+.schedules-stagger > *:nth-child(7) { animation-delay: 0.28s; }
+.schedules-stagger > *:nth-child(8) { animation-delay: 0.32s; }
+.schedules-stagger > *:nth-child(n + 9) { animation-delay: 0.36s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-schedules-orb,
+  .animate-schedules-header,
+  .animate-schedules-mark,
+  .animate-schedules-copy,
+  .animate-schedules-chip,
+  .animate-schedules-title,
+  .animate-schedules-title-bar,
+  .schedules-beat-dot,
+  .animate-schedules-float,
+  .schedules-stagger > * {
+    animation: none;
   }
 }

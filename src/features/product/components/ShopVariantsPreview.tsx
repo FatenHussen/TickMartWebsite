@@ -117,7 +117,9 @@ export default function ShopVariantsPreview({
                                     </span>
                                     <span className="text-custom-secondary">
                                         {t("product.quantity", "Quantity")}:{" "}
-                                        {v.quantity}
+                                        {v.quantity == null
+                                            ? t("product.stockUnspecified", "—")
+                                            : v.quantity}
                                     </span>
                                     {v.shop_id != null && (
                                         <span className="text-xs text-custom-secondary">
@@ -127,7 +129,7 @@ export default function ShopVariantsPreview({
                                     )}
                                     {outOfStock && (
                                         <span className="text-xs font-medium text-red-600">
-                                            {v.shop_id == null || v.id == null
+                                            {v.id == null
                                                 ? t(
                                                       "product.notAvailableInBranch",
                                                       "Not available in any branch",
