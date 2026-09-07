@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import { useAuthStore } from "@/store/auth";
 
-const SOCKET_URL = "https://tikmool-ws.octopus-software.online";
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL ?? "";
 
 export type OrderLocationPayload = {
     orderId: string;
