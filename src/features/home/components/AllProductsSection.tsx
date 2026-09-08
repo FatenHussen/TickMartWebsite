@@ -23,6 +23,7 @@ import {
     mapApiBottomBadgesToProductCard,
     mapApiTopBadgesToProductCard,
 } from "@/shared/lib/mapProductBadges";
+import { resolveListingCardPrices } from "@/shared/lib/formatApiPrice";
 import {
     homeStaticSectionRowSurface,
     pickHomeSectionBySeeMorePageSlug,
@@ -116,28 +117,24 @@ export default function AllProductsSection({
     const handleToggleFavorite = (id: number) => toggleFavorite.mutate({ type: "product", id });
 
     const convertProductToCardProps = (product: ProductItem) => {
-        const parseMoney = (value: unknown) => {
-            const numericValue = typeof value === "number" ? value : Number(value);
-            return Number.isFinite(numericValue) ? numericValue : 0;
-        };
-
-        const discountedPrice = parseMoney(product.price_after_discount);
-        const originalPrice = parseMoney(product.price);
-        const savedAmount = parseMoney(product.amount_saved);
         const topBadges = mapApiTopBadgesToProductCard(product.top_badges ?? product.budges) ?? undefined;
         const bottomBadges = mapApiBottomBadgesToProductCard(product.bottom_badges) ?? undefined;
+        const listing = resolveListingCardPrices(
+            product,
+            t("product.youSaved", "You saved"),
+        );
         return {
             id: product.id,
             name: product.name,
-            price: `£${discountedPrice.toFixed(2)}`,
-            originalPrice: originalPrice > discountedPrice ? `£${originalPrice.toFixed(2)}` : undefined,
+            price: listing.price,
+            originalPrice: listing.originalPrice,
             rating: product.rating || 0,
             image: product.image,
             badge: topBadges,
             bottomBadges,
             category: product.category,
             sold: product.sold_number,
-            savings: savedAmount > 0 ? `${t("product.youSaved", "You saved")} £${savedAmount.toFixed(2)}` : undefined,
+            savings: listing.savings,
             deliveryInfo: t("home.freeDelivery", "Free Delivery"),
             isFavorite: product.is_favorite ?? false,
             onClick: handleProductClick,

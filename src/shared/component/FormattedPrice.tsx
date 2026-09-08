@@ -11,32 +11,16 @@ type FormattedPriceProps = {
     strikethrough?: boolean;
 };
 
-/**
- * Renders a money string in a stable LTR isolate so `$8.82` never flips to `8.82 $` in RTL.
- */
-export default function FormattedPrice({
+function PriceGlyph({
     value,
-    className,
-    prominent = false,
-    strikethrough = false,
-}: FormattedPriceProps) {
+    prominent,
+}: {
+    value: string;
+    prominent: boolean;
+}) {
     const parts = parsePriceParts(value);
-
-    const shell = (children: ReactNode) => (
-        <span
-            dir="ltr"
-            className={cn(
-                "inline-flex items-baseline tabular-nums",
-                strikethrough && "line-through decoration-from-font",
-                className,
-            )}
-        >
-            {children}
-        </span>
-    );
-
     if (parts.kind === "raw") {
-        return shell(parts.value);
+        return <span>{parts.value}</span>;
     }
 
     const symbol = (
@@ -54,17 +38,61 @@ export default function FormattedPrice({
     );
     const amount = <span className="leading-none">{parts.amount}</span>;
 
-    return shell(
-        parts.symbolFirst ? (
-            <>
-                {symbol}
-                {amount}
-            </>
-        ) : (
-            <>
-                {amount}
-                {symbol}
-            </>
-        ),
+    return parts.symbolFirst ? (
+        <>
+            {symbol}
+            {amount}
+        </>
+    ) : (
+        <>
+            {amount}
+            {symbol}
+        </>
     );
+}
+
+/**
+ * Renders a money string in a stable LTR isolate so `$8.82` never flips to `8.82 $` in RTL.
+ * Dual-currency API strings (`$ 25 / ل.س 325,000`) are split and rendered as two glyphs.
+ */
+export default function FormattedPrice({
+    value,
+    className,
+    prominent = false,
+    strikethrough = false,
+}: FormattedPriceProps) {
+    const chunks = value.includes(" / ")
+        ? value
+              .split(/\s*\/\s*/)
+              .map((chunk) => chunk.trim())
+              .filter(Boolean)
+        : [value];
+
+    const shell = (children: ReactNode) => (
+        <span
+            dir="ltr"
+            className={cn(
+                "inline-flex flex-wrap items-baseline tabular-nums",
+                strikethrough && "line-through decoration-from-font",
+                className,
+            )}
+        >
+            {children}
+        </span>
+    );
+
+    if (chunks.length > 1) {
+        return shell(
+            chunks.map((chunk, i) => (
+                <span key={`${chunk}-${i}`} className="inline-flex items-baseline">
+                    {i > 0 ? (
+                        <span className="mx-1 font-medium opacity-40">/</span>
+                    ) : null}
+                    <PriceGlyph value={chunk} prominent={prominent} />
+                </span>
+            )),
+        );
+    }
+
+    return shell(<PriceGlyph value={value} prominent={prominent} />);
 }

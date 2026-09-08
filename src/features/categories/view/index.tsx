@@ -41,6 +41,7 @@ import {
     mapApiBottomBadgesToProductCard,
     mapApiTopBadgesToProductCard,
 } from "@/shared/lib/mapProductBadges";
+import { resolveListingCardPrices } from "@/shared/lib/formatApiPrice";
 
 // Map UI sortBy value → API `sort_by`
 function mapSortToApi(sortBy: string): {
@@ -564,18 +565,19 @@ export default function CategoriesView() {
                     ) : products.length > 0 ? (
                         <>
                             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-7 lg:grid-cols-3 lg:gap-8">
-                                {products.map((product) => (
+                                {products.map((product) => {
+                                    const listing = resolveListingCardPrices(
+                                        product,
+                                        t("product.youSaved", "You saved"),
+                                    );
+                                    return (
                                     <ProductCard
                                         key={product.id}
                                         id={product.id}
                                         name={product.name}
                                         description={product.description}
-                                        price={product.price_after_discount_formatted ?? `${product.currency_symbol ?? ""}${product.price_after_discount}`}
-                                        originalPrice={
-                                            product.price > product.price_after_discount
-                                                ? (product.price_formatted ?? `${product.currency_symbol ?? ""}${product.price}`)
-                                                : undefined
-                                        }
+                                        price={listing.price}
+                                        originalPrice={listing.originalPrice}
                                         rating={product.rating ?? 0}
                                         image={product.image}
                                         category={product.category}
@@ -586,7 +588,7 @@ export default function CategoriesView() {
                                                 : (product.is_favorite ?? false)
                                         }
                                         onToggleFavorite={handleToggleFavorite}
-                                        savings={`${t("product.youSaved", "You saved")} ${product.amount_saved_formatted ?? `${product.currency_symbol ?? ""}${product.amount_saved}`}`}
+                                        savings={listing.savings}
                                         badge={mapApiTopBadgesToProductCard(
                                             product.top_badges?.length
                                                 ? product.top_badges
@@ -601,7 +603,8 @@ export default function CategoriesView() {
                                         t={t}
                                         onClick={handleProductClick}
                                     />
-                                ))}
+                                    );
+                                })}
                             </div>
 
                             {isFetchingNextPage && (

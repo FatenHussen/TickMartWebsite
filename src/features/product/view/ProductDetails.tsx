@@ -28,6 +28,7 @@ import { useProductsFromSameSeller } from "../hooks/useProductsFromSameSeller";
 import {
     resolveDisplayListPrice,
     resolveDisplaySalePrice,
+    resolveListingCardPrices,
 } from "@/shared/lib/formatApiPrice";
 import { toast } from "sonner";
 import { useCartStore } from "@/store/cart";
@@ -259,6 +260,10 @@ function ProductDetails() {
 
     const [quantity, setQuantity] = useState(1);
     const { data: favoriteProducts = [] } = useFavorites("product", false);
+
+    useEffect(() => {
+        setQuantity((q) => Math.min(Math.max(q, 1), Math.max(maxOrderQuantity, 1)));
+    }, [maxOrderQuantity, selectedVariant?.id]);
     const toggleFavorite = useToggleFavorite();
     const isFavorite =
         product?.is_favorite ?? favoriteProducts.some((f) => f.id === productIdNum);
@@ -420,68 +425,47 @@ function ProductDetails() {
                 mapApiTopBadgesToProductCard(item.top_badges) ?? [];
             const bottomBadges =
                 mapApiBottomBadgesToProductCard(item.bottom_badges) ?? [];
-
-            const priceDisplay =
-                item.price_after_discount_formatted ??
-                item.price_formatted ??
-                `${item.currency_symbol ?? product.currency_symbol ?? "£"}${(
-                    item.price_after_discount ?? item.price
-                ).toFixed(2)}`;
-
-            const originalPrice =
-                item.price_after_discount != null &&
-                item.price_after_discount < item.price
-                    ? item.price_formatted ??
-                      `${item.currency_symbol ?? product.currency_symbol ?? "£"}${item.price.toFixed(2)}`
-                    : undefined;
-
-            const savings =
-                item.amount_saved != null && item.amount_saved > 0
-                    ? `${t("product.youSaved", "You saved")} ${item.amount_saved_formatted ?? ""}`
-                    : undefined;
+            const listing = resolveListingCardPrices(
+                item,
+                t("product.youSaved", "You saved"),
+            );
 
             return {
                 id: item.id,
                 name: item.name,
-                price: priceDisplay,
-                originalPrice,
+                price: listing.price,
+                originalPrice: listing.originalPrice,
                 rating: item.rating ?? 0,
                 image: item.image,
                 category: item.category,
                 sold: item.sold_number,
-                savings,
+                savings: listing.savings,
                 badge: topBadges.length ? topBadges : undefined,
                 bottomBadges: bottomBadges.length ? bottomBadges : undefined,
                 isFavorite: item.is_favorite ?? favoriteIds.includes(item.id),
             };
         });
-    }, [product?.bought_with, product?.currency_symbol, favoriteIds, t]);
+    }, [product?.bought_with, favoriteIds, t]);
 
     const similarProductItems = useMemo(() => {
         return similarProducts
             .filter((p) => p.id !== product?.id)
             .map((p) => {
                 const pi = p as ProductItem;
-                const sym =
-                    pi.currency_symbol ?? product?.currency_symbol ?? "£";
+                const listing = resolveListingCardPrices(
+                    pi,
+                    t("product.youSaved", "You saved"),
+                );
                 return {
                     id: p.id,
                     name: p.name,
-                    price:
-                        pi.price_after_discount_formatted ??
-                        `${sym}${p.price_after_discount.toFixed(2)}`,
-                    originalPrice:
-                        p.price > p.price_after_discount
-                            ? pi.price_formatted ?? `${sym}${p.price.toFixed(2)}`
-                            : undefined,
+                    price: listing.price,
+                    originalPrice: listing.originalPrice,
                     rating: p.rating || 0,
                     image: p.image,
                     category: p.category,
                     sold: p.sold_number,
-                    savings:
-                        p.amount_saved > 0
-                            ? `${t("product.youSaved", "You saved")} ${pi.amount_saved_formatted ?? `${sym}${p.amount_saved.toFixed(2)}`}`
-                            : undefined,
+                    savings: listing.savings,
                     badge: mapApiTopBadgesToProductCard(
                         pi.top_badges?.length ? pi.top_badges : pi.budges
                     ),
@@ -491,33 +475,27 @@ function ProductDetails() {
                         favoriteIds.includes(p.id),
                 };
             });
-    }, [similarProducts, product?.id, product?.currency_symbol, t, favoriteIds]);
+    }, [similarProducts, product?.id, t, favoriteIds]);
 
     const sellerProductItems = useMemo(() => {
         return sellerProducts
             .filter((p) => p.id !== product?.id)
             .map((p) => {
                 const pi = p as ProductItem;
-                const sym =
-                    pi.currency_symbol ?? product?.currency_symbol ?? "£";
+                const listing = resolveListingCardPrices(
+                    pi,
+                    t("product.youSaved", "You saved"),
+                );
                 return {
                     id: p.id,
                     name: p.name,
-                    price:
-                        pi.price_after_discount_formatted ??
-                        `${sym}${p.price_after_discount.toFixed(2)}`,
-                    originalPrice:
-                        p.price > p.price_after_discount
-                            ? pi.price_formatted ?? `${sym}${p.price.toFixed(2)}`
-                            : undefined,
+                    price: listing.price,
+                    originalPrice: listing.originalPrice,
                     rating: p.rating || 0,
                     image: p.image,
                     category: p.category,
                     sold: p.sold_number,
-                    savings:
-                        p.amount_saved > 0
-                            ? `${t("product.youSaved", "You saved")} ${pi.amount_saved_formatted ?? `${sym}${p.amount_saved.toFixed(2)}`}`
-                            : undefined,
+                    savings: listing.savings,
                     badge: mapApiTopBadgesToProductCard(
                         pi.top_badges?.length ? pi.top_badges : pi.budges
                     ),
@@ -527,7 +505,7 @@ function ProductDetails() {
                         favoriteIds.includes(p.id),
                 };
             });
-    }, [sellerProducts, product?.id, product?.currency_symbol, t, favoriteIds]);
+    }, [sellerProducts, product?.id, t, favoriteIds]);
 
     const handleAddToCart = () => {
         if (!product) return;
@@ -701,17 +679,9 @@ function ProductDetails() {
         ? resolveVariantPriceDisplay(selectedVariant, t)
         : null;
 
-    // Build badges — prefer variant-level discount from API
+    // Build badges — variant-level discount from API (no local % math)
     const badges: Array<{ label: string; className?: string }> = [];
-    const discountBadgeLabel =
-        variantPriceDisplay?.badge ??
-        (product.price > product.price_after_discount
-            ? `${Math.round(
-                  ((product.price - product.price_after_discount) /
-                      product.price) *
-                      100,
-              )}% OFF`
-            : null);
+    const discountBadgeLabel = variantPriceDisplay?.badge ?? null;
     if (discountBadgeLabel) {
         badges.push({
             label: discountBadgeLabel,
@@ -761,12 +731,7 @@ function ProductDetails() {
     const savings =
         variantPriceDisplay?.savedLabel
             ? `${t("product.youSaved", "You saved")} ${variantPriceDisplay.savedLabel}`
-            : product.amount_saved_formatted?.trim() ||
-              (product.price > product.price_after_discount
-                  ? `${t("product.youSaved", "You saved")} ${formatPrice(
-                        product.price - product.price_after_discount,
-                    )}`
-                  : undefined);
+            : product.amount_saved_formatted?.trim() || undefined;
 
     const deliveryEstimate =
         product.delivery_time?.trim() || product.time_prepare?.trim() || null;
@@ -843,8 +808,17 @@ function ProductDetails() {
                         <ProductInfo
                             category={product.category?.name}
                             name={product.name}
-                            sku={isFood ? undefined : product.sku}
-                            origin={isFood ? undefined : countryName || undefined}
+                            sku={
+                                selectedVariant?.sku?.trim() ||
+                                product.sku?.trim() ||
+                                undefined
+                            }
+                            barcode={
+                                selectedVariant?.barcode?.trim() ||
+                                product.barcode?.trim() ||
+                                undefined
+                            }
+                            origin={countryName || undefined}
                             price={displaySalePrice}
                             originalPrice={displayListPrice}
                             savings={savings}
@@ -1002,7 +976,11 @@ function ProductDetails() {
                             ) : null}
                             {!canAddToCart && (
                                 <p className="text-sm text-custom-secondary dark:text-[#A1A1AA]">
-                                    {cannotAddToCartReason}
+                                    {selectedVariant != null &&
+                                    (selectedVariant.quantity == null ||
+                                        selectedVariant.quantity <= 0)
+                                        ? t("product.outOfStock", "Out of stock")
+                                        : cannotAddToCartReason}
                                 </p>
                             )}
                         </div>
@@ -1287,24 +1265,22 @@ function ProductDetails() {
                                     />
                                     <div className="flex flex-wrap items-baseline gap-3">
                                         <p className="text-2xl font-bold tabular-nums text-custom-primary dark:text-[#FFFFFF]">
-                                            {previewSelectedVariant
-                                                ? previewSelectedVariant.price_formatted ??
-                                                  `${previewSelectedVariant.currency_symbol ?? boughtWithPreview.currency_symbol ?? ""}${previewSelectedVariant.price.toFixed(2)}`
-                                                : boughtWithPreview.price_after_discount_formatted ??
-                                                  boughtWithPreview.price_formatted ??
-                                                  `${boughtWithPreview.currency_symbol ?? ""}${(
-                                                      boughtWithPreview.price_after_discount ??
-                                                      boughtWithPreview.price
-                                                  ).toFixed(2)}`}
-                                        </p>
-                                        {!previewSelectedVariant &&
-                                            boughtWithPreview.price >
-                                                boughtWithPreview.price_after_discount && (
-                                                <p className="text-base text-custom-tertiary line-through dark:text-[#71717A]">
-                                                    {boughtWithPreview.price_formatted ??
-                                                        `${boughtWithPreview.currency_symbol ?? ""}${boughtWithPreview.price.toFixed(2)}`}
-                                                </p>
+                                            {resolveDisplaySalePrice(
+                                                previewSelectedVariant ??
+                                                    boughtWithPreview,
                                             )}
+                                        </p>
+                                        {resolveDisplayListPrice(
+                                            previewSelectedVariant ??
+                                                boughtWithPreview,
+                                        ) ? (
+                                            <p className="text-base text-custom-tertiary line-through dark:text-[#71717A]">
+                                                {resolveDisplayListPrice(
+                                                    previewSelectedVariant ??
+                                                        boughtWithPreview,
+                                                )}
+                                            </p>
+                                        ) : null}
                                     </div>
                                     <div className="rounded-2xl border border-custom-primary/15 bg-gradient-to-br from-custom-secondary/50 to-transparent p-4 dark:border-[rgba(255,255,255,0.06)] dark:from-[rgba(16,17,20,0.75)] dark:to-[rgba(16,17,20,0.55)]">
                                         <ProductDescription

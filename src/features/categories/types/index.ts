@@ -1,6 +1,7 @@
 // ============ API Response Types ============
 
 import type { Section } from"@/features/home/types";
+import type { ApiDualCurrencies } from "@/shared/lib/formatApiPrice";
 
 // Category child (subcategory)
 // Everything past `id`/`name` is optional: the nested `children[]` the list
@@ -79,6 +80,10 @@ category_id?: number;
  price_formatted: string;
  price_after_discount: number;
  price_after_discount_formatted: string;
+ price_currencies?: ApiDualCurrencies | null;
+ price_after_discount_currencies?: ApiDualCurrencies | null;
+ discount_type?: "percentage" | "fixed" | null;
+ discount_value?: number | null;
  amount_saved: number;
  amount_saved_formatted: string;
  quantity: number | null;

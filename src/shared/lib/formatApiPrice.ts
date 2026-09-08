@@ -28,7 +28,7 @@ export function formatDualCurrencies(
     return [...preferred, ...rest].filter(Boolean).join(" / ");
 }
 
-type FormattedPriceSource = {
+export type FormattedPriceSource = {
     price_formatted?: string | null;
     price_after_discount_formatted?: string | null;
     price_currencies?: ApiDualCurrencies | null;
@@ -37,24 +37,68 @@ type FormattedPriceSource = {
     currency_symbol?: string | null;
     price?: number | null;
     price_after_discount?: number | null;
+    discount_type?: string | null;
+    discount_value?: number | string | null;
+    amount_saved?: number | null;
+    discount?: string | number | null;
 };
 
+function pickCurrenciesThenFormatted(
+    currencies: ApiDualCurrencies | null | undefined,
+    formatted: string | null | undefined,
+): string {
+    return formatDualCurrencies(currencies) || formatted?.trim() || "";
+}
+
+function numericDiscount(source: FormattedPriceSource): boolean {
+    const afterNum = source.price_after_discount;
+    const listNum = source.price;
+    return (
+        afterNum != null &&
+        listNum != null &&
+        Number.isFinite(afterNum) &&
+        Number.isFinite(listNum) &&
+        afterNum < listNum
+    );
+}
+
 /**
- * Display price after discount (primary). Falls back to list price / dual currencies.
- * Numeric + symbol is last resort when the API omitted formatted fields.
+ * True when the API reports a real discount (`percentage`/`fixed` with a value,
+ * or sale price below list). `discount_type` of `null` / `"none"` is no discount.
+ */
+export function hasEffectiveDiscount(
+    source: FormattedPriceSource | null | undefined,
+): boolean {
+    if (!source) return false;
+    const dtype = source.discount_type;
+    const dval = Number(source.discount_value ?? 0);
+    if ((dtype === "percentage" || dtype === "fixed") && dval > 0) return true;
+    if (numericDiscount(source)) return true;
+    if (source.amount_saved != null && Number(source.amount_saved) > 0) return true;
+    const disc = source.discount;
+    if (typeof disc === "number" && disc > 0) return true;
+    if (typeof disc === "string" && parseFloat(disc) > 0) return true;
+    return false;
+}
+
+/**
+ * Display price after discount (primary). Prefer `*_currencies` (USD + SYP)
+ * over a single `*_formatted` line. Never invent FX locally.
  */
 export function resolveDisplaySalePrice(
     source: FormattedPriceSource | null | undefined,
 ): string {
     if (!source) return "";
-    const after =
-        source.price_after_discount_formatted?.trim() ||
-        formatDualCurrencies(source.price_after_discount_currencies);
+    const after = pickCurrenciesThenFormatted(
+        source.price_after_discount_currencies,
+        source.price_after_discount_formatted,
+    );
     if (after) return after;
 
-    const list =
-        source.price_formatted?.trim() ||
-        formatDualCurrencies(source.price_currencies);
+    const list = pickCurrenciesThenFormatted(
+        source.price_currencies,
+        source.price_formatted,
+    );
     if (list) return list;
 
     const amount = source.price_after_discount ?? source.price;
@@ -67,25 +111,54 @@ export function resolveDisplayListPrice(
     source: FormattedPriceSource | null | undefined,
 ): string | undefined {
     if (!source) return undefined;
-    const afterNum = source.price_after_discount;
+    const afterFmt = pickCurrenciesThenFormatted(
+        source.price_after_discount_currencies,
+        source.price_after_discount_formatted,
+    );
+    const listFmt = pickCurrenciesThenFormatted(
+        source.price_currencies,
+        source.price_formatted,
+    );
     const listNum = source.price;
-    const hasDiscount =
-        afterNum != null &&
-        listNum != null &&
-        Number.isFinite(afterNum) &&
-        Number.isFinite(listNum) &&
-        afterNum < listNum;
 
-    const afterFmt = source.price_after_discount_formatted?.trim();
-    const listFmt =
-        source.price_formatted?.trim() ||
-        formatDualCurrencies(source.price_currencies);
-
-    if (hasDiscount || (afterFmt && listFmt && afterFmt !== listFmt)) {
+    if (
+        hasEffectiveDiscount(source) ||
+        (afterFmt && listFmt && afterFmt !== listFmt)
+    ) {
         if (listFmt) return listFmt;
         if (listNum != null) return `${source.currency_symbol ?? ""}${listNum}`;
     }
     return undefined;
+}
+
+export type ListingCardPrices = {
+    price: string;
+    originalPrice: string | undefined;
+    savings: string | undefined;
+    hasDiscount: boolean;
+};
+
+/**
+ * Listing cards read **product-level** `price_currencies` / after-discount.
+ * SKU and barcode stay off the card (details page only).
+ */
+export function resolveListingCardPrices(
+    source: FormattedPriceSource | null | undefined,
+    youSavedLabel?: string,
+): ListingCardPrices {
+    const hasDiscount = hasEffectiveDiscount(source);
+    const saved = source?.amount_saved_formatted?.trim();
+    return {
+        price: resolveDisplaySalePrice(source),
+        originalPrice: hasDiscount ? resolveDisplayListPrice(source) : undefined,
+        savings:
+            hasDiscount && saved
+                ? youSavedLabel
+                    ? `${youSavedLabel} ${saved}`
+                    : saved
+                : undefined,
+        hasDiscount,
+    };
 }
 
 const LATIN_CURRENCY = "\\$|€|£|¥|₹|USD|EUR|GBP";

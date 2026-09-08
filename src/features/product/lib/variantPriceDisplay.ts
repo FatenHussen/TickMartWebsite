@@ -21,7 +21,7 @@ export function normalizeVariantDiscountFields(variant: ShopVariant): {
 } {
     const rawType = variant.discount_type;
     const discountType: VariantDiscountType =
-        rawType === "percentage" || rawType === "fixed" || rawType === "none"
+        rawType === "percentage" || rawType === "fixed"
             ? rawType
             : "none";
     return {
@@ -42,8 +42,7 @@ export function hasVariantDiscount(
     const after = variant.price_after_discount;
 
     if (
-        discountType !== "none" &&
-        discountType != null &&
+        (discountType === "percentage" || discountType === "fixed") &&
         (discountValue > 0 || discountAmount > 0)
     ) {
         return true;

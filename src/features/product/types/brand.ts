@@ -1,5 +1,6 @@
 import type { SectionItemBadge } from"@/features/home/types";
 import type { PaginationData } from"@/shared/types/pagination";
+import type { ApiDualCurrencies } from "@/shared/lib/formatApiPrice";
 
 // ==================== Brand Types ====================
 
@@ -48,8 +49,15 @@ export interface BrandProduct {
  country: string;
  price: number;
  price_after_discount: number;
+ price_formatted?: string;
+ price_after_discount_formatted?: string;
+ price_currencies?: ApiDualCurrencies | null;
+ price_after_discount_currencies?: ApiDualCurrencies | null;
+ discount_type?: "percentage" | "fixed" | null;
+ discount_value?: number | null;
  amount_saved: number;
- quantity: number;
+ amount_saved_formatted?: string;
+ quantity: number | null;
  image: string;
  discount: string;
  budges: SectionItemBadge[]; // Typo from API

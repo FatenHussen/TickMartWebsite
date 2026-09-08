@@ -18,7 +18,8 @@ export interface AttributeMapItem {
  values: string[];
 }
 
-export type VariantDiscountType = "none" | "percentage" | "fixed";
+/** API: `percentage` | `fixed` | `null`. `"none"` is a leftover alias. */
+export type VariantDiscountType = "percentage" | "fixed" | "none" | null;
 
 export interface VariantAttribute {
  attribute: string;
@@ -47,7 +48,8 @@ export interface ShopVariant {
  price_formatted?: string;
  /** Admin-entered discount (10 = 10% or 10 units when fixed). */
  discount_value?: number;
- discount_type?: VariantDiscountType | string;
+ /** `null` / omitted / `"none"` = no discount. */
+ discount_type?: VariantDiscountType | string | null;
  /** Computed discount amount (USD base + discount_currencies). */
  discount?: number;
  discount_formatted?: string | null;
@@ -210,6 +212,8 @@ export interface BoughtWithProduct {
  price_after_discount?: number;
  price_formatted?: string;
  price_after_discount_formatted?: string;
+ price_currencies?: ApiDualCurrencies;
+ price_after_discount_currencies?: ApiDualCurrencies;
  amount_saved?: number;
  amount_saved_formatted?: string;
  image: string;
@@ -257,18 +261,21 @@ export interface ProductDetailsData {
   [code: string]: { formatted?: string | null } | null | undefined;
  };
  amount_saved_formatted?: string;
- quantity: number;
+ /** Product-level qty — listing only. Stock on the PDP is `shop_variants[].quantity`. */
+ quantity: number | null;
+ unit?: string | null;
  /** Max units of the main product per order line (when returned by API). */
  max_purchase_quantity?: number;
- sku: string;
- model: string;
- barcode: string;
+ sku?: string | null;
+ model?: string | null;
+ barcode?: string | null;
  /** Legacy field — prefer `delivery_time` when present. */
  time_prepare: string;
  /** Product-level delivery estimate (not per variant). */
  delivery_time?: string | null;
  /** Product-level discount metadata — do not mix with variant discount. */
- discount_type?: VariantDiscountType | string;
+ discount_type?: VariantDiscountType | string | null;
+ discount_value?: number | null;
  bought_with: BoughtWithProduct[];
  is_instant_delivery: number;
  rating: number;

@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { cn } from "@/shared/lib/utils";
 import Rating from "@/shared/component/Rating";
 import Badge from "@/shared/component/Badge";
+import FormattedPrice from "@/shared/component/FormattedPrice";
 
 export type ProductInfoBadge = {
     label: string;
@@ -16,6 +17,7 @@ export type ProductInfoProps = {
     brand?: string;
     name: string;
     sku?: string;
+    barcode?: string;
     origin?: string;
     price: string;
     originalPrice?: string;
@@ -32,6 +34,7 @@ export default function ProductInfo({
     brand,
     name,
     sku,
+    barcode,
     origin,
     price,
     originalPrice,
@@ -80,14 +83,22 @@ export default function ProductInfo({
                 {name}
             </h1>
 
-            {/* SKU & Origin */}
-            {(sku || origin) && (
+            {/* SKU, barcode & origin — from the selected shop variant */}
+            {(sku || barcode || origin) && (
                 <div className="flex flex-col gap-1.5 text-sm">
                     {sku && (
                         <div className="flex items-center gap-1">
                             <span className="text-gray">{t("product.sku", "SKU")}:</span>
                             <span dir="ltr" className="font-semibold text-primary-light underline underline-offset-2 decoration-1">
                                 {sku}
+                            </span>
+                        </div>
+                    )}
+                    {barcode && (
+                        <div className="flex items-center gap-1">
+                            <span className="text-gray">{t("product.barcode", "Barcode")}:</span>
+                            <span dir="ltr" className="font-semibold text-primary-light">
+                                {barcode}
                             </span>
                         </div>
                     )}
@@ -103,13 +114,19 @@ export default function ProductInfo({
             {/* Pricing Row */}
             <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
                 <div className="flex flex-col gap-2">
-                    <span className="text-[2rem] font-bold leading-none text-text-primary">{price}</span>
+                    <FormattedPrice
+                        value={price}
+                        prominent
+                        className="text-[2rem] font-bold leading-none text-text-primary"
+                    />
                     {(originalPrice || savings) && (
                         <div className="flex flex-wrap items-center gap-3">
                             {originalPrice && (
-                                <span className="text-base text-gray line-through">
-                                    {originalPrice}
-                                </span>
+                                <FormattedPrice
+                                    value={originalPrice}
+                                    strikethrough
+                                    className="text-base text-gray"
+                                />
                             )}
                             {savings && (
                                 <span className="text-base font-semibold text-green">{savings}</span>

@@ -170,7 +170,11 @@ export interface FavoriteItem {
  delivery_price?: number;
  price_formatted?: string;
  price_after_discount_formatted?: string;
+ price_currencies?: import("@/shared/lib/formatApiPrice").ApiDualCurrencies | null;
+ price_after_discount_currencies?: import("@/shared/lib/formatApiPrice").ApiDualCurrencies | null;
  currency_symbol?: string;
+ discount_type?: "percentage" | "fixed" | string | null;
+ amount_saved_formatted?: string;
  /** Present when API returns all favorites (no type filter) */
  type?: FavoriteType;
  /** API: whether item is favorited */

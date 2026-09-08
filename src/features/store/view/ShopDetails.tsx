@@ -23,6 +23,7 @@ import { mapActionPageSlugToRoute } from"@/utils/routeMapper";
 import type { ApiProduct } from"@/features/categories/types";
 import type { ShopVendorService } from"../types/shop";
 import { mapApiTopBadgesToProductCard } from "@/shared/lib/mapProductBadges";
+import { resolveListingCardPrices } from "@/shared/lib/formatApiPrice";
 
 export default function ShopDetails() {
  const { t } = useTranslation();
@@ -212,8 +213,10 @@ onSelectCategory={setSelectedCategoryId}
  </h2>
  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
 {products.map((product) => {
- const hasDiscount =
- product.price > product.price_after_discount;
+ const listing = resolveListingCardPrices(
+ product,
+ t("product.youSaved", "You saved")
+ );
  const topBadge = mapApiTopBadgesToProductCard(product.top_badges, { max: 1 })?.[0];
 
  return (
@@ -221,35 +224,13 @@ onSelectCategory={setSelectedCategoryId}
  key={product.id}
  id={product.id}
  name={product.name}
- price={`£${product.price_after_discount.toFixed(2)}`}
- originalPrice={
- hasDiscount ? `£${product.price.toFixed(2)}` : undefined
- }
+ price={listing.price}
+ originalPrice={listing.originalPrice}
  rating={(product as { rating?: number }).rating || 0}
  image={product.image}
  category={product.category}
- savings={
- product.amount_saved > 0
- ? `${t(
-"product.youSaved",
-"You saved"
- )} £${product.amount_saved.toFixed(2)}`
- : undefined
- }
- badge={
- topBadge
- ? topBadge
- : hasDiscount
- ? {
- label: `-${Math.round(
- ((product.price - product.price_after_discount) /
- product.price) *
- 100
- )}%`,
- className: "store-discount-badge",
- }
- : undefined
- }
+ savings={listing.savings}
+ badge={topBadge}
  deliveryInfo={t("home.freeDelivery","Free Delivery")}
  surfaceGradient={isDarkTheme ? getDarkCardSurfaceGradient() : undefined}
  onClick={(id) => {

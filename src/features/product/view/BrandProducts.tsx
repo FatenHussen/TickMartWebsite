@@ -18,6 +18,7 @@ import { RatingFormModal } from "@/features/account/components";
 import { useInfiniteScroll } from "@/shared/hooks/useInfiniteScroll";
 import type { Product } from "../types";
 import type { BrandProduct } from "../types/brand";
+import { resolveListingCardPrices } from "@/shared/lib/formatApiPrice";
 
 // Map UI sortBy label → API sortField / sortOrder
 function mapSortToApi(sortBy: string): {
@@ -142,23 +143,25 @@ export default function BrandProducts() {
 
     // Convert BrandProduct to Product type for ProductGrid
     const convertToProducts = (items: BrandProduct[] = []): Product[] => {
-        return items.map((item) => ({
-            id: item.id,
-            name: item.name,
-            price: `$${item.price_after_discount}`,
-            originalPrice:
-                item.price > item.price_after_discount ? `$${item.price}` : undefined,
-            rating: item.rating || 0,
-            image: item.image,
-            badge: (item as { budges?: { name: string; color: string }[] }).budges?.map((badge) => ({
-                label: badge.name,
-                className: badge.color,
-            })),
-            category: item.category,
-            sold: item.sold_number,
-            savings: item.amount_saved > 0 ? `$${item.amount_saved}` : undefined,
-            isFavorite: item.is_favorite ?? favoriteIds.includes(item.id),
-        }));
+        return items.map((item) => {
+            const listing = resolveListingCardPrices(item);
+            return {
+                id: item.id,
+                name: item.name,
+                price: listing.price,
+                originalPrice: listing.originalPrice,
+                rating: item.rating || 0,
+                image: item.image,
+                badge: (item as { budges?: { name: string; color: string }[] }).budges?.map((badge) => ({
+                    label: badge.name,
+                    className: badge.color,
+                })),
+                category: item.category,
+                sold: item.sold_number,
+                savings: listing.savings,
+                isFavorite: item.is_favorite ?? favoriteIds.includes(item.id),
+            };
+        });
     };
 
     const products = convertToProducts(allProducts);

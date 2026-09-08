@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import { cn } from "@/shared/lib/utils";
 import type { AvailableShop, ShopVariant, VariantAttribute } from "../types/productDetails";
 import { isPurchasableVariant } from "../types/productDetails";
+import { resolveDisplaySalePrice } from "@/shared/lib/formatApiPrice";
 
 export type ShopVariantsPreviewProps = {
     variants: ShopVariant[];
@@ -63,9 +64,7 @@ export default function ShopVariantsPreview({
                         v.shop_id != null
                             ? availableShops?.find((s) => s.id === v.shop_id)?.name
                             : undefined;
-                    const priceLabel =
-                        v.price_formatted ??
-                        `${v.currency_symbol ?? ""}${v.price.toFixed(2)}`;
+                    const priceLabel = resolveDisplaySalePrice(v);
                     // `shop_id`/`id` are null when the API falls back to the
                     // parent product: displayable, but not selectable.
                     const purchasable = isPurchasableVariant(v);
@@ -121,6 +120,11 @@ export default function ShopVariantsPreview({
                                             ? t("product.stockUnspecified", "—")
                                             : v.quantity}
                                     </span>
+                                    {v.sku?.trim() ? (
+                                        <span dir="ltr" className="text-xs text-custom-secondary">
+                                            {t("product.sku", "SKU")}: {v.sku}
+                                        </span>
+                                    ) : null}
                                     {v.shop_id != null && (
                                         <span className="text-xs text-custom-secondary">
                                             {shopName ??

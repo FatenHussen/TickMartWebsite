@@ -1,4 +1,5 @@
 import type { PaginationData } from"@/shared/types/pagination";
+import type { ApiDualCurrencies } from "@/shared/lib/formatApiPrice";
 
 // ==================== Hero Slider Types ====================
 export type SlideData = {
@@ -73,6 +74,12 @@ export interface ProductItem {
  price_formatted?: string;
  price_after_discount: number;
  price_after_discount_formatted?: string;
+ /** Dual-currency map from the product — listing cards use this, not variants. */
+ price_currencies?: ApiDualCurrencies | null;
+ price_after_discount_currencies?: ApiDualCurrencies | null;
+ /** `null` = no discount (not `"none"`). */
+ discount_type?: "percentage" | "fixed" | null;
+ discount_value?: number | null;
  amount_saved: number;
  amount_saved_formatted?: string;
  quantity: number | null;

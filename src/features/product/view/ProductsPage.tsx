@@ -31,6 +31,7 @@ import {
     mapApiBottomBadgesToProductCard,
     mapApiTopBadgesToProductCard,
 } from "@/shared/lib/mapProductBadges";
+import { resolveListingCardPrices } from "@/shared/lib/formatApiPrice";
 export default function ProductsPage() {
     const { t } = useTranslation();
     const { isRTL } = useLanguage();
@@ -175,28 +176,22 @@ export default function ProductsPage() {
         const bottomBadges =
             mapApiBottomBadgesToProductCard(product.bottom_badges) ?? undefined;
 
-        const sym = product.currency_symbol ?? "£";
+        const listing = resolveListingCardPrices(
+            product,
+            t("product.youSaved", "You saved"),
+        );
         return {
             id: product.id,
             name: product.name,
-            price:
-                product.price_after_discount_formatted ??
-                `${sym}${product.price_after_discount.toFixed(2)}`,
-            originalPrice:
-                product.price > product.price_after_discount
-                    ? product.price_formatted ??
-                      `${sym}${product.price.toFixed(2)}`
-                    : undefined,
+            price: listing.price,
+            originalPrice: listing.originalPrice,
             rating: product.rating || 0,
             image: product.image,
             badge: topBadges,
             bottomBadges,
             category: product.category,
             sold: product.sold_number,
-            savings:
-                product.amount_saved > 0
-                    ? `${t("product.youSaved", "You saved")} ${product.amount_saved_formatted ?? `${sym}${product.amount_saved.toFixed(2)}`}`
-                    : undefined,
+            savings: listing.savings,
             deliveryInfo: t("home.freeDelivery", "Free Delivery"),
             isFavorite: product.is_favorite ?? false,
             onClick: handleProductClick,

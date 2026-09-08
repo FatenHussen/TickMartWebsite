@@ -41,6 +41,7 @@ import {
     mapApiTopBadgesToProductCard,
     type ApiProductBadgeLike,
 } from "@/shared/lib/mapProductBadges";
+import { resolveListingCardPrices } from "@/shared/lib/formatApiPrice";
 import {
     getSectionCardVariant,
     getSectionLayout,
@@ -110,22 +111,16 @@ function getSectionBandBackground(
  * while the per-item `discount` string is empty. Treat an item as discounted when its
  * `price_after_discount` is below `price`, regardless of which level set the discount.
  */
-function hasProductDiscount(item: ProductItem): boolean {
-    if (item.discount && parseFloat(item.discount) > 0) return true;
-    const after = item.price_after_discount;
-    const before = item.price;
-    return (
-        after != null &&
-        before != null &&
-        Number(after) < Number(before)
-    );
-}
-
-/** Badge label for a discounted product: per-item discount wins, else section-level. */
 function getDiscountBadgeLabel(
     item: ProductItem,
     section: Section
 ): string | null {
+    if (item.discount_type === "percentage" && Number(item.discount_value) > 0) {
+        return `-${Number(item.discount_value)}%`;
+    }
+    if (item.discount_type === "fixed" && Number(item.discount_value) > 0) {
+        return `-${Number(item.discount_value)}`;
+    }
     if (item.discount && parseFloat(item.discount) > 0) {
         return `-${parseFloat(item.discount)}%`;
     }
@@ -1145,12 +1140,12 @@ function ProductSection({
             {...getSectionRowProps(section, cardVariant)}
             renderItem={(item) => {
                 if (isProductItem(item)) {
-                    const hasDiscount = hasProductDiscount(item);
                     const discountLabel = getDiscountBadgeLabel(item, section);
                     const isFav = isFavoriteFor(item.id, item.is_favorite);
 
                     // Flash-sale rows use a dedicated campaign card, not the shared one.
                     if (flashSaleEndDate) {
+                        const listing = resolveListingCardPrices(item);
                         return (
                             <FlashSaleCard
                                 key={item.id}
@@ -1158,21 +1153,9 @@ function ProductSection({
                                 name={item.name}
                                 description={item.description ?? undefined}
                                 image={item.image}
-                                price={
-                                    item.price_after_discount_formatted ??
-                                    `${item.price_after_discount}`
-                                }
-                                originalPrice={
-                                    hasDiscount && item.price
-                                        ? item.price_formatted ?? `${item.price}`
-                                        : undefined
-                                }
-                                savings={
-                                    item.amount_saved > 0
-                                        ? item.amount_saved_formatted ??
-                                          `${item.amount_saved}`
-                                        : undefined
-                                }
+                                price={listing.price}
+                                originalPrice={listing.originalPrice}
+                                savings={listing.savings}
                                 discountLabel={discountLabel ?? undefined}
                                 rating={item.rating || 0}
                                 sold={item.sold_number}
@@ -1207,6 +1190,11 @@ function ProductSection({
                     const topMerged = [...discountBadges, ...fromApi];
                     const badge = topMerged.length ? topMerged : undefined;
 
+                    const listing = resolveListingCardPrices(
+                        item,
+                        t("product.youSaved"),
+                    );
+
                     return (
                         <ProductCard
                             key={item.id}
@@ -1214,15 +1202,8 @@ function ProductSection({
                             name={item.name}
                             description={item.description ?? undefined}
                             store=""
-                            price={
-                                item.price_after_discount_formatted ??
-                                `${item.price_after_discount}`
-                            }
-                            originalPrice={
-                                hasDiscount && item.price
-                                    ? item.price_formatted ?? `${item.price}`
-                                    : undefined
-                            }
+                            price={listing.price}
+                            originalPrice={listing.originalPrice}
                             rating={item.rating || 0}
                             image={item.image}
                             badge={badge}
@@ -1231,7 +1212,7 @@ function ProductSection({
                             )}
                             category={item.category}
                             sold={item.sold_number}
-                            savings={item.amount_saved_formatted ?? undefined}
+                            savings={listing.savings}
                             layout={cardVariant}
                             surfaceColor={surfaceColor}
                             surfaceGradient={surfaceGradient}

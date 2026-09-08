@@ -3,6 +3,7 @@ import { HiPlus } from "react-icons/hi";
 import FormattedPrice from "@/shared/component/FormattedPrice";
 import { getCategoryInitials } from "@/shared/lib/getCategoryInitials";
 import { cn } from "@/shared/lib/utils";
+import { resolveListingCardPrices } from "@/shared/lib/formatApiPrice";
 import type { ProductItem } from "@/features/home/types";
 
 type ScheduleProductTileProps = {
@@ -15,14 +16,9 @@ export default function ScheduleProductTile({
     onAdd,
 }: ScheduleProductTileProps) {
     const { t } = useTranslation();
-    const sym = product.currency_symbol ?? "£";
-    const price =
-        product.price_after_discount_formatted ??
-        `${sym}${product.price_after_discount.toFixed(2)}`;
-    const original =
-        product.price > product.price_after_discount
-            ? product.price_formatted ?? `${sym}${product.price.toFixed(2)}`
-            : null;
+    const listing = resolveListingCardPrices(product);
+    const price = listing.price;
+    const original = listing.originalPrice ?? null;
 
     return (
         <button

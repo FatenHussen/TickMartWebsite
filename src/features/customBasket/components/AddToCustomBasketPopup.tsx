@@ -16,6 +16,7 @@ import {
     variantOrderLimit,
     exceedsVariantStock,
 } from "@/features/product/types/productDetails";
+import { resolveDisplaySalePrice } from "@/shared/lib/formatApiPrice";
 import type { ProductItem } from "@/features/home/types";
 import type { UseMutationResult } from "@tanstack/react-query";
 import type { CustomBasketState } from "../types";
@@ -93,11 +94,7 @@ export default function AddToCustomBasketPopup({
     );
 
     const priceLabel =
-        selectedVariant?.price_after_discount_formatted ??
-        selectedVariant?.price_formatted ??
-        details?.price_after_discount_formatted ??
-        product?.price_after_discount_formatted ??
-        null;
+        resolveDisplaySalePrice(selectedVariant ?? details ?? product) || null;
 
     const resolvedVariantId = (): number | null => {
         if (selectedVariantId != null) return selectedVariantId;

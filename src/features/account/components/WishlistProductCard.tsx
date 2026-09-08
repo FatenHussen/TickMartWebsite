@@ -5,6 +5,7 @@ import FavoriteButton from"@/shared/component/FavoriteButton";
 import Badge from "@/shared/component/Badge";
 import { paths } from"@/app/routes/path/paths";
 import type { FavoriteItem, FavoriteType } from"../types";
+import { resolveListingCardPrices } from "@/shared/lib/formatApiPrice";
 
 const badgeColorMap: Record<string, string> = {
  success:"bg-green-500 text-white",
@@ -43,34 +44,14 @@ export default function WishlistProductCard({
 
  const detailPath = getDetailPath(type, item.id);
 
- const priceDisplay =
- item.price_after_discount_formatted ??
- (item.price_after_discount != null
- ? `${item.currency_symbol ??""}${item.price_after_discount}`
- : item.price_formatted ??
- (item.price != null ? `${item.currency_symbol ??""}${item.price}` :""));
-
- const originalPrice =
- item.price_after_discount != null && item.price != null
- ? item.price_formatted ?? `${item.currency_symbol ??""}${item.price}`
- : undefined;
-
- const hasDiscount = item.discount && parseFloat(item.discount) > 0;
-
- const priceNum =
- typeof item.price ==="number"? item.price : parseFloat(String(item.price ?? 0));
- const priceAfterNum =
- typeof item.price_after_discount ==="number"
- ? item.price_after_discount
- : parseFloat(String(item.price_after_discount ?? 0));
- const savedAmount =
- priceNum > 0 && priceAfterNum >= 0 && priceNum > priceAfterNum
- ? (priceNum - priceAfterNum).toFixed(0)
- : null;
- const savingsText =
- savedAmount != null
- ? `${t("wishlist.youSaved")} ${item.currency_symbol ??"$"}${savedAmount}`
- : undefined;
+ const listing = resolveListingCardPrices(
+ item,
+ t("wishlist.youSaved", "You saved")
+ );
+ const priceDisplay = listing.price;
+ const originalPrice = listing.originalPrice;
+ const hasDiscount = listing.hasDiscount;
+ const savingsText = listing.savings;
 
  const topBadge = item.top_badges?.[0] ?? item.budges?.[0];
 
