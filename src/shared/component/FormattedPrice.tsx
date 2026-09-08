@@ -9,7 +9,20 @@ type FormattedPriceProps = {
     /** Raised, slightly quieter currency glyph — use on the sale price. */
     prominent?: boolean;
     strikethrough?: boolean;
+    /**
+     * Dual-currency layout. `stack` puts USD above SYP (cards).
+     * `inline` keeps one nowrap line. Default: stack when prominent + dual.
+     */
+    layout?: "inline" | "stack";
 };
+
+function splitDualCurrencies(value: string): string[] {
+    if (!value.includes(" / ")) return [value.trim()].filter(Boolean);
+    return value
+        .split(/\s*\/\s*/)
+        .map((chunk) => chunk.trim())
+        .filter(Boolean);
+}
 
 function PriceGlyph({
     value,
@@ -51,29 +64,42 @@ function PriceGlyph({
     );
 }
 
+function GlyphLine({
+    value,
+    prominent,
+}: {
+    value: string;
+    prominent: boolean;
+}) {
+    return (
+        <span className="inline-flex items-baseline tabular-nums leading-none">
+            <PriceGlyph value={value} prominent={prominent} />
+        </span>
+    );
+}
+
 /**
  * Renders a money string in a stable LTR isolate so `$8.82` never flips to `8.82 $` in RTL.
- * Dual-currency API strings (`$ 25 / ل.س 325,000`) are split and rendered as two glyphs.
+ * Dual-currency API strings (`$ 8.82 / ل.س 114,660`) stack on sale prices and stay
+ * on one nowrap line when compact.
  */
 export default function FormattedPrice({
     value,
     className,
     prominent = false,
     strikethrough = false,
+    layout,
 }: FormattedPriceProps) {
-    const chunks = value.includes(" / ")
-        ? value
-              .split(/\s*\/\s*/)
-              .map((chunk) => chunk.trim())
-              .filter(Boolean)
-        : [value];
+    const chunks = splitDualCurrencies(value);
+    const dual = chunks.length > 1;
+    const stacked = layout === "stack" || (layout !== "inline" && prominent && dual);
 
-    const shell = (children: ReactNode) => (
+    const shell = (children: ReactNode, extra?: string) => (
         <span
             dir="ltr"
             className={cn(
-                "inline-flex flex-wrap items-baseline tabular-nums",
                 strikethrough && "line-through decoration-from-font",
+                extra,
                 className,
             )}
         >
@@ -81,18 +107,35 @@ export default function FormattedPrice({
         </span>
     );
 
-    if (chunks.length > 1) {
+    if (stacked && dual) {
+        const [primary, ...rest] = chunks;
         return shell(
-            chunks.map((chunk, i) => (
-                <span key={`${chunk}-${i}`} className="inline-flex items-baseline">
-                    {i > 0 ? (
-                        <span className="mx-1 font-medium opacity-40">/</span>
-                    ) : null}
-                    <PriceGlyph value={chunk} prominent={prominent} />
-                </span>
-            )),
+            <>
+                <GlyphLine value={primary} prominent={prominent} />
+                {rest.map((chunk) => (
+                    <GlyphLine key={chunk} value={chunk} prominent={false} />
+                ))}
+            </>,
+            cn(
+                "inline-flex flex-col items-start gap-0.5",
+                prominent
+                    ? "[&>*:not(:first-child)]:text-[0.62em] [&>*:not(:first-child)]:font-semibold [&>*:not(:first-child)]:opacity-65"
+                    : "gap-px [&>*:not(:first-child)]:text-[0.92em] [&>*:not(:first-child)]:opacity-75",
+            ),
         );
     }
 
-    return shell(<PriceGlyph value={value} prominent={prominent} />);
+    return shell(
+        chunks.map((chunk, i) => (
+            <span key={`${chunk}-${i}`} className="inline-flex items-baseline">
+                {i > 0 ? (
+                    <span className="mx-1.5 font-medium leading-none opacity-35">
+                        ·
+                    </span>
+                ) : null}
+                <PriceGlyph value={chunk} prominent={prominent && i === 0} />
+            </span>
+        )),
+        "inline-flex max-w-full items-baseline whitespace-nowrap tabular-nums",
+    );
 }

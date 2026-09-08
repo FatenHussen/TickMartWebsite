@@ -5,12 +5,14 @@ import type { NavMenuItem } from "../types";
 /**
  * `route_key` → the route that actually exists in this SPA.
  *
- * The API docs suggest `/points`, `/help`, `/my-baskets` and
- * `/subscription-packages`, none of which this app routes — they map onto the
- * real equivalents below instead. Aliases cover the alternative spellings the
- * dashboard already uses for the same destinations elsewhere (compare
- * `resolveQuickActionPath`); keys are normalized so `points_rewards` and
- * `points-rewards` both land.
+ * Official dashboard static screens (`GET /api/admin/nav-menu-items/route-keys`)
+ * currently expose `baskets` and `schedules`. Those must stay mapped — an
+ * unknown `route_key` is dropped, not guessed.
+ *
+ * Extra aliases cover spellings the dashboard already uses elsewhere (compare
+ * `resolveQuickActionPath`). Keys are normalized so `points_rewards` and
+ * `points-rewards` both land. API paths like `/points` or `/help` do not exist
+ * here; they resolve to the real account pages below.
  */
 const NAV_ROUTE_MAP: Record<string, string> = {
     home: paths.client.home,
@@ -21,7 +23,9 @@ const NAV_ROUTE_MAP: Record<string, string> = {
     store: paths.client.store,
     baskets: paths.client.baskets,
     "my-baskets": paths.client.baskets,
+    /** Dashboard `type=route` + `route_key=schedules` → `/schedules`. */
     schedules: paths.client.schedules,
+    schedule: paths.client.schedules,
     "custom-basket": paths.client.schedules,
     "custom-baskets": paths.client.schedules,
     points: paths.account.pointsRewards,

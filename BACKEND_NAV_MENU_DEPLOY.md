@@ -113,10 +113,13 @@ php artisan route:list --path=api/user/nav-menu
 
 ```
 home, categories, brands, shops | shop | store, baskets | my-baskets,
+schedules | schedule | custom-basket | custom-baskets,
 points | points-rewards, help | help-support, recipes, products,
 privacy, terms, subscriptions | subscription-packages
 ```
 
+- الشاشات الثابتة الرسمية من الداشبورد (`GET /api/admin/nav-menu-items/route-keys`):
+  `baskets` → `/baskets`، **`schedules` → `/schedules`**. جدولة **ليست** صفحة Page Builder (`type=page`) — لازم `type=route`.
 - `subscriptions` / `subscription-packages` ما إلها صفحة بالويب — تفتح **مودال باقات الاشتراك**.
 - الويب يطبّع المفتاح: `points_rewards` و `points-rewards` والحالة الكبيرة/الصغيرة كلها مقبولة.
 - أي `route_key` جديد بالداشبورد غير موجود بالقائمة أعلاه يُسقَط بالويب بدون خطأ — إذا بدكم مفتاح جديد، بلّغوا فريق الويب ليضيفوه بالـ `NAV_ROUTE_MAP`.

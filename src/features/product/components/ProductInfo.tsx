@@ -117,6 +117,7 @@ export default function ProductInfo({
                     <FormattedPrice
                         value={price}
                         prominent
+                        layout="stack"
                         className="text-[2rem] font-bold leading-none text-text-primary"
                     />
                     {(originalPrice || savings) && (
@@ -125,6 +126,7 @@ export default function ProductInfo({
                                 <FormattedPrice
                                     value={originalPrice}
                                     strikethrough
+                                    layout="inline"
                                     className="text-base text-gray"
                                 />
                             )}

@@ -132,6 +132,9 @@ export default function ProductCard({
         return items;
     }, [bottomBadgeItems, discountLabel]);
 
+    const showRating = Number(rating) > 0;
+    const showSold = sold != null && sold > 0;
+
     return (
         <div
             className={cn(
@@ -170,9 +173,9 @@ export default function ProductCard({
                         className="h-full w-full object-cover transition-transform duration-[650ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform group-hover:scale-[1.07] motion-reduce:group-hover:scale-100"
                         wrapperClassName="h-full w-full"
                     />
-                    {/* Cinematic bottom fade for chip legibility + depth */}
+                    {/* Bottom fade — light, only for badge/heart contrast */}
                     <div
-                        className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/40 via-black/10 to-transparent dark:from-black/60"
+                        className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/20 to-transparent dark:from-black/40"
                         aria-hidden
                     />
                     {/* Soft sheen sweep on hover */}
@@ -244,7 +247,8 @@ export default function ProductCard({
             {/* Info Section */}
             <div
                 className={cn(
-                    "relative flex min-h-0 flex-1 flex-col px-4 pb-5 pt-7",
+                    "relative flex min-h-0 flex-1 flex-col px-4 pb-5",
+                    showRating ? "pt-7" : "pt-4",
                     !surfaceColor &&
                         !surfaceGradient &&
                         "bg-gradient-to-b from-custom-secondary via-custom-secondary to-[color-mix(in_srgb,var(--color-bg-card)_85%,#dbeafe)] dark:from-[var(--color-bg-card-elevated)] dark:via-[color-mix(in_srgb,var(--color-bg-card-elevated)_90%,var(--color-bg-secondary)_10%)] dark:to-[color-mix(in_srgb,var(--color-bg-card-elevated)_68%,var(--color-bg-tertiary)_32%)]",
@@ -263,7 +267,8 @@ export default function ProductCard({
                         : undefined
                 }
             >
-                {/* Rating — floats on the content-start edge (right in RTL) */}
+                {/* Rating — only when the product has been rated */}
+                {showRating ? (
                 <div
                     dir="ltr"
                     className="absolute -top-5 start-4 z-30 rounded-full bg-white px-3 py-1.5 shadow-[0_8px_20px_-6px_rgba(15,23,42,0.4)] ring-1 ring-stone-900/[0.06] dark:bg-[rgba(20,21,24,0.97)] dark:ring-white/[0.1]"
@@ -274,6 +279,7 @@ export default function ProductCard({
                         className="px-0 py-0 [&_span:last-child]:font-semibold [&_span:last-child]:text-custom-primary dark:[&_span:last-child]:text-white"
                     />
                 </div>
+                ) : null}
 
                 {/* Product Name - 2 lines */}
                 <h3 className="line-clamp-2 text-[0.9375rem] font-bold leading-snug tracking-tight text-custom-primary dark:text-white sm:text-base">
@@ -282,34 +288,35 @@ export default function ProductCard({
 
                 {/* Description or category */}
                 {(description || category) && (
-                    <p className="mt-2 line-clamp-2 text-[13px] leading-relaxed text-custom-secondary/90 dark:text-zinc-400 sm:text-sm">
+                    <p className="mt-1.5 line-clamp-2 text-[13px] leading-relaxed text-custom-secondary/90 dark:text-zinc-400 sm:text-sm">
                         {description || category}
                     </p>
                 )}
 
-                {/* Price + sold — sale and compare prices share one baseline; sold uses logical border */}
-                <div className="mt-4 flex items-end justify-between gap-3">
-                    <div className="min-w-0">
-                        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                {/* Price stack (USD then SYP) + sold */}
+                <div className="mt-3.5 flex items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1 space-y-1.5">
+                        <FormattedPrice
+                            value={price}
+                            prominent
+                            layout="stack"
+                            className="text-[1.35rem] font-extrabold tracking-tight text-[color-mix(in_srgb,var(--color-main)_38%,#1c1917)] dark:text-white sm:text-[1.45rem]"
+                        />
+                        {originalPrice ? (
                             <FormattedPrice
-                                value={price}
-                                prominent
-                                className="text-xl font-extrabold tracking-tight text-[color-mix(in_srgb,var(--color-main)_38%,#1c1917)] dark:text-white sm:text-[1.45rem]"
+                                value={originalPrice}
+                                strikethrough
+                                layout="stack"
+                                className="text-[12px] font-medium text-custom-tertiary/90 decoration-custom-tertiary/50 dark:text-zinc-500 dark:decoration-zinc-600"
                             />
-                            {originalPrice && (
-                                <FormattedPrice
-                                    value={originalPrice}
-                                    strikethrough
-                                    className="text-[13px] font-medium text-custom-tertiary/90 decoration-custom-tertiary/50 dark:text-zinc-500 dark:decoration-zinc-600"
-                                />
-                            )}
-                        </div>
+                        ) : null}
+                        {savings ? <SavingsChip savings={savings} /> : null}
                     </div>
 
-                    {sold != null && (
-                        <div className="flex shrink-0 items-center gap-2 self-stretch border-s border-stone-200/70 ps-3 dark:border-white/10">
+                    {showSold && sold != null ? (
+                        <div className="flex shrink-0 items-center gap-2 border-s border-stone-200/70 ps-3 dark:border-white/10">
                             <span
-                                className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[color-mix(in_srgb,var(--color-main)_10%,transparent)] text-[var(--color-main)]"
+                                className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[color-mix(in_srgb,var(--color-main)_10%,transparent)] text-[var(--color-main)]"
                                 aria-hidden
                             >
                                 <svg
@@ -319,28 +326,24 @@ export default function ProductCard({
                                     strokeWidth="2"
                                     strokeLinecap="round"
                                     strokeLinejoin="round"
-                                    className="h-4 w-4"
+                                    className="h-3.5 w-3.5"
                                 >
                                     <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
                                     <path d="M3 6h18" />
                                     <path d="M16 10a4 4 0 0 1-8 0" />
                                 </svg>
                             </span>
-                            <span className="inline-flex items-baseline gap-1 text-sm font-bold leading-tight text-custom-primary dark:text-white">
-                                <span dir="ltr" className="tabular-nums">
+                            <span className="inline-flex flex-col leading-tight">
+                                <span dir="ltr" className="tabular-nums text-sm font-bold text-custom-primary dark:text-white">
                                     {sold.toLocaleString()}
                                 </span>
-                                <span>{t?.("product.sold") || "Sold"}</span>
+                                <span className="text-[11px] font-medium text-custom-secondary dark:text-zinc-400">
+                                    {t?.("product.sold") || "Sold"}
+                                </span>
                             </span>
                         </div>
-                    )}
+                    ) : null}
                 </div>
-
-                {savings && (
-                    <div className="mt-2">
-                        <SavingsChip savings={savings} />
-                    </div>
-                )}
 
                 {/* Open-details button + bottom badges */}
                 {(onViewDetails ||

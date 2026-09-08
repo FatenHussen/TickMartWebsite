@@ -11,6 +11,8 @@ const PAGE_SLUG_TO_PATH: Record<string, string> = {
     baskets: paths.client.baskets,
     recipes: paths.client.recipes,
     brands: paths.client.brands,
+    schedules: paths.client.schedules,
+    schedule: paths.client.schedules,
 };
 
 export function resolveQuickActionPath(pageSlug: string): string {
