@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContext";
+import { useCurrency } from "@/context/CurrencyContext";
 import ProductImageGallery from "../components/ProductImageGallery";
 import ProductInfo from "../components/ProductInfo";
 import AttributeSelector from "../components/AttributeSelector";
@@ -59,10 +60,11 @@ import { HiEye, HiShoppingCart } from "react-icons/hi";
 
 function ProductDetails() {
     const { t } = useTranslation();
+    const { currency } = useCurrency();
+    const { isRTL, language } = useLanguage();
     const { productId } = useParams<{ productId: string }>();
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
-    const { isRTL, language } = useLanguage();
 
     const lat = parseFloat(searchParams.get("lat") || "33.51380000");
     const lng = parseFloat(searchParams.get("lng") || "36.27650000");
@@ -428,6 +430,7 @@ function ProductDetails() {
             const listing = resolveListingCardPrices(
                 item,
                 t("product.youSaved", "You saved"),
+                currency,
             );
 
             return {
@@ -445,7 +448,7 @@ function ProductDetails() {
                 isFavorite: item.is_favorite ?? favoriteIds.includes(item.id),
             };
         });
-    }, [product?.bought_with, favoriteIds, t]);
+    }, [product?.bought_with, favoriteIds, t, currency]);
 
     const similarProductItems = useMemo(() => {
         return similarProducts
@@ -455,6 +458,7 @@ function ProductDetails() {
                 const listing = resolveListingCardPrices(
                     pi,
                     t("product.youSaved", "You saved"),
+                    currency,
                 );
                 return {
                     id: p.id,
@@ -475,7 +479,7 @@ function ProductDetails() {
                         favoriteIds.includes(p.id),
                 };
             });
-    }, [similarProducts, product?.id, t, favoriteIds]);
+    }, [similarProducts, product?.id, t, favoriteIds, currency]);
 
     const sellerProductItems = useMemo(() => {
         return sellerProducts
@@ -485,6 +489,7 @@ function ProductDetails() {
                 const listing = resolveListingCardPrices(
                     pi,
                     t("product.youSaved", "You saved"),
+                    currency,
                 );
                 return {
                     id: p.id,
@@ -505,7 +510,7 @@ function ProductDetails() {
                         favoriteIds.includes(p.id),
                 };
             });
-    }, [sellerProducts, product?.id, t, favoriteIds]);
+    }, [sellerProducts, product?.id, t, favoriteIds, currency]);
 
     const handleAddToCart = () => {
         if (!product) return;
@@ -676,7 +681,7 @@ function ProductDetails() {
     const isFood = product.product_type === "food";
 
     const variantPriceDisplay = selectedVariant
-        ? resolveVariantPriceDisplay(selectedVariant, t)
+        ? resolveVariantPriceDisplay(selectedVariant, t, currency)
         : null;
 
     // Build badges — variant-level discount from API (no local % math)
@@ -719,14 +724,14 @@ function ProductDetails() {
             ? formatPrice(
                   (currentPriceAfterDiscount ?? currentPrice) + extraAddon,
               )
-            : resolveDisplaySalePrice(priceSource) ||
+            : resolveDisplaySalePrice(priceSource, currency) ||
               formatPrice(currentPriceAfterDiscount ?? currentPrice);
     const displayListPrice =
         extraAddon > 0
             ? currentPriceAfterDiscount < currentPrice
                 ? formatPrice(currentPrice + extraAddon)
                 : undefined
-            : resolveDisplayListPrice(priceSource);
+            : resolveDisplayListPrice(priceSource, currency);
 
     const savings =
         variantPriceDisplay?.savedLabel

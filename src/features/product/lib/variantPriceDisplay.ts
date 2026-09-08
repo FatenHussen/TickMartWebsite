@@ -1,8 +1,9 @@
 import type { TFunction } from "i18next";
 import {
-    formatDualCurrencies,
+    pickCurrencyFormatted,
     resolveDisplayListPrice,
     resolveDisplaySalePrice,
+    selectFormattedForCurrency,
     type ApiDualCurrencies,
 } from "@/shared/lib/formatApiPrice";
 import type { ShopVariant, VariantDiscountType } from "../types/productDetails";
@@ -74,8 +75,11 @@ export function resolveVariantDiscountBadge(
     return null;
 }
 
-function pickSavedLabel(currencies: ApiDualCurrencies | null | undefined): string | null {
-    const formatted = formatDualCurrencies(currencies);
+function pickSavedLabel(
+    currencies: ApiDualCurrencies | null | undefined,
+    currencyCode?: string | null,
+): string | null {
+    const formatted = pickCurrencyFormatted(currencies, currencyCode);
     return formatted.trim() || null;
 }
 
@@ -86,16 +90,20 @@ function pickSavedLabel(currencies: ApiDualCurrencies | null | undefined): strin
 export function resolveVariantPriceDisplay(
     variant: ShopVariant,
     t: TFunction,
+    currencyCode?: string | null,
 ): VariantPriceDisplay {
     const hasDiscount = hasVariantDiscount(variant);
 
     return {
-        current: resolveDisplaySalePrice(variant),
-        original: hasDiscount ? resolveDisplayListPrice(variant) : undefined,
+        current: resolveDisplaySalePrice(variant, currencyCode),
+        original: hasDiscount ? resolveDisplayListPrice(variant, currencyCode) : undefined,
         badge: resolveVariantDiscountBadge(variant, t),
         savedLabel: hasDiscount
-            ? variant.discount_formatted?.trim() ||
-              pickSavedLabel(variant.discount_currencies) ||
+            ? pickSavedLabel(variant.discount_currencies, currencyCode) ||
+              selectFormattedForCurrency(
+                  variant.discount_formatted?.trim() ?? "",
+                  currencyCode,
+              ) ||
               null
             : null,
         hasDiscount,

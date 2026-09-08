@@ -16,6 +16,68 @@ export type ApiDualCurrencies = {
     [code: string]: ApiCurrencyFormatted | null | undefined;
 };
 
+const CURRENCY_CHUNK_MARKERS: Record<string, RegExp> = {
+    USD: /\$|USD/i,
+    SYP: /ل\.س|SYP/i,
+    EUR: /€|EUR/i,
+    GBP: /£|GBP/i,
+    AED: /د\.إ|AED/i,
+    SAR: /ر\.س|SAR/i,
+    EGP: /ج\.م|EGP/i,
+};
+
+/** Split API dual strings (`$ 8.82 / ل.س 114,660`). */
+export function splitDualCurrencies(value: string): string[] {
+    if (!value.includes(" / ")) return [value.trim()].filter(Boolean);
+    return value
+        .split(/\s*\/\s*/)
+        .map((chunk) => chunk.trim())
+        .filter(Boolean);
+}
+
+function chunkMatchesCurrency(chunk: string, code: string): boolean {
+    const marker = CURRENCY_CHUNK_MARKERS[code];
+    if (marker) return marker.test(chunk);
+    return chunk.toUpperCase().includes(code);
+}
+
+/**
+ * Keep the formatted price for the user's selected currency.
+ * Falls back to the first available chunk — never converts FX locally.
+ */
+export function selectFormattedForCurrency(
+    value: string,
+    currencyCode?: string | null,
+): string {
+    const chunks = splitDualCurrencies(value);
+    if (chunks.length <= 1) return value.trim();
+    const code = (currencyCode ?? "").trim().toUpperCase();
+    if (!code) return chunks[0];
+    return chunks.find((chunk) => chunkMatchesCurrency(chunk, code)) ?? chunks[0];
+}
+
+/** Pick one API `*_currencies` line for the selected code. */
+export function pickCurrencyFormatted(
+    currencies: ApiDualCurrencies | null | undefined,
+    currencyCode?: string | null,
+): string {
+    if (!currencies) return "";
+    const code = (currencyCode ?? "").trim().toUpperCase();
+    if (code) {
+        const direct = currencies[code]?.formatted?.trim();
+        if (direct) return direct;
+        const matched = Object.entries(currencies).find(
+            ([key, value]) =>
+                key.toUpperCase() === code && Boolean(value?.formatted?.trim()),
+        );
+        if (matched?.[1]?.formatted) return matched[1].formatted.trim();
+    }
+    const preferred = currencies.USD?.formatted ?? currencies.SYP?.formatted;
+    if (preferred?.trim()) return preferred.trim();
+    const first = Object.values(currencies).find((v) => v?.formatted?.trim());
+    return first?.formatted?.trim() ?? "";
+}
+
 /** Join USD / SYP (and any other) formatted lines with ` / `. */
 export function formatDualCurrencies(
     currencies: ApiDualCurrencies | null | undefined,
@@ -34,6 +96,8 @@ export type FormattedPriceSource = {
     price_currencies?: ApiDualCurrencies | null;
     price_after_discount_currencies?: ApiDualCurrencies | null;
     amount_saved_formatted?: string | null;
+    amount_saved_currencies?: ApiDualCurrencies | null;
+    discount_currencies?: ApiDualCurrencies | null;
     currency_symbol?: string | null;
     price?: number | null;
     price_after_discount?: number | null;
@@ -46,8 +110,15 @@ export type FormattedPriceSource = {
 function pickCurrenciesThenFormatted(
     currencies: ApiDualCurrencies | null | undefined,
     formatted: string | null | undefined,
+    currencyCode?: string | null,
 ): string {
-    return formatDualCurrencies(currencies) || formatted?.trim() || "";
+    const fromMap = pickCurrencyFormatted(currencies, currencyCode);
+    if (fromMap) return fromMap;
+    const fromFormatted = selectFormattedForCurrency(
+        formatted?.trim() ?? "",
+        currencyCode,
+    );
+    return fromFormatted || "";
 }
 
 function numericDiscount(source: FormattedPriceSource): boolean {
@@ -81,23 +152,41 @@ export function hasEffectiveDiscount(
     return false;
 }
 
+function resolveDiscountLabel(
+    source: FormattedPriceSource | null | undefined,
+): string | undefined {
+    if (!source || !hasEffectiveDiscount(source)) return undefined;
+    const dtype = source.discount_type;
+    const dval = Number(source.discount_value ?? 0);
+    if (dtype === "percentage" && dval > 0) return `-${dval}%`;
+    const disc = source.discount;
+    if (typeof disc === "number" && disc > 0) return `-${disc}%`;
+    if (typeof disc === "string" && parseFloat(disc) > 0) {
+        return `-${parseFloat(disc)}%`;
+    }
+    return undefined;
+}
+
 /**
- * Display price after discount (primary). Prefer `*_currencies` (USD + SYP)
- * over a single `*_formatted` line. Never invent FX locally.
+ * Display price after discount (primary). Prefer `*_currencies` for the
+ * selected currency over a joined dual `*_formatted` line.
  */
 export function resolveDisplaySalePrice(
     source: FormattedPriceSource | null | undefined,
+    currencyCode?: string | null,
 ): string {
     if (!source) return "";
     const after = pickCurrenciesThenFormatted(
         source.price_after_discount_currencies,
         source.price_after_discount_formatted,
+        currencyCode,
     );
     if (after) return after;
 
     const list = pickCurrenciesThenFormatted(
         source.price_currencies,
         source.price_formatted,
+        currencyCode,
     );
     if (list) return list;
 
@@ -109,15 +198,18 @@ export function resolveDisplaySalePrice(
 /** Struck-through original when there is a discount. */
 export function resolveDisplayListPrice(
     source: FormattedPriceSource | null | undefined,
+    currencyCode?: string | null,
 ): string | undefined {
     if (!source) return undefined;
     const afterFmt = pickCurrenciesThenFormatted(
         source.price_after_discount_currencies,
         source.price_after_discount_formatted,
+        currencyCode,
     );
     const listFmt = pickCurrenciesThenFormatted(
         source.price_currencies,
         source.price_formatted,
+        currencyCode,
     );
     const listNum = source.price;
 
@@ -135,28 +227,47 @@ export type ListingCardPrices = {
     price: string;
     originalPrice: string | undefined;
     savings: string | undefined;
+    discountLabel: string | undefined;
     hasDiscount: boolean;
 };
+
+function resolveSavingsAmount(
+    source: FormattedPriceSource,
+    currencyCode?: string | null,
+): string | undefined {
+    const fromMap =
+        pickCurrencyFormatted(source.amount_saved_currencies, currencyCode) ||
+        pickCurrencyFormatted(source.discount_currencies, currencyCode);
+    if (fromMap) return fromMap;
+    const formatted = source.amount_saved_formatted?.trim();
+    if (!formatted) return undefined;
+    return selectFormattedForCurrency(formatted, currencyCode) || formatted;
+}
 
 /**
  * Listing cards read **product-level** `price_currencies` / after-discount.
  * SKU and barcode stay off the card (details page only).
+ * Prices follow the user's selected currency when the API sent that code.
  */
 export function resolveListingCardPrices(
     source: FormattedPriceSource | null | undefined,
     youSavedLabel?: string,
+    currencyCode?: string | null,
 ): ListingCardPrices {
     const hasDiscount = hasEffectiveDiscount(source);
-    const saved = source?.amount_saved_formatted?.trim();
+    const saved = source ? resolveSavingsAmount(source, currencyCode) : undefined;
     return {
-        price: resolveDisplaySalePrice(source),
-        originalPrice: hasDiscount ? resolveDisplayListPrice(source) : undefined,
+        price: resolveDisplaySalePrice(source, currencyCode),
+        originalPrice: hasDiscount
+            ? resolveDisplayListPrice(source, currencyCode)
+            : undefined,
         savings:
             hasDiscount && saved
                 ? youSavedLabel
                     ? `${youSavedLabel} ${saved}`
                     : saved
                 : undefined,
+        discountLabel: resolveDiscountLabel(source),
         hasDiscount,
     };
 }

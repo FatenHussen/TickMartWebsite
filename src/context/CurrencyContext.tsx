@@ -92,3 +92,7 @@ export function useCurrency() {
  }
  return context;
 }
+
+export function useCurrencyOptional() {
+ return useContext(CurrencyContext);
+}

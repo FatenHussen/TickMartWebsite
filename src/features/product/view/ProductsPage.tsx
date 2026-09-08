@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useLanguage } from "@/context/LanguageContext";
+import { useCurrency } from "@/context/CurrencyContext";
 import SideContentLayout from "@/layout/SideContentLayout";
 import { _ProductsApi } from "@/features/home/api/products.service";
 import type { ProductsFilters } from "@/features/home/api/products.service";
@@ -35,6 +36,7 @@ import { resolveListingCardPrices } from "@/shared/lib/formatApiPrice";
 export default function ProductsPage() {
     const { t } = useTranslation();
     const { isRTL } = useLanguage();
+    const { currency } = useCurrency();
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
 
@@ -179,6 +181,7 @@ export default function ProductsPage() {
         const listing = resolveListingCardPrices(
             product,
             t("product.youSaved", "You saved"),
+            currency,
         );
         return {
             id: product.id,
@@ -192,6 +195,7 @@ export default function ProductsPage() {
             category: product.category,
             sold: product.sold_number,
             savings: listing.savings,
+            discountLabel: listing.discountLabel,
             deliveryInfo: t("home.freeDelivery", "Free Delivery"),
             isFavorite: product.is_favorite ?? false,
             onClick: handleProductClick,

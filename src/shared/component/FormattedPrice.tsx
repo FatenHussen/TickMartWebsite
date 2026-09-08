@@ -1,7 +1,12 @@
 import type { ReactNode } from "react";
 
+import { useCurrencyOptional } from "@/context/CurrencyContext";
 import { cn } from "@/shared/lib/utils";
-import { parsePriceParts } from "@/shared/lib/formatApiPrice";
+import {
+    parsePriceParts,
+    selectFormattedForCurrency,
+    splitDualCurrencies,
+} from "@/shared/lib/formatApiPrice";
 
 type FormattedPriceProps = {
     value: string;
@@ -20,14 +25,6 @@ type FormattedPriceProps = {
      */
     compareValue?: string;
 };
-
-function splitDualCurrencies(value: string): string[] {
-    if (!value.includes(" / ")) return [value.trim()].filter(Boolean);
-    return value
-        .split(/\s*\/\s*/)
-        .map((chunk) => chunk.trim())
-        .filter(Boolean);
-}
 
 function pairPriceChunks(
     sale: string,
@@ -108,10 +105,17 @@ export default function FormattedPrice({
     layout,
     compareValue,
 }: FormattedPriceProps) {
-    const chunks = splitDualCurrencies(value);
+    const currencyCode = useCurrencyOptional()?.currency;
+    const displayValue = selectFormattedForCurrency(value, currencyCode);
+    const displayCompare = compareValue
+        ? selectFormattedForCurrency(compareValue, currencyCode)
+        : undefined;
+    const chunks = splitDualCurrencies(displayValue);
     const dual = chunks.length > 1;
     const stacked = layout === "stack" || (layout !== "inline" && prominent && dual);
-    const pairs = compareValue ? pairPriceChunks(value, compareValue) : null;
+    const pairs = displayCompare
+        ? pairPriceChunks(displayValue, displayCompare)
+        : null;
 
     const shell = (children: ReactNode, extra?: string) => (
         <span

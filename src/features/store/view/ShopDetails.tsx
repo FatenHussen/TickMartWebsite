@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from"react";
 import { useParams, useNavigate } from"react-router-dom";
 import { useTranslation } from"react-i18next";
 import { useLanguage } from"@/context/LanguageContext";
+import { useCurrency } from "@/context/CurrencyContext";
 import { useShopDetails, useShopServices } from"../hooks/useShopDetails";
 import { _ShopApi } from"../api/shopApi";
 import { useSectionsByPosition } from"@/features/home/hooks/useSections";
@@ -27,6 +28,7 @@ import { resolveListingCardPrices } from "@/shared/lib/formatApiPrice";
 
 export default function ShopDetails() {
  const { t } = useTranslation();
+ const { currency } = useCurrency();
  const { isRTL } = useLanguage();
  const navigate = useNavigate();
  const { theme } = useTheme();
@@ -215,7 +217,8 @@ onSelectCategory={setSelectedCategoryId}
 {products.map((product) => {
  const listing = resolveListingCardPrices(
  product,
- t("product.youSaved", "You saved")
+ t("product.youSaved", "You saved"),
+ currency,
  );
  const topBadge = mapApiTopBadgesToProductCard(product.top_badges, { max: 1 })?.[0];
 
@@ -230,6 +233,7 @@ onSelectCategory={setSelectedCategoryId}
  image={product.image}
  category={product.category}
  savings={listing.savings}
+ discountLabel={listing.discountLabel}
  badge={topBadge}
  deliveryInfo={t("home.freeDelivery","Free Delivery")}
  surfaceGradient={isDarkTheme ? getDarkCardSurfaceGradient() : undefined}

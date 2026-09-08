@@ -3,7 +3,7 @@ import { useMemo, type CSSProperties } from "react";
 import type { SectionCardVariant } from "@/features/home/types";
 import { cn } from "../../lib/utils";
 import Rating from "@/shared/component/Rating";
-import AnimatedButton from "../../ui/AnimatedButton";
+import AnimatedButton, { type AnimatedButtonItem } from "../../ui/AnimatedButton";
 import Button from "@/shared/ui/Button";
 import Badge from "@/shared/component/Badge";
 import FavoriteButton from "@/shared/component/FavoriteButton";
@@ -116,21 +116,18 @@ export default function ProductCard({
     const bottomBadgesShown = bottomBadges ?? [];
 
     const bottomBadgeItems = useMemo(
-        () =>
+        (): AnimatedButtonItem[] =>
             bottomBadgesShown.map((b) => ({
                 label: resolveProductCardBadgeLabel(b, t),
                 className: b.className,
-                style: b.style,
+                ...(b.style ? { style: b.style } : {}),
             })),
         [bottomBadgesShown, t],
     );
-    const mergedBottomBadgeItems = useMemo(() => {
-        const items = [...bottomBadgeItems];
+    const mergedBottomBadgeItems = useMemo((): AnimatedButtonItem[] => {
+        const items: AnimatedButtonItem[] = [...bottomBadgeItems];
         if (discountLabel) {
-            items.unshift({
-                label: discountLabel,
-                className: undefined,
-            });
+            items.unshift({ label: discountLabel });
         }
         return items;
     }, [bottomBadgeItems, discountLabel]);
@@ -284,7 +281,7 @@ export default function ProductCard({
                     </p>
                 )}
 
-                {/* Price: each currency on its own row, sale + original paired */}
+                {/* Price: selected currency — after discount, before discount, % off, saved */}
                 <div className="mt-3 flex items-end justify-between gap-3 border-t border-stone-100/90 pt-3 dark:border-white/[0.06]">
                     <div className="min-w-0 flex-1">
                         <FormattedPrice
@@ -294,7 +291,16 @@ export default function ProductCard({
                             layout="stack"
                             className="text-[1.2rem] font-bold tracking-tight text-[color-mix(in_srgb,var(--color-main)_42%,#1c1917)] dark:text-white sm:text-[1.28rem]"
                         />
-                        {savings ? <SavingsChip savings={savings} /> : null}
+                        {(discountLabel || savings) && (
+                            <div className="mt-2 flex flex-wrap items-center gap-x-2.5 gap-y-1">
+                                {discountLabel ? (
+                                    <span className="inline-flex items-center rounded-full bg-[color-mix(in_srgb,var(--color-main)_12%,transparent)] px-2 py-0.5 text-[11px] font-semibold text-[color-mix(in_srgb,var(--color-main)_78%,#44403c)] dark:text-[color-mix(in_srgb,var(--color-main)_60%,white)]">
+                                        {discountLabel}
+                                    </span>
+                                ) : null}
+                                {savings ? <SavingsChip savings={savings} /> : null}
+                            </div>
+                        )}
                     </div>
 
                     {showSold && sold != null ? (
@@ -332,8 +338,7 @@ export default function ProductCard({
                 {/* Open-details button + bottom badges */}
                 {(onViewDetails ||
                     mergedBottomBadgeItems.length > 0 ||
-                    deliveryInfo ||
-                    discountLabel) && (
+                    deliveryInfo) && (
                     <div className="mt-auto flex w-full flex-col items-center gap-2.5 pt-4">
                         {onViewDetails && (
                             <Button
@@ -384,7 +389,7 @@ export default function ProductCard({
 function SavingsChip({ savings }: { savings: string }) {
     const { label, amount } = splitSavingsLabel(savings);
     return (
-        <span className="mt-2 inline-flex max-w-full items-center gap-1 text-[11px] font-medium leading-none text-[color-mix(in_srgb,var(--color-main)_72%,#44403c)] dark:text-[color-mix(in_srgb,var(--color-main)_55%,white)]">
+        <span className="inline-flex max-w-full items-center gap-1 text-[11px] font-medium leading-none text-[color-mix(in_srgb,var(--color-main)_72%,#44403c)] dark:text-[color-mix(in_srgb,var(--color-main)_55%,white)]">
             {label ? <span>{label}</span> : null}
             <FormattedPrice value={amount} className="text-[11px] font-semibold" />
         </span>

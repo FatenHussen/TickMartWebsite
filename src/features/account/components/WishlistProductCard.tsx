@@ -1,5 +1,6 @@
 import { Link } from"react-router-dom";
 import { useTranslation } from"react-i18next";
+import { useCurrency } from "@/context/CurrencyContext";
 import Rating from"@/shared/component/Rating";
 import FavoriteButton from"@/shared/component/FavoriteButton";
 import Badge from "@/shared/component/Badge";
@@ -41,12 +42,14 @@ export default function WishlistProductCard({
  onToggle,
 }: WishlistProductCardProps) {
  const { t } = useTranslation();
+ const { currency } = useCurrency();
 
  const detailPath = getDetailPath(type, item.id);
 
  const listing = resolveListingCardPrices(
  item,
- t("wishlist.youSaved", "You saved")
+ t("wishlist.youSaved", "You saved"),
+ currency,
  );
  const priceDisplay = listing.price;
  const originalPrice = listing.originalPrice;

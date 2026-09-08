@@ -22,6 +22,7 @@ export type Product = {
  isFavorite?: boolean;
  sold?: number;
  savings?: string;
+ discountLabel?: string;
  deliveryInfo?: string;
 };
 

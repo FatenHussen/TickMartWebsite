@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContext";
+import { useCurrency } from "@/context/CurrencyContext";
 import { useBrandDetails, useBrandProducts } from "../hooks/useBrands";
 import { useBrandRatings } from "../hooks/useBrands";
 import { useSectionsByPosition } from "@/features/home/hooks/useSections";
@@ -41,6 +42,7 @@ function mapSortToApi(sortBy: string): {
 
 export default function BrandProducts() {
     const { t } = useTranslation();
+    const { currency } = useCurrency();
     const { isRTL } = useLanguage();
     const { brandId } = useParams<{ brandId: string }>();
     const navigate = useNavigate();
@@ -144,7 +146,7 @@ export default function BrandProducts() {
     // Convert BrandProduct to Product type for ProductGrid
     const convertToProducts = (items: BrandProduct[] = []): Product[] => {
         return items.map((item) => {
-            const listing = resolveListingCardPrices(item);
+            const listing = resolveListingCardPrices(item, t("product.youSaved"), currency);
             return {
                 id: item.id,
                 name: item.name,
@@ -159,6 +161,7 @@ export default function BrandProducts() {
                 category: item.category,
                 sold: item.sold_number,
                 savings: listing.savings,
+                discountLabel: listing.discountLabel,
                 isFavorite: item.is_favorite ?? favoriteIds.includes(item.id),
             };
         });

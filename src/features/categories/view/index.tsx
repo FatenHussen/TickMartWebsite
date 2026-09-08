@@ -2,6 +2,7 @@ import { useState, useMemo, useCallback, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/context/ThemeContext";
+import { useCurrency } from "@/context/CurrencyContext";
 import { useAppSettings } from "@/features/account/hooks/useAppSettings";
 import { useSections, useSectionsByPosition } from "@/features/home/hooks/useSections";
 import { pickHomeSectionBySeeMorePageSlug } from "@/features/home/lib/homeStaticSectionSurface";
@@ -65,6 +66,7 @@ function mapSortToApi(sortBy: string): {
 
 export default function CategoriesView() {
     const { t } = useTranslation();
+    const { currency } = useCurrency();
     const { theme } = useTheme();
     const isDarkTheme = theme === "dark";
     const { data: settings } = useAppSettings();
@@ -569,6 +571,7 @@ export default function CategoriesView() {
                                     const listing = resolveListingCardPrices(
                                         product,
                                         t("product.youSaved", "You saved"),
+                                        currency,
                                     );
                                     return (
                                     <ProductCard
@@ -589,6 +592,7 @@ export default function CategoriesView() {
                                         }
                                         onToggleFavorite={handleToggleFavorite}
                                         savings={listing.savings}
+                                        discountLabel={listing.discountLabel}
                                         badge={mapApiTopBadgesToProductCard(
                                             product.top_badges?.length
                                                 ? product.top_badges

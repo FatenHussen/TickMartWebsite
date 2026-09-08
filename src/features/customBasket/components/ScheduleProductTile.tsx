@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import { useCurrency } from "@/context/CurrencyContext";
 import { HiPlus } from "react-icons/hi";
 import FormattedPrice from "@/shared/component/FormattedPrice";
 import { getCategoryInitials } from "@/shared/lib/getCategoryInitials";
@@ -16,7 +17,12 @@ export default function ScheduleProductTile({
     onAdd,
 }: ScheduleProductTileProps) {
     const { t } = useTranslation();
-    const listing = resolveListingCardPrices(product);
+    const { currency } = useCurrency();
+    const listing = resolveListingCardPrices(
+        product,
+        t("product.youSaved", "You saved"),
+        currency,
+    );
     const price = listing.price;
     const original = listing.originalPrice ?? null;
 

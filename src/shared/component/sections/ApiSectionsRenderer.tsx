@@ -61,6 +61,7 @@ import {
 } from "./sectionKind";
 import { DISPLAY_TYPE } from "@/features/home/types";
 import { useTheme } from "@/context/ThemeContext";
+import { useCurrency } from "@/context/CurrencyContext";
 import ScheduleCatalogCard from "@/features/customBasket/components/ScheduleCatalogCard";
 import { parseScheduleItem } from "@/features/customBasket/lib/parseSchedule";
 
@@ -1111,6 +1112,7 @@ function ProductSection({
     isFavoriteFor,
     onToggleFavorite,
 }: SectionPropsWithFavorites) {
+    const { currency } = useCurrency();
     const cardVariant = getSectionCardVariant(section);
     const sliderPreset = getSliderPresetForSection(cardVariant);
     const surfaceColor = isDarkTheme ? getDarkCardSurface() : getSectionCardSurfaceColor(section);
@@ -1145,7 +1147,7 @@ function ProductSection({
 
                     // Flash-sale rows use a dedicated campaign card, not the shared one.
                     if (flashSaleEndDate) {
-                        const listing = resolveListingCardPrices(item);
+                        const listing = resolveListingCardPrices(item, t("product.youSaved"), currency);
                         return (
                             <FlashSaleCard
                                 key={item.id}
@@ -1193,6 +1195,7 @@ function ProductSection({
                     const listing = resolveListingCardPrices(
                         item,
                         t("product.youSaved"),
+                        currency,
                     );
 
                     return (
@@ -1213,6 +1216,7 @@ function ProductSection({
                             category={item.category}
                             sold={item.sold_number}
                             savings={listing.savings}
+                            discountLabel={discountLabel ?? listing.discountLabel}
                             layout={cardVariant}
                             surfaceColor={surfaceColor}
                             surfaceGradient={surfaceGradient}
@@ -1244,6 +1248,11 @@ function ProductSection({
                         data.top_badges?.length ? data.top_badges : data.budges
                     ) ?? [];
 
+                const listingFb = resolveListingCardPrices(
+                    data,
+                    t("product.youSaved"),
+                    currency,
+                );
                 const topMergedFb = [...discountBadgesFb, ...fromApiFb];
                 const badgeFb = topMergedFb.length ? topMergedFb : undefined;
 
@@ -1254,17 +1263,8 @@ function ProductSection({
                         name={data.name || data.desc || data.title || ""}
                         description={data.description ?? data.desc ?? undefined}
                         store={(data.vendor as string) ?? ""}
-                        price={
-                            data.price_after_discount_formatted ??
-                            (data.price_after_discount
-                                ? `${data.price_after_discount}`
-                                : `${data.price || 0}`)
-                        }
-                        originalPrice={
-                            hasDiscount && data.price
-                                ? data.price_formatted ?? `${data.price}`
-                                : undefined
-                        }
+                        price={listingFb.price}
+                        originalPrice={listingFb.originalPrice}
                         rating={data.rating || 0}
                         image={data.image || ""}
                         badge={badgeFb}
@@ -1279,12 +1279,8 @@ function ProductSection({
                                   ? data.sold
                                   : undefined
                         }
-                        savings={
-                            (data.amount_saved_formatted as string) ??
-                            (typeof data.amount_saved === "number"
-                                ? `${data.amount_saved}`
-                                : undefined)
-                        }
+                        savings={listingFb.savings}
+                        discountLabel={listingFb.discountLabel}
                         layout={cardVariant}
                         surfaceColor={surfaceColor}
                         surfaceGradient={surfaceGradient}
@@ -1312,6 +1308,7 @@ function RecipeSection({
     isFavoriteFor,
     onToggleFavorite,
 }: SectionPropsWithFavorites) {
+    const { currency } = useCurrency();
     const cardVariant = getSectionCardVariant(section);
     const sliderPreset = getSliderPresetForSection(cardVariant);
     const surfaceColor = isDarkTheme ? getDarkCardSurface() : getSectionCardSurfaceColor(section);
@@ -1360,6 +1357,11 @@ function RecipeSection({
                             item.top_badges?.length ? item.top_badges : item.budges
                         ) ?? [];
 
+                    const listing = resolveListingCardPrices(
+                        item,
+                        t("product.youSaved"),
+                        currency,
+                    );
                     const topMerged = [...discountBadges, ...fromApi];
                     const badge = topMerged.length ? topMerged.slice(0, 1) : undefined;
 
@@ -1369,15 +1371,8 @@ function RecipeSection({
                             id={item.id}
                             name={item.name}
                             store=""
-                            price={
-                                item.price_after_discount_formatted ??
-                                `${item.price_after_discount}`
-                            }
-                            originalPrice={
-                                hasDiscount && item.price
-                                    ? item.price_formatted ?? `${item.price}`
-                                    : undefined
-                            }
+                            price={listing.price}
+                            originalPrice={listing.originalPrice}
                             rating={item.rating || 0}
                             image={item.image}
                             badge={badge}
@@ -1389,6 +1384,8 @@ function RecipeSection({
                                     ? item.sold
                                     : undefined
                             }
+                            savings={listing.savings}
+                            discountLabel={listing.discountLabel}
                             layout={cardVariant}
                             surfaceColor={surfaceColor}
                             surfaceGradient={surfaceGradient}
@@ -1420,6 +1417,11 @@ function RecipeSection({
                         data.top_badges?.length ? data.top_badges : data.budges
                     ) ?? [];
 
+                const listingFb = resolveListingCardPrices(
+                    data,
+                    t("product.youSaved"),
+                    currency,
+                );
                 const topMergedFb = [...discountBadgesFb, ...fromApiFb];
                 const badgeFb = topMergedFb.length ? topMergedFb.slice(0, 1) : undefined;
 
@@ -1429,17 +1431,8 @@ function RecipeSection({
                         id={data.id}
                         name={data.name || data.desc || data.title || ""}
                         store=""
-                        price={
-                            data.price_after_discount_formatted ??
-                            (data.price_after_discount
-                                ? `${data.price_after_discount}`
-                                : `${data.price || 0}`)
-                        }
-                        originalPrice={
-                            hasDiscount && data.price
-                                ? data.price_formatted ?? `${data.price}`
-                                : undefined
-                        }
+                        price={listingFb.price}
+                        originalPrice={listingFb.originalPrice}
                         rating={data.rating || 0}
                         image={data.image || ""}
                         badge={badgeFb}
@@ -1451,6 +1444,8 @@ function RecipeSection({
                                 ? data.sold
                                 : undefined
                         }
+                        savings={listingFb.savings}
+                        discountLabel={listingFb.discountLabel}
                         layout={cardVariant}
                         surfaceColor={surfaceColor}
                         surfaceGradient={surfaceGradient}

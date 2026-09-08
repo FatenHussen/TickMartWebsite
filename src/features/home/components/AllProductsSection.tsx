@@ -12,6 +12,7 @@ import type { Category, ProductItem } from "../types";
 import { useSections } from "../hooks/useSections";
 import { mapPageSlugToRoute } from "@/utils/routeMapper";
 import { useTheme } from "@/context/ThemeContext";
+import { useCurrency } from "@/context/CurrencyContext";
 import type { BrandListItem } from "@/features/product/types/brand";
 import type { ShopListItem } from "@/features/store/types/shop";
 import { useToggleFavorite } from "@/features/account/hooks/useFavorites";
@@ -44,6 +45,7 @@ export default function AllProductsSection({
 }: AllProductsSectionProps) {
     const { t } = useTranslation();
     const navigate = useNavigate();
+    const { currency } = useCurrency();
     const { theme } = useTheme();
     const isDarkTheme = theme === "dark";
     const { data: homeSections } = useSections("home");
@@ -122,6 +124,7 @@ export default function AllProductsSection({
         const listing = resolveListingCardPrices(
             product,
             t("product.youSaved", "You saved"),
+            currency,
         );
         return {
             id: product.id,
@@ -135,6 +138,7 @@ export default function AllProductsSection({
             category: product.category,
             sold: product.sold_number,
             savings: listing.savings,
+            discountLabel: listing.discountLabel,
             deliveryInfo: t("home.freeDelivery", "Free Delivery"),
             isFavorite: product.is_favorite ?? false,
             onClick: handleProductClick,
