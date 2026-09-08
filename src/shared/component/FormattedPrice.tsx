@@ -14,6 +14,11 @@ type FormattedPriceProps = {
      * `inline` keeps one nowrap line. Default: stack when prominent + dual.
      */
     layout?: "inline" | "stack";
+    /**
+     * Original / list price. When set, each currency is paired on one row:
+     * `$8.82  $9` then `114,660 ل.س  117,000 ل.س`.
+     */
+    compareValue?: string;
 };
 
 function splitDualCurrencies(value: string): string[] {
@@ -22,6 +27,18 @@ function splitDualCurrencies(value: string): string[] {
         .split(/\s*\/\s*/)
         .map((chunk) => chunk.trim())
         .filter(Boolean);
+}
+
+function pairPriceChunks(
+    sale: string,
+    original?: string,
+): Array<{ sale: string; original?: string }> {
+    const saleChunks = splitDualCurrencies(sale);
+    const originalChunks = original ? splitDualCurrencies(original) : [];
+    return saleChunks.map((chunk, i) => ({
+        sale: chunk,
+        original: originalChunks[i],
+    }));
 }
 
 function PriceGlyph({
@@ -89,10 +106,12 @@ export default function FormattedPrice({
     prominent = false,
     strikethrough = false,
     layout,
+    compareValue,
 }: FormattedPriceProps) {
     const chunks = splitDualCurrencies(value);
     const dual = chunks.length > 1;
     const stacked = layout === "stack" || (layout !== "inline" && prominent && dual);
+    const pairs = compareValue ? pairPriceChunks(value, compareValue) : null;
 
     const shell = (children: ReactNode, extra?: string) => (
         <span
@@ -100,12 +119,48 @@ export default function FormattedPrice({
             className={cn(
                 strikethrough && "line-through decoration-from-font",
                 extra,
-                className,
+                !pairs && className,
             )}
         >
             {children}
         </span>
     );
+
+    if (pairs) {
+        return shell(
+            pairs.map((pair, i) => {
+                const primary = i === 0;
+                return (
+                    <span
+                        key={`${pair.sale}-${i}`}
+                        className="inline-flex min-w-0 items-baseline gap-2"
+                    >
+                        <span
+                            className={cn(
+                                "inline-flex items-baseline leading-none",
+                                primary
+                                    ? className
+                                    : "text-[13px] font-semibold tracking-tight text-custom-secondary dark:text-zinc-300",
+                            )}
+                        >
+                            <GlyphLine value={pair.sale} prominent={prominent && primary} />
+                        </span>
+                        {pair.original ? (
+                            <span
+                                className={cn(
+                                    "inline-flex items-baseline font-medium leading-none text-custom-tertiary line-through decoration-custom-tertiary/50 dark:text-zinc-500 dark:decoration-zinc-600",
+                                    primary ? "text-[13px]" : "text-[12px]",
+                                )}
+                            >
+                                <GlyphLine value={pair.original} prominent={false} />
+                            </span>
+                        ) : null}
+                    </span>
+                );
+            }),
+            "inline-flex flex-col items-start gap-1.5",
+        );
+    }
 
     if (stacked && dual) {
         const [primary, ...rest] = chunks;

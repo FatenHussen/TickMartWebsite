@@ -138,11 +138,10 @@ export default function ProductCard({
     return (
         <div
             className={cn(
-                "group relative flex h-full flex-col overflow-hidden rounded-3xl border border-stone-200/70 bg-custom-primary",
-                "shadow-[0_2px_8px_-2px_rgba(15,23,42,0.05),0_10px_24px_-8px_rgba(15,23,42,0.09)]",
-                "before:pointer-events-none before:absolute before:inset-x-4 before:top-0 before:z-[1] before:h-px before:rounded-full before:bg-gradient-to-r before:from-transparent before:via-white/80 before:to-transparent dark:before:via-white/15",
+                "group relative flex h-full flex-col overflow-hidden rounded-[1.35rem] border border-stone-200/80 bg-custom-primary",
+                "shadow-[0_1px_3px_rgba(15,23,42,0.04),0_8px_20px_-12px_rgba(15,23,42,0.12)]",
                 "transition-[transform,box-shadow] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
-                "hover:-translate-y-1 hover:border-stone-300/90 hover:shadow-[0_16px_36px_-10px_rgba(15,23,42,0.14),0_6px_14px_-4px_rgba(15,23,42,0.08)]",
+                "hover:-translate-y-0.5 hover:border-stone-300/90 hover:shadow-[0_12px_28px_-12px_rgba(15,23,42,0.16)]",
                 "dark:border-white/[0.12] dark:bg-[var(--color-bg-card-elevated)] dark:shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_4px_28px_-10px_rgba(0,0,0,0.5)] dark:hover:border-white/[0.18] dark:hover:shadow-[0_0_0_1px_rgba(255,255,255,0.09),0_14px_44px_-14px_rgba(0,0,0,0.62)]",
                 categoriesLuxuryListing &&
                     "dark:border-white/[0.07] dark:bg-[rgba(16,17,20,0.72)] dark:shadow-[0_8px_32px_-14px_rgba(0,0,0,0.55),0_0_0_1px_rgba(255,255,255,0.06)] dark:hover:border-white/[0.10] dark:hover:shadow-[0_0_0_1px_rgba(255,255,255,0.09),0_14px_44px_-14px_rgba(0,0,0,0.62)]",
@@ -159,33 +158,19 @@ export default function ProductCard({
                 if (e.key === "Enter" || e.key === " ") onClick(id);
             }}
         >
-            {/* Image — full-bleed editorial header */}
+            {/* Image */}
             <div className="shrink-0">
                 <div
                     className={cn(
-                        "relative overflow-hidden bg-stone-100 dark:bg-[#0B0B0C]",
+                        "relative overflow-hidden bg-custom-secondary dark:bg-[#0B0B0C]",
                         imageFrameClass,
                     )}
                 >
                     <LazyImage
                         src={image}
                         alt={name}
-                        className="h-full w-full object-cover transition-transform duration-[650ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform group-hover:scale-[1.07] motion-reduce:group-hover:scale-100"
+                        className="h-full w-full object-cover transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform group-hover:scale-[1.04] motion-reduce:group-hover:scale-100"
                         wrapperClassName="h-full w-full"
-                    />
-                    {/* Bottom fade — light, only for badge/heart contrast */}
-                    <div
-                        className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/20 to-transparent dark:from-black/40"
-                        aria-hidden
-                    />
-                    {/* Soft sheen sweep on hover */}
-                    <div
-                        className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100 motion-reduce:hidden"
-                        style={{
-                            backgroundImage:
-                                "linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.16) 48%, transparent 66%)",
-                        }}
-                        aria-hidden
                     />
 
                     {/* Start-side badges (top-start — right in RTL) */}
@@ -228,8 +213,7 @@ export default function ProductCard({
                         </div>
                     )}
 
-                    {/* Favorite — frosted chip, inline-end so it flips in RTL */}
-                    <div className="absolute end-3 top-3 z-20 rounded-full bg-white/90 p-0.5 shadow-lg ring-1 ring-stone-900/8 backdrop-blur-md transition-transform duration-300 hover:scale-110 dark:bg-[rgba(16,17,20,0.92)] dark:ring-white/[0.08]">
+                    <div className="absolute end-3 top-3 z-20">
                         <FavoriteButton
                             isFavorite={isFavorite}
                             onToggle={(e) => {
@@ -247,11 +231,11 @@ export default function ProductCard({
             {/* Info Section */}
             <div
                 className={cn(
-                    "relative flex min-h-0 flex-1 flex-col px-4 pb-5",
-                    showRating ? "pt-7" : "pt-4",
+                    "relative flex min-h-0 flex-1 flex-col border-t border-stone-100/90 px-4 pb-4 dark:border-white/[0.06]",
+                    showRating ? "pt-7" : "pt-3.5",
                     !surfaceColor &&
                         !surfaceGradient &&
-                        "bg-gradient-to-b from-custom-secondary via-custom-secondary to-[color-mix(in_srgb,var(--color-bg-card)_85%,#dbeafe)] dark:from-[var(--color-bg-card-elevated)] dark:via-[color-mix(in_srgb,var(--color-bg-card-elevated)_90%,var(--color-bg-secondary)_10%)] dark:to-[color-mix(in_srgb,var(--color-bg-card-elevated)_68%,var(--color-bg-tertiary)_32%)]",
+                        "bg-custom-secondary dark:bg-[var(--color-bg-card-elevated)]",
                 )}
                 style={
                     surfaceGradient
@@ -281,35 +265,26 @@ export default function ProductCard({
                 </div>
                 ) : null}
 
-                {/* Product Name - 2 lines */}
-                <h3 className="line-clamp-2 text-[0.9375rem] font-bold leading-snug tracking-tight text-custom-primary dark:text-white sm:text-base">
+                <h3 className="line-clamp-2 min-h-[2.5rem] text-[0.9375rem] font-semibold leading-snug tracking-tight text-custom-primary dark:text-white sm:text-[1.05rem]">
                     {name}
                 </h3>
 
-                {/* Description or category */}
                 {(description || category) && (
-                    <p className="mt-1.5 line-clamp-2 text-[13px] leading-relaxed text-custom-secondary/90 dark:text-zinc-400 sm:text-sm">
+                    <p className="mt-1 line-clamp-1 text-[12px] leading-5 text-custom-secondary dark:text-zinc-400">
                         {description || category}
                     </p>
                 )}
 
-                {/* Price stack (USD then SYP) + sold */}
-                <div className="mt-3.5 flex items-start justify-between gap-3">
-                    <div className="min-w-0 flex-1 space-y-1.5">
+                {/* Price: each currency on its own row, sale + original paired */}
+                <div className="mt-3 flex items-end justify-between gap-3 border-t border-stone-100/90 pt-3 dark:border-white/[0.06]">
+                    <div className="min-w-0 flex-1">
                         <FormattedPrice
                             value={price}
+                            compareValue={originalPrice}
                             prominent
                             layout="stack"
-                            className="text-[1.35rem] font-extrabold tracking-tight text-[color-mix(in_srgb,var(--color-main)_38%,#1c1917)] dark:text-white sm:text-[1.45rem]"
+                            className="text-[1.2rem] font-bold tracking-tight text-[color-mix(in_srgb,var(--color-main)_42%,#1c1917)] dark:text-white sm:text-[1.28rem]"
                         />
-                        {originalPrice ? (
-                            <FormattedPrice
-                                value={originalPrice}
-                                strikethrough
-                                layout="stack"
-                                className="text-[12px] font-medium text-custom-tertiary/90 decoration-custom-tertiary/50 dark:text-zinc-500 dark:decoration-zinc-600"
-                            />
-                        ) : null}
                         {savings ? <SavingsChip savings={savings} /> : null}
                     </div>
 
@@ -350,7 +325,7 @@ export default function ProductCard({
                     mergedBottomBadgeItems.length > 0 ||
                     deliveryInfo ||
                     discountLabel) && (
-                    <div className="mt-auto flex w-full flex-col items-center gap-3 pt-5">
+                    <div className="mt-auto flex w-full flex-col items-center gap-2.5 pt-4">
                         {onViewDetails && (
                             <Button
                                 type="button"
@@ -400,25 +375,9 @@ export default function ProductCard({
 function SavingsChip({ savings }: { savings: string }) {
     const { label, amount } = splitSavingsLabel(savings);
     return (
-        <span className="inline-flex max-w-full items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-600/20 dark:bg-emerald-400/10 dark:text-emerald-300 dark:ring-emerald-400/25">
-            <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="h-3.5 w-3.5 shrink-0"
-                aria-hidden
-            >
-                <path d="M20 12v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8" />
-                <path d="M2 7h20v5H2z" />
-                <path d="M12 22V7" />
-                <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7Z" />
-                <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7Z" />
-            </svg>
+        <span className="mt-2 inline-flex max-w-full items-center gap-1 text-[11px] font-medium leading-none text-[color-mix(in_srgb,var(--color-main)_72%,#44403c)] dark:text-[color-mix(in_srgb,var(--color-main)_55%,white)]">
             {label ? <span>{label}</span> : null}
-            <FormattedPrice value={amount} className="text-xs font-semibold" />
+            <FormattedPrice value={amount} className="text-[11px] font-semibold" />
         </span>
     );
 }

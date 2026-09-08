@@ -111,29 +111,20 @@ export default function ProductInfo({
                 </div>
             )}
 
-            {/* Pricing Row */}
-            <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
+            {/* Pricing — each currency paired: sale + original */}
+            <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
                 <div className="flex flex-col gap-2">
                     <FormattedPrice
                         value={price}
+                        compareValue={originalPrice}
                         prominent
                         layout="stack"
                         className="text-[2rem] font-bold leading-none text-text-primary"
                     />
-                    {(originalPrice || savings) && (
-                        <div className="flex flex-wrap items-center gap-3">
-                            {originalPrice && (
-                                <FormattedPrice
-                                    value={originalPrice}
-                                    strikethrough
-                                    layout="inline"
-                                    className="text-base text-gray"
-                                />
-                            )}
-                            {savings && (
-                                <span className="text-base font-semibold text-green">{savings}</span>
-                            )}
-                        </div>
+                    {savings && (
+                        <span className="text-sm font-medium text-[color-mix(in_srgb,var(--color-main)_72%,#44403c)]">
+                            {savings}
+                        </span>
                     )}
                 </div>
 
