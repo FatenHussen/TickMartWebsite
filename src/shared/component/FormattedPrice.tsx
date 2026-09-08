@@ -144,7 +144,7 @@ export default function FormattedPrice({
                                 "inline-flex items-baseline leading-none",
                                 primary
                                     ? className
-                                    : "text-[13px] font-semibold tracking-tight text-custom-secondary dark:text-zinc-300",
+                                    : "text-[15px] font-semibold tracking-tight text-custom-secondary dark:text-zinc-300",
                             )}
                         >
                             <GlyphLine value={pair.sale} prominent={prominent && primary} />
@@ -153,7 +153,7 @@ export default function FormattedPrice({
                             <span
                                 className={cn(
                                     "inline-flex items-baseline font-medium leading-none text-custom-tertiary line-through decoration-custom-tertiary/50 dark:text-zinc-500 dark:decoration-zinc-600",
-                                    primary ? "text-[13px]" : "text-[12px]",
+                                    primary ? "text-[15px]" : "text-[13px]",
                                 )}
                             >
                                 <GlyphLine value={pair.original} prominent={false} />

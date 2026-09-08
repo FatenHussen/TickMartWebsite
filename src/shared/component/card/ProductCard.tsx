@@ -184,7 +184,7 @@ export default function ProductCard({
                                     imageSrc={b.image}
                                     imageAlt={resolveProductCardBadgeLabel(b, t)}
                                     className={cn(
-                                        "rounded-full px-2.5 py-0.5 text-xs font-semibold shadow-lg ring-1 ring-white/25 backdrop-blur-[2px]",
+                                        "rounded-full px-2.5 py-0.5 text-sm font-semibold shadow-lg ring-1 ring-white/25 backdrop-blur-[2px]",
                                         b.style
                                             ? undefined
                                             : b.className ||
@@ -207,7 +207,7 @@ export default function ProductCard({
                                     imageSrc={b.image}
                                     imageAlt={resolveProductCardBadgeLabel(b, t)}
                                     className={cn(
-                                        "rounded-full px-2.5 py-0.5 text-xs font-semibold shadow-lg ring-1 ring-white/20 backdrop-blur-[2px]",
+                                        "rounded-full px-2.5 py-0.5 text-sm font-semibold shadow-lg ring-1 ring-white/20 backdrop-blur-[2px]",
                                         b.style
                                             ? undefined
                                             : b.className ||
@@ -271,12 +271,12 @@ export default function ProductCard({
                 </div>
                 ) : null}
 
-                <h3 className="line-clamp-2 min-h-[2.5rem] text-[0.9375rem] font-semibold leading-snug tracking-tight text-custom-primary dark:text-white sm:text-[1.05rem]">
+                <h3 className="line-clamp-2 min-h-[2.75rem] text-[1.0625rem] font-semibold leading-snug tracking-tight text-custom-primary dark:text-white sm:text-[1.125rem]">
                     {name}
                 </h3>
 
                 {(description || category) && (
-                    <p className="mt-1 line-clamp-1 text-[12px] leading-5 text-custom-secondary dark:text-zinc-400">
+                    <p className="mt-1 line-clamp-1 text-[14px] leading-5 text-custom-secondary dark:text-zinc-400">
                         {description || category}
                     </p>
                 )}
@@ -289,12 +289,12 @@ export default function ProductCard({
                             compareValue={originalPrice}
                             prominent
                             layout="stack"
-                            className="text-[1.2rem] font-bold tracking-tight text-[color-mix(in_srgb,var(--color-main)_42%,#1c1917)] dark:text-white sm:text-[1.28rem]"
+                            className="text-[1.35rem] font-bold tracking-tight text-[color-mix(in_srgb,var(--color-main)_42%,#1c1917)] dark:text-white sm:text-[1.45rem]"
                         />
                         {(discountLabel || savings) && (
                             <div className="mt-2 flex flex-wrap items-center gap-x-2.5 gap-y-1">
                                 {discountLabel ? (
-                                    <span className="inline-flex items-center rounded-full bg-[color-mix(in_srgb,var(--color-main)_12%,transparent)] px-2 py-0.5 text-[11px] font-semibold text-[color-mix(in_srgb,var(--color-main)_78%,#44403c)] dark:text-[color-mix(in_srgb,var(--color-main)_60%,white)]">
+                                    <span className="inline-flex items-center rounded-full bg-[color-mix(in_srgb,var(--color-main)_12%,transparent)] px-2 py-0.5 text-[13px] font-semibold text-[color-mix(in_srgb,var(--color-main)_78%,#44403c)] dark:text-[color-mix(in_srgb,var(--color-main)_60%,white)]">
                                         {discountLabel}
                                     </span>
                                 ) : null}
@@ -324,10 +324,10 @@ export default function ProductCard({
                                 </svg>
                             </span>
                             <span className="inline-flex flex-col leading-tight">
-                                <span dir="ltr" className="tabular-nums text-sm font-bold text-custom-primary dark:text-white">
+                                <span dir="ltr" className="tabular-nums text-base font-bold text-custom-primary dark:text-white">
                                     {sold.toLocaleString()}
                                 </span>
-                                <span className="text-[11px] font-medium text-custom-secondary dark:text-zinc-400">
+                                <span className="text-[12px] font-medium text-custom-secondary dark:text-zinc-400">
                                     {t?.("product.sold") || "Sold"}
                                 </span>
                             </span>
@@ -373,10 +373,10 @@ export default function ProductCard({
                         {mergedBottomBadgeItems.length > 0 && (
                             <AnimatedButton
                                 items={mergedBottomBadgeItems}
-                                heightClassName="h-5"
+                                heightClassName="h-6"
                                 type="button"
                                 onClick={(e) => e.stopPropagation()}
-                                className="self-center justify-center text-xs font-semibold"
+                                className="self-center justify-center text-sm font-semibold"
                             />
                         )}
                     </div>
@@ -389,9 +389,9 @@ export default function ProductCard({
 function SavingsChip({ savings }: { savings: string }) {
     const { label, amount } = splitSavingsLabel(savings);
     return (
-        <span className="inline-flex max-w-full items-center gap-1 text-[11px] font-medium leading-none text-[color-mix(in_srgb,var(--color-main)_72%,#44403c)] dark:text-[color-mix(in_srgb,var(--color-main)_55%,white)]">
+        <span className="inline-flex max-w-full items-center gap-1 text-[13px] font-medium leading-none text-[color-mix(in_srgb,var(--color-main)_72%,#44403c)] dark:text-[color-mix(in_srgb,var(--color-main)_55%,white)]">
             {label ? <span>{label}</span> : null}
-            <FormattedPrice value={amount} className="text-[11px] font-semibold" />
+            <FormattedPrice value={amount} className="text-[13px] font-semibold" />
         </span>
     );
 }
