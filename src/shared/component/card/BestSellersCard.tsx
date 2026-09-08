@@ -126,7 +126,8 @@ export default function BestSellersCard({
                                 type={b.type}
                                 imageSrc={b.image}
                                 imageAlt={resolveProductCardBadgeLabel(b, t)}
-                                className={cn(b.className || "bg-blue-500 text-white")}
+                                className={cn(b.style ? undefined : b.className || "bg-blue-500 text-white")}
+                                style={b.style}
                             />
                         ))}
                     </div>
@@ -142,7 +143,8 @@ export default function BestSellersCard({
                                 type={b.type}
                                 imageSrc={b.image}
                                 imageAlt={resolveProductCardBadgeLabel(b, t)}
-                                className={cn(b.className || "bg-yellow-400 text-black")}
+                                className={cn(b.style ? undefined : b.className || "bg-yellow-400 text-black")}
+                                style={b.style}
                             />
                         ))}
                     </div>

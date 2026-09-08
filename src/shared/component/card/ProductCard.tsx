@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, type CSSProperties } from "react";
 
 import type { SectionCardVariant } from "@/features/home/types";
 import { cn } from "../../lib/utils";
@@ -14,6 +14,8 @@ import { splitSavingsLabel } from "@/shared/lib/formatApiPrice";
 export type ProductCardBadge = {
     label: string;
     className?: string;
+    /** Inline colors from the API/database color picker (hex / rgb). */
+    style?: CSSProperties;
     align?: "left" | "right";
     type?: "image" | "text" | string;
     image?: string;
@@ -118,6 +120,7 @@ export default function ProductCard({
             bottomBadgesShown.map((b) => ({
                 label: resolveProductCardBadgeLabel(b, t),
                 className: b.className,
+                style: b.style,
             })),
         [bottomBadgesShown, t],
     );
@@ -184,10 +187,13 @@ export default function ProductCard({
                                     imageSrc={b.image}
                                     imageAlt={resolveProductCardBadgeLabel(b, t)}
                                     className={cn(
-                                        "shadow-lg ring-1 ring-white/25 backdrop-blur-[2px]",
-                                        b.className ||
-                                            "rounded-full bg-gradient-to-br from-sky-500 to-blue-600 px-2.5 py-0.5 text-xs font-semibold text-white",
+                                        "rounded-full px-2.5 py-0.5 text-xs font-semibold shadow-lg ring-1 ring-white/25 backdrop-blur-[2px]",
+                                        b.style
+                                            ? undefined
+                                            : b.className ||
+                                              "bg-gradient-to-br from-sky-500 to-blue-600 text-white",
                                     )}
+                                    style={b.style}
                                 />
                             ))}
                         </div>
@@ -204,10 +210,13 @@ export default function ProductCard({
                                     imageSrc={b.image}
                                     imageAlt={resolveProductCardBadgeLabel(b, t)}
                                     className={cn(
-                                        "shadow-lg ring-1 ring-white/20 backdrop-blur-[2px]",
-                                        b.className ||
-                                            "rounded-full bg-gradient-to-br from-amber-400 to-orange-500 px-2.5 py-0.5 text-xs font-semibold text-white",
+                                        "rounded-full px-2.5 py-0.5 text-xs font-semibold shadow-lg ring-1 ring-white/20 backdrop-blur-[2px]",
+                                        b.style
+                                            ? undefined
+                                            : b.className ||
+                                              "bg-gradient-to-br from-amber-400 to-orange-500 text-white",
                                     )}
+                                    style={b.style}
                                 />
                             ))}
                         </div>
@@ -362,7 +371,7 @@ export default function ProductCard({
                                 heightClassName="h-5"
                                 type="button"
                                 onClick={(e) => e.stopPropagation()}
-                                className="self-center justify-center text-xs font-semibold text-custom-secondary dark:text-zinc-400"
+                                className="self-center justify-center text-xs font-semibold"
                             />
                         )}
                     </div>

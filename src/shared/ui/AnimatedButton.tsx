@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, type CSSProperties } from "react";
 
 import Button from "@/shared/ui/Button";
 import { cn } from "@/shared/lib/utils";
@@ -11,6 +11,7 @@ type AnimatedButtonNote = {
 export type AnimatedButtonItem = {
     label: React.ReactNode;
     className?: string;
+    style?: CSSProperties;
 };
 
 type BaseAnimatedButtonProps = Omit<
@@ -117,8 +118,10 @@ function MultiLabelAnimatedButton({
                             className={cn(
                                 "flex w-full shrink-0 items-center justify-center whitespace-nowrap px-2 text-md font-semibold leading-none",
                                 heightClassName,
-                                it.className
+                                it.style && "rounded-full px-2.5",
+                                it.className,
                             )}
+                            style={it.style}
                         >
                             {it.label}
                         </div>

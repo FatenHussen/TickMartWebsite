@@ -1,5 +1,5 @@
 import type { ProductCardBadge } from "@/shared/component/card/ProductCard";
-import { getProductBadgeClassName } from "@/shared/lib/productBadgeColors";
+import { resolveProductBadgeAppearance } from "@/shared/lib/productBadgeColors";
 import i18next from "i18next";
 
 /** Matches API / section payloads: `top_badges`, `bottom_badges`, legacy `budges` */
@@ -45,14 +45,18 @@ export function mapApiTopBadgesToProductCard(
     const max = options?.max !== undefined ? options.max : badges.length;
     const slice = max <= 0 ? [] : badges.slice(0, max);
     if (!slice.length) return undefined;
-    return slice.map((b) => ({
-        label: normalizeLocalizedText(b.name) ?? "",
-        className: getProductBadgeClassName(b.color),
-        align: horizontalAlign(b.position ?? b.postion),
-        rawLabel: true,
-        type: b.type ?? undefined,
-        image: b.image ?? undefined,
-    }));
+    return slice.map((b) => {
+        const appearance = resolveProductBadgeAppearance(b.color);
+        return {
+            label: normalizeLocalizedText(b.name) ?? "",
+            className: appearance.className,
+            style: appearance.style,
+            align: horizontalAlign(b.position ?? b.postion),
+            rawLabel: true,
+            type: b.type ?? undefined,
+            image: b.image ?? undefined,
+        };
+    });
 }
 
 /** Map `bottom_badges` → ProductCard bottom AnimatedButton rows */
@@ -64,11 +68,15 @@ export function mapApiBottomBadgesToProductCard(
     const max = options?.max !== undefined ? options.max : badges.length;
     const slice = max <= 0 ? [] : badges.slice(0, max);
     if (!slice.length) return undefined;
-    return slice.map((b) => ({
-        label: normalizeLocalizedText(b.name) ?? "",
-        className: getProductBadgeClassName(b.color),
-        rawLabel: true,
-        type: b.type ?? undefined,
-        image: b.image ?? undefined,
-    }));
+    return slice.map((b) => {
+        const appearance = resolveProductBadgeAppearance(b.color);
+        return {
+            label: normalizeLocalizedText(b.name) ?? "",
+            className: appearance.className,
+            style: appearance.style,
+            rawLabel: true,
+            type: b.type ?? undefined,
+            image: b.image ?? undefined,
+        };
+    });
 }

@@ -101,6 +101,7 @@ export default function ShopCard({
             (bottomBadges ?? []).map((b) => ({
                 label: resolveProductCardBadgeLabel(b),
                 className: b.className,
+                style: b.style,
             })),
         [bottomBadges],
     );

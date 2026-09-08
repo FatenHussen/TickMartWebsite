@@ -77,6 +77,7 @@ export default function ScheduleCatalogCard({
                         imageSrc={b.image}
                         imageAlt={resolveProductCardBadgeLabel(b, t)}
                         className={cn(b.className)}
+                        style={b.style}
                     />
                 ))}
             </div>
@@ -199,6 +200,7 @@ export default function ScheduleCatalogCard({
                             imageSrc={b.image}
                             imageAlt={resolveProductCardBadgeLabel(b, t)}
                             className={cn(b.className)}
+                            style={b.style}
                         />
                     ))}
                 </div>

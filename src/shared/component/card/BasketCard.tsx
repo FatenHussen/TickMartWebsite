@@ -172,6 +172,7 @@ export default function BasketCard({
             (bottomBadges ?? []).map((b) => ({
                 label: resolveProductCardBadgeLabel(b, t),
                 className: b.className,
+                style: b.style,
             })),
         [bottomBadges, t],
     );
@@ -260,8 +261,9 @@ export default function BasketCard({
                             imageAlt={resolveProductCardBadgeLabel(b, t)}
                             className={cn(
                                 "rounded-full px-3 py-1 text-xs font-semibold leading-none shadow-sm ring-1 ring-amber-400/25",
-                                b.className || "bg-amber-300 text-amber-950"
+                                b.style ? undefined : b.className || "bg-amber-300 text-amber-950"
                             )}
+                            style={b.style}
                         />
                     ))}
                 </div>
@@ -275,7 +277,8 @@ export default function BasketCard({
                             type={b.type}
                             imageSrc={b.image}
                             imageAlt={resolveProductCardBadgeLabel(b, t)}
-                            className={cn(b.className || "bg-blue-500 text-white")}
+                            className={cn(b.style ? undefined : b.className || "bg-blue-500 text-white")}
+                            style={b.style}
                         />
                     ))}
                     <FavoriteButton
