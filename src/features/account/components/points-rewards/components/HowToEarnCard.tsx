@@ -1,11 +1,11 @@
 import type { TFunction } from "i18next";
-import { HiExclamationCircle } from "react-icons/hi";
+import { Gift } from "lucide-react";
+import { useLanguage } from "@/context/LanguageContext";
 import { cn } from "@/shared/lib/utils";
 import { historySectionShellClass } from "../constants";
 import { formatPointsRewardDate } from "../utils/formatPointsRewardDate";
+import { CalmCardSurface } from "./CalmCardSurface";
 import { SectionShell } from "./SectionShell";
-
-const HOW_TO_EARN_BG = "/images/accounts/Expiry.jpeg";
 
 type HowToEarnCardProps = {
     t: TFunction;
@@ -14,6 +14,7 @@ type HowToEarnCardProps = {
 };
 
 export function HowToEarnCard({ t, expiry, earningRules }: HowToEarnCardProps) {
+    const { language } = useLanguage();
     const rules =
         earningRules.length > 0
             ? earningRules
@@ -23,68 +24,49 @@ export function HowToEarnCard({ t, expiry, earningRules }: HowToEarnCardProps) {
                   t("account.pointsRewards.howToEarn.usePackages"),
               ];
 
+    const dateLocale = language === "ar" ? "ar-SA" : "en-GB";
+
     return (
         <SectionShell
-            className={cn(
-                historySectionShellClass,
-                "relative min-h-[240px] overflow-hidden sm:min-h-[260px]",
-            )}
+            className={cn(historySectionShellClass, "overflow-hidden bg-transparent p-0")}
         >
-            <div
-                className="pointer-events-none absolute inset-0 bg-cover bg-center bg-no-repeat"
-                style={{ backgroundImage: `url(${HOW_TO_EARN_BG})` }}
-                aria-hidden
-            />
-            <div
-                className={cn(
-                    "pointer-events-none absolute inset-0",
-                    "bg-gradient-to-br from-[var(--color-bg-card)]/90 via-[var(--color-bg-card)]/78 to-[var(--color-ui-orange-100)]/28",
-                    "dark:from-[var(--color-bg-card)]/92 dark:via-[var(--color-bg-card)]/82 dark:to-[color-mix(in_srgb,var(--color-ui-orange-900)_35%,transparent)]",
-                )}
-                aria-hidden
-            />
-            <div
-                className="pointer-events-none absolute -right-8 -top-12 h-32 w-32 rounded-full bg-primary-light/10 blur-3xl"
-                aria-hidden
-            />
-
-            <div className="relative z-10">
-                <h2 className="text-sm font-semibold uppercase tracking-wide text-custom-secondary">
+            <CalmCardSurface imageSrc="/images/points/points_2.jpeg">
+            <div className="flex items-start justify-between gap-3">
+                <h2 className="text-base font-semibold text-custom-primary">
                     {t("account.pointsRewards.howToEarn.title")}
                 </h2>
-
-                {expiry ? (
-                    <div
-                        className={cn(
-                            "mt-4 flex gap-3 rounded-xl bg-[var(--color-ui-orange-100)]/85 p-4 backdrop-blur-[2px]",
-                            "shadow-[0_2px_8px_rgba(234,88,12,0.12),0_4px_16px_rgba(15,23,42,0.06)]",
-                            "dark:bg-[color-mix(in_srgb,var(--color-ui-orange-900)_35%,transparent)]",
-                            "dark:shadow-[0_2px_10px_rgba(0,0,0,0.35)]",
-                        )}
-                        role="status"
-                    >
-                        <HiExclamationCircle className="mt-0.5 h-5 w-5 shrink-0 text-[var(--color-ui-orange-500)]" />
-                        <p className="text-sm leading-relaxed text-[var(--color-ui-orange-900)] dark:text-[var(--color-ui-orange-200)]">
-                            <span className="font-medium">
-                                {t("account.pointsRewards.expiry.nextExpiry")}:{" "}
-                            </span>
-                            {formatPointsRewardDate(expiry)}
-                        </p>
-                    </div>
-                ) : null}
-
-                <ul className="mt-6 space-y-3">
-                    {rules.map((rule, idx) => (
-                        <li key={idx} className="flex gap-3 text-sm leading-relaxed text-custom-primary">
-                            <span
-                                className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-primary-light"
-                                aria-hidden
-                            />
-                            <span>{rule}</span>
-                        </li>
-                    ))}
-                </ul>
+                <span
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#ff9f00]"
+                    aria-hidden
+                >
+                    <Gift className="h-5 w-5 text-white" strokeWidth={2} />
+                </span>
             </div>
+
+            {expiry ? (
+                <p
+                    className="mt-4 rounded-lg bg-[color-mix(in_srgb,#ff9f00_10%,transparent)] px-3 py-2.5 text-sm text-custom-primary"
+                    role="status"
+                >
+                    <span className="font-medium">
+                        {t("account.pointsRewards.expiry.nextExpiry")}:{" "}
+                    </span>
+                    {formatPointsRewardDate(expiry, dateLocale)}
+                </p>
+            ) : null}
+
+            <ul className="mt-5 space-y-2.5">
+                {rules.map((rule, idx) => (
+                    <li key={idx} className="flex gap-3 text-sm leading-relaxed text-custom-primary">
+                        <span
+                            className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#ff9f00]"
+                            aria-hidden
+                        />
+                        <span>{rule}</span>
+                    </li>
+                ))}
+            </ul>
+            </CalmCardSurface>
         </SectionShell>
     );
 }

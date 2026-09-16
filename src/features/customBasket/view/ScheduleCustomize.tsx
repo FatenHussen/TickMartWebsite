@@ -247,20 +247,12 @@ export default function ScheduleCustomize() {
 
     return (
         <div
-            className="relative min-h-screen overflow-hidden bg-gradient-to-b from-[#FFFDFB] via-[#F7F4F0] to-[#F1EEE9] pb-24 dark:bg-zinc-950 sm:pb-10"
+            className="schedules-page-canvas relative min-h-screen pb-24 sm:pb-10"
             dir={isRTL ? "rtl" : "ltr"}
         >
             <div
-                className="animate-schedules-orb pointer-events-none absolute -start-16 top-28 h-56 w-56 rounded-full bg-[#F3E6D4]/45 blur-3xl dark:bg-white/5"
-                aria-hidden
-            />
-            <div
-                className="animate-schedules-orb pointer-events-none absolute -end-12 top-80 h-64 w-64 rounded-full bg-white/50 blur-3xl [animation-delay:2s] dark:bg-[#00AED1]/10"
-                aria-hidden
-            />
-            <div
                 ref={searchBarRef}
-                className="fixed inset-x-0 z-40 border-b border-zinc-200/70 bg-white dark:border-white/10 dark:bg-zinc-950"
+                className="fixed inset-x-0 z-40 border-b border-zinc-200/70 bg-[#FFFcf8] dark:border-white/8 dark:bg-[#171614]"
                 style={{ top: navOffset }}
             >
                 <div className="page-container flex items-center gap-2 py-2.5 sm:gap-3 sm:py-3">
@@ -317,15 +309,10 @@ export default function ScheduleCustomize() {
                         <PremiumInlineLoader size="sm" />
                     </div>
                 ) : (
-                    <section className="schedules-hero animate-schedules-header rounded-[1.85rem] px-5 py-7 sm:px-8 sm:py-9">
-                        <div className="relative mb-5 flex items-center gap-1.5" aria-hidden>
-                            <span className="schedules-beat-dot" />
-                            <span className="schedules-beat-dot" />
-                            <span className="schedules-beat-dot" />
-                        </div>
+                    <section className="schedules-hero rounded-[1.5rem] px-5 py-6 sm:px-8 sm:py-8">
                         <div className="relative flex items-start gap-5 sm:gap-8">
                             <div className="animate-schedules-mark shrink-0 leading-none">
-                                <p className="text-[4.25rem] font-semibold tracking-[-0.07em] text-zinc-900 dark:text-white sm:text-[5.25rem]">
+                                <p className="text-[3.25rem] font-semibold tracking-[-0.05em] text-zinc-900 dark:text-zinc-50 sm:text-[4rem]">
                                     {intervalDays || "—"}
                                 </p>
                                 {intervalDays ? (

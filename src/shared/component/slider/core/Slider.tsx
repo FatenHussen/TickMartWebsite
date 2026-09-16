@@ -223,7 +223,7 @@ export default function Slider({
                         size="sm"
                         onClick={onViewAll}
                         className={cn(
-                            "group h-auto rounded-full border border-primary/20 bg-white/70 px-3.5 py-1.5 text-sm font-semibold text-primary shadow-sm backdrop-blur-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/35 hover:bg-primary hover:text-white hover:shadow-md dark:border-white/15 dark:bg-white/5 dark:text-[color:var(--color-text,var(--color-text-primary))] dark:hover:border-primary/40 dark:hover:bg-primary dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                            "group h-auto rounded-full border border-primary/20 bg-white/70 px-3.5 py-1.5 text-sm font-semibold text-primary shadow-sm backdrop-blur-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/35 hover:bg-primary hover:text-white hover:shadow-md dark:border-white/10 dark:bg-[#2A2622] dark:text-[#E8E4DC] dark:shadow-none dark:hover:border-white/16 dark:hover:bg-[#322E29] dark:hover:text-[#F3EFE8] dark:hover:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
                             viewAllButtonClassName,
                         )}
                     >
@@ -268,7 +268,7 @@ export default function Slider({
                     // Logical inset so RTL flips the pair automatically, matching
                     // Swiper's own RTL translate.
                     "absolute top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-stone-200/70 bg-white/90 text-custom-primary shadow-[0_6px_20px_-8px_rgba(0,0,0,0.35)] backdrop-blur-md transition-all duration-200 hover:border-primary-light/45 hover:bg-white hover:text-primary-light hover:shadow-[0_10px_26px_-8px_rgba(0,0,0,0.45)] active:scale-95 disabled:pointer-events-none disabled:opacity-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 sm:flex",
-                    "dark:border-white/10 dark:bg-white/[0.08] dark:text-white dark:hover:bg-white/15",
+                    "dark:border-white/10 dark:bg-[#2A2622] dark:text-[#C9C2B6] dark:shadow-[0_8px_18px_-12px_rgba(0,0,0,0.55)] dark:hover:border-white/16 dark:hover:bg-[#322E29] dark:hover:text-[#F3EFE8] dark:hover:shadow-none",
                     direction === "prev" ? "start-0 -ms-3" : "end-0 -me-3",
                 )}
             >

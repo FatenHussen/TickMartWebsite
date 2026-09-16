@@ -33,7 +33,7 @@ export default function StorePerks({ perks }: StorePerksProps) {
             : perk.variant ==="primary"
               ? "border border-primary-light/30 bg-gradient-to-r from-primary-light to-primary text-white shadow-[0_10px_20px_-14px_var(--color-shadow-accent)]"
               : perk.variant ==="warning"
-                ? "border border-amber-300/70 bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-[0_10px_20px_-14px_rgba(245,158,11,0.9)]"
+                ? "border border-amber-300/70 bg-gradient-to-r from-amber-500 to-orange-500 text-[var(--color-cta-ink)] shadow-[0_10px_20px_-14px_rgba(245,158,11,0.9)]"
                 : "border border-slate-200 bg-white text-slate-700";
 
         return (

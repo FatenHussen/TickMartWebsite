@@ -5,7 +5,7 @@ import type { Section, SectionCardVariant, SectionLayout } from "@/features/home
  * dashboard "dark second color" (`--color-api-second`) so cards sit in a cohesive branded band.
  */
 export function getDarkSectionBackground(): string {
-    return "radial-gradient(ellipse 90% 60% at 50% -10%, color-mix(in srgb, var(--color-api-second) 5%, transparent) 0%, transparent 55%), #0B0B0C";
+    return "radial-gradient(ellipse 90% 60% at 50% -10%, color-mix(in srgb, var(--color-api-second) 6%, transparent) 0%, transparent 55%), #1C1916";
 }
 
 /**
@@ -14,7 +14,7 @@ export function getDarkSectionBackground(): string {
  * {@link getDarkCardSurface} wherever a card supports a gradient (`backgroundImage`).
  */
 export function getDarkCardSurfaceGradient(): string {
-    return "linear-gradient(160deg, color-mix(in srgb, var(--color-api-second) 9%, #101114) 0%, color-mix(in srgb, var(--color-api-second) 20%, #0b0b0c) 100%)";
+    return "linear-gradient(160deg, color-mix(in srgb, var(--color-api-second) 8%, #24201C) 0%, color-mix(in srgb, var(--color-api-second) 12%, #1C1916) 100%)";
 }
 
 /**
@@ -22,7 +22,7 @@ export function getDarkCardSurfaceGradient(): string {
  * Tinted with the dashboard "dark second color" (`--color-api-second`).
  */
 export function getDarkCardSurface(): string {
-    return "color-mix(in srgb, var(--color-api-second) 14%, #0e0f12)";
+    return "color-mix(in srgb, var(--color-api-second) 10%, #24201C)";
 }
 
 export type SectionSliderPreset = {

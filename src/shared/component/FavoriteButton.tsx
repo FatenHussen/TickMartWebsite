@@ -58,7 +58,7 @@ export default function FavoriteButton({
                 SIZE_CLASS[size],
                 "cursor-pointer touch-manipulation",
                 "transition-[transform,box-shadow] duration-200 ease-out",
-                "hover:scale-110 hover:shadow-[0_4px_14px_-4px_color-mix(in_srgb,var(--color-gradient-to)_55%,transparent)]",
+                "hover:scale-110 hover:shadow-[0_4px_14px_-4px_color-mix(in_srgb,var(--color-gradient-to)_55%,transparent)] dark:hover:shadow-[0_4px_12px_-6px_rgba(0,0,0,0.45)]",
                 "active:scale-90",
                 pop && "favorite-button--pop",
                 "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-light/50 focus-visible:ring-offset-1",
@@ -66,7 +66,7 @@ export default function FavoriteButton({
             )}
             style={{
                 backgroundImage:
-                    "linear-gradient(#FFFFFF, #FFFFFF), linear-gradient(180deg, var(--color-gradient-from) 0%, var(--color-gradient-to) 100%)",
+                    "linear-gradient(var(--fav-btn-fill, #FFFFFF), var(--fav-btn-fill, #FFFFFF)), linear-gradient(180deg, var(--color-gradient-from) 0%, var(--color-gradient-to) 100%)",
                 backgroundOrigin: "border-box",
                 backgroundClip: "padding-box, border-box",
             }}

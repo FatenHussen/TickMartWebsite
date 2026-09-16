@@ -25,8 +25,8 @@ export const historySectionShellClass = cn(
 );
 
 export const redeemApiSecondButtonClass = cn(
-    "!text-white !bg-[var(--color-api-second)] hover:!bg-[var(--color-api-second-hover)]",
-    "shadow-sm transition-colors",
-    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-main)]/35",
+    "cta-honey",
+    "shadow-none transition-colors",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff9f00]/40",
     "focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg-card)]",
 );

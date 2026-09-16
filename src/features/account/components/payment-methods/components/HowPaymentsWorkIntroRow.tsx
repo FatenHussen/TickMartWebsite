@@ -23,9 +23,9 @@ export function HowPaymentsWorkIntroRow({
     return (
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="max-w-2xl space-y-3">
-                <div className="inline-flex items-center gap-2 rounded-full border border-custom-primary/60 bg-custom-primary/35 px-3 py-1 backdrop-blur-sm">
+                <div className="inline-flex items-center gap-2 rounded-full border border-[var(--color-border-primary)] px-3 py-1">
                     <HiOutlineCreditCard
-                        className="h-4 w-4 shrink-0 text-[var(--color-main)]"
+                        className="h-4 w-4 shrink-0 text-[#ff9f00]"
                         aria-hidden
                     />
                     <span className="text-xs font-semibold uppercase tracking-[0.18em] text-custom-secondary">

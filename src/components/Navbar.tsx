@@ -23,8 +23,8 @@ import {
     HiQuestionMarkCircle,
     HiCog,
     HiTrendingUp,
-    HiTag,
     HiLightningBolt,
+    HiLogout,
 } from "react-icons/hi";
 import { paths } from "@/app/routes/path/paths";
 import { useState, useEffect, useMemo, useRef } from "react";
@@ -42,12 +42,14 @@ import { NavMenuLink, useNavMenu } from "@/features/navigation";
 import { useQuickOrderSettings } from "@/features/account/hooks/useQuickOrderSettings";
 import { PremiumSkeletonBlock } from "@/shared/component/loading";
 import { cn } from "@/shared/lib/utils";
+import { useLogout } from "@/features/auth/hooks/useAuth";
+import LogoutPopup from "@/shared/component/LogoutPopup";
 
 /** Keep in sync with `.page-container` in `index.css`. */
 const HEADER_MAX = "page-container";
 /** Light: white pill + brand icons. Dark: glass chip; API colour on icon + hover glow only. */
 const ICON_CIRCLE =
-    "flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-primary/25 bg-white text-primary shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-[background-color,border-color,box-shadow,color,transform] duration-200 ease-out hover:-translate-y-0.5 hover:border-primary/45 hover:bg-primary/[0.08] hover:text-primary hover:shadow-[0_4px_12px_-4px_color-mix(in_srgb,var(--color-main)_35%,transparent)] active:translate-y-0 dark:border-white/[0.08] dark:bg-white/[0.05] dark:text-primary dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_6px_28px_-12px_rgba(0,0,0,0.55)] dark:backdrop-blur-md dark:hover:bg-[color-mix(in_srgb,var(--color-main)_13%,transparent)] dark:hover:shadow-[0_0_32px_-12px_color-mix(in_srgb,var(--color-main)_28%,transparent),inset_0_1px_0_0_rgba(255,255,255,0.08)]";
+    "flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-700 shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-[background-color,border-color,box-shadow,color,transform] duration-200 ease-out hover:-translate-y-0.5 hover:border-cta/50 hover:bg-cta/10 hover:text-cta active:translate-y-0 dark:border-white/22 dark:bg-[#3A342E] dark:text-[#F3EFE8] dark:shadow-none dark:hover:border-cta/55 dark:hover:bg-cta/18 dark:hover:text-cta";
 
 export default function Navbar() {
     const { isRTL, language, toggleLanguage } = useLanguage();
@@ -73,6 +75,8 @@ export default function Navbar() {
     const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left?: number; right?: number } | null>(null);
     const [packagesPopupOpen, setPackagesPopupOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
+    const [showLogoutPopup, setShowLogoutPopup] = useState(false);
+    const logoutMutation = useLogout();
 
     // Soft elevation cue once the page starts scrolling (transform/shadow only — no layout shift)
     useEffect(() => {
@@ -208,8 +212,8 @@ export default function Navbar() {
             "navbar-premium-nav-link inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-medium whitespace-nowrap shrink-0 transition-[color,background-color,transform] duration-200 ease-out active:scale-[0.97]",
             active && "navbar-premium-nav-link--active",
             active
-                ? "bg-primary/10 text-primary"
-                : "text-text-secondary hover:bg-primary/[0.06] hover:text-primary",
+                ? "bg-primary/10 text-primary dark:bg-white/[0.08] dark:text-[#F3EFE8]"
+                : "text-text-secondary hover:bg-primary/[0.06] hover:text-primary dark:text-[#C9C2B6] dark:hover:bg-white/[0.06] dark:hover:text-[#F3EFE8]",
         );
 
     const mobileNavLinkClass = (active: boolean) =>
@@ -258,10 +262,7 @@ export default function Navbar() {
             : baseAccountItems
         : [];
     const desktopShortcutItems = [
-        { path: paths.client.home, label: t("offers") || "Offers", icon: HiTag },
-        { path: paths.account.baskets, label: t("account.menu.myBaskets") || "Baskets", icon: HiShoppingBag },
         { path: paths.account.wishlist, label: t("account.menu.wishlist") || "Wishlist", icon: HiHeart },
-        { path: paths.account.orders, label: t("account.menu.myOrders") || "Orders", icon: HiCube },
         { path: paths.client.cart, label: t("cart.title") || "Cart", icon: HiShoppingCart, badge: cartCount },
     ];
 
@@ -302,9 +303,9 @@ export default function Navbar() {
                                 <button
                                     type="button"
                                     onClick={() => setShowLocationDropdown(!showLocationDropdown)}
-                                    className="group flex w-full items-center gap-2.5 rounded-2xl border border-black/[0.07] bg-white px-3 py-2 text-start transition-[background-color,border-color,box-shadow,transform] duration-200 ease-out hover:-translate-y-px hover:border-primary/25 hover:bg-primary/[0.04] hover:shadow-[0_4px_14px_-8px_rgba(15,23,42,0.18)] dark:border-white/[0.08] dark:bg-white/[0.04] dark:hover:bg-[color-mix(in_srgb,var(--color-main)_10%,transparent)]"
+                                    className="group flex w-full items-center gap-2.5 rounded-2xl border border-black/[0.07] bg-white px-3 py-2 text-start transition-[background-color,border-color,box-shadow,transform] duration-200 ease-out hover:-translate-y-px hover:border-primary/25 hover:bg-primary/[0.04] hover:shadow-[0_4px_14px_-8px_rgba(15,23,42,0.18)] dark:border-white/[0.08] dark:bg-[#2A2622] dark:hover:border-white/14 dark:hover:bg-[#322E29] dark:hover:shadow-none"
                                 >
-                                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary dark:bg-white/[0.06] dark:text-[#C9C2B6]">
                                         <HiLocationMarker className="h-[18px] w-[18px]" />
                                     </span>
                                     <div className="flex min-w-0 flex-1 flex-col items-start">
@@ -324,9 +325,9 @@ export default function Navbar() {
                             ) : (
                                 <Link
                                     to={paths.auth.jwt.signIn}
-                                    className="flex w-full items-center gap-2.5 rounded-2xl border border-black/[0.07] bg-white px-3 py-2 text-start transition-[background-color,border-color,box-shadow,transform] duration-200 ease-out hover:-translate-y-px hover:border-primary/25 hover:bg-primary/[0.04] hover:shadow-[0_4px_14px_-8px_rgba(15,23,42,0.18)] dark:border-white/[0.08] dark:bg-white/[0.04] dark:hover:bg-[color-mix(in_srgb,var(--color-main)_10%,transparent)]"
+                                    className="flex w-full items-center gap-2.5 rounded-2xl border border-black/[0.07] bg-white px-3 py-2 text-start transition-[background-color,border-color,box-shadow,transform] duration-200 ease-out hover:-translate-y-px hover:border-primary/25 hover:bg-primary/[0.04] hover:shadow-[0_4px_14px_-8px_rgba(15,23,42,0.18)] dark:border-white/[0.08] dark:bg-[#2A2622] dark:hover:border-white/14 dark:hover:bg-[#322E29] dark:hover:shadow-none"
                                 >
-                                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary dark:bg-white/[0.06] dark:text-[#C9C2B6]">
                                         <HiLocationMarker className="h-[18px] w-[18px]" />
                                     </span>
                                     <div className="flex min-w-0 flex-1 flex-col items-start">
@@ -407,16 +408,16 @@ export default function Navbar() {
                             <Link
                                 to={paths.client.customOrderCreate}
                                 title={t("navbar.quickOrderHint")}
-                                className="quick-order-nav-cta group relative inline-flex shrink-0 items-center gap-2.5 overflow-hidden rounded-full border border-[color-mix(in_srgb,var(--color-primary)_28%,transparent)] bg-gradient-to-br from-[#fff8f2] via-white to-[#ffe8d4] pe-4 ps-1.5 py-1.5 shadow-[0_8px_22px_-12px_color-mix(in_srgb,var(--color-primary)_45%,transparent)] transition-transform duration-200 hover:-translate-y-0.5"
+                                className="cta-honey group relative inline-flex shrink-0 items-center gap-2.5 overflow-hidden rounded-full pe-4 ps-1.5 py-1.5 shadow-none transition-transform duration-200 hover:-translate-y-0.5"
                             >
-                                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--color-primary)] text-white shadow-[0_6px_14px_-6px_var(--color-primary)] ring-2 ring-white">
+                                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/15 text-white ring-1 ring-white/25">
                                     <HiLightningBolt className="h-[18px] w-[18px] transition-transform duration-200 group-hover:scale-110 group-hover:rotate-6" />
                                 </span>
                                 <span className="flex min-w-0 flex-col items-start pe-0.5 leading-tight">
-                                    <span className="text-[10px] font-bold tracking-[0.08em] text-[var(--color-primary)]">
+                                    <span className="text-[10px] font-semibold tracking-wide text-white/90">
                                         {t("navbar.quickOrderBadge")}
                                     </span>
-                                    <span className="text-sm font-extrabold text-slate-900">
+                                    <span className="text-sm font-semibold text-white">
                                         {t("navbar.quickOrder")}
                                     </span>
                                 </span>
@@ -469,9 +470,9 @@ export default function Navbar() {
                             {!authenticated && (
                                 <Link
                                     to={paths.auth.jwt.signIn}
-                                    className="group hidden items-center gap-2 rounded-full border border-black/[0.08] bg-white px-4 py-2 text-sm font-semibold text-primary shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-[background-color,border-color,box-shadow,transform] duration-200 ease-out hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/[0.06] hover:shadow-[0_4px_14px_-6px_rgba(15,23,42,0.16)] sm:flex lg:text-base dark:border-white/[0.1] dark:bg-white/[0.06] dark:text-primary dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)] dark:backdrop-blur-md dark:hover:border-[color-mix(in_srgb,var(--color-main)_35%,transparent)] dark:hover:bg-[color-mix(in_srgb,var(--color-main)_14%,transparent)] dark:hover:shadow-[0_0_28px_-12px_color-mix(in_srgb,var(--color-main)_25%,transparent)]"
+                                    className="cta-honey group hidden items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold shadow-none transition-transform duration-200 hover:-translate-y-0.5 sm:flex lg:text-base"
                                 >
-                                    <HiUserAdd className="h-5 w-5 shrink-0 text-[#F39C12] transition-colors duration-300 group-hover:text-[#d68910]" />
+                                    <HiUserAdd className="h-5 w-5 shrink-0 text-white" />
                                     <span className="hidden xl:inline">
                                         {t("common.loginRegister") || "Login"}
                                     </span>
@@ -602,6 +603,19 @@ export default function Navbar() {
                                                             </Link>
                                                         );
                                                     })}
+                                                    <button
+                                                        type="button"
+                                                        className="flex w-full items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 transition-colors dark:text-red-400 dark:hover:bg-red-500/10"
+                                                        onClick={() => {
+                                                            setShowAccountDropdown(false);
+                                                            setShowLogoutPopup(true);
+                                                        }}
+                                                    >
+                                                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-red-50 text-red-600 dark:bg-red-500/15 dark:text-red-400">
+                                                            <HiLogout className="h-5 w-5" />
+                                                        </span>
+                                                        <span>{t("account.menu.logout")}</span>
+                                                    </button>
                                                 </div>
                                             </div>
                                         </div>,
@@ -693,7 +707,7 @@ export default function Navbar() {
                                 {showBecomeMarketer && (
                                     <Link
                                         to={paths.becomeMarketer}
-                                        className="group inline-flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-white shadow-[0_6px_16px_-8px_color-mix(in_srgb,var(--color-main)_60%,transparent)] transition-[transform,box-shadow,filter] duration-200 ease-out hover:-translate-y-0.5 hover:brightness-105 hover:shadow-[0_10px_22px_-8px_color-mix(in_srgb,var(--color-main)_65%,transparent)] active:translate-y-0"
+                                        className="cta-honey group inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-transform duration-200 hover:-translate-y-0.5 active:translate-y-0"
                                     >
                                         <HiStar className="h-[18px] w-[18px] shrink-0 transition-transform duration-200 group-hover:scale-110" />
                                         {t("navbar.becomeMarketer")}
@@ -702,7 +716,7 @@ export default function Navbar() {
                                 {isApprovedMarketer && (
                                     <Link
                                         to={paths.marketerDashboard}
-                                        className="group inline-flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-white shadow-[0_6px_16px_-8px_color-mix(in_srgb,var(--color-main)_60%,transparent)] transition-[transform,box-shadow,filter] duration-200 ease-out hover:-translate-y-0.5 hover:brightness-105 hover:shadow-[0_10px_22px_-8px_color-mix(in_srgb,var(--color-main)_65%,transparent)] active:translate-y-0"
+                                        className="cta-honey group inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-transform duration-200 hover:-translate-y-0.5 active:translate-y-0"
                                     >
                                         <HiTrendingUp className="h-[18px] w-[18px] shrink-0 transition-transform duration-200 group-hover:scale-110" />
                                         {t("account.menu.marketerDashboard")}
@@ -789,16 +803,16 @@ export default function Navbar() {
                                 <Link
                                     to={paths.client.customOrderCreate}
                                     onClick={() => setIsMobileMenuOpen(false)}
-                                    className="flex w-full items-center justify-center gap-2.5 rounded-2xl border border-[color-mix(in_srgb,var(--color-primary)_28%,transparent)] bg-gradient-to-br from-[#fff8f2] via-white to-[#ffe8d4] px-4 py-3.5 shadow-[0_10px_24px_-14px_color-mix(in_srgb,var(--color-primary)_50%,transparent)]"
+                                    className="flex w-full items-center justify-center gap-2.5 rounded-2xl cta-honey px-4 py-3.5"
                                 >
-                                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-primary)] text-white">
+                                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/15 text-white">
                                         <HiLightningBolt className="h-5 w-5" />
                                     </span>
                                     <span className="flex flex-col items-start leading-tight">
-                                        <span className="text-[11px] font-bold text-[var(--color-primary)]">
+                                        <span className="text-[11px] font-semibold text-white/90">
                                             {t("navbar.quickOrderBadge")}
                                         </span>
-                                        <span className="text-base font-extrabold text-slate-900">
+                                        <span className="text-base font-semibold text-white">
                                             {t("navbar.quickOrder")}
                                         </span>
                                     </span>
@@ -955,6 +969,19 @@ export default function Navbar() {
                                                         </Link>
                                                     );
                                                 })}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setIsMobileMenuOpen(false);
+                                                        setShowLogoutPopup(true);
+                                                    }}
+                                                    className="flex w-full items-center gap-3 rounded-xl px-4 py-3 font-medium text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10"
+                                                >
+                                                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-red-50 text-red-600 dark:bg-red-500/15 dark:text-red-400">
+                                                        <HiLogout className="h-5 w-5" />
+                                                    </span>
+                                                    <span>{t("account.menu.logout")}</span>
+                                                </button>
                                             </div>
                                         </div>
                                     </>
@@ -967,7 +994,7 @@ export default function Navbar() {
                                             <Link
                                                 to={paths.becomeMarketer}
                                                 onClick={() => setIsMobileMenuOpen(false)}
-                                                className="block w-full px-4 py-3 bg-primary-light text-white rounded-lg font-medium hover:bg-primary transition-colors text-center"
+                                                className="cta-honey block w-full rounded-lg px-4 py-3 text-center font-semibold"
                                             >
                                                 {t("navbar.becomeMarketer")}
                                             </Link>
@@ -976,7 +1003,7 @@ export default function Navbar() {
                                             <Link
                                                 to={paths.marketerDashboard}
                                                 onClick={() => setIsMobileMenuOpen(false)}
-                                                className="block w-full px-4 py-3 bg-primary-light text-white rounded-lg font-medium hover:bg-primary transition-colors text-center"
+                                                className="cta-honey block w-full rounded-lg px-4 py-3 text-center font-semibold"
                                             >
                                                 {t("account.menu.marketerDashboard")}
                                             </Link>
@@ -990,9 +1017,9 @@ export default function Navbar() {
                                         <Link
                                             to={paths.auth.jwt.signIn}
                                             onClick={() => setIsMobileMenuOpen(false)}
-                                            className="group flex items-center justify-center gap-2 w-full px-4 py-3 bg-primary-light text-white rounded-lg font-medium hover:bg-primary transition-colors"
+                                            className="cta-honey group flex w-full items-center justify-center gap-2 rounded-lg px-4 py-3 font-semibold"
                                         >
-                                            <HiUserAdd className="w-5 h-5 text-[#F39C12] transition-colors duration-300 group-hover:text-white" />
+                                            <HiUserAdd className="h-5 w-5 shrink-0 text-white" />
                                             <span>{t("common.loginRegister") || "Login"}</span>
                                         </Link>
                                     </div>
@@ -1003,6 +1030,14 @@ export default function Navbar() {
                 </>
             )}
 
+            <LogoutPopup
+                isOpen={showLogoutPopup}
+                onClose={() => setShowLogoutPopup(false)}
+                onConfirm={() => {
+                    setShowLogoutPopup(false);
+                    logoutMutation.mutate();
+                }}
+            />
             <AffiliatePackagesPopup
                 isOpen={packagesPopupOpen}
                 onClose={() => setPackagesPopupOpen(false)}

@@ -24,10 +24,9 @@ export function NotificationsListSection({
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-16">
         <div className="relative flex items-center gap-2">
-          <span className="h-2.5 w-2.5 animate-bounce rounded-full bg-[var(--color-api-second)] [animation-delay:-0.2s]" />
-          <span className="h-2.5 w-2.5 animate-bounce rounded-full bg-[var(--color-api-second)] [animation-delay:-0.1s]" />
-          <span className="h-2.5 w-2.5 animate-bounce rounded-full bg-[var(--color-api-second)]" />
-          <div className="pointer-events-none absolute inset-0 -z-10 scale-150 rounded-full bg-[var(--color-api-second)]/15 blur-2xl" />
+          <span className="h-2.5 w-2.5 animate-bounce rounded-full bg-[#ff9f00] [animation-delay:-0.2s]" />
+          <span className="h-2.5 w-2.5 animate-bounce rounded-full bg-[#ff9f00] [animation-delay:-0.1s]" />
+          <span className="h-2.5 w-2.5 animate-bounce rounded-full bg-[#ff9f00]" />
         </div>
         <p className="text-sm font-medium text-custom-tertiary">{t("common.loading", "Loading...")}</p>
       </div>
@@ -36,12 +35,9 @@ export function NotificationsListSection({
 
   if (notifications.length === 0) {
     return (
-      <div className="rounded-2xl bg-custom-card/50 px-6 py-16 text-center shadow-sm backdrop-blur-sm">
-        <div className="relative mx-auto mb-5 flex h-24 w-24 items-center justify-center">
-          <div className="absolute inset-0 rounded-full bg-[color-mix(in_srgb,var(--color-api-second)_18%,var(--color-bg-card))] blur-md" />
-          <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-custom-card shadow-inner">
-            <Bell className="h-10 w-10 text-[var(--color-api-second)] opacity-80" aria-hidden />
-          </div>
+      <div className="rounded-2xl border border-[var(--color-border-primary)] bg-[var(--color-bg-card)] px-6 py-16 text-center">
+        <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-xl bg-[#ff9f00]">
+          <Bell className="h-7 w-7 text-white" aria-hidden />
         </div>
         <h3 className="mb-1 text-lg font-semibold text-custom-primary">
           {t("account.notificationsPage.noNotifications")}

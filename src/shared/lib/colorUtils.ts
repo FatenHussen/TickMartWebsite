@@ -131,6 +131,34 @@ export function shade(hex: string, ratio: number): string {
   });
 }
 
+/** Relative luminance 0–1 (sRGB). */
+export function relativeLuminance(hex: string): number {
+  const { r, g, b } = hexToRgb(hex);
+  const lin = (c: number) => {
+    const s = c / 255;
+    return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+  };
+  return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+}
+
+/** True when a hex or rgb() fill would read as a daytime / paper surface. */
+export function isLightHex(color: string | null | undefined): boolean {
+  const value = color?.trim();
+  if (!value) return false;
+  try {
+    if (value[0] === "#") {
+      return relativeLuminance(value) > 0.42;
+    }
+    const rgb = value.match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i);
+    if (!rgb) return false;
+    return relativeLuminance(
+      rgbToHex({ r: Number(rgb[1]), g: Number(rgb[2]), b: Number(rgb[3]) }),
+    ) > 0.42;
+  } catch {
+    return false;
+  }
+}
+
 /** Linear RGB mix: `amountB = 0` → `a`, `1` → `b`. */
 export function mixHex(a: string, b: string, amountB: number): string {
   const A = hexToRgb(a);

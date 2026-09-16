@@ -162,7 +162,7 @@ export default function ProductCard({
             <div className="shrink-0">
                 <div
                     className={cn(
-                        "relative overflow-hidden bg-custom-secondary dark:bg-[#0B0B0C]",
+                        "relative overflow-hidden bg-custom-secondary dark:bg-[#1C1916]",
                         imageFrameClass,
                     )}
                 >
@@ -211,7 +211,7 @@ export default function ProductCard({
                                         b.style
                                             ? undefined
                                             : b.className ||
-                                              "bg-gradient-to-br from-amber-400 to-orange-500 text-white",
+                                              "bg-gradient-to-br from-amber-400 to-orange-500 text-[var(--color-cta-ink)]",
                                     )}
                                     style={b.style}
                                 />
@@ -261,7 +261,7 @@ export default function ProductCard({
                 {showRating ? (
                 <div
                     dir="ltr"
-                    className="absolute -top-5 start-4 z-30 rounded-full bg-white px-3 py-1.5 shadow-[0_8px_20px_-6px_rgba(15,23,42,0.4)] ring-1 ring-stone-900/[0.06] dark:bg-[rgba(20,21,24,0.97)] dark:ring-white/[0.1]"
+                    className="absolute -top-5 start-4 z-30 rounded-full bg-white px-3 py-1.5 shadow-[0_8px_20px_-6px_rgba(15,23,42,0.4)] ring-1 ring-stone-900/[0.06] dark:bg-[#2A2622] dark:ring-white/[0.08]"
                 >
                     <Rating
                         rating={rating}
@@ -306,7 +306,7 @@ export default function ProductCard({
                     {showSold && sold != null ? (
                         <div className="flex shrink-0 items-center gap-2 border-s border-stone-200/70 ps-3 dark:border-white/10">
                             <span
-                                className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[color-mix(in_srgb,var(--color-main)_10%,transparent)] text-[var(--color-main)]"
+                                className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[color-mix(in_srgb,var(--color-main)_10%,transparent)] text-[var(--color-main)] dark:bg-white/[0.06] dark:text-[#C9C2B6]"
                                 aria-hidden
                             >
                                 <svg
@@ -346,7 +346,7 @@ export default function ProductCard({
                                 variant="primary"
                                 size="sm"
                                 fullWidth
-                                className="h-12 min-h-12 w-full rounded-2xl bg-gradient-to-r from-[var(--color-main)] to-[var(--color-api-second)] px-5 text-sm font-bold text-white shadow-lg shadow-[color-mix(in_srgb,var(--color-main)_30%,transparent)] transition-[transform,box-shadow,filter] duration-300 hover:-translate-y-0.5 hover:shadow-xl hover:brightness-[1.04] motion-reduce:transition-none motion-reduce:hover:translate-y-0 dark:to-[color-mix(in_srgb,var(--color-api-second)_82%,var(--color-main))]"
+                                className="h-12 min-h-12 w-full rounded-2xl cta-on-gradient bg-gradient-to-r from-[var(--color-main)] to-[var(--color-api-second)] px-5 text-sm font-semibold shadow-lg shadow-[color-mix(in_srgb,var(--color-main)_30%,transparent)] transition-[transform,box-shadow,filter] duration-300 hover:-translate-y-0.5 hover:shadow-xl hover:brightness-[1.04] motion-reduce:transition-none motion-reduce:hover:translate-y-0 dark:to-[color-mix(in_srgb,var(--color-api-second)_82%,var(--color-main))]"
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     onViewDetails(id);

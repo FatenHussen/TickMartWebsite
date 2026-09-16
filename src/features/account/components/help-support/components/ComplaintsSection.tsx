@@ -38,15 +38,17 @@ export function ComplaintsSection({
     onToggleComplaintExpanded,
 }: ComplaintsSectionProps) {
     const { t } = useTranslation();
+    const showTicketTools =
+        complaintsLoading ||
+        complaints.length > 0 ||
+        Boolean(typeFilter) ||
+        Boolean(statusFilter);
 
     return (
         <HelpSupportSectionCard>
             <HelpSupportSectionHeader
                 icon={
-                    <ClipboardList
-                        className="h-7 w-7 text-[var(--color-api-second)] dark:text-[color-mix(in_srgb,var(--color-api-second)_70%,#a1a1aa)]"
-                        aria-hidden
-                    />
+                    <ClipboardList className="h-5 w-5 text-white" aria-hidden />
                 }
                 title={t("complaints.title")}
                 subtitle={t("complaints.trackManage")}
@@ -67,13 +69,17 @@ export function ComplaintsSection({
             )}
 
             <div className="mt-8">
-                <ComplaintFiltersBar
-                    typeFilter={typeFilter}
-                    statusFilter={statusFilter}
-                    onToggleType={onToggleTypeFilter}
-                    onSelectStatus={onSelectStatusFilter}
-                />
-                <div className="text-sm text-custom-secondary mb-4">{t("complaints.sortNewest")}</div>
+                {showTicketTools ? (
+                    <>
+                        <ComplaintFiltersBar
+                            typeFilter={typeFilter}
+                            statusFilter={statusFilter}
+                            onToggleType={onToggleTypeFilter}
+                            onSelectStatus={onSelectStatusFilter}
+                        />
+                        <div className="mb-4 text-sm text-custom-secondary">{t("complaints.sortNewest")}</div>
+                    </>
+                ) : null}
 
                 <ComplaintsListPanel
                     isLoading={complaintsLoading}

@@ -13,9 +13,9 @@ const darkCardShell: Pick<CSSProperties, "boxShadow" | "border"> = {
 
 /** Three distinct tile personalities — same system, different angles / stops */
 const POINTS_TILE_BASE: [string, string, string] = [
-  "linear-gradient(152deg, #1e1f28 0%, #181a22 42%, #101116 100%)",
-  "linear-gradient(168deg, #1b1c25 0%, #16171f 50%, #0e0f14 100%)",
-  "linear-gradient(128deg, #202128 0%, #17181f 45%, #0c0d11 100%)",
+  "linear-gradient(152deg, #2A2520 0%, #24201C 48%, #1C1916 100%)",
+  "linear-gradient(168deg, #26221D 0%, #221E1A 50%, #1A1714 100%)",
+  "linear-gradient(128deg, #2C2722 0%, #24201C 45%, #1C1916 100%)",
 ];
 
 const POINTS_BRAND_RADIAL: [string, string, string] = [
@@ -25,13 +25,27 @@ const POINTS_BRAND_RADIAL: [string, string, string] = [
 ];
 
 const READABILITY_VIGNETTE =
-  "linear-gradient(to top, rgba(0,0,0,0.42) 0%, rgba(0,0,0,0.12) 38%, transparent 62%)";
+  "linear-gradient(to top, rgba(23,20,18,0.35) 0%, rgba(23,20,18,0.08) 38%, transparent 62%)";
 
 export function getPointsTileDarkCardStyle(variant: 0 | 1 | 2): CSSProperties {
   const v = variant;
   return {
     ...darkCardShell,
     background: POINTS_TILE_BASE[v],
+  };
+}
+
+const LIGHT_TILE_BASE: [string, string, string] = [
+  "radial-gradient(ellipse 80% 65% at 100% -8%, color-mix(in srgb, #ff9f00 16%, transparent) 0%, transparent 58%), linear-gradient(165deg, #fbf6ee 0%, #f4ead8 52%, #efe4d2 100%)",
+  "radial-gradient(ellipse 80% 65% at 100% -8%, color-mix(in srgb, #ff9f00 12%, transparent) 0%, transparent 58%), linear-gradient(165deg, #faf4eb 0%, #f3e8d6 55%, #eee3d0 100%)",
+  "radial-gradient(ellipse 80% 65% at 100% -8%, color-mix(in srgb, #ff9f00 10%, transparent) 0%, transparent 58%), linear-gradient(165deg, #f8f2e8 0%, #f2e7d4 55%, #ece0cc 100%)",
+];
+
+export function getPointsTileLightCardStyle(variant: 0 | 1 | 2): CSSProperties {
+  return {
+    background: LIGHT_TILE_BASE[variant],
+    border: "1px solid color-mix(in srgb, #ff9f00 18%, var(--color-border-primary))",
+    boxShadow: "0 8px 24px -16px rgba(28, 25, 23, 0.14)",
   };
 }
 
@@ -48,7 +62,7 @@ export function getOrderCardDarkStyle(): CSSProperties {
   return {
     ...darkCardShell,
     background:
-      "linear-gradient(155deg, #1d1e26 0%, #181922 38%, #12131a 72%, #0e0f14 100%)",
+      "linear-gradient(155deg, #2A2520 0%, #24201C 40%, #1C1916 100%)",
   };
 }
 
@@ -65,7 +79,7 @@ export function getOrderCardDarkAmbientStyle(): CSSProperties {
 export function getOrderStepperPanelDarkStyle(): CSSProperties {
   return {
     background:
-      "linear-gradient(175deg, rgba(22,23,30,0.97) 0%, #14151c 48%, #0b0c10 100%)",
+      "linear-gradient(175deg, #2A2520 0%, #221E1A 50%, #1C1916 100%)",
     boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.06)",
   };
 }

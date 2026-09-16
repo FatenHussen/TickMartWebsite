@@ -25,14 +25,7 @@ export function HelpSupportSectionHeader({
             )}
         >
             <div className="flex gap-4 min-w-0">
-                <div
-                    className={cn(
-                        "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl",
-                        "bg-gradient-to-br from-primary/[0.2] to-[var(--color-api-second)]/[0.28]",
-                        "shadow-[inset_0_1px_0_0_rgba(255,255,255,0.42),0_10px_36px_-10px_color-mix(in_srgb,var(--color-primary)_32%,transparent)]",
-                        "dark:bg-[color-mix(in_srgb,var(--color-main)_10%,rgba(255,255,255,0.04))] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_0_28px_-8px_color-mix(in_srgb,var(--color-main)_22%,transparent)]",
-                    )}
-                >
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-cta text-white">
                     {icon}
                 </div>
                 <div className="min-w-0 pt-0.5">

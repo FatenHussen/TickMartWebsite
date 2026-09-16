@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { ArrowLeft, ArrowRight, Zap } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
+import { useCurrency } from "@/context/CurrencyContext";
 import { paths } from "@/app/routes/path/paths";
 import Button from "@/shared/ui/Button";
 import { PremiumAppLoader } from "@/shared/component/loading";
@@ -15,7 +16,10 @@ import {
 } from "../hooks/useCustomOrders";
 import CustomOrderStatusBadge from "../components/CustomOrderStatusBadge";
 import CustomOrderPricingTable from "../components/CustomOrderPricingTable";
+import CustomOrderRequestMeta from "../components/CustomOrderRequestMeta";
 import {
+  formatCustomOrderDate,
+  getCustomOrderDisplayTotal,
   getLinkedOrderId,
   isCancelledStatus,
   resolveCustomOrderImageUrl,
@@ -24,9 +28,11 @@ import {
 export default function CustomOrderDetail() {
   const { id } = useParams<{ id: string }>();
   const { t } = useTranslation();
-  const { isRTL } = useLanguage();
+  const { isRTL, language } = useLanguage();
+  const { formatPrice } = useCurrency();
   const navigate = useNavigate();
   const [confirmCancel, setConfirmCancel] = useState(false);
+  const [confirmApprove, setConfirmApprove] = useState(false);
 
   const { data: request, isLoading, isError, refetch } = useCustomOrderDetails(id);
   const approveMutation = useApproveCustomOrder();
@@ -40,7 +46,7 @@ export default function CustomOrderDetail() {
 
   if (isError || !request) {
     return (
-      <div className="mx-auto max-w-3xl px-4 py-16 text-center" dir={isRTL ? "rtl" : "ltr"}>
+      <div className="mx-auto flex min-h-[50vh] max-w-3xl flex-col items-center justify-center px-4 py-16 text-center" dir={isRTL ? "rtl" : "ltr"}>
         <p className="text-custom-secondary">{t("customOrder.notFound")}</p>
         <Button
           type="button"
@@ -58,14 +64,18 @@ export default function CustomOrderDetail() {
   const canCancel = Boolean(request.actions?.can_cancel);
   const status = request.status;
   const linkedOrderId = getLinkedOrderId(request.order);
+  const created = formatCustomOrderDate(request.created_at, language);
+  const displayTotal = getCustomOrderDisplayTotal(request);
   const images = (request.images ?? [])
     .map((img) => resolveCustomOrderImageUrl(img))
     .filter((url): url is string => Boolean(url));
+  const showPricingTable = Boolean(request.order?.items?.length);
 
   const handleApprove = () => {
     approveMutation.mutate(request.id, {
       onSuccess: (res) => {
         toast.success(getApiSuccessMessage(res, t("customOrder.approveSuccess")));
+        setConfirmApprove(false);
         const orderId = getLinkedOrderId(res.data.order) ?? linkedOrderId;
         if (orderId) {
           navigate(paths.client.trackOrderById(orderId));
@@ -106,12 +116,12 @@ export default function CustomOrderDetail() {
       <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="flex items-center gap-2 text-2xl font-bold text-custom-primary">
-            <Zap className="h-6 w-6 text-primary" aria-hidden />
+            <Zap className="h-6 w-6 text-[color:var(--color-main)]" aria-hidden />
             {t("customOrder.requestNumber", { id: request.id })}
           </h1>
-          {request.created_at && (
-            <time className="mt-1 block text-xs text-custom-tertiary">
-              {new Date(request.created_at).toLocaleString()}
+          {created && (
+            <time className="mt-1 block text-xs text-custom-tertiary" dateTime={request.created_at}>
+              {created}
             </time>
           )}
         </div>
@@ -126,12 +136,15 @@ export default function CustomOrderDetail() {
 
         {images.length > 0 && (
           <ul className="mt-4 flex flex-wrap gap-3">
-            {images.map((url) => (
+            {images.map((url, index) => (
               <li key={url}>
                 <a href={url} target="_blank" rel="noreferrer">
                   <img
                     src={url}
-                    alt=""
+                    alt={t("customOrder.requestImageAlt", {
+                      id: request.id,
+                      index: index + 1,
+                    })}
                     className="h-28 w-28 rounded-xl object-cover border border-custom-primary/10"
                   />
                 </a>
@@ -141,6 +154,8 @@ export default function CustomOrderDetail() {
         )}
       </section>
 
+      <CustomOrderRequestMeta request={request} />
+
       {status === "pending_pricing" && (
         <div
           role="status"
@@ -148,15 +163,6 @@ export default function CustomOrderDetail() {
         >
           {t("customOrder.pendingPricingNotice")}
         </div>
-      )}
-
-      {status === "waiting_approval" && request.order && (
-        <section className="mb-6 space-y-4">
-          <h2 className="text-lg font-bold text-custom-primary">
-            {t("customOrder.pricedOrder")}
-          </h2>
-          <CustomOrderPricingTable order={request.order} />
-        </section>
       )}
 
       {status === "approved" && (
@@ -186,26 +192,66 @@ export default function CustomOrderDetail() {
         </section>
       )}
 
+      {showPricingTable && request.order && (
+        <section className="mb-6 space-y-4">
+          <h2 className="text-lg font-bold text-custom-primary">
+            {t("customOrder.pricedOrder")}
+          </h2>
+          <CustomOrderPricingTable order={request.order} />
+        </section>
+      )}
+
       {(canApprove || canCancel) && (
         <div className="flex flex-wrap gap-3 border-t border-custom-primary/10 pt-6">
-          {canApprove && (
+          {canApprove && !confirmApprove && (
             <Button
               type="button"
               variant="primary"
-              isLoading={approveMutation.isPending}
               disabled={cancelMutation.isPending}
-              onClick={handleApprove}
+              onClick={() => {
+                setConfirmCancel(false);
+                setConfirmApprove(true);
+              }}
               className="min-h-11 rounded-xl px-6"
             >
               {t("customOrder.approve")}
             </Button>
           )}
+          {canApprove && confirmApprove && (
+            <div className="flex w-full flex-wrap items-center gap-3 rounded-xl bg-[color-mix(in_srgb,var(--color-main)_10%,var(--color-bg-card))] p-4">
+              <p className="flex-1 text-sm text-custom-primary">
+                {displayTotal != null
+                  ? t("customOrder.approveConfirm", { total: formatPrice(displayTotal) })
+                  : t("customOrder.approveConfirmNoTotal")}
+              </p>
+              <Button
+                type="button"
+                variant="primary"
+                isLoading={approveMutation.isPending}
+                onClick={handleApprove}
+                className="min-h-10 rounded-xl"
+              >
+                {t("customOrder.confirmApprove")}
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setConfirmApprove(false)}
+                className="min-h-10"
+              >
+                {t("common.back")}
+              </Button>
+            </div>
+          )}
           {canCancel && !confirmCancel && (
             <Button
               type="button"
               variant="danger"
-              disabled={approveMutation.isPending}
-              onClick={() => setConfirmCancel(true)}
+              disabled={approveMutation.isPending || confirmApprove}
+              onClick={() => {
+                setConfirmApprove(false);
+                setConfirmCancel(true);
+              }}
               className="min-h-11 rounded-xl px-6"
             >
               {t("customOrder.cancel")}
@@ -231,7 +277,7 @@ export default function CustomOrderDetail() {
                 onClick={() => setConfirmCancel(false)}
                 className="min-h-10"
               >
-                {t("common.back", "Back")}
+                {t("common.back")}
               </Button>
             </div>
           )}

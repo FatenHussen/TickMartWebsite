@@ -167,10 +167,10 @@ export default function AllBaskets() {
                     stickyTopClassName="top-6"
                 >
                     <div className="mb-6">
-                        <h2 className="text-2xl font-bold text-custom-primary">
+                        <h2 className="text-start text-2xl font-bold text-custom-primary">
                             {t("baskets.allBaskets")}
                         </h2>
-                        <p className="text-sm text-custom-secondary mt-2">
+                        <p className="mt-2 text-start text-sm text-custom-secondary">
                             {t("baskets.browseDescription")}
                         </p>
                         {scheduleTabs.length > 0 && (
@@ -295,7 +295,7 @@ export default function AllBaskets() {
                             </div>
 
                             {!isBasketsLoading && allBaskets.length === 0 && (
-                                <div className="basket-sidebar-info mt-8 flex items-center justify-center h-64 rounded-2xl">
+                                <div className="basket-sidebar-info mt-8 flex h-64 items-center justify-center rounded-2xl">
                                     <p className="text-custom-primary">{t("baskets.noBasketsFound")}</p>
                                 </div>
                             )}

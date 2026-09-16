@@ -10,8 +10,6 @@ import { PaymentMethodOptionsList } from "./components/PaymentMethodOptionsList"
 import { PaymentMethodsFootnote } from "./components/PaymentMethodsFootnote";
 import { HowPaymentsWorkPanel } from "./components/HowPaymentsWorkPanel";
 
-import illustrationSrc from "/images/accounts/PaymentMethods.png";
-
 export default function PaymentMethodsView() {
     const { t } = useTranslation();
     const { isRTL } = useLanguage();
@@ -76,7 +74,6 @@ export default function PaymentMethodsView() {
             <PaymentMethodsFootnote text={footnoteText} />
 
             <HowPaymentsWorkPanel
-                illustrationSrc={illustrationSrc}
                 eyebrow={howPaymentsEyebrow}
                 title={howPaymentsTitle}
                 intro={howPaymentsIntro}

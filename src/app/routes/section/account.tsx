@@ -44,15 +44,16 @@ const PageLoader = () => <PremiumAppLoader minHeight="min-h-[400px]" />;
 // Account page wrapper with auth guard
 const AccountPageWrapper = () => (
  <AuthGuard>
- <div className="app-layout-canvas flex min-h-screen flex-col">
- <div className="app-layout-canvas-stack">
+ <div className="app-layout-canvas flex min-h-screen flex-col lg:h-dvh lg:max-h-dvh lg:overflow-hidden">
+ <div className="app-layout-canvas-stack min-h-screen lg:h-full lg:min-h-0 lg:overflow-hidden">
+ <div className="shrink-0">
  <Navbar />
- <main className="flex-1">
+ </div>
+ <main className="flex min-h-0 flex-1 flex-col lg:overflow-hidden">
  <Suspense fallback={<PageLoader />}>
  <AccountLayout />
  </Suspense>
  </main>
- {/* <Footer /> */}
  </div>
  </div>
  </AuthGuard>

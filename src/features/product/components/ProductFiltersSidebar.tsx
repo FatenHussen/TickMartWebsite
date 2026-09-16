@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/shared/lib/utils";
@@ -50,7 +50,7 @@ type ProductFiltersSidebarProps = {
 
 function FieldLabel({ children }: { children: ReactNode }) {
     return (
-        <span className="mb-1.5 block text-xs font-medium text-slate-600 dark:text-[color-mix(in_srgb,var(--color-text)_82%,transparent)]">{children}</span>
+        <span className="mb-1.5 block text-xs font-medium text-stone-600 dark:text-[#E8E4DC]/75">{children}</span>
     );
 }
 
@@ -128,6 +128,26 @@ export default function ProductFiltersSidebar({
         staleTime: 1000 * 60 * 30,
     });
 
+    const hasExtraFilters = Boolean(
+        draft.shop_id ||
+            draft.brand_id ||
+            draft.country ||
+            draft.search ||
+            draft.type ||
+            draft.is_free_delivery ||
+            draft.is_instant_delivery ||
+            draft.on_sale ||
+            draft.in_stock_only ||
+            (draft.attribute_values && draft.attribute_values.length > 0) ||
+            subcategoryOptions.length > 0,
+    );
+
+    const [showMore, setShowMore] = useState(hasExtraFilters);
+
+    useEffect(() => {
+        if (hasExtraFilters) setShowMore(true);
+    }, [hasExtraFilters]);
+
     const toggleAttributeValue = (valueId: number) => {
         const cur = new Set(draft.attribute_values ?? []);
         if (cur.has(valueId)) cur.delete(valueId);
@@ -139,27 +159,25 @@ export default function ProductFiltersSidebar({
     // (backend returns the whole subtree). Do NOT force a leaf.
 
     const inputCls = cn(
-        "w-full rounded-lg border border-sky-200/90 bg-white/80 px-3 py-2.5 text-sm text-slate-800",
-        "dark:border-[color-mix(in_srgb,var(--color-main)_22%,#1f2230)] dark:bg-[color-mix(in_srgb,var(--color-main)_18%,#13151c)] dark:text-[var(--color-text)]",
-        "placeholder:text-slate-400 dark:placeholder:text-[color-mix(in_srgb,var(--color-text)_55%,transparent)] outline-none transition-colors",
-        "focus:border-[#00ACC1] focus:ring-2 focus:ring-[#00ACC1]/20 dark:focus:border-[var(--color-main)] dark:focus:ring-[color-mix(in_srgb,var(--color-main)_45%,transparent)]"
+        "w-full rounded-lg border border-stone-200 bg-white px-3 py-2.5 text-sm text-stone-800",
+        "dark:border-white/10 dark:bg-white/5 dark:text-[#E8E4DC]",
+        "placeholder:text-stone-400 outline-none transition-colors",
+        "focus:border-[#ff9f00] focus:ring-2 focus:ring-[#ff9f00]/20"
     );
 
     const selectCls = cn(inputCls, "cursor-pointer");
 
     const checkboxCls =
-        "mt-0.5 h-4 w-4 shrink-0 rounded border-sky-300 text-[#00ACC1] focus:ring-[#00ACC1]/30 dark:border-[color-mix(in_srgb,var(--color-main)_30%,#1f2230)] dark:text-[var(--color-main)] dark:focus:ring-[color-mix(in_srgb,var(--color-main)_45%,transparent)]";
+        "mt-0.5 h-4 w-4 shrink-0 rounded border-stone-300 text-[#ff9f00] focus:ring-[#ff9f00]/30 dark:border-white/20";
 
-    const row = "flex cursor-pointer items-start gap-3 text-sm text-slate-800 dark:text-[var(--color-text)]";
+    const row = "flex cursor-pointer items-start gap-3 text-sm text-stone-800 dark:text-[#E8E4DC]";
 
     return (
         <div
             className={cn(
-                "w-full min-w-0 max-w-full rounded-[12px] p-4 sm:p-6",
+                "w-full min-w-0 max-w-full rounded-2xl border border-stone-200/90 bg-[#FFFcf8] p-4 sm:p-5",
                 "lg:max-w-[320px]",
-                "bg-gradient-to-b from-[#E4F0FB] to-[#E5F3FF]",
-                "dark:from-[color-mix(in_srgb,var(--color-main)_18%,#13151c)] dark:to-[color-mix(in_srgb,var(--color-api-second)_18%,#10121a)]",
-                "shadow-[0_1px_2px_0_rgba(0,0,0,0.05)]"
+                "dark:border-white/10 dark:bg-[#24201C]",
             )}
         >
             <div
@@ -207,6 +225,77 @@ export default function ProductFiltersSidebar({
                     </select>
                 </div>
 
+                <div className="grid grid-cols-2 gap-2">
+                    <div>
+                        <FieldLabel>{t("productsListing.priceMin")}</FieldLabel>
+                        <input
+                            type="number"
+                            min={0}
+                            value={draft.price_min ?? ""}
+                            onChange={(e) =>
+                                applyDebounced({
+                                    price_min: e.target.value
+                                        ? Number(e.target.value)
+                                        : undefined,
+                                })
+                            }
+                            className={inputCls}
+                        />
+                    </div>
+                    <div>
+                        <FieldLabel>{t("productsListing.priceMax")}</FieldLabel>
+                        <input
+                            type="number"
+                            min={0}
+                            value={draft.price_max ?? ""}
+                            onChange={(e) =>
+                                applyDebounced({
+                                    price_max: e.target.value
+                                        ? Number(e.target.value)
+                                        : undefined,
+                                })
+                            }
+                            className={inputCls}
+                        />
+                    </div>
+                </div>
+
+                <div>
+                    <FieldLabel>{t("productsListing.sortBy", "Sort by")}</FieldLabel>
+                    <select
+                        value={draft.sort_by ?? ""}
+                        onChange={(e) =>
+                            apply({
+                                sort_by: (e.target.value || undefined) as
+                                    | ProductSortBy
+                                    | undefined,
+                            })
+                        }
+                        className={selectCls}
+                    >
+                        <option value="">
+                            {t("productsListing.sortDefault", "Default")}
+                        </option>
+                        {SORT_OPTIONS.map(({ value, labelKey }) => (
+                            <option key={value} value={value}>
+                                {t(labelKey, value)}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
+                <button
+                    type="button"
+                    onClick={() => setShowMore((open) => !open)}
+                    className="text-start text-sm font-semibold text-[#ff9f00]"
+                >
+                    {showMore
+                        ? t("productsListing.fewerFilters")
+                        : t("productsListing.moreFilters")}
+                </button>
+
+                {showMore ? (
+                    <>
                 {subcategoryOptions.length > 0 && selectedParentCategory && (
                     <div>
                         <FieldLabel>
@@ -251,7 +340,7 @@ export default function ProductFiltersSidebar({
                         hideEmptyMessage
                     />
                 ) : (
-                    <p className="text-xs text-slate-500 dark:text-[color-mix(in_srgb,var(--color-text)_70%,transparent)]">
+                    <p className="text-xs text-stone-500 dark:text-[#E8E4DC]/70">
                         {t(
                             "productsListing.selectCategoryForAttributes",
                             "Select a category to filter by size, color, and other attributes."
@@ -315,41 +404,6 @@ export default function ProductFiltersSidebar({
                     </select>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2">
-                    <div>
-                        <FieldLabel>{t("baskets.min", "Min")}</FieldLabel>
-                        <input
-                            type="number"
-                            min={0}
-                            value={draft.price_min ?? ""}
-                            onChange={(e) =>
-                                applyDebounced({
-                                    price_min: e.target.value
-                                        ? Number(e.target.value)
-                                        : undefined,
-                                })
-                            }
-                            className={inputCls}
-                        />
-                    </div>
-                    <div>
-                        <FieldLabel>{t("baskets.max", "Max")}</FieldLabel>
-                        <input
-                            type="number"
-                            min={0}
-                            value={draft.price_max ?? ""}
-                            onChange={(e) =>
-                                applyDebounced({
-                                    price_max: e.target.value
-                                        ? Number(e.target.value)
-                                        : undefined,
-                                })
-                            }
-                            className={inputCls}
-                        />
-                    </div>
-                </div>
-
                 <div>
                     <FieldLabel>{t("productsListing.countryLabel", "Country")}</FieldLabel>
                     <select
@@ -405,31 +459,7 @@ export default function ProductFiltersSidebar({
                     </select>
                 </div>
 
-                <div>
-                    <FieldLabel>{t("productsListing.sortBy", "Sort by")}</FieldLabel>
-                    <select
-                        value={draft.sort_by ?? ""}
-                        onChange={(e) =>
-                            apply({
-                                sort_by: (e.target.value || undefined) as
-                                    | ProductSortBy
-                                    | undefined,
-                            })
-                        }
-                        className={selectCls}
-                    >
-                        <option value="">
-                            {t("productsListing.sortDefault", "Default")}
-                        </option>
-                        {SORT_OPTIONS.map(({ value, labelKey }) => (
-                            <option key={value} value={value}>
-                                {t(labelKey, value)}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-
-                <div className="space-y-2.5 border-t border-sky-200/60 dark:border-[color-mix(in_srgb,var(--color-main)_22%,#1f2230)] pt-2">
+                <div className="space-y-2.5 border-t border-stone-200/80 pt-2 dark:border-white/10">
                     <label className={row}>
                         <input
                             type="checkbox"
@@ -483,19 +513,21 @@ export default function ProductFiltersSidebar({
                         {t("productsListing.inStockOnly", "In stock only")}
                     </label>
                 </div>
+                    </>
+                ) : null}
 
                 <div className="flex flex-col gap-2 pt-2">
                     <button
                         type="button"
                         onClick={onApply}
-                        className="w-full rounded-xl bg-[#00ACC1] dark:bg-[var(--color-main)] py-3 text-sm font-semibold text-white dark:text-[var(--color-text)] shadow-sm transition-opacity hover:opacity-[0.96]"
+                        className="cta-honey w-full rounded-xl py-3 text-sm font-semibold"
                     >
                         {t("productsListing.applyFilters", "Apply filters")}
                     </button>
                     <button
                         type="button"
                         onClick={onClear}
-                        className="w-full py-2 text-center text-sm font-semibold text-[#00838F] dark:text-[var(--color-api-second)] hover:underline"
+                        className="w-full py-2 text-center text-sm font-semibold text-stone-600 hover:underline dark:text-[#E8E4DC]/80"
                     >
                         {t("productsListing.clearAll", "Clear all")}
                     </button>

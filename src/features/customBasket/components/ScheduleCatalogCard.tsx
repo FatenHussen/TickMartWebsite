@@ -90,13 +90,12 @@ export default function ScheduleCatalogCard({
                 onClick={goToCustomize}
                 style={{ animationDelay: `${Math.min(index, 8) * 70}ms` }}
                 className={cn(
-                    "animate-card-enter group flex h-full w-full flex-col items-center rounded-[1.75rem] px-3 py-5 text-center",
-                    "border border-stone-200 bg-white",
-                    "shadow-[0_8px_24px_-12px_rgba(28,25,23,0.16)]",
-                    "transition-[transform,box-shadow,border-color] duration-300",
-                    "hover:-translate-y-1 hover:border-stone-300",
-                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00AED1] focus-visible:ring-offset-2",
-                    "dark:border-white/12 dark:bg-zinc-900 dark:shadow-none dark:hover:border-white/20",
+                    "animate-card-enter group flex h-full w-full flex-col items-center rounded-[1.5rem] px-3 py-5 text-center",
+                    "border border-stone-200 bg-[#FFFcf8]",
+                    "transition-colors duration-200",
+                    "hover:border-stone-300",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
+                    "dark:border-white/8 dark:bg-[#221F1C] dark:hover:border-white/16",
                     "motion-reduce:hover:translate-y-0 motion-reduce:transition-none",
                 )}
             >
@@ -137,20 +136,18 @@ export default function ScheduleCatalogCard({
             onClick={goToCustomize}
             style={{ animationDelay: `${Math.min(index, 8) * 70}ms` }}
             className={cn(
-                "animate-card-enter group flex h-full flex-col rounded-[1.85rem] p-5 text-start sm:p-6",
-                "border border-stone-200 bg-white",
-                "shadow-[0_8px_24px_-12px_rgba(28,25,23,0.16),0_2px_8px_rgba(28,25,23,0.05)]",
-                "transition-[transform,box-shadow,border-color] duration-300",
-                "hover:-translate-y-1 hover:border-stone-300 hover:shadow-[0_16px_36px_-16px_rgba(28,25,23,0.22)]",
-                "motion-reduce:hover:translate-y-0",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00AED1] focus-visible:ring-offset-2",
-                "dark:border-white/12 dark:bg-zinc-900 dark:shadow-none dark:hover:border-white/20",
+                "animate-card-enter group flex h-full flex-col rounded-[1.5rem] p-5 text-start sm:p-6",
+                "border border-stone-200 bg-[#FFFcf8]",
+                "transition-colors duration-200",
+                "hover:border-stone-300",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
+                "dark:border-white/8 dark:bg-[#221F1C] dark:hover:border-white/16",
                 "motion-reduce:transition-none",
             )}
         >
             <div className="flex items-start justify-between gap-3">
                 <div className="leading-none">
-                    <p className="animate-schedules-float text-[2.75rem] font-semibold tracking-[-0.06em] text-zinc-900 dark:text-white sm:text-[3.15rem]">
+                    <p className="text-[2.5rem] font-semibold tracking-[-0.05em] text-zinc-900 dark:text-zinc-50 sm:text-[2.85rem]">
                         {schedule.interval_days || "—"}
                     </p>
                     {schedule.interval_days ? (
@@ -207,7 +204,7 @@ export default function ScheduleCatalogCard({
             )}
 
             <span className="mt-auto flex pt-5">
-                <span className="inline-flex h-10 w-full items-center justify-center gap-0.5 rounded-full bg-zinc-900 px-4 text-[13px] font-semibold text-white transition-colors duration-200 group-hover:bg-primary dark:bg-white dark:text-zinc-900 dark:group-hover:bg-primary dark:group-hover:text-white">
+                <span className="inline-flex h-10 w-full items-center justify-center gap-0.5 rounded-full bg-[var(--color-primary)] px-4 text-[13px] font-semibold text-white">
                     {t("customBasket.startCustomizing")}
                     <HiChevronRight className="h-4 w-4 shrink-0 rtl:rotate-180" />
                 </span>

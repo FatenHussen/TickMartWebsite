@@ -20,7 +20,7 @@ export function ComplaintFiltersBar({
     const { t } = useTranslation();
 
     const chipBase = cn(
-        "px-3.5 py-1.5 rounded-full text-sm font-semibold transition-all duration-200",
+        "px-2.5 py-1 rounded-full text-xs font-semibold transition-all duration-200 sm:px-3.5 sm:py-1.5 sm:text-sm",
         HELP_FOCUS_RING
     );
     const chipInactive =

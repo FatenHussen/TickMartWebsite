@@ -222,7 +222,7 @@ export default function PackageCard({
                 type="button"
                 onClick={() => onCancel(pkg.id)}
                 disabled={isCancelling}
-                className="w-full rounded-lg bg-[var(--color-api-second)] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[var(--color-api-second-hover)] disabled:opacity-60"
+                className="cta-honey w-full rounded-lg px-4 py-2.5 text-sm font-semibold disabled:opacity-60"
               >
                 {isCancelling ? "..." : t("packages.cancelSubscription")}
               </button>
@@ -251,7 +251,7 @@ export default function PackageCard({
                 <button
                   type="button"
                   onClick={() => onSubscribe?.(pkg.id)}
-                  className="w-full shrink-0 rounded-lg bg-[var(--color-api-second)] px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[var(--color-api-second-hover)] sm:w-auto"
+                  className="cta-honey w-full shrink-0 rounded-lg px-6 py-2.5 text-sm font-semibold sm:w-auto"
                 >
                   {t("packages.subscribe")}
                 </button>

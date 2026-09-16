@@ -1,11 +1,11 @@
-export function formatPointsRewardDate(value: string): string {
+export function formatPointsRewardDate(value: string, locale?: string): string {
     try {
         const d = new Date(value);
         return isNaN(d.getTime())
             ? value
-            : d.toLocaleDateString(undefined, {
+            : d.toLocaleDateString(locale || undefined, {
                   day: "numeric",
-                  month: "short",
+                  month: "long",
                   year: "numeric",
               });
     } catch {

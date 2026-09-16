@@ -13,10 +13,10 @@ export const BASKET_CARD_ELEVATED =
     "rounded-2xl border border-custom-primary/10 bg-custom-card shadow-[var(--shadow-card-neutral)]";
 
 export const BASKET_PRIMARY_CTA =
-    "rounded-xl font-semibold text-white shadow-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-main)]/35 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg-card)] bg-[var(--color-api-second)] hover:bg-[var(--color-api-second-hover)] disabled:opacity-50 disabled:cursor-not-allowed";
+    "cta-honey rounded-xl font-semibold shadow-none transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ff9f00]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg-card)] disabled:opacity-50 disabled:cursor-not-allowed";
 
 export const BASKET_GHOST_ICON_BTN =
-    "rounded-full bg-[var(--color-api-second)] text-white shadow-sm transition-colors hover:bg-[var(--color-api-second-hover)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-main)]/30";
+    "cta-honey rounded-full shadow-none transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ff9f00]/40";
 
 export const BASKET_CHIP_MAIN =
     "inline-flex items-center rounded-full px-4 py-2 text-sm font-semibold bg-[color-mix(in_srgb,var(--color-main)_12%,var(--color-bg-card))] text-custom-primary";

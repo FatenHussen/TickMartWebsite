@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { HiCheckCircle, HiGift } from "react-icons/hi2";
 import AuthHeader from "@/features/auth/components/AuthHeader";
 import AuthPromoPanel from "@/features/auth/components/AuthPromoPanel";
+import AuthVisualPanel from "@/features/auth/components/AuthVisualPanel";
 import AuthFormCard from "@/features/auth/components/AuthFormCard";
 import { useAuthDarkScopeStyle } from "@/features/auth/hooks/useAuthDarkScopeStyle";
 import { useTheme } from "@/context/ThemeContext";
@@ -58,7 +59,6 @@ export default function AuthLayout({
     leftImageSrc,
     leftImageLink,
     leftImageAlt = "",
-    leftImageHeight = "full",
     leftContent,
     title,
     features = [],
@@ -82,29 +82,12 @@ export default function AuthLayout({
         }
 
         if (leftPanel === "image" && leftImageSrc) {
-            const heightClass = leftImageHeight === "100vh" ? "h-screen" : "h-full min-h-0";
-            const imageElement = (
-                <img
+            return (
+                <AuthVisualPanel
                     src={leftImageSrc}
                     alt={leftImageAlt}
-                    className="w-full h-full object-cover"
+                    href={leftImageLink}
                 />
-            );
-            return (
-                <aside className={`hidden lg:block sticky top-0 self-start ${heightClass}`}>
-                    {leftImageLink ? (
-                        <a
-                            href={leftImageLink}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="block w-full h-full"
-                        >
-                            {imageElement}
-                        </a>
-                    ) : (
-                        imageElement
-                    )}
-                </aside>
             );
         }
 
@@ -219,24 +202,24 @@ export default function AuthLayout({
     return (
         <div
             className={cn(
-                "auth-scope min-h-screen flex flex-col bg-custom-card text-custom-primary",
-                theme === "dark" && "dark",
+                "auth-scope min-h-screen flex flex-col text-custom-primary",
+                theme === "dark" ? "dark bg-[#050505]" : "bg-[#F6F3EE]",
             )}
             style={authDarkScopeStyle}
         >
             <AuthHeader />
             <div
-                className={`relative flex-1 grid min-h-0 ${leftPanel === "none" ? "lg:grid-cols-1" : "lg:grid-cols-2"
+                className={`relative flex-1 grid min-h-0 ${leftPanel === "none" ? "lg:grid-cols-1" : "lg:grid-cols-[minmax(0,1.08fr)_minmax(0,0.92fr)]"
                     }`}
             >
                 {renderLeftPanel()}
 
                 <main
                     className={cn(
-                        "relative flex flex-1 items-center justify-center px-4 py-10 md:px-6 lg:px-8 lg:py-12",
+                        "relative flex flex-1 items-center justify-center px-4 pb-10 pt-20 md:px-6 lg:px-8 lg:pb-12 lg:pt-24",
                         isAuthDark
                             ? "bg-[#050505]"
-                            : "bg-gradient-to-b from-[var(--color-bg-primary)] to-[color-mix(in_srgb,var(--color-api-second)_12%,var(--color-bg-secondary))]",
+                            : "bg-[#F6F3EE]",
                     )}
                 >
                     <div className={`w-full min-w-0 max-w-full ${MAX_WIDTH_CLASS[maxWidth]}`}>

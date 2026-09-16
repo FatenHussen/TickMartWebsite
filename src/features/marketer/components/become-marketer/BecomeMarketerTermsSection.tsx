@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import type { LegalDocumentData } from "@/features/legal/types";
-import { API_SECOND_CTA_CLASS } from "@/features/marketer/constants/apiSecondClasses";
 import { PremiumInlineLoader } from "@/shared/component/loading";
 
 interface BecomeMarketerTermsSectionProps {
@@ -71,7 +70,7 @@ export function BecomeMarketerTermsSection({
                                 type="button"
                                 onClick={onAgree}
                                 disabled={isSubmitDisabled}
-                                className={API_SECOND_CTA_CLASS}
+                                className="cta-honey inline-flex items-center justify-center rounded-lg px-5 py-2.5 font-semibold shadow-sm transition-colors"
                             >
                                 {isRequestPending
                                     ? t("common.loading", "Loading...")

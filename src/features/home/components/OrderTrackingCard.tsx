@@ -301,7 +301,10 @@ export default function OrderTrackingCard({ order }: OrderTrackingCardProps) {
         {showTrackOrderButton && (
           <Link
             to={trackOrderUrl}
-            className="group inline-flex shrink-0 items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-white shadow-md transition-all duration-300 ease-out hover:brightness-[1.05] active:scale-[0.98] focus:outline-none sm:px-4 sm:py-3 sm:text-base dark:shadow-[0_6px_20px_-12px_color-mix(in_srgb,var(--color-primary)_26%,transparent)] dark:hover:shadow-[0_8px_24px_-10px_color-mix(in_srgb,var(--color-primary)_32%,transparent)]"
+            className={cn(
+            "group inline-flex shrink-0 items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold shadow-md transition-all duration-300 ease-out hover:brightness-[1.05] active:scale-[0.98] focus:outline-none sm:px-4 sm:py-3 sm:text-base dark:shadow-[0_6px_20px_-12px_color-mix(in_srgb,var(--color-primary)_26%,transparent)] dark:hover:shadow-[0_8px_24px_-10px_color-mix(in_srgb,var(--color-primary)_32%,transparent)]",
+            isDarkTheme ? "text-white" : "cta-on-gradient",
+          )}
             style={isDarkTheme ? gradientBgSoftDark : gradientBg}
             aria-label={t("home.trackOrder")}
           >

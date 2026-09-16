@@ -25,7 +25,6 @@ export default function PointsRewardsView() {
                     summaryLoading={m.summaryLoading}
                     points={m.points}
                     value={m.value}
-                    nextReward={m.nextReward}
                     nextRewardThreshold={m.nextRewardThreshold}
                     progressPercentage={m.progressPercentage}
                 />

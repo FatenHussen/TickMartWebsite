@@ -27,14 +27,14 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
  const base ="focus:ring-2 focus:ring-offset-2";
 
  switch (variant) {
- case"primary":
- return `${base} bg-primary hover:opacity-90 text-white focus:ring-primary`;
- case"secondary":
- return `${base} bg-secondary hover:opacity-90 text-text-primary focus:ring-secondary`;
- case"outline":
- return `${base} border-2 border-primary text-primary hover:bg-primary/10 focus:ring-primary bg-transparent`;
- case"ghost":
- return `${base} text-primary hover:bg-primary/10 focus:ring-primary bg-transparent`;
+    case"primary":
+ return `${base} cta-honey focus:ring-cta`;
+    case"secondary":
+ return `${base} bg-secondary hover:opacity-90 text-text-primary focus:ring-secondary dark:bg-[#3A342E] dark:text-[#F3EFE8] dark:hover:bg-[#454038]`;
+    case"outline":
+ return `${base} border-2 border-cta text-cta hover:bg-cta/10 focus:ring-cta bg-transparent`;
+    case"ghost":
+ return `${base} text-cta hover:bg-cta/10 focus:ring-cta bg-transparent`;
  case"danger":
  return `${base} bg-red hover:bg-red-600 text-white focus:ring-red`;
  default:

@@ -33,6 +33,16 @@ import {
     mapApiTopBadgesToProductCard,
 } from "@/shared/lib/mapProductBadges";
 import { resolveListingCardPrices } from "@/shared/lib/formatApiPrice";
+import { cn } from "@/shared/lib/utils";
+
+const SORT_CHIP_KEYS: Record<string, string> = {
+    price_asc: "productsListing.sortPriceAsc",
+    price_desc: "productsListing.sortPriceDesc",
+    newest: "productsListing.sortNewest",
+    oldest: "productsListing.sortOldest",
+    rating: "productsListing.sortRating",
+};
+
 export default function ProductsPage() {
     const { t } = useTranslation();
     const { isRTL } = useLanguage();
@@ -214,6 +224,73 @@ export default function ProductsPage() {
         });
     }, [totalCount, products.length, t]);
 
+    const productGridClass = cn(
+        "grid gap-3 sm:gap-4",
+        products.length <= 2
+            ? "max-w-xl grid-cols-2"
+            : products.length <= 6
+              ? "max-w-4xl grid-cols-2 sm:grid-cols-3"
+              : "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4",
+    );
+
+    const activeChips = useMemo(() => {
+        const chips: { key: string; label: string }[] = [];
+        if (applied.category_id != null) {
+            const label =
+                categoryItems.find((c) => c.id === applied.category_id)?.name ||
+                numericCategoryOptions.find((o) => o.value === applied.category_id)?.label;
+            if (label) chips.push({ key: "category_id", label });
+        }
+        if (applied.price_min != null || applied.price_max != null) {
+            chips.push({
+                key: "price",
+                label: `${applied.price_min ?? "—"} – ${applied.price_max ?? "—"}`,
+            });
+        }
+        if (applied.sort_by) {
+            chips.push({
+                key: "sort_by",
+                label: t(SORT_CHIP_KEYS[applied.sort_by] ?? "productsListing.sortBy"),
+            });
+        }
+        if (applied.search) chips.push({ key: "search", label: applied.search });
+        if (applied.shop_id != null) {
+            const label = numericShopOptions.find((o) => o.value === applied.shop_id)?.label;
+            if (label) chips.push({ key: "shop_id", label });
+        }
+        if (applied.brand_id != null) {
+            const label = numericBrandOptions.find((o) => o.value === applied.brand_id)?.label;
+            if (label) chips.push({ key: "brand_id", label });
+        }
+        if (applied.on_sale) chips.push({ key: "on_sale", label: t("productsListing.onSale") });
+        if (applied.is_free_delivery)
+            chips.push({ key: "is_free_delivery", label: t("productsListing.freeDelivery") });
+        if (applied.in_stock_only)
+            chips.push({ key: "in_stock_only", label: t("productsListing.inStockOnly") });
+        return chips;
+    }, [
+        applied,
+        categoryItems,
+        numericBrandOptions,
+        numericCategoryOptions,
+        numericShopOptions,
+        t,
+    ]);
+
+    const removeChip = (key: string) => {
+        const next = { ...applied };
+        if (key === "price") {
+            delete next.price_min;
+            delete next.price_max;
+        } else if (key === "category_id") {
+            delete next.category_id;
+            delete next.attribute_values;
+        } else {
+            delete (next as Record<string, unknown>)[key];
+        }
+        applyDraft(next);
+    };
+
     const sidebar = (
         <ProductFiltersSidebar
             draft={draft}
@@ -236,7 +313,7 @@ export default function ProductsPage() {
 
     return (
         <div
-            className="min-h-screen w-full min-w-0 bg-custom-primary dark:bg-[color-mix(in_srgb,var(--color-main)_18%,#13151c)]"
+            className="min-h-screen w-full min-w-0 bg-[#F6F3EE] dark:bg-[#171412]"
             dir={isRTL ? "rtl" : "ltr"}
         >
             {bannerSections.length > 0 && (
@@ -268,25 +345,46 @@ export default function ProductsPage() {
                     sidebarPosition="left"
                     twoColumnFrom="md"
                     stickySidebar
+                    mobileContentFirst
                     sidebarClassName="w-full"
                     gapClassName="gap-4 md:gap-6 lg:gap-8"
                 >
                     <div className="w-full min-w-0">
-                        <div className="mb-3 sm:mb-4">
-                            <p className="text-xs text-custom-secondary dark:text-[color-mix(in_srgb,var(--color-text)_82%,transparent)] sm:text-sm">
+                        <div className="mb-3 flex flex-wrap items-center gap-2 sm:mb-4">
+                            <p className="text-xs text-stone-500 dark:text-[#E8E4DC]/70 sm:text-sm">
                                 {resultsLabel}
                             </p>
+                            {activeChips.map((chip) => (
+                                <button
+                                    key={chip.key}
+                                    type="button"
+                                    onClick={() => removeChip(chip.key)}
+                                    className="inline-flex items-center gap-1 rounded-full border border-stone-200 bg-white px-2.5 py-1 text-[12px] font-medium text-stone-700 dark:border-white/10 dark:bg-white/8 dark:text-[#E8E4DC]"
+                                >
+                                    {chip.label}
+                                    <span aria-hidden>×</span>
+                                </button>
+                            ))}
+                            {activeChips.length > 0 ? (
+                                <button
+                                    type="button"
+                                    onClick={clearFilters}
+                                    className="text-[12px] font-semibold text-[#ff9f00]"
+                                >
+                                    {t("productsListing.clearAll")}
+                                </button>
+                            ) : null}
                         </div>
 
                         {isLoading && products.length === 0 ? (
-                            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
-                                {Array.from({ length: 8 }).map((_, index) => (
+                            <div className="grid max-w-4xl grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
+                                {Array.from({ length: 6 }).map((_, index) => (
                                     <ProductCardSkeleton key={`skeleton-${index}`} />
                                 ))}
                             </div>
                         ) : products.length > 0 ? (
                             <>
-                                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
+                                <div className={productGridClass}>
                                     {products.map((product) => (
                                         <ProductCard
                                             key={product.id}
@@ -296,7 +394,7 @@ export default function ProductsPage() {
                                 </div>
 
                                 {isFetchingNextPage && (
-                                    <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
+                                    <div className={`mt-4 ${productGridClass}`}>
                                         {Array.from({ length: 4 }).map((_, index) => (
                                             <ProductCardSkeleton key={`loading-${index}`} />
                                         ))}

@@ -7,18 +7,22 @@ type CheckoutPaymentSectionProps = {
     paymentMethods: PaymentMethodOption[];
     selectedPaymentMethodId: string;
     onPaymentMethodSelect: (methodId: string) => void;
+    /** When true, do not visually fall back to the first method if none is selected. */
+    allowEmpty?: boolean;
 };
 
 export default function CheckoutPaymentSection({
     paymentMethods,
     selectedPaymentMethodId,
     onPaymentMethodSelect,
+    allowEmpty = false,
 }: CheckoutPaymentSectionProps) {
     const { t } = useTranslation();
     const { isRTL } = useLanguage();
 
     const defaultMethodId =
-        selectedPaymentMethodId || paymentMethods[0]?.id || "";
+        selectedPaymentMethodId ||
+        (allowEmpty ? "" : paymentMethods[0]?.id || "");
 
     return (
         <div className="mb-6" dir={isRTL ? "rtl" : "ltr"}>

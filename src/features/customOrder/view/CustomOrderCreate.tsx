@@ -6,6 +6,7 @@ import { Zap } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { paths } from "@/app/routes/path/paths";
 import Button from "@/shared/ui/Button";
+import { cn } from "@/shared/lib/utils";
 import { getApiErrorMessage, getApiSuccessMessage } from "@/shared/lib/apiMessage";
 import { useAddresses } from "@/features/account/hooks/useAddress";
 import CheckoutAddressSection from "@/features/cart/components/CheckoutAddressSection";
@@ -14,9 +15,13 @@ import { usePaymentMethods } from "@/features/cart/hooks/usePaymentMethods";
 import type { DeliveryAddress } from "@/features/cart/types";
 import type { Address } from "@/features/account/types";
 import { useCreateCustomOrder } from "../hooks/useCustomOrders";
+import CustomOrderHowItWorks from "../components/CustomOrderHowItWorks";
 import CustomOrderImagePicker from "../components/CustomOrderImagePicker";
 import {
   MIN_CUSTOM_ORDER_DESCRIPTION,
+  formatCustomOrderDate,
+  toCustomOrderExpectedAtIso,
+  todayDateInputValue,
 } from "../utils/customOrderHelpers";
 
 const PAYMENT_STORAGE_KEY = "tikmool_payment_method_id";
@@ -52,7 +57,7 @@ function mapAddressToDeliveryAddress(addr: Address): DeliveryAddress {
 
 export default function CustomOrderCreate() {
   const { t } = useTranslation();
-  const { isRTL } = useLanguage();
+  const { isRTL, language } = useLanguage();
   const navigate = useNavigate();
   const createMutation = useCreateCustomOrder();
 
@@ -67,8 +72,10 @@ export default function CustomOrderCreate() {
   const defaultAddress = addresses.find((a) => a.isDefault) ?? addresses[0];
   const [addressId, setAddressId] = useState<number | string>("");
   const [paymentMethodId, setPaymentMethodId] = useState("");
+  const [paymentTouched, setPaymentTouched] = useState(false);
   const [description, setDescription] = useState("");
-  const [expectedAt, setExpectedAt] = useState("");
+  const [expectedDate, setExpectedDate] = useState("");
+  const [expectedTime, setExpectedTime] = useState("");
   const [images, setImages] = useState<File[]>([]);
 
   useEffect(() => {
@@ -78,7 +85,7 @@ export default function CustomOrderCreate() {
   }, [addressId, defaultAddress]);
 
   useEffect(() => {
-    if (paymentMethodId) return;
+    if (paymentTouched || paymentMethodId) return;
     const stored = localStorage.getItem(PAYMENT_STORAGE_KEY);
     if (stored && paymentMethods.some((m) => m.id === stored)) {
       setPaymentMethodId(stored);
@@ -87,12 +94,14 @@ export default function CustomOrderCreate() {
     if (paymentMethods[0]) {
       setPaymentMethodId(paymentMethods[0].id);
     }
-  }, [paymentMethodId, paymentMethods]);
+  }, [paymentTouched, paymentMethodId, paymentMethods]);
 
   const trimmedDescription = description.trim();
   const descriptionValid = trimmedDescription.length >= MIN_CUSTOM_ORDER_DESCRIPTION;
   const canSubmit =
     descriptionValid && Boolean(addressId) && !createMutation.isPending;
+  const expectedIso = toCustomOrderExpectedAtIso(expectedDate, expectedTime);
+  const expectedPreview = formatCustomOrderDate(expectedIso, language);
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
@@ -112,7 +121,7 @@ export default function CustomOrderCreate() {
         description: trimmedDescription,
         address_id: addressId,
         payment_method_id: paymentMethodId || null,
-        expected_at: expectedAt ? new Date(expectedAt).toISOString() : null,
+        expected_at: expectedIso,
         images,
       },
       {
@@ -136,11 +145,13 @@ export default function CustomOrderCreate() {
     <div className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6" dir={isRTL ? "rtl" : "ltr"}>
       <div className="mb-6">
         <h1 className="flex items-center gap-2 text-2xl font-bold text-custom-primary sm:text-3xl">
-          <Zap className="h-7 w-7 text-primary" aria-hidden />
+          <Zap className="h-7 w-7 text-[color:var(--color-main)]" aria-hidden />
           {t("customOrder.newRequest")}
         </h1>
         <p className="mt-1 text-sm text-custom-secondary">{t("customOrder.createDescription")}</p>
       </div>
+
+      <CustomOrderHowItWorks compact className="mb-8" />
 
       <form onSubmit={handleSubmit} className="space-y-8">
         <section>
@@ -185,31 +196,71 @@ export default function CustomOrderCreate() {
             <CheckoutPaymentSection
               paymentMethods={paymentMethods}
               selectedPaymentMethodId={paymentMethodId}
-              onPaymentMethodSelect={setPaymentMethodId}
+              allowEmpty
+              onPaymentMethodSelect={(methodId) => {
+                setPaymentTouched(true);
+                setPaymentMethodId(methodId);
+              }}
             />
-            <p className="mt-2 text-xs text-custom-secondary">
-              {t("customOrder.paymentIntentNote")}
-            </p>
+            <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-xs text-custom-secondary">
+                {t("customOrder.paymentPreselected")}
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setPaymentTouched(true);
+                  setPaymentMethodId("");
+                }}
+                className={cn(
+                  "self-start rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors",
+                  paymentTouched && !paymentMethodId
+                    ? "border-transparent bg-[color:var(--color-main)] text-custom-inverse"
+                    : "border-custom-primary text-custom-secondary hover:text-custom-primary"
+                )}
+              >
+                {t("customOrder.decidePaymentLater")}
+              </button>
+            </div>
           </div>
         )}
 
         <section>
-          <label
-            htmlFor="custom-order-expected-at"
-            className="mb-1.5 block text-sm font-medium text-custom-primary"
-          >
+          <p className="mb-1.5 text-sm font-medium text-custom-primary">
             {t("customOrder.expectedAt")}{" "}
             <span className="text-xs font-normal text-custom-secondary">
               ({t("customOrder.optional")})
             </span>
-          </label>
-          <input
-            id="custom-order-expected-at"
-            type="datetime-local"
-            value={expectedAt}
-            onChange={(e) => setExpectedAt(e.target.value)}
-            className="w-full rounded-xl border border-custom-primary/20 bg-custom-card px-4 py-3 text-sm text-custom-primary outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 sm:max-w-xs"
-          />
+          </p>
+          <div className="flex flex-wrap gap-3">
+            <label className="min-w-[10rem] flex-1 sm:max-w-xs">
+              <span className="sr-only">{t("customOrder.expectedDate")}</span>
+              <input
+                id="custom-order-expected-date"
+                type="date"
+                min={todayDateInputValue()}
+                value={expectedDate}
+                onChange={(e) => setExpectedDate(e.target.value)}
+                className="w-full rounded-xl border border-custom-primary/20 bg-custom-card px-4 py-3 text-sm text-custom-primary outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+              />
+            </label>
+            <label className="min-w-[8rem] sm:max-w-[10rem]">
+              <span className="sr-only">{t("customOrder.expectedTime")}</span>
+              <input
+                id="custom-order-expected-time"
+                type="time"
+                value={expectedTime}
+                onChange={(e) => setExpectedTime(e.target.value)}
+                disabled={!expectedDate}
+                className="w-full rounded-xl border border-custom-primary/20 bg-custom-card px-4 py-3 text-sm text-custom-primary outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
+              />
+            </label>
+          </div>
+          {expectedPreview && (
+            <p className="mt-2 text-xs text-custom-secondary">
+              {t("customOrder.expectedAtPreview", { datetime: expectedPreview })}
+            </p>
+          )}
         </section>
 
         <div className="flex flex-wrap gap-3 border-t border-custom-primary/10 pt-6">
@@ -228,7 +279,7 @@ export default function CustomOrderCreate() {
             onClick={() => navigate(paths.client.customOrders)}
             className="min-h-11 rounded-xl px-6"
           >
-            {t("common.cancel", "Cancel")}
+            {t("common.cancel")}
           </Button>
         </div>
       </form>

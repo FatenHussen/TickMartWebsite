@@ -50,6 +50,10 @@ html.dark #root {
   --color-primary: #00aed1;
   --color-primary-light: #4cdaf6;
   --color-secondary: #ffd700;
+  /* Tickmart logo orange — sampled from /images/shared/logo.png */
+  --color-cta: #ff9f00;
+  --color-cta-hover: #e89000;
+  --color-cta-ink: #1c1917;
   --color-blue-off: #e4f0fb;
   --color-blue-light: #77beff;
   --color-blue-very-light: #e5f3ff;
@@ -105,6 +109,7 @@ html.dark #root {
   --color-border-accent-light: color-mix(in srgb, var(--color-primary) 35%, transparent);
 
   /* Status Colors */
+  --color-trust: #0F766E;
   --color-success: #16a34a;
   --color-error: #EF4444;
   --color-status-error-bg: #fef2f2;
@@ -159,11 +164,7 @@ html.dark #root {
       --color-bg-light: #334155;
       --color-bg-card: #1e293b;
       /* Lifted surface vs `--app-canvas-*` (cards must not melt into the page) */
-      --color-bg-card-elevated: color-mix(
-        in srgb,
-        var(--color-bg-card) 48%,
-        var(--color-bg-hover) 52%
-      );
+      --color-bg-card-elevated: #24201c;
       /* Cart / legacy “light strip” tokens — must not stay paper-blue in dark */
       --color-bg-light-1: color-mix(
         in srgb,
@@ -212,16 +213,8 @@ html.dark #root {
        * Global dark layout canvas: near-black foundation + API-tinted atmosphere.
        * Not used as flat fills elsewhere — only the shell uses `--app-canvas-base`.
        */
-      --app-canvas-base: color-mix(
-        in srgb,
-        var(--color-bg-tertiary) 42%,
-        #030508 58%
-      );
-      --app-canvas-depth: color-mix(
-        in srgb,
-        var(--color-bg-secondary) 35%,
-        #000000 65%
-      );
+      --app-canvas-base: #171412;
+      --app-canvas-depth: #1c1916;
     }
   }
 }
@@ -230,6 +223,77 @@ html.dark #root {
   /* Single layout column: match Navbar (`HEADER_MAX`) so header + pages align. */
   .page-container {
     @apply mx-auto w-full max-w-[90rem] px-4 sm:px-6 lg:px-8;
+  }
+
+  /** Solid logo-orange CTA: white type, same UI font/weight as the rest of the site. */
+  .cta-honey {
+    background-color: var(--color-cta) !important;
+    color: #ffffff !important;
+    font-family: inherit;
+    font-weight: 600;
+  }
+
+  .cta-honey:hover:not(:disabled) {
+    background-color: var(--color-cta-hover) !important;
+    color: #ffffff !important;
+  }
+
+  .cta-honey:disabled {
+    cursor: not-allowed;
+    opacity: 0.42;
+  }
+
+  /** Filled primary / primary-light buttons — same solid orange + white type. */
+  button.bg-primary,
+  a.bg-primary,
+  button.bg-primary-light,
+  a.bg-primary-light {
+    background-color: var(--color-cta) !important;
+    color: #ffffff !important;
+    font-family: inherit;
+    font-weight: 600;
+    box-shadow: none;
+  }
+
+  button.bg-primary:hover:not(:disabled),
+  a.bg-primary:hover,
+  button.bg-primary-light:hover:not(:disabled),
+  a.bg-primary-light:hover {
+    background-color: var(--color-cta-hover) !important;
+    color: #ffffff !important;
+  }
+
+  /**
+   * Gradient or pale-orange fills: black type (white washes out on light orange).
+   * Do not paint a solid orange over the gradient.
+   */
+  .cta-honey[class*="bg-gradient"],
+  .cta-on-gradient,
+  button[class*="from-amber"],
+  a[class*="from-amber"],
+  button[class*="to-orange"],
+  a[class*="to-orange"] {
+    background-color: transparent !important;
+    color: var(--color-cta-ink) !important;
+    font-family: inherit;
+    font-weight: 600;
+  }
+
+  .cta-honey[class*="bg-gradient"]:hover:not(:disabled),
+  .cta-on-gradient:hover:not(:disabled),
+  button[class*="from-amber"]:hover:not(:disabled),
+  a[class*="from-amber"]:hover,
+  button[class*="to-orange"]:hover:not(:disabled),
+  a[class*="to-orange"]:hover {
+    background-color: transparent !important;
+    color: var(--color-cta-ink) !important;
+  }
+
+  /* Native OS dropdowns ignore inherited cream text — force dark-on-white options. */
+  select option,
+  select optgroup {
+    color: #1c1917 !important;
+    background-color: #ffffff !important;
   }
 
   /**
@@ -368,7 +432,7 @@ html.dark #root {
         ellipse 130% 85% at 50% -28%,
         color-mix(
             in srgb,
-            var(--color-main, var(--color-primary)) 22%,
+            var(--color-main, var(--color-primary)) 4.5%,
             transparent
           )
           0%,
@@ -378,7 +442,7 @@ html.dark #root {
         ellipse 95% 70% at 104% 8%,
         color-mix(
             in srgb,
-            var(--color-api-second, var(--color-primary-light)) 14%,
+            var(--color-api-second, var(--color-primary-light)) 3.5%,
             transparent
           )
           0%,
@@ -388,7 +452,7 @@ html.dark #root {
         ellipse 85% 55% at -6% 72%,
         color-mix(
             in srgb,
-            var(--color-main, var(--color-primary)) 10%,
+            var(--color-main, var(--color-primary)) 5%,
             transparent
           )
           0%,
@@ -399,19 +463,18 @@ html.dark #root {
         var(--app-canvas-base) 0%,
         color-mix(
             in srgb,
-            var(--color-main, var(--color-primary)) 4%,
+            var(--color-main, var(--color-primary)) 2%,
             var(--app-canvas-depth)
           )
           42%,
         color-mix(
             in srgb,
-            var(--color-api-second, var(--color-primary-light)) 3.5%,
+            var(--color-api-second, var(--color-primary-light)) 1.8%,
             var(--app-canvas-base)
           )
           100%
       );
-    box-shadow: inset 0 1px 0 0
-      color-mix(in srgb, var(--color-main, var(--color-primary)) 12%, transparent);
+    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.04);
   }
 
   .dark .app-layout-canvas::before {
@@ -426,25 +489,25 @@ html.dark #root {
         ellipse 70% 55% at 78% 32%,
         color-mix(
             in srgb,
-            var(--color-api-second, var(--color-primary-light)) 9%,
+            var(--color-api-second, var(--color-primary-light)) 4%,
             transparent
           ),
         transparent 62%
       ),
       radial-gradient(
         ellipse 65% 50% at 18% 68%,
-        color-mix(in srgb, var(--color-main, var(--color-primary)) 8%, transparent),
+        color-mix(in srgb, var(--color-main, var(--color-primary)) 3.5%, transparent),
         transparent 58%
       ),
       linear-gradient(
         180deg,
-        color-mix(in srgb, var(--color-main, var(--color-primary)) 6%, transparent) 0%,
+        color-mix(in srgb, var(--color-main, var(--color-primary)) 3%, transparent) 0%,
         transparent 18%,
         transparent 78%,
-        color-mix(in srgb, var(--color-api-second, var(--color-primary-light)) 5%, transparent)
+        color-mix(in srgb, var(--color-api-second, var(--color-primary-light)) 2.5%, transparent)
           100%
       );
-    opacity: 0.92;
+    opacity: 0.7;
     animation: app-canvas-ambient-drift 32s ease-in-out infinite alternate;
     will-change: opacity, transform;
   }
@@ -663,84 +726,107 @@ html.dark #root {
   .navbar-surface-top {
     --navbar-main: var(--color-main, var(--color-primary));
     --navbar-second: var(--color-api-second, var(--color-primary-light));
-    background-color: color-mix(in srgb, var(--navbar-main) 4%, #ffffff);
+    background-color: #ffffff;
     background-image:
       radial-gradient(
         ellipse 90% 130% at 8% -40%,
-        color-mix(in srgb, var(--navbar-second) 13%, transparent) 0%,
+        color-mix(in srgb, var(--navbar-second) 6%, transparent) 0%,
         transparent 55%
       ),
       radial-gradient(
         ellipse 80% 110% at 92% -20%,
-        color-mix(in srgb, var(--navbar-main) 11%, transparent) 0%,
+        color-mix(in srgb, var(--navbar-main) 5%, transparent) 0%,
         transparent 52%
-      ),
-      linear-gradient(
-        180deg,
-        color-mix(in srgb, var(--navbar-main) 6%, transparent) 0%,
-        transparent 60%
       );
     box-shadow: 0 1px 2px -1px rgba(15, 23, 42, 0.05);
   }
 
   /**
-   * Dark navbar: premium glass shell — never a flat API colour wash.
-   * Base rgba(8,8,10,0.72) + blur; API colours only in distant radial glows.
+   * Dark navbar: one step above the charcoal canvas so chrome reads as a shelf.
    */
   .dark .navbar-surface-top {
     --navbar-main: var(--color-main, var(--color-primary));
     --navbar-second: var(--color-api-second, var(--color-primary-light));
     position: relative;
     isolation: isolate;
-    background-color: rgba(8, 8, 10, 0.72);
+    background-color: #1c1916;
     background-image:
       radial-gradient(
         ellipse 95% 120% at 12% -30%,
-        color-mix(in srgb, var(--navbar-second) 18%, transparent) 0%,
+        color-mix(in srgb, var(--navbar-second) 5%, transparent) 0%,
         transparent 52%
       ),
       radial-gradient(
         ellipse 85% 100% at 88% -15%,
-        color-mix(in srgb, var(--navbar-main) 14%, transparent) 0%,
+        color-mix(in srgb, var(--navbar-main) 4%, transparent) 0%,
         transparent 50%
-      ),
-      linear-gradient(
-        180deg,
-        rgba(255, 255, 255, 0.045) 0%,
-        transparent 42%,
-        rgba(0, 0, 0, 0.22) 100%
       );
-    backdrop-filter: blur(20px) saturate(1.12);
-    -webkit-backdrop-filter: blur(20px) saturate(1.12);
     box-shadow:
-      0 1px 0 0 rgba(255, 255, 255, 0.06),
-      inset 0 1px 0 0 rgba(255, 255, 255, 0.04),
-      0 12px 40px -18px rgba(0, 0, 0, 0.55);
+      0 1px 0 0 rgba(255, 255, 255, 0.05),
+      0 10px 28px -16px rgba(0, 0, 0, 0.38);
+  }
+
+  .navbar-search-input {
+    background-color: #ffffff;
+  }
+
+  .dark .navbar-search-input {
+    color: #f3efe8;
+    background-color: #3a342e;
+    border-color: rgba(255, 255, 255, 0.22);
+    box-shadow: none;
+  }
+
+  .dark .navbar-search-input::placeholder {
+    color: #b8b0a4;
+  }
+
+  .dark .navbar-search-input:hover {
+    border-color: rgba(255, 255, 255, 0.12);
+  }
+
+  .dark .navbar-search-input:focus {
+    border-color: color-mix(in srgb, var(--color-main, var(--color-primary)) 38%, rgba(255, 255, 255, 0.14));
+    box-shadow:
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.05),
+      0 0 0 3px color-mix(in srgb, var(--color-main, var(--color-primary)) 12%, transparent);
+  }
+
+  .dark .navbar-search-icon {
+    color: var(--color-cta);
+  }
+
+  .dark .navbar-search-filter {
+    color: var(--color-cta);
+  }
+
+  .dark .navbar-search-filter:hover,
+  .dark .navbar-search-filter[aria-pressed="true"] {
+    color: #f3efe8;
+    background-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .dark .favorite-button {
+    --fav-btn-fill: #2a2622;
   }
 
   .navbar-surface-sub {
     --navbar-main: var(--color-main, var(--color-primary));
     --navbar-second: var(--color-api-second, var(--color-primary-light));
-    background-color: color-mix(in srgb, var(--navbar-main) 5%, #ffffff);
+    background-color: #ffffff;
     background-image: linear-gradient(
       180deg,
-      color-mix(in srgb, var(--navbar-main) 8%, transparent) 0%,
-      color-mix(in srgb, var(--navbar-second) 4%, transparent) 100%
+      color-mix(in srgb, var(--navbar-main) 3%, transparent) 0%,
+      transparent 100%
     );
   }
 
   .dark .navbar-surface-sub {
     position: relative;
     isolation: isolate;
-    background-color: rgba(8, 8, 10, 0.58);
-    background-image: linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.03) 0%,
-      transparent 55%
-    );
-    backdrop-filter: blur(14px) saturate(1.08);
-    -webkit-backdrop-filter: blur(14px) saturate(1.08);
-    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.035);
+    background-color: #24201c;
+    background-image: none;
+    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
   }
 
   .navbar-divider {
@@ -772,66 +858,24 @@ html.dark #root {
    * Dark mode: main nav row — typography (#fff / #A1A1AA) + API only on hover/active.
    */
   .dark .navbar-main-nav .navbar-premium-nav-link {
-    color: #a1a1aa;
-    border-bottom: 2px solid transparent;
-    border-radius: 0.375rem;
+    color: #e8e4dc;
+    border-bottom: 0;
+    border-radius: 999px;
     transition:
-      color 0.3s ease,
-      background-color 0.3s ease,
-      border-color 0.3s ease,
-      box-shadow 0.35s ease;
+      color 0.2s ease,
+      background-color 0.2s ease;
   }
 
   .dark .navbar-main-nav .navbar-premium-nav-link:hover {
-    color: #ffffff;
-    background-color: color-mix(
-      in srgb,
-      var(--color-main, var(--color-primary)) 11%,
-      transparent
-    );
-    border-bottom-color: color-mix(
-      in srgb,
-      var(--color-main, var(--color-primary)) 42%,
-      transparent
-    );
-    box-shadow:
-      0 0 36px -14px color-mix(
-        in srgb,
-        var(--color-main, var(--color-primary)) 28%,
-        transparent
-      ),
-      inset 0 -1px 0 0 color-mix(
-        in srgb,
-        var(--color-api-second, var(--color-primary-light)) 25%,
-        transparent
-      );
+    color: #f3efe8;
+    background-color: rgba(255, 255, 255, 0.06);
+    box-shadow: none;
   }
 
   .dark .navbar-main-nav .navbar-premium-nav-link.navbar-premium-nav-link--active {
-    color: #ffffff;
-    background: linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--color-main, var(--color-primary)) 18%, transparent)
-        0%,
-      color-mix(in srgb, var(--color-main, var(--color-primary)) 7%, transparent)
-        100%
-    );
-    border-bottom-color: color-mix(
-      in srgb,
-      var(--color-api-second, var(--color-primary-light)) 52%,
-      transparent
-    );
-    box-shadow:
-      0 0 40px -12px color-mix(
-        in srgb,
-        var(--color-main, var(--color-primary)) 32%,
-        transparent
-      ),
-      inset 0 1px 0 0 color-mix(
-        in srgb,
-        var(--color-api-second, var(--color-primary-light)) 18%,
-        transparent
-      );
+    color: #f3efe8;
+    background-color: rgba(255, 255, 255, 0.08);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
   }
 
   /**
@@ -882,13 +926,13 @@ html.dark #root {
    */
   .dark footer.app-footer-premium {
     border-top-color: rgba(255, 255, 255, 0.06) !important;
-    background-color: rgba(8, 8, 10, 0.82) !important;
+    background-color: #1c1916 !important;
     background-image:
       radial-gradient(
         ellipse 120% 95% at 50% 0%,
         color-mix(
             in srgb,
-            var(--color-main, var(--color-primary)) 16%,
+            var(--color-main, var(--color-primary)) 8%,
             transparent
           )
           0%,
@@ -898,7 +942,7 @@ html.dark #root {
         ellipse 70% 55% at 100% 85%,
         color-mix(
             in srgb,
-            var(--color-api-second, var(--color-primary-light)) 12%,
+            var(--color-api-second, var(--color-primary-light)) 6%,
             transparent
           )
           0%,
@@ -908,7 +952,7 @@ html.dark #root {
         ellipse 65% 50% at 0% 95%,
         color-mix(
             in srgb,
-            var(--color-main, var(--color-primary)) 9%,
+            var(--color-main, var(--color-primary)) 5%,
             transparent
           )
           0%,
@@ -2077,47 +2121,36 @@ html.dark #root {
   }
 }
 
+.schedules-page-canvas {
+  background: #f6f3ee;
+}
+
+.dark .schedules-page-canvas {
+  background: #171614;
+}
+
 .schedules-hero {
   position: relative;
   overflow: hidden;
   border: 1px solid #e7d8c6;
-  background:
-    linear-gradient(165deg, #fffbf6 0%, #f7efe4 52%, #f1e6d6 100%);
+  background: linear-gradient(165deg, #fffbf6 0%, #f7efe4 52%, #f1e6d6 100%);
   box-shadow:
     0 1px 0 rgba(255, 252, 247, 0.9) inset,
-    0 22px 48px -28px rgba(92, 58, 28, 0.28),
-    0 6px 16px -8px rgba(28, 25, 23, 0.08);
+    0 22px 48px -28px rgba(92, 58, 28, 0.22);
 }
 
-.schedules-hero::before {
-  content: "";
-  pointer-events: none;
-  position: absolute;
-  inset-inline-end: -3rem;
-  top: -3.5rem;
-  height: 11rem;
-  width: 11rem;
-  border-radius: 999px;
-  background: rgb(232 201 160 / 0.28);
-  filter: blur(42px);
+.schedules-panel {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #e4dfd6;
+  background: #ffffff;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.7) inset;
 }
 
-.schedules-hero::after {
-  content: "";
-  pointer-events: none;
-  position: absolute;
-  inset-inline-start: -2.5rem;
-  bottom: -2rem;
-  height: 8rem;
-  width: 8rem;
-  border-radius: 999px;
-  background: rgb(240 224 204 / 0.45);
-  filter: blur(36px);
-}
-
-.dark .schedules-hero {
-  border-color: rgb(255 255 255 / 0.1);
-  background: linear-gradient(165deg, #1c1917 0%, #18181b 100%);
+.dark .schedules-hero,
+.dark .schedules-panel {
+  border-color: rgb(255 255 255 / 0.08);
+  background: #221f1c;
   box-shadow: none;
 }
 

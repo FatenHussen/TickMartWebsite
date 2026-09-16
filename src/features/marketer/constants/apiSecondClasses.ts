@@ -4,7 +4,7 @@
  */
 
 export const API_SECOND_SURFACE =
-    "text-white bg-[var(--color-api-second)] hover:bg-[var(--color-api-second-hover)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-main)]/35 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg-card)]";
+    "cta-honey focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ff9f00]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg-card)]";
 
 /** Become-a-marketer primary actions (rounded-lg). */
 export const API_SECOND_CTA_CLASS = `inline-flex items-center justify-center px-5 py-2.5 rounded-lg font-medium shadow-sm transition-colors ${API_SECOND_SURFACE} disabled:opacity-50 disabled:cursor-not-allowed`;

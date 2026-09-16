@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import type { FaqItem } from "@/features/account/api/faqsApi";
@@ -12,6 +13,8 @@ type FaqAccordionListProps = {
     onToggleFaq: (id: number) => void;
     emptySearchMessage: string;
     emptyCategoryMessage: string;
+    emptyHint?: string;
+    emptyAction?: ReactNode;
 };
 
 export function FaqAccordionList({
@@ -22,6 +25,8 @@ export function FaqAccordionList({
     onToggleFaq,
     emptySearchMessage,
     emptyCategoryMessage,
+    emptyHint,
+    emptyAction,
 }: FaqAccordionListProps) {
     if (isLoading) {
         return (
@@ -34,10 +39,16 @@ export function FaqAccordionList({
     if (faqs.length === 0) {
         return (
             <div className="space-y-2 mb-8">
-                <div className="rounded-2xl bg-gradient-to-br from-custom-light/90 via-blue-off/[0.25] to-[var(--color-api-second)]/[0.06] px-6 py-14 text-center shadow-inner dark:border dark:border-[rgba(255,255,255,0.06)] dark:bg-[rgba(255,255,255,0.03)] dark:shadow-none">
+                <div className="mb-6 rounded-xl border border-dashed border-[var(--color-border-primary)] bg-[var(--color-bg-primary)] px-5 py-8 text-center">
                     <p className="text-sm leading-relaxed text-custom-secondary dark:text-[#A1A1AA]">
                         {hasActiveSearch ? emptySearchMessage : emptyCategoryMessage}
                     </p>
+                    {!hasActiveSearch && emptyHint ? (
+                        <p className="mt-2 text-sm text-custom-primary">{emptyHint}</p>
+                    ) : null}
+                    {!hasActiveSearch && emptyAction ? (
+                        <div className="mt-5 flex justify-center">{emptyAction}</div>
+                    ) : null}
                 </div>
             </div>
         );

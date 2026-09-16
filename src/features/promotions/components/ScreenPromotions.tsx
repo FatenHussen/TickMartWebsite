@@ -78,13 +78,13 @@ export function ScreenPromotions({
             : "grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3";
 
     // Surface behind the cards — used to punch the coupon notches cleanly.
-    const surfaceColor = isDark ? "#0B0B0C" : "var(--color-bg-card)";
+    const surfaceColor = isDark ? "#1C1916" : "var(--color-bg-card)";
 
     const sectionBandStyle = isDark
         ? {
-              backgroundColor: "#0B0B0C",
+              backgroundColor: "#1C1916",
               boxShadow:
-                  "inset 0 1px 0 0 rgba(255,255,255,0.085), inset 0 -1px 0 0 rgba(0,0,0,0.35)",
+                  "inset 0 1px 0 0 rgba(255,255,255,0.07), inset 0 -1px 0 0 rgba(0,0,0,0.18)",
           }
         : undefined;
 

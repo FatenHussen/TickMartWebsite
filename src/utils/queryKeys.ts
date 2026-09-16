@@ -426,6 +426,8 @@ export const queryKeys = {
  params
  ? (["customOrderRequests", "list", params] as const)
  : (["customOrderRequests", "list"] as const),
+ listInfinite: (status?: string) =>
+ (["customOrderRequests", "listInfinite", status ?? "all"] as const),
  details: (id?: number | string) =>
  id !== undefined
  ? (["customOrderRequests", "details", id] as const)

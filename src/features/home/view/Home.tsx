@@ -54,11 +54,9 @@ export default function Home() {
         >
             {/* One `.page-container` for the whole home column (matches Navbar width). */}
             <div className="page-container flex flex-col gap-0 pb-12 pt-4  sm:pt-6">
-                <QuickOrderHomeBanner pageSlug="home" />
-
-                <InfoCards />
-
                 <ScreenPromotions pageSlug="home" placement="top" />
+
+                <QuickOrderHomeBanner pageSlug="home" />
 
                 {beforeSections.length > 0 && (
                     <section
@@ -78,10 +76,10 @@ export default function Home() {
                 )}
 
                 <div className="min-w-0">
-                    {/* Bottom padding is the seam with the next API row: with `pb-0`
-                        the category labels sat ~10px above the tinted band edge. */}
                     <Categories sectionPaddingClass="pt-4 pb-6 sm:pt-5 sm:pb-8" />
                 </div>
+
+                <InfoCards />
 
                 <ScreenPromotions pageSlug="home" placement="bottom" />
 

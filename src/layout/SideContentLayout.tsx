@@ -32,6 +32,9 @@ type SideContentLayoutProps = {
 
     /** Offset from top when sticky (e.g. `top-20` if using a fixed navbar) */
     stickyTopClassName?: string;
+
+    /** Stack main content above the sidebar on small screens. */
+    mobileContentFirst?: boolean;
 };
 
 export default function SideContentLayout({
@@ -48,6 +51,7 @@ export default function SideContentLayout({
     twoColumnFrom = "lg",
     stickySidebar = false,
     stickyTopClassName = "top-4",
+    mobileContentFirst = false,
 }: SideContentLayoutProps) {
     const isLeft = sidebarPosition === "left";
     const bp = twoColumnFrom;
@@ -110,7 +114,8 @@ export default function SideContentLayout({
             ) : (
                 <div
                     className={cn(
-                        "flex w-full min-w-0 flex-col",
+                        "flex w-full min-w-0",
+                        mobileContentFirst ? "flex-col-reverse" : "flex-col",
                         isLeft
                             ? bp === "md"
                                 ? "md:flex-row md:items-start"

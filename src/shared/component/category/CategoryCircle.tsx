@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { CSSProperties } from "react";
+import { ShoppingBag } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import { useTheme } from "@/context/ThemeContext";
 import {
@@ -112,10 +113,10 @@ export default function CategoryCircle({
     const labelGradient = !isDarkTheme ? buildCategoryLabelGradient(main, second) : null;
     const labelSolid = !isDarkTheme && !labelGradient ? (main ?? second) : undefined;
 
-    /** Light mode tints the disc with the category's own colors; dark stays on the luxury foundation. */
+    /** Light mode tints the disc; dark uses a lifted charcoal so initials stay readable. */
     const initialsStyle = isDarkTheme
         ? {
-              boxShadow: `inset 0 0 0 1px color-mix(in srgb, ${accent} 18%, transparent)`,
+              boxShadow: `inset 0 0 0 1px color-mix(in srgb, ${accent} 14%, transparent)`,
           }
         : discMain || discSecond
           ? {
@@ -141,8 +142,8 @@ export default function CategoryCircle({
                 <div
                     className="absolute -inset-1 rounded-full opacity-0 transition-opacity duration-300 dark:group-hover:opacity-100"
                     style={{
-                        background: `radial-gradient(circle, color-mix(in srgb, ${accent} 40%, transparent) 0%, transparent 70%)`,
-                        filter: "blur(6px)",
+                        background: `radial-gradient(circle, color-mix(in srgb, ${accent} 16%, transparent) 0%, transparent 72%)`,
+                        filter: "blur(8px)",
                     }}
                 />
                 <div
@@ -151,7 +152,7 @@ export default function CategoryCircle({
                         // Light mode had no hover feedback at all: give the disc a
                         // hairline edge that thickens and lifts on hover.
                         "ring-black/[0.06] shadow-[0_1px_2px_rgba(15,23,42,0.06)] group-hover:shadow-[0_10px_24px_-12px_rgba(15,23,42,0.45)] group-hover:ring-2",
-                        "dark:shadow-none dark:ring-white/[0.08] dark:group-hover:ring-white/[0.14] dark:group-hover:shadow-[0_0_22px_-6px_color-mix(in_srgb,var(--color-main)_45%,transparent)]",
+                        "dark:shadow-none dark:ring-white/10 dark:group-hover:ring-white/16 dark:group-hover:shadow-none",
                         s.circle,
                         selected && "ring-2 dark:ring-white/25",
                     )}
@@ -176,13 +177,26 @@ export default function CategoryCircle({
                         <span
                             aria-hidden
                             className={cn(
-                                "flex h-full w-full select-none items-center justify-center font-extrabold tracking-wide transition-transform duration-400 ease-out group-hover:scale-105",
-                                s.initials,
-                                "dark:bg-white/[0.06] dark:text-[#E4E4E7]",
+                                "flex h-full w-full flex-col items-center justify-center gap-0.5 select-none transition-transform duration-400 ease-out group-hover:scale-105",
+                                "bg-[#F4F0EA] text-stone-600 dark:bg-[#2A2622] dark:text-[#C9C2B6]",
                             )}
                             style={initialsStyle}
                         >
-                            {initials || "•"}
+                            <ShoppingBag
+                                className={cn(
+                                    size === "lg"
+                                        ? "h-7 w-7 sm:h-8 sm:w-8"
+                                        : size === "md"
+                                          ? "h-6 w-6"
+                                          : "h-5 w-5",
+                                )}
+                                strokeWidth={1.75}
+                            />
+                            {initials ? (
+                                <span className="text-[10px] font-bold tracking-wide sm:text-xs">
+                                    {initials}
+                                </span>
+                            ) : null}
                         </span>
                     )}
                 </div>
@@ -194,7 +208,7 @@ export default function CategoryCircle({
                     <span
                         aria-hidden
                         className={cn(
-                            "pointer-events-none absolute bottom-[7%] end-[7%] flex items-center justify-center rounded-full bg-white text-[color:var(--color-main)] shadow-[0_2px_6px_-1px_rgba(15,23,42,0.28)] ring-1 ring-black/[0.06] transition-transform duration-300 ease-out group-hover:scale-110 dark:bg-[#18181B] dark:text-white dark:shadow-none dark:ring-white/15",
+                            "pointer-events-none absolute bottom-[7%] end-[7%] flex items-center justify-center rounded-full bg-white text-[color:var(--color-main)] shadow-[0_2px_6px_-1px_rgba(15,23,42,0.28)] ring-1 ring-black/[0.06] transition-transform duration-300 ease-out group-hover:scale-110 dark:bg-[#2A2622] dark:text-[#C9C2B6] dark:shadow-none dark:ring-white/12",
                             s.badge,
                         )}
                         style={
@@ -228,7 +242,7 @@ export default function CategoryCircle({
                     selected ? "font-bold" : "font-semibold",
                     labelGradient
                         ? "bg-clip-text text-transparent"
-                        : "text-stone-800 transition-colors duration-300 dark:text-[#A1A1AA] dark:group-hover:text-white",
+                        : "text-stone-800 transition-colors duration-300 dark:text-[#E8E4DC] dark:group-hover:text-white",
                 )}
                 style={
                     labelGradient

@@ -103,7 +103,7 @@ export function ProfileSecuritySection({
                 </button>
             </div>
 
-            <div className="h-px bg-gradient-to-r from-primary-light via-primary to-transparent my-5" />
+            <div className="h-px bg-gradient-to-r from-[#ff9f00]/45 via-[#ff9f00]/20 to-transparent my-5" />
 
             <p className="text-sm text-custom-tertiary">
                 {t("account.profile.loginActivityNote")}

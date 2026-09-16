@@ -220,7 +220,7 @@ export default function CategoryFilters({
     const inputCls = cn(
         "h-10 w-full rounded-lg border px-3 text-sm outline-none transition-colors duration-200 focus:ring-2",
         !apiSurface &&
-            "border-slate-200 bg-white text-custom-primary placeholder:text-slate-400 focus:border-primary-light/60 focus:ring-primary-light/15",
+            "border-slate-200 bg-white text-custom-primary placeholder:text-slate-400 focus:border-primary-light/60 focus:ring-primary-light/15 dark:border-white/10 dark:bg-[#2A2622] dark:text-[#E8E4DC] dark:placeholder:text-[#9A948A] dark:focus:border-white/16 dark:focus:ring-white/10",
     );
 
     const inputStyle = apiSurface
@@ -307,8 +307,8 @@ export default function CategoryFilters({
                                         "inline-flex min-h-8 items-center rounded-full border px-3 text-[13px] font-medium transition-colors",
                                         !apiSurface &&
                                             (active
-                                                ? "border-primary-light/50 bg-primary-light/10 text-custom-primary"
-                                                : "border-slate-200 bg-white text-custom-secondary hover:border-primary-light/35 hover:bg-slate-50"),
+                                                ? "border-primary-light/50 bg-primary-light/10 text-custom-primary dark:border-white/16 dark:bg-white/[0.08] dark:text-[#F3EFE8]"
+                                                : "border-slate-200 bg-white text-custom-secondary hover:border-primary-light/35 hover:bg-slate-50 dark:border-white/10 dark:bg-[#2A2622] dark:text-[#C9C2B6] dark:hover:border-white/16 dark:hover:bg-[#322E29] dark:hover:text-[#F3EFE8]"),
                                     )}
                                     style={
                                         apiSurface

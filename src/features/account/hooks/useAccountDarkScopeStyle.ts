@@ -6,6 +6,9 @@ import {
   buildDarkPalette,
   buildLightPalette,
   isPaletteComplete,
+  DARK_CANVAS,
+  DARK_SECTION,
+  DARK_ELEVATED,
 } from "@/shared/lib/themeColors";
 import { darken, lighten, withAlpha, tint } from "@/shared/lib/colorUtils";
 import { useTheme } from "@/context/ThemeContext";
@@ -69,31 +72,31 @@ function buildAccountDarkVars(
     ...buildApiTintedDarkSurfaces(main, second),
 
     // ── Fixed dark foundations (override API-tinted surfaces) ──────────────
-    "--color-bg-primary":   "#050505",
-    "--color-bg-secondary": "#0B0B0C",
-    "--color-bg-card":      "#101114",
-    "--color-bg-tertiary":  "#141418",
-    "--color-bg-hover":     "rgba(255,255,255,0.035)",
+    "--color-bg-primary":   DARK_CANVAS,
+    "--color-bg-secondary": DARK_SECTION,
+    "--color-bg-card":      DARK_ELEVATED,
+    "--color-bg-tertiary":  "#2A2622",
+    "--color-bg-hover":     "rgba(255,255,255,0.05)",
     "--color-bg-active":    `color-mix(in srgb, ${main} 12%, transparent)`,
-    "--color-bg-input":     "#17181c",
-    "--color-bg-surface":   "#101114",
-    "--color-bg-muted":     "#0d0d10",
+    "--color-bg-input":     "#2A2622",
+    "--color-bg-surface":   DARK_ELEVATED,
+    "--color-bg-muted":     DARK_SECTION,
 
-    // Borders — neutral/subtle, NOT API-colored
-    "--color-border-primary":       "rgba(255,255,255,0.06)",
-    "--color-border-secondary":     "rgba(255,255,255,0.04)",
-    "--color-border-light":         "rgba(255,255,255,0.03)",
+    // Borders — warm, readable
+    "--color-border-primary":       "rgba(255,255,255,0.14)",
+    "--color-border-secondary":     "rgba(255,255,255,0.09)",
+    "--color-border-light":         "rgba(255,255,255,0.06)",
     // Accent borders only for focused/active elements
     "--color-border-accent":        withAlpha(main, 0.28),
     "--color-border-accent-light":  withAlpha(main, 0.15),
     "--color-border-accent-strong": main,
 
     // Text — fixed readable values, independent of API
-    "--color-text-primary":   "#FFFFFF",
-    "--color-text-secondary": "#A1A1AA",
-    "--color-text-tertiary":  "#71717A",
-    "--color-text-heading":   "#FFFFFF",
-    "--color-text-muted":     "#71717A",
+    "--color-text-primary":   "#F3EFE8",
+    "--color-text-secondary": "#C9C2B6",
+    "--color-text-tertiary":  "#9A948A",
+    "--color-text-heading":   "#F3EFE8",
+    "--color-text-muted":     "#9A948A",
     "--color-text-inverse":   "#0a0a0a",
     // ───────────────────────────────────────────────────────────────────────
 

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContext";
+import { useTheme } from "@/context/ThemeContext";
 import { cn } from "@/shared/lib/utils";
 import { LogoutPopup } from "@/shared/component";
 import { useLogout } from "@/features/auth/hooks/useAuth";
@@ -320,6 +321,8 @@ export default function AccountSidebar({
 }: AccountSidebarProps) {
   const { t } = useTranslation();
   const { isRTL } = useLanguage();
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
   const { user: authUser } = useAuthStore();
   const logoutMutation = useLogout();
   const [internalCollapsed, setInternalCollapsed] = useState(false);
@@ -355,10 +358,10 @@ export default function AccountSidebar({
   };
   const initials = currentUser.fullName?.charAt(0)?.toUpperCase() ?? "?";
 
-  /* LTR: rounded left edge removed + shadow right; RTL: opposite */
+  /* Flush to the outer viewport edge; border + shadow face the content column. */
   const sidebarEdge = isRTL
-    ? "lg:rounded-r-none lg:border-r-0 lg:shadow-[-8px_0_32px_-12px_color-mix(in_srgb,var(--color-main)_18%,transparent)]"
-    : "lg:rounded-l-none lg:border-l-0 lg:shadow-[8px_0_32px_-12px_color-mix(in_srgb,var(--color-main)_18%,transparent)]";
+    ? "lg:rounded-none lg:border-y-0 lg:border-s-0 lg:shadow-[-10px_0_28px_-16px_color-mix(in_srgb,var(--color-main)_22%,transparent)]"
+    : "lg:rounded-none lg:border-y-0 lg:border-s-0 lg:shadow-[10px_0_28px_-16px_color-mix(in_srgb,var(--color-main)_22%,transparent)]";
 
   const collapseIcon = isCollapsed
     ? isRTL
@@ -372,120 +375,124 @@ export default function AccountSidebar({
   return (
     <div
       className={cn(
-        "flex min-h-10 flex-col overflow-hidden lg:h-full lg:min-h-0 lg:max-h-full",
-        "max-lg:h-full",
+        "relative flex min-h-10 flex-col lg:h-full lg:min-h-0 lg:max-h-full",
+        "overflow-visible max-lg:h-full max-lg:overflow-hidden",
         "max-lg:rounded-2xl max-lg:shadow-lg max-lg:shadow-black/5",
         sidebarEdge,
         "transition-[width] duration-300 ease-in-out motion-reduce:transition-none",
         isCollapsed ? "w-[72px]" : "w-full",
         "border border-[var(--color-border-primary)] bg-[var(--color-bg-card)]",
-        // Creative full-sidebar gradient in dark mode only
-        "dark:border-white/[0.06]",
-        "dark:bg-[linear-gradient(160deg,color-mix(in_srgb,var(--color-api-second)_7%,#0d0d10)_0%,#0a0a0c_40%,#080808_100%)]",
-        "dark:shadow-[inset_-1px_0_0_rgba(255,255,255,0.04)]"
+        "dark:border-white/[0.08]",
+        "dark:bg-[#1C1916]",
       )}
     >
-      {/* ── Header ── */}
+      {/* Colored band — avatar hangs out from below */}
       <div
         className={cn(
           "relative shrink-0 overflow-hidden",
-          !isCollapsed && "rounded-b-2xl"
+          isCollapsed ? "h-[3.25rem]" : "h-[4.75rem]",
+          isDark && "border-b border-white/10 bg-[#1C1916]",
         )}
-        style={{
-          background:
-            "linear-gradient(135deg, var(--color-api-second) 0%, color-mix(in srgb, var(--color-api-second) 70%, var(--color-main)) 55%, var(--color-main) 100%)",
-        }}
+        style={
+          isDark
+            ? undefined
+            : {
+                background:
+                  "linear-gradient(135deg, var(--color-api-second) 0%, color-mix(in srgb, var(--color-api-second) 70%, var(--color-main)) 55%, var(--color-main) 100%)",
+              }
+        }
       >
-        {/* Glassmorphism overlay */}
-        <div
-          className="pointer-events-none absolute inset-0 opacity-35 mix-blend-overlay"
-          style={{
-            backgroundImage:
-              "radial-gradient(at 0% 0%, rgba(255,255,255,0.35) 0%, transparent 50%),radial-gradient(at 100% 100%, rgba(255,255,255,0.2) 0%, transparent 45%)",
-          }}
-        />
+        {!isDark && (
+          <div
+            className="pointer-events-none absolute inset-0 opacity-35 mix-blend-overlay"
+            style={{
+              backgroundImage:
+                "radial-gradient(at 0% 0%, rgba(255,255,255,0.35) 0%, transparent 50%),radial-gradient(at 100% 100%, rgba(255,255,255,0.2) 0%, transparent 45%)",
+            }}
+          />
+        )}
 
-        {/* Decorative circles (visible when expanded) */}
-        {!isCollapsed && (
+        {!isCollapsed && !isDark && (
           <>
-            <span className="absolute -top-6 -right-6 w-28 h-28 rounded-full bg-white/10 pointer-events-none blur-[2px]" />
-            <span className="absolute -bottom-6 -left-8 w-20 h-20 rounded-full bg-white/10 pointer-events-none" />
-            <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-24 rounded-full bg-white/[0.07] blur-3xl pointer-events-none" />
+            <span className="pointer-events-none absolute -top-6 -end-6 h-28 w-28 rounded-full bg-white/10 blur-[2px]" />
+            <span className="pointer-events-none absolute -bottom-8 -start-8 h-20 w-20 rounded-full bg-white/10" />
           </>
         )}
+      </div>
 
-        {/* User info */}
-        <div
-          className={cn(
-            "relative flex flex-col items-center gap-2",
-            isCollapsed ? "py-5 px-2" : "pt-6 pb-4 px-4"
-          )}
-        >
-          {/* Avatar */}
-          <div className="relative">
-            <div
-              className={cn(
-                "rounded-full overflow-hidden ring-2 ring-white/30",
-                "transition-all duration-300 ease-in-out",
-                isCollapsed ? "w-10 h-10" : "w-16 h-16"
-              )}
-            >
-              {currentUser.avatar ? (
-                <img
-                  src={currentUser.avatar}
-                  alt={currentUser.fullName}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div
-                  className={cn(
-                    "w-full h-full flex items-center justify-center font-bold text-white bg-white/20",
-                    isCollapsed ? "text-sm" : "text-xl"
-                  )}
-                >
-                  {initials}
-                </div>
-              )}
-            </div>
-            {currentUser.isOnline && (
-              <span
-                className="absolute bottom-0 right-0 w-3 h-3 rounded-full ring-2 ring-white"
-                style={{ backgroundColor: "var(--color-success)" }}
+      {/* Avatar + name sit on the body; photo overlaps the band from outside */}
+      <div
+        className={cn(
+          "relative z-10 flex shrink-0 flex-col items-center",
+          isCollapsed ? "-mt-5 px-2 pb-2" : "-mt-8 px-4 pb-3",
+        )}
+      >
+        <div className="relative">
+          <div
+            className={cn(
+              "overflow-hidden rounded-full bg-[var(--color-bg-card)] ring-2 ring-[var(--color-bg-card)] transition-all duration-300 ease-in-out dark:bg-[#1C1916] dark:ring-[#1C1916]",
+              isDark
+                ? "shadow-[0_0_0_2px_#ff9f00]"
+                : "shadow-[0_0_0_2px_rgba(255,255,255,0.75),0_6px_16px_-8px_rgba(15,23,42,0.45)]",
+              isCollapsed ? "h-10 w-10" : "h-16 w-16",
+            )}
+          >
+            {currentUser.avatar ? (
+              <img
+                src={currentUser.avatar}
+                alt={currentUser.fullName}
+                className="h-full w-full object-cover"
               />
+            ) : (
+              <div
+                className={cn(
+                  "flex h-full w-full items-center justify-center font-bold",
+                  isDark ? "bg-cta text-white" : "bg-white text-[var(--color-main)]",
+                  isCollapsed ? "text-sm" : "text-xl",
+                )}
+              >
+                {initials}
+              </div>
             )}
           </div>
-
-          {/* Name + email (expanded only) */}
-          {!isCollapsed && (
-            <div className="text-center w-full px-1">
-              <p className="font-bold text-white text-sm leading-snug truncate">
-                {currentUser.fullName}
-              </p>
-              {currentUser.email && (
-                <p className="text-white/60 text-[11px] mt-0.5 truncate">
-                  {currentUser.email}
-                </p>
-              )}
-            </div>
+          {currentUser.isOnline && (
+            <span
+              className="absolute bottom-0 right-0 h-3 w-3 rounded-full ring-2 ring-[var(--color-bg-card)] dark:ring-[#1C1916]"
+              style={{ backgroundColor: "var(--color-success)" }}
+            />
           )}
         </div>
 
-        {/* Collapse toggle button */}
-        <button
-          type="button"
-          onClick={handleToggle}
-          aria-label={t(isCollapsed ? "common.expandSidebar" : "common.collapseSidebar")}
-          className={cn(
-            "absolute bottom-0 translate-y-1/2 p-1.5 rounded-full z-10",
-            "bg-[color-mix(in_srgb,var(--color-bg-card)_92%,white)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-card)]",
-            "shadow-md ring-2 ring-white/25 transition-all duration-200 hover:scale-105 active:scale-95",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg-card)]",
-            isRTL ? "left-3" : "right-3"
-          )}
-        >
-          <CollapseIcon className="w-3.5 h-3.5" />
-        </button>
+        {!isCollapsed && (
+          <div className="mt-2.5 w-full px-1 text-center">
+            <p className="truncate text-sm font-bold leading-snug text-[var(--color-text-primary)] dark:text-[#F3EFE8]">
+              {currentUser.fullName}
+            </p>
+            {currentUser.email && (
+              <p className="mt-0.5 truncate text-[11px] text-[var(--color-text-tertiary)] dark:text-[#C9C2B6]">
+                {currentUser.email}
+              </p>
+            )}
+          </div>
+        )}
       </div>
+
+      <button
+        type="button"
+        onClick={handleToggle}
+        aria-label={t(isCollapsed ? "common.expandSidebar" : "common.collapseSidebar")}
+        className={cn(
+          "absolute z-30 rounded-full p-1.5 max-lg:hidden",
+          "top-[4.25rem]",
+          isRTL ? "left-0 -translate-x-1/2" : "right-0 translate-x-1/2",
+          "bg-[var(--color-bg-card)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]",
+          "shadow-md ring-1 ring-black/10 transition-all duration-200 hover:scale-105 active:scale-95",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-2",
+          "dark:bg-[#2A2622] dark:text-[#F3EFE8] dark:ring-white/15",
+        )}
+      >
+        <CollapseIcon className="h-3.5 w-3.5" />
+      </button>
 
       {/* ── Nav items ── */}
       <nav className="mt-2 min-h-0 flex-1 overflow-x-visible overflow-y-auto pt-1 scrollbar-custom">

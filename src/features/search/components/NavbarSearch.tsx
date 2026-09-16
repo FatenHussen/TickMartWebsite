@@ -149,7 +149,7 @@ export default function NavbarSearch({
             <div className="group relative">
                 <HiSearch
                     className={cn(
-                        "pointer-events-none absolute top-1/2 h-5 w-5 -translate-y-1/2 text-primary transition-colors duration-200",
+                        "navbar-search-icon pointer-events-none absolute top-1/2 h-5 w-5 -translate-y-1/2 text-[#ff9f00] transition-colors duration-200",
                         isRTL ? "right-4" : "left-4"
                     )}
                 />
@@ -163,7 +163,7 @@ export default function NavbarSearch({
                         "Search products and stores..."
                     }
                     className={cn(
-                        "h-12 w-full rounded-2xl border border-primary/35 bg-white text-[15px] leading-none text-custom-primary transition-[border-color,box-shadow] duration-200 ease-out placeholder:text-text-tertiary hover:border-primary/55 focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/12 dark:border-white/[0.08] dark:bg-custom-card",
+                        "navbar-search-input h-12 w-full rounded-2xl border border-stone-300 bg-white text-[15px] leading-none text-custom-primary transition-[border-color,box-shadow] duration-200 ease-out placeholder:text-stone-500 hover:border-[#ff9f00]/55 focus:border-[#ff9f00] focus:outline-none focus:ring-2 focus:ring-[#ff9f00]/25 dark:border-white/20 dark:placeholder:text-[#B8B0A4] dark:focus:ring-[#ff9f00]/30",
                         isRTL ? "pr-12 pl-14" : "pl-12 pr-14",
                         inputClassName
                     )}
@@ -172,8 +172,8 @@ export default function NavbarSearch({
                     type="button"
                     onClick={() => setShowTypePicker((p) => !p)}
                     className={cn(
-                        "absolute top-1/2 flex h-8 -translate-y-1/2 items-center justify-center rounded-xl px-2.5 text-primary transition-[background-color,transform] duration-200 ease-out hover:bg-primary/10 active:scale-95",
-                        showTypePicker && "bg-primary/10",
+                        "navbar-search-filter absolute top-1/2 flex h-8 -translate-y-1/2 items-center justify-center rounded-xl px-2.5 text-[#ff9f00] transition-[background-color,color,transform] duration-200 ease-out hover:bg-[#ff9f00]/10 active:scale-95",
+                        showTypePicker && "bg-primary/10 dark:bg-white/[0.08]",
                         isRTL ? "left-2" : "right-2"
                     )}
                     aria-label={t("common.filter") || "Filter"}

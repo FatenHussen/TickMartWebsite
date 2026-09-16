@@ -1,5 +1,6 @@
 import type { ComponentType } from "react";
 import { useTranslation } from "react-i18next";
+import { useLanguage } from "@/context/LanguageContext";
 import {
     LuShoppingBasket,
     LuShoppingBag,
@@ -66,6 +67,7 @@ export default function BasketFiltersSidebar({
     onFiltersChange,
 }: BasketFiltersSidebarProps) {
     const { t } = useTranslation();
+    const { isRTL } = useLanguage();
 
     const update = (patch: Partial<BasketFilters>) =>
         onFiltersChange({ ...filters, ...patch });
@@ -80,7 +82,7 @@ export default function BasketFiltersSidebar({
     const clearAll = () => onFiltersChange({ basketType: "all" });
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6" dir={isRTL ? "rtl" : "ltr"}>
             {/* Header — title, active count, clear all */}
             <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2.5">
@@ -122,7 +124,7 @@ export default function BasketFiltersSidebar({
                             key={value}
                             onClick={() => update({ basketType: value })}
                             className={cn(
-                                "basket-sidebar-pill group w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium",
+                                "basket-sidebar-pill group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-start text-sm font-medium",
                                 filters.basketType === value && "is-active",
                             )}
                         >
@@ -149,7 +151,7 @@ export default function BasketFiltersSidebar({
                                     update({ sortType: isActive ? undefined : value })
                                 }
                                 className={cn(
-                                    "basket-sidebar-pill group w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium",
+                                    "basket-sidebar-pill group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-start text-sm font-medium",
                                     isActive && "is-active",
                                 )}
                             >

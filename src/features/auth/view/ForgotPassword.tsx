@@ -1,34 +1,35 @@
-import { useForm } from"react-hook-form";
-import { useTranslation } from"react-i18next";
-import { Link } from"react-router-dom";
-import EmailOrPhoneInput from"@/features/auth/components/EmailOrPhoneInput";
-import Button from"@/shared/ui/Button";
-import AuthLayout from"@/features/auth/layout/Auth-Layout";
-import AuthBrand from"@/features/auth/components/AuthBrand";
-import { useForgotPassword } from"@/features/auth/hooks/useAuth";
-import { paths } from"@/app/routes/path/paths";
-import { detectEmailOrPhone } from"@/shared/lib/utils";
-import type { ForgotPasswordFormValues } from"@/features/auth/types";
+import { useForm } from "react-hook-form";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
+import EmailOrPhoneInput from "@/features/auth/components/EmailOrPhoneInput";
+import Button from "@/shared/ui/Button";
+import AuthLayout from "@/features/auth/layout/Auth-Layout";
+import AuthBrand from "@/features/auth/components/AuthBrand";
+import { useForgotPassword } from "@/features/auth/hooks/useAuth";
+import { paths } from "@/app/routes/path/paths";
+import { toInternationalPhone } from "@/features/auth/utils/countryDialCode";
+import type { ForgotPasswordFormValues } from "@/features/auth/types";
 
 export default function ForgotPassword() {
- const { t } = useTranslation();
- const { mutate: sendPasswordReset, isPending } = useForgotPassword();
+    const { t } = useTranslation();
+    const { mutate: sendPasswordReset, isPending } = useForgotPassword();
+    const [dialCode, setDialCode] = useState("+963");
 
- const {
- control,
- handleSubmit,
- formState: { errors },
- } = useForm<ForgotPasswordFormValues>({
- defaultValues: { emailOrPhone:""},
- });
+    const {
+        control,
+        handleSubmit,
+        formState: { errors },
+    } = useForm<ForgotPasswordFormValues>({
+        defaultValues: { emailOrPhone: "" },
+    });
 
- const onSubmit = async (data: ForgotPasswordFormValues) => {
- const detectedType = detectEmailOrPhone(data.emailOrPhone);
- const payload: { email?: string; phone?: string } = {};
- if (detectedType ==="email") payload.email = data.emailOrPhone;
- else if (detectedType ==="phone") payload.phone = data.emailOrPhone;
- sendPasswordReset(payload);
- };
+    const onSubmit = async (data: ForgotPasswordFormValues) => {
+        const payload: { email?: string; phone?: string } = {};
+        if (data.emailOrPhone.includes("@")) payload.email = data.emailOrPhone.trim();
+        else payload.phone = toInternationalPhone(dialCode, data.emailOrPhone);
+        sendPasswordReset(payload);
+    };
 
  return (
  <AuthLayout
@@ -56,9 +57,10 @@ export default function ForgotPassword() {
  name="emailOrPhone"
  control={control}
  label={t("auth.phoneOrEmail")}
- placeholder="+963xxxxxxxxx / your.email@example.com"
+ placeholder="0935931471"
  error={errors.emailOrPhone}
  required
+ onDialCodeChange={setDialCode}
  />
 
  <Button

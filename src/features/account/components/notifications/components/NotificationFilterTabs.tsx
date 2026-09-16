@@ -37,8 +37,10 @@ export function NotificationFilterTabs({
             className={cn(
               "flex min-h-[40px] items-center gap-1.5 rounded-xl px-3.5 py-2 text-sm font-medium transition-all sm:px-4",
               isActive
-                ? "bg-primary text-white shadow-sm"
-                : "text-custom-secondary hover:bg-custom-light/90 dark:hover:bg-bg-hover/70",
+                ? tab.value === "unread"
+                  ? "bg-[#c45c4a] text-white shadow-sm"
+                  : "bg-cta text-white shadow-sm"
+                : "text-custom-primary hover:bg-[color-mix(in_srgb,#ff9f00_10%,transparent)]",
             )}
           >
             {tab.label}
@@ -46,9 +48,13 @@ export function NotificationFilterTabs({
               <span
                 className={cn(
                   "min-w-[22px] rounded-full px-1.5 py-0.5 text-center text-[11px] font-semibold tabular-nums",
-                  isActive
-                    ? "bg-white/20 text-white"
-                    : "bg-custom-tertiary text-custom-secondary",
+                  tab.value === "unread"
+                    ? isActive
+                      ? "bg-white/25 text-white"
+                      : "bg-[#c45c4a] text-white"
+                    : isActive
+                      ? "bg-white/25 text-white"
+                      : "bg-[color-mix(in_srgb,#ff9f00_12%,transparent)] text-[#ff9f00]",
                 )}
               >
                 {tab.count}

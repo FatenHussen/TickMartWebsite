@@ -11,20 +11,11 @@ export default function SchedulesCatalog() {
 
     return (
         <div
-            className="relative min-h-screen overflow-hidden bg-gradient-to-b from-[#FFFDFB] via-[#F7F4F0] to-[#F1EEE9] dark:bg-zinc-950"
+            className="schedules-page-canvas relative min-h-screen"
             dir={isRTL ? "rtl" : "ltr"}
         >
-            <div
-                className="animate-schedules-orb pointer-events-none absolute -start-16 top-16 h-56 w-56 rounded-full bg-[#F3E6D4]/50 blur-3xl dark:bg-white/5"
-                aria-hidden
-            />
-            <div
-                className="animate-schedules-orb pointer-events-none absolute -end-10 top-72 h-64 w-64 rounded-full bg-[#EDE8E1]/70 blur-3xl [animation-delay:2s] dark:bg-white/5"
-                aria-hidden
-            />
-
             <div className="page-container relative py-8 sm:py-12">
-                <section className="schedules-hero animate-schedules-header mb-11 rounded-[1.85rem] px-5 py-9 text-center sm:mb-14 sm:px-12 sm:py-12">
+                <section className="schedules-hero mb-11 rounded-[1.85rem] px-5 py-9 text-center sm:mb-14 sm:px-12 sm:py-12">
                     <div className="relative mb-4 flex items-center justify-center gap-1.5" aria-hidden>
                         <span className="schedules-beat-dot" />
                         <span className="schedules-beat-dot" />
@@ -53,21 +44,21 @@ export default function SchedulesCatalog() {
                         ))}
                     </div>
                 ) : isError ? (
-                    <div className="flex flex-col items-center justify-center gap-4 rounded-[1.85rem] border border-stone-200 bg-white py-16 text-center dark:border-white/12 dark:bg-zinc-900">
+                    <div className="schedules-panel flex flex-col items-center justify-center gap-4 rounded-[1.85rem] py-16 text-center">
                         <p className="text-zinc-800 dark:text-white">
                             {t("customBasket.failedToLoad")}
                         </p>
                         <button
                             type="button"
                             onClick={() => refetch()}
-                            className="inline-flex h-10 items-center rounded-full bg-zinc-900 px-5 text-sm font-semibold text-white hover:bg-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                            className="inline-flex h-10 items-center rounded-full bg-[var(--color-primary)] px-5 text-sm font-semibold text-white hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                         >
                             {t("customBasket.retry")}
                         </button>
                     </div>
                 ) : items.length === 0 ? (
-                    <div className="flex min-h-48 items-center justify-center rounded-[1.85rem] border border-stone-200 bg-white py-16 text-center dark:border-white/12 dark:bg-zinc-900">
-                        <p className="max-w-sm text-stone-500">
+                    <div className="schedules-panel flex min-h-48 items-center justify-center rounded-[1.85rem] py-16 text-center">
+                        <p className="max-w-sm text-stone-500 dark:text-zinc-400">
                             {t("customBasket.noSchedules")}
                         </p>
                     </div>

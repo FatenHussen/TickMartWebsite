@@ -2,6 +2,7 @@ import { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContext";
+import { useTheme } from "@/context/ThemeContext";
 import { cn } from "@/shared/lib/utils";
 import { useAuthStore } from "@/store/auth";
 import { useQuickOrderSettings } from "@/features/account/hooks/useQuickOrderSettings";
@@ -54,6 +55,8 @@ export default function MobileAccountMenu({ user }: MobileAccountMenuProps) {
   const { t } = useTranslation();
   const { user: authUser } = useAuthStore();
   const { isRTL } = useLanguage();
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -96,7 +99,11 @@ export default function MobileAccountMenu({ user }: MobileAccountMenuProps) {
           "w-full min-h-[3.25rem] sm:min-h-14 flex items-center justify-between px-4 py-3 rounded-2xl",
           "shadow-md shadow-black/5 border border-[color-mix(in_srgb,var(--color-border-primary)_70%,transparent)]",
           "transition-all duration-200 active:scale-[0.99] motion-reduce:transition-none motion-reduce:active:scale-100",
-          isOpen ? "bg-gradient-brand-vertical text-white" : "bg-custom-card"
+          isOpen
+            ? isDark
+              ? "bg-[#1C1916] text-[#F3EFE8] border-white/10"
+              : "bg-gradient-brand-vertical text-white"
+            : "bg-custom-card"
         )}
       >
         <div className="flex items-center gap-3">
@@ -105,7 +112,11 @@ export default function MobileAccountMenu({ user }: MobileAccountMenuProps) {
             <div
               className={cn(
                 "w-12 h-12 rounded-full overflow-hidden",
-                isOpen ? "border-2 border-custom-primary/30" : "border-2 border-primary/20"
+                isDark
+                  ? "ring-2 ring-[#ff9f00]"
+                  : isOpen
+                    ? "border-2 border-custom-primary/30"
+                    : "border-2 border-primary/20"
               )}
             >
               {currentUser.avatar ? (
@@ -118,7 +129,11 @@ export default function MobileAccountMenu({ user }: MobileAccountMenuProps) {
                 <div
                   className={cn(
                     "w-full h-full flex items-center justify-center font-semibold text-lg",
-                    isOpen ? "bg-custom-card/20 text-white/90" : "bg-primary/10 text-primary"
+                    isDark
+                      ? "bg-cta text-white"
+                      : isOpen
+                        ? "bg-custom-card/20 text-white/90"
+                        : "bg-primary/10 text-primary"
                   )}
                 >
                   {currentUser.fullName?.charAt(0)?.toUpperCase() || "?"}
@@ -131,10 +146,16 @@ export default function MobileAccountMenu({ user }: MobileAccountMenuProps) {
           </div>
 
           <div className={cn("text-start", isRTL && "text-end")}>
-            <p className={cn("font-semibold text-sm", isOpen ? "text-white" : "text-text-primary")}>
+            <p className={cn(
+              "font-semibold text-sm",
+              isDark ? "text-[#F3EFE8]" : isOpen ? "text-white" : "text-text-primary"
+            )}>
               {currentUser.fullName}
             </p>
-            <p className={cn("text-xs flex items-center gap-1", isOpen ? "text-white/70" : "text-text-secondary")}>
+            <p className={cn(
+              "text-xs flex items-center gap-1",
+              isDark ? "text-[#C9C2B6]" : isOpen ? "text-white/70" : "text-text-secondary"
+            )}>
               <ActiveIcon className="w-3 h-3" />
               {activeItem ? t(`account.menu.${activeItem.id}`) : t("account.menu.profile")}
             </p>
@@ -144,7 +165,11 @@ export default function MobileAccountMenu({ user }: MobileAccountMenuProps) {
         <ChevronDown
           className={cn(
             "w-5 h-5 transition-transform duration-200",
-            isOpen ? "rotate-180 text-white" : "text-text-secondary"
+            isOpen
+              ? isDark
+                ? "rotate-180 text-[#C9C2B6]"
+                : "rotate-180 text-white"
+              : "text-text-secondary"
           )}
         />
       </button>
@@ -168,9 +193,21 @@ export default function MobileAccountMenu({ user }: MobileAccountMenuProps) {
             )}
           >
             {/* Header */}
-            <div className="p-4 text-white flex items-center justify-between bg-gradient-brand-vertical">
+            <div
+              className={cn(
+                "p-4 flex items-center justify-between",
+                isDark
+                  ? "bg-[#1C1916] text-[#F3EFE8] border-b border-white/10"
+                  : "bg-gradient-brand-vertical text-white",
+              )}
+            >
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-custom-primary/30">
+                <div
+                  className={cn(
+                    "w-12 h-12 rounded-full overflow-hidden",
+                    isDark ? "ring-2 ring-[#ff9f00]" : "border-2 border-custom-primary/30",
+                  )}
+                >
                   {currentUser.avatar ? (
                     <img
                       src={currentUser.avatar}
@@ -178,22 +215,34 @@ export default function MobileAccountMenu({ user }: MobileAccountMenuProps) {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full bg-custom-card/20 flex items-center justify-center font-semibold text-xl text-white/90">
+                    <div
+                      className={cn(
+                        "w-full h-full flex items-center justify-center font-semibold text-xl",
+                        isDark ? "bg-cta text-white" : "bg-custom-card/20 text-white/90",
+                      )}
+                    >
                       {currentUser.fullName?.charAt(0)?.toUpperCase() || "?"}
                     </div>
                   )}
                 </div>
                 <div>
-                  <p className="font-semibold">{currentUser.fullName}</p>
+                  <p className={cn("font-semibold", isDark && "text-[#F3EFE8]")}>
+                    {currentUser.fullName}
+                  </p>
                   {currentUser.email && (
-                    <p className="text-sm text-white/80">{currentUser.email}</p>
+                    <p className={cn("text-sm", isDark ? "text-[#C9C2B6]" : "text-white/80")}>
+                      {currentUser.email}
+                    </p>
                   )}
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="p-2.5 min-h-11 min-w-11 shrink-0 flex items-center justify-center hover:bg-custom-card/10 rounded-full transition-colors"
+                className={cn(
+                  "p-2.5 min-h-11 min-w-11 shrink-0 flex items-center justify-center rounded-full transition-colors",
+                  isDark ? "hover:bg-white/10" : "hover:bg-custom-card/10",
+                )}
                 aria-label={t("common.close")}
               >
                 <X className="w-5 h-5" />

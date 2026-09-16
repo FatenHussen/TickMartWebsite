@@ -13,7 +13,7 @@ export default function AuthPromoPanel() {
  "hidden lg:flex flex-col overflow-auto border-e",
  theme ==="dark"
  ?"border-[rgba(255,255,255,0.06)] bg-[#0B0B0C]"
- :"border-transparent bg-gradient-to-b from-[var(--color-bg-secondary)] via-[var(--color-bg-primary)] to-[color-mix(in_srgb,var(--color-api-second)_10%,var(--color-bg-primary))]"
+ :"border-stone-200/80 bg-[#F6F3EE]"
  )}
  >
  <div className="pt-10 pb-6 px-8 md:px-12">
@@ -42,7 +42,7 @@ export default function AuthPromoPanel() {
  "flex items-center justify-center overflow-hidden rounded-3xl border p-8",
  theme ==="dark"
  ?"border-[rgba(255,255,255,0.06)] bg-[rgba(16,17,20,0.55)] shadow-[0_24px_48px_-28px_rgba(0,0,0,0.6)] backdrop-blur-lg"
- :"rounded-2xl border-[var(--color-border-accent-light)] bg-custom-card shadow-[0_8px_32px_var(--color-shadow)]"
+ :"rounded-2xl border-stone-200/80 bg-white shadow-[0_8px_32px_-16px_rgba(28,25,23,0.12)]"
  )}
  >
  <img

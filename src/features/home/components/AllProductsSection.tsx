@@ -35,7 +35,7 @@ type AllProductsSectionProps = {
 };
 
 const darkSelectClass =
-    "w-full cursor-pointer appearance-none rounded-xl border border-white/[0.07] bg-[rgba(16,17,20,0.7)] py-2.5 pl-10 pr-9 text-[#E4E4E7] text-sm backdrop-blur-sm transition-colors duration-200 focus:border-white/[0.14] focus:outline-none focus:ring-1 focus:ring-white/[0.10] hover:border-white/[0.10]";
+    "w-full cursor-pointer appearance-none rounded-xl border border-white/[0.08] bg-[#2A2622] py-2.5 pl-10 pr-9 text-[#E8E4DC] text-sm transition-colors duration-200 focus:border-white/[0.14] focus:outline-none focus:ring-1 focus:ring-white/[0.08] hover:border-white/[0.12]";
 
 const lightSelectClass =
     "w-full cursor-pointer appearance-none rounded-xl border border-stone-200 bg-white py-2.5 pl-10 pr-9 text-stone-800 text-sm transition-colors focus:border-stone-300 focus:outline-none focus:ring-2 focus:ring-black/5";
@@ -251,7 +251,7 @@ export default function AllProductsSection({
                     </div>
                     <Link
                         to={viewAllTo}
-                        className="shrink-0 self-start rounded-xl px-4 py-2 text-sm font-semibold transition-all duration-200 sm:self-center dark:text-[#A1A1AA] dark:hover:bg-white/[0.06] dark:hover:text-white"
+                        className="shrink-0 self-start rounded-xl px-4 py-2 text-sm font-semibold transition-all duration-200 sm:self-center dark:text-[#C9C2B6] dark:hover:bg-white/[0.05] dark:hover:text-[#F3EFE8]"
                         style={!isDarkTheme ? { color: "var(--color-main)" } : undefined}
                     >
                         {t("home.viewAll", "View all")}
@@ -262,7 +262,7 @@ export default function AllProductsSection({
                 <div
                     className={`mb-8 rounded-2xl border p-4 sm:p-5 ${
                         isDarkTheme
-                            ? "border-white/[0.06] bg-[rgba(16,17,20,0.5)]"
+                            ? "border-white/[0.07] bg-[#24201C]"
                             : "border-stone-200/70 bg-white/70 shadow-sm backdrop-blur-sm"
                     }`}
                 >

@@ -3,6 +3,8 @@ import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContext";
 import type { FaqItem } from "@/features/account/api/faqsApi";
 import { filterFaqsBySearch } from "../utils/filterFaqsBySearch";
+import { HELP_SUPPORT_PRIMARY_ACTION_CLASS } from "../ctaClasses";
+import { formatWhatsAppUrl } from "../utils/formatWhatsAppUrl";
 import { FaqAccordionList } from "./FaqAccordionList";
 import { FaqCategoryTabList } from "./FaqCategoryTabList";
 import { FaqSearchField } from "./FaqSearchField";
@@ -53,10 +55,7 @@ export function HelpCenterSection({
         <HelpSupportSectionCard>
             <HelpSupportSectionHeader
                 icon={
-                    <CircleHelp
-                        className="h-7 w-7 text-primary dark:text-[color-mix(in_srgb,var(--color-main)_65%,#a1a1aa)]"
-                        aria-hidden
-                    />
+                    <CircleHelp className="h-5 w-5 text-white" aria-hidden />
                 }
                 title={t("helpCenter.title")}
                 subtitle={t("helpCenter.subtitle")}
@@ -81,8 +80,21 @@ export function HelpCenterSection({
                 hasActiveSearch={hasActiveSearch}
                 openFaqId={openFaqId}
                 onToggleFaq={onToggleFaq}
-                emptySearchMessage={t("helpCenter.noSearchResults", "No matching FAQs found.")}
-                emptyCategoryMessage={t("helpCenter.noFaqs", "No FAQs available for this category.")}
+                emptySearchMessage={t("helpCenter.noSearchResults")}
+                emptyCategoryMessage={t("helpCenter.noFaqs")}
+                emptyHint={t("helpCenter.emptyCtaHint")}
+                emptyAction={
+                    contact?.whatsapp ? (
+                        <a
+                            href={formatWhatsAppUrl(contact.whatsapp)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={HELP_SUPPORT_PRIMARY_ACTION_CLASS}
+                        >
+                            {t("helpCenter.openWhatsApp")}
+                        </a>
+                    ) : undefined
+                }
             />
 
             <ContactChannelsGrid contact={contact} appColor={appColor} />

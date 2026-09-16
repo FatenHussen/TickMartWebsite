@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import {
     Controller,
     useWatch,
@@ -11,7 +11,14 @@ import Label from "@/shared/ui/Label";
 import { _LocationApi } from "@/features/auth/api/location.service";
 import { useInfiniteSelect } from "@/shared/hooks/useInfiniteSelect";
 import type { Country, SignUpFormValues } from "@/features/auth/types";
+import {
+    findSyriaCountry,
+    getCountryDialCode,
+    SYRIA_FALLBACK,
+    toInternationalPhone,
+} from "@/features/auth/utils/countryDialCode";
 import { cn } from "@/shared/lib/utils";
+import { CountryDialSelect } from "@/features/auth/components/CountryDialSelect";
 
 export interface PhoneInputProps {
     control: Control<SignUpFormValues>;
@@ -22,22 +29,8 @@ export interface PhoneInputProps {
     required?: boolean;
 }
 
-function findSyriaCountry(countries: Country[]): Country | undefined {
-    return countries.find(
-        (c) =>
-            c.code === "+963" ||
-            c.name.toLowerCase().includes("syria") ||
-            c.name.includes("سوريا"),
-    );
-}
-
 export function normalizePhoneWithCountry(countryCode: string, localPhone: string): string {
-    let local = localPhone.replace(/\D/g, "");
-    if (local.startsWith("0")) {
-        local = local.slice(1);
-    }
-    const countryDigits = countryCode.replace(/\D/g, "");
-    return countryDigits + local;
+    return toInternationalPhone(countryCode, localPhone);
 }
 
 export default function PhoneInput({
@@ -51,7 +44,7 @@ export default function PhoneInput({
     const { t } = useTranslation();
 
     const {
-        items: countries,
+        items: apiCountries,
         handleScroll: handleCountryScroll,
         isFetchingNextPage: isFetchingMoreCountries,
     } = useInfiniteSelect<Country>({
@@ -73,33 +66,32 @@ export default function PhoneInput({
         },
         mapToOption: (c) => ({
             value: String(c.id),
-            label: `${c.code} ${c.name}`,
+            label: `${getCountryDialCode(c)} ${c.name}`,
         }),
     });
+
+    const countries = useMemo(() => {
+        const list = [...apiCountries];
+        if (!findSyriaCountry(list)) {
+            list.unshift({
+                id: SYRIA_FALLBACK.id,
+                name: t("auth.syria", "سوريا"),
+                code: SYRIA_FALLBACK.code,
+            });
+        }
+        return list;
+    }, [apiCountries, t]);
 
     const phoneCountry = useWatch({ control, name: "phoneCountry" });
 
     useEffect(() => {
-        if (countries.length === 0) return;
-        if (phoneCountry) return;
-
         const syria = findSyriaCountry(countries);
-        if (syria) {
+        if (!syria) return;
+        if (!phoneCountry) {
             setValue("phoneCountry", String(syria.id), { shouldValidate: false });
-            setValue("phoneCountryCode", syria.code, { shouldValidate: false });
         }
+        setValue("phoneCountryCode", getCountryDialCode(syria), { shouldValidate: false });
     }, [countries, phoneCountry, setValue]);
-
-    const handleCountryChange = useCallback(
-        (onChange: (v: string) => void) => (e: React.ChangeEvent<HTMLSelectElement>) => {
-            const id = e.target.value;
-            onChange(id);
-
-            const country = countries.find((c) => String(c.id) === id);
-            setValue("phoneCountryCode", country?.code ?? "", { shouldValidate: false });
-        },
-        [countries, setValue],
-    );
 
     const handlePhoneChange = useCallback(
         (onChange: (v: string) => void) => (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -129,11 +121,12 @@ export default function PhoneInput({
 
             <div
                 className={cn(
-                    "flex flex-col overflow-hidden rounded-lg border focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary bg-custom-card sm:flex-row sm:items-stretch",
+                    "flex overflow-visible rounded-xl border bg-white focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 dark:bg-white/[0.06]",
                     hasError
                         ? "border-red-500 dark:border-red-400"
-                        : "border-custom-secondary",
+                        : "border-stone-200 dark:border-white/15",
                 )}
+                dir="ltr"
             >
                 <Controller
                     name="phoneCountry"
@@ -142,31 +135,25 @@ export default function PhoneInput({
                         required: required ? t("validation.required") : undefined,
                     }}
                     render={({ field }) => (
-                        <select
-                            aria-label={t("auth.selectCountry")}
-                            className={cn(
-                                "w-full min-w-0 appearance-none bg-transparent px-3 py-2.5 text-sm text-custom-primary sm:w-auto sm:min-w-[6.5rem] sm:max-w-[12rem] sm:shrink-0",
-                                "border-b border-custom-secondary sm:border-b-0 sm:border-e",
-                                "focus:outline-none",
-                                hasError && "border-red-500 dark:border-red-400",
-                            )}
-                            value={field.value}
-                            onChange={handleCountryChange(field.onChange)}
+                        <CountryDialSelect
+                            ariaLabel={t("auth.selectCountry")}
+                            value={field.value || String(SYRIA_FALLBACK.id)}
+                            options={countries.map((c) => ({
+                                id: String(c.id),
+                                label: `${getCountryDialCode(c)} ${c.name}`,
+                            }))}
+                            onChange={(id) => {
+                                field.onChange(id);
+                                const country = countries.find((c) => String(c.id) === id);
+                                setValue("phoneCountryCode", getCountryDialCode(country), {
+                                    shouldValidate: false,
+                                });
+                            }}
+                            onListScroll={handleCountryScroll}
+                            isLoadingMore={isFetchingMoreCountries}
+                            loadingLabel={t("common.loading")}
                             onBlur={field.onBlur}
-                            onScroll={handleCountryScroll}
-                        >
-                            <option value="">{t("auth.selectCountry")}</option>
-                            {countries.map((c) => (
-                                <option key={c.id} value={String(c.id)}>
-                                    {c.code} {c.name}
-                                </option>
-                            ))}
-                            {isFetchingMoreCountries && (
-                                <option value="" disabled>
-                                    {t("common.loading")}
-                                </option>
-                            )}
-                        </select>
+                        />
                     )}
                 />
 
@@ -181,7 +168,8 @@ export default function PhoneInput({
                             if (!/^[09]/.test(digits)) {
                                 return t("validation.phoneMustStartWithZeroOrNine");
                             }
-                            if (digits.length < 8) {
+                            const local = digits.startsWith("0") ? digits.slice(1) : digits;
+                            if (local.length < 8) {
                                 return t("validation.phoneMinLength");
                             }
                             return true;
@@ -192,14 +180,13 @@ export default function PhoneInput({
                             type="tel"
                             inputMode="numeric"
                             autoComplete="tel-national"
-                            placeholder="0933123456"
+                            placeholder="0935931471"
                             value={field.value}
                             onChange={handlePhoneChange(field.onChange)}
                             onBlur={field.onBlur}
                             className={cn(
-                                "w-full min-w-0 flex-1 px-4 py-2.5 text-sm",
-                                "placeholder:text-custom-tertiary dark:placeholder:text-custom-secondary",
-                                "focus:outline-none bg-transparent text-custom-primary",
+                                "w-full min-w-0 flex-1 bg-transparent px-4 py-2.5 text-sm text-stone-900",
+                                "placeholder:text-stone-400 focus:outline-none dark:text-white dark:placeholder:text-zinc-500",
                                 hasError && "text-red-900 dark:text-red-100",
                             )}
                         />

@@ -1,7 +1,8 @@
 import { useTranslation } from "react-i18next";
-import { Bell, Check, ChevronDown, ChevronUp } from "lucide-react";
+import { Check, ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import type { NotificationItem } from "@/features/account/api/notificationsApi";
+import { getNotificationIcon } from "../utils/getNotificationIcon";
 
 interface NotificationListItemProps {
   notification: NotificationItem;
@@ -18,6 +19,7 @@ export function NotificationListItem({
 }: NotificationListItemProps) {
   const { t } = useTranslation();
   const isUnread = !notification.read;
+  const Icon = getNotificationIcon(notification.type);
 
   return (
     <button
@@ -27,16 +29,17 @@ export function NotificationListItem({
         "group relative w-full overflow-hidden rounded-2xl text-start transition-all duration-200",
         "bg-custom-card shadow-sm",
         "hover:shadow-md",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-api-second)]/35 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg-card)]",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff9f00]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg-card)]",
         isRTL && "text-right",
-        isUnread &&
-          "bg-[linear-gradient(120deg,color-mix(in_srgb,var(--color-api-second)_8%,var(--color-bg-card))_0%,var(--color-bg-card)_55%)] shadow-[0_4px_20px_-8px_color-mix(in_srgb,var(--color-api-second)_20%,transparent)] dark:shadow-[0_4px_20px_-8px_rgba(0,0,0,0.4)]",
+        isUnread
+          ? "border border-[#c45c4a]/35"
+          : "border border-[var(--color-border-primary)]",
       )}
     >
       <span
         className={cn(
           "absolute start-0 top-3 bottom-3 w-[3px] rounded-full transition-colors",
-          isUnread ? "bg-[var(--color-api-second)]" : "bg-custom-tertiary/40",
+          isUnread ? "bg-[#c45c4a]" : "bg-[var(--color-border-primary)]",
         )}
         aria-hidden
       />
@@ -46,13 +49,13 @@ export function NotificationListItem({
           className={cn(
             "relative flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-lg transition-colors",
             isUnread
-              ? "bg-[color-mix(in_srgb,var(--color-api-second)_20%,var(--color-bg-card))] text-[var(--color-api-second)] shadow-sm"
-              : "bg-custom-tertiary/70 text-custom-tertiary shadow-sm",
+              ? "bg-[#c45c4a] text-white"
+              : "bg-[color-mix(in_srgb,#ff9f00_12%,var(--color-bg-primary))] text-[#ff9f00]",
           )}
         >
-          <Bell className="h-5 w-5" aria-hidden />
+          <Icon className="h-5 w-5" strokeWidth={2} aria-hidden />
           {isUnread && (
-            <span className="absolute -end-0.5 -top-0.5 flex h-2.5 w-2.5 rounded-full bg-primary shadow-[0_0_0_2px_var(--color-bg-card)]" />
+            <span className="absolute -end-0.5 -top-0.5 flex h-2.5 w-2.5 rounded-full bg-[#c45c4a] shadow-[0_0_0_2px_var(--color-bg-card)]" />
           )}
         </div>
 
@@ -68,15 +71,15 @@ export function NotificationListItem({
             </h3>
             <div className="flex shrink-0 items-center gap-1.5">
               <time
-                className="whitespace-nowrap text-[11px] font-medium uppercase tracking-wide text-custom-tertiary"
+                className="whitespace-nowrap text-[11px] font-medium text-custom-secondary"
                 dateTime={notification.created_at}
               >
                 {notification.created_at}
               </time>
               {isExpanded ? (
-                <ChevronUp className="h-4 w-4 shrink-0 text-custom-tertiary opacity-70 group-hover:opacity-100" aria-hidden />
+                <ChevronUp className="h-4 w-4 shrink-0 text-custom-secondary" aria-hidden />
               ) : (
-                <ChevronDown className="h-4 w-4 shrink-0 text-custom-tertiary opacity-70 group-hover:opacity-100" aria-hidden />
+                <ChevronDown className="h-4 w-4 shrink-0 text-custom-secondary" aria-hidden />
               )}
             </div>
           </div>
@@ -92,12 +95,12 @@ export function NotificationListItem({
 
           <div className="mt-3 flex flex-wrap items-center gap-2">
             {isUnread ? (
-              <span className="inline-flex items-center gap-1 rounded-full bg-[color-mix(in_srgb,var(--color-api-second)_14%,var(--color-bg-card))] px-2 py-0.5 text-[11px] font-semibold text-[var(--color-api-second)] shadow-sm">
-                <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-api-second)]" aria-hidden />
+              <span className="inline-flex items-center gap-1 rounded-full bg-[#c45c4a] px-2 py-0.5 text-[11px] font-semibold text-white">
+                <span className="h-1.5 w-1.5 rounded-full bg-white" aria-hidden />
                 {t("account.notificationsPage.badgeNew")}
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1 text-[11px] font-medium text-custom-tertiary">
+              <span className="inline-flex items-center gap-1 text-[11px] font-medium text-custom-secondary">
                 <Check className="h-3.5 w-3.5" aria-hidden />
                 {t("account.notificationsPage.badgeRead")}
               </span>

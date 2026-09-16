@@ -886,7 +886,7 @@ function BannerSection({
     // been, `list` and `grid` show every banner at once instead of one at a time.
     const layout = getSectionLayout(section);
     const viewAllButtonClass =
-        "inline-flex items-center gap-1.5 rounded-full border border-primary-light/35 bg-primary-light/10 px-4 py-2 text-sm font-semibold text-primary-light transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary-light hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-light/40";
+        "inline-flex items-center gap-1.5 rounded-full border border-primary-light/35 bg-primary-light/10 px-4 py-2 text-sm font-semibold text-primary-light transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary-light hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-light/40 dark:border-white/10 dark:bg-[#2A2622] dark:text-[#E8E4DC] dark:hover:border-white/16 dark:hover:bg-[#322E29] dark:hover:text-[#F3EFE8]";
     // If only one item, show promotional banner with container
     if (section.items.length === 1) {
         const item = section.items[0];

@@ -91,7 +91,7 @@ export default function Categories({
                     titleSecondColor={titleSecondColor}
                     viewAllLabel={t("home.viewAll")}
                     onViewAllClick={handleViewAll}
-                    viewAllButtonClassName="dark:text-white dark:hover:bg-transparent dark:hover:text-white/90"
+                    viewAllButtonClassName="dark:text-[#E8E4DC] dark:hover:bg-[#322E29] dark:hover:text-[#F3EFE8]"
                     slidesPerView={3.5}
                     items={categories}
                     removeVerticalSpacing

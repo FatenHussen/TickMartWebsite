@@ -1,6 +1,7 @@
 import type { AxiosRequestConfig } from "axios";
-import _axios from"@/app/middleware/interceptor";
-import { apiRoutes } from"@/utils/apiRoutes";
+import _axios from "@/app/middleware/interceptor";
+import { apiRoutes } from "@/utils/apiRoutes";
+import { phoneLoginVariants } from "@/features/auth/utils/countryDialCode";
 import type {
  LoginPayload,
  LoginResponse,
@@ -38,17 +39,40 @@ export type {
 };
 
 export const _AuthApi = {
- login: async (
- payload: LoginPayload,
- config?: AxiosRequestConfig,
- ): Promise<LoginResponse> => {
- const res = await _axios.post<LoginResponse>(
- apiRoutes.auth.login,
- payload,
- config,
- );
- return res.data;
- },
+    login: async (
+        payload: LoginPayload,
+        config?: AxiosRequestConfig,
+    ): Promise<LoginResponse> => {
+        if (payload.email || !payload.phone) {
+            const res = await _axios.post<LoginResponse>(
+                apiRoutes.auth.login,
+                payload,
+                config,
+            );
+            return res.data;
+        }
+
+        const variants = phoneLoginVariants(payload.phone);
+        let lastError: unknown;
+        for (const phone of variants) {
+            try {
+                const res = await _axios.post<LoginResponse>(
+                    apiRoutes.auth.login,
+                    { password: payload.password, phone },
+                    {
+                        ...config,
+                        skipErrorToast: true,
+                        skipSuccessToast: true,
+                    },
+                );
+                return res.data;
+            } catch (error) {
+                lastError = error;
+            }
+        }
+
+        throw lastError;
+    },
 
  register: async (payload: RegisterPayload): Promise<RegisterResponse> => {
  const res = await _axios.post<RegisterResponse>(

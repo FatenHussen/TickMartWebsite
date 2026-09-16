@@ -1,4 +1,5 @@
 import { useForm } from "react-hook-form";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import EmailOrPhoneInput from "@/features/auth/components/EmailOrPhoneInput";
@@ -8,6 +9,7 @@ import Label from "@/shared/ui/Label";
 import AuthLayout from "@/features/auth/layout/Auth-Layout";
 import AuthBrand from "@/features/auth/components/AuthBrand";
 import { detectEmailOrPhone } from "@/shared/lib/utils";
+import { toInternationalPhone } from "@/features/auth/utils/countryDialCode";
 import { useLogin } from "@/features/auth/hooks/useAuth";
 import { useAppSettings } from "@/features/account/hooks/useAppSettings";
 import { paths } from "@/app/routes/path/paths";
@@ -22,7 +24,8 @@ export default function SignIn() {
     const { mutate: login, isPending } = useLogin();
     const { data: appSettings } = useAppSettings();
     const loginSettings = appSettings?.login;
-    const hasLoginImage = Boolean(loginSettings?.image);
+    const loginImage = "/images/auth/seller.jpg";
+    const [dialCode, setDialCode] = useState("+963");
 
     const {
         register,
@@ -44,10 +47,10 @@ export default function SignIn() {
             password: data.password,
         };
 
-        if (detectedType === "email") {
-            payload.email = data.emailOrPhone;
-        } else if (detectedType === "phone") {
-            payload.phone = data.emailOrPhone;
+        if (detectedType === "email" || data.emailOrPhone.includes("@")) {
+            payload.email = data.emailOrPhone.trim();
+        } else {
+            payload.phone = toInternationalPhone(dialCode, data.emailOrPhone);
         }
 
         login(payload);
@@ -55,35 +58,34 @@ export default function SignIn() {
 
     return (
         <AuthLayout
-            leftPanel={hasLoginImage ? "image" : "promo"}
-            leftImageSrc={loginSettings?.image}
+            leftPanel="image"
+            leftImageSrc={loginImage}
             leftImageLink={loginSettings?.link}
             leftImageAlt={t("common.login")}
             useFormCard
         >
-            <div className="space-y-4">
+            <div className="space-y-3">
                 <AuthBrand size="sm" />
                 <div className="space-y-1.5 text-center">
-                    <h1 className="text-2xl font-bold tracking-[-0.01em] text-custom-primary">
+                    <h1 className="text-2xl font-bold tracking-[-0.01em] text-stone-900 dark:text-white">
                         {t("auth.signInTitle")}
                     </h1>
-                    <p className="text-sm text-custom-secondary">
+                    <p className="text-sm text-stone-500 dark:text-zinc-400">
                         {t("auth.signInSubtitle")}
                     </p>
                 </div>
             </div>
 
-            <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-8">
-                <div className="space-y-1.5">
-                    <EmailOrPhoneInput
-                        name="emailOrPhone"
-                        control={control}
-                        label={t("auth.emailOrPhone")}
-                        placeholder="your.email@example.com / +963xxxxxxxxx"
-                        error={errors.emailOrPhone}
-                        required
-                    />
-                </div>
+            <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
+                <EmailOrPhoneInput
+                    name="emailOrPhone"
+                    control={control}
+                    label={t("auth.emailOrPhone")}
+                    placeholder="0935931471"
+                    onDialCodeChange={setDialCode}
+                    error={errors.emailOrPhone}
+                    required
+                />
 
                 <div className="space-y-1.5">
                     <InputField
@@ -99,23 +101,23 @@ export default function SignIn() {
                         })}
                         error={errors.password}
                     />
-                    <p className="text-xs text-custom-secondary">
+                    <p className="text-xs text-stone-500 dark:text-zinc-400">
                         {t("auth.passwordHelper")}
                     </p>
                 </div>
 
                 <div className="flex items-center justify-between text-sm">
-                    <Label className="flex items-center gap-2 text-custom-primary cursor-pointer">
+                    <Label className="flex cursor-pointer items-center gap-2 text-stone-800 dark:text-white">
                         <input
                             type="checkbox"
-                            className="w-4 h-4 rounded border-custom-secondary text-primary focus:ring-primary"
+                            className="h-4 w-4 rounded border-stone-300 text-primary focus:ring-primary"
                             {...register("rememberMe")}
                         />
                         {t("common.rememberMe")}
                     </Label>
                     <Link
                         to={paths.auth.jwt.forgotPassword}
-                        className="text-primary font-medium hover:underline"
+                        className="font-medium text-primary hover:underline"
                     >
                         {t("common.forgotPassword")}
                     </Link>
@@ -126,28 +128,22 @@ export default function SignIn() {
                     isLoading={isPending}
                     fullWidth
                     variant="primary"
-                    className="py-3 rounded-xl font-semibold"
+                    className="rounded-xl py-3 font-semibold"
                 >
                     {t("common.login")}
                 </Button>
             </form>
 
-            <p className="text-center text-sm text-custom-secondary">
-                {t("common.dontHaveAccount")}{""}
-                <Link
-                    to={paths.auth.jwt.signUp}
-                    className="text-primary font-medium hover:underline"
-                >
+            <p className="text-center text-sm text-stone-500 dark:text-zinc-400">
+                {t("common.dontHaveAccount")}{" "}
+                <Link to={paths.auth.jwt.signUp} className="font-medium text-primary hover:underline">
                     {t("common.signUp")}
                 </Link>
             </p>
 
-            <p className="text-center text-sm text-custom-secondary">
+            <p className="text-center text-sm text-stone-500 dark:text-zinc-400">
                 {t("common.or")}{" "}
-                <Link
-                    to={paths.client.home}
-                    className="text-primary font-medium hover:underline"
-                >
+                <Link to={paths.client.home} className="font-medium text-primary hover:underline">
                     {t("auth.continueAsGuest")}
                 </Link>
             </p>

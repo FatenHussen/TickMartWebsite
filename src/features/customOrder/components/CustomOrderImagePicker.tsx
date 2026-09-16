@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { CloudUpload, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 import { cn } from "@/shared/lib/utils";
 import {
+  MAX_CUSTOM_ORDER_IMAGE_SIZE_MB,
   MAX_CUSTOM_ORDER_IMAGES,
   mergeCustomOrderImages,
 } from "../utils/customOrderHelpers";
@@ -34,7 +36,21 @@ export default function CustomOrderImagePicker({
   }, [previews]);
 
   const addFiles = (list: FileList | null) => {
-    onChange(mergeCustomOrderImages(files, list));
+    const { files: next, rejected } = mergeCustomOrderImages(files, list);
+    onChange(next);
+    if (rejected.includes("too_large")) {
+      toast.error(
+        t("customOrder.imageTooLarge", { max: MAX_CUSTOM_ORDER_IMAGE_SIZE_MB })
+      );
+    }
+    if (rejected.includes("invalid_type")) {
+      toast.error(t("customOrder.imageInvalidType"));
+    }
+    if (rejected.includes("limit")) {
+      toast.error(
+        t("customOrder.imageLimitReached", { max: MAX_CUSTOM_ORDER_IMAGES })
+      );
+    }
   };
 
   const removeAt = (index: number) => {

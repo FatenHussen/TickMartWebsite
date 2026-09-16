@@ -50,12 +50,29 @@ export interface CustomOrderLinkedOrder {
   is_paid?: boolean;
 }
 
+export interface CustomOrderNestedAddress {
+  id?: number;
+  label?: string;
+  street_name?: string;
+  building_number?: string;
+  floor_apartment?: string;
+  nearest_landmark?: string;
+  contact_phone?: string;
+  area?: { name?: string | { ar?: string; en?: string } };
+}
+
+export interface CustomOrderNestedPayment {
+  id?: number | string;
+  name?: string;
+  title?: string;
+}
+
 export interface CustomOrderRequest {
   id: number;
   description: string;
   status: CustomOrderStatus | string;
   address_id?: number;
-  payment_method_id?: number | null;
+  payment_method_id?: number | string | null;
   expected_at?: string | null;
   rejection_reason?: string | null;
   images?: CustomOrderImage[] | string[];
@@ -64,6 +81,8 @@ export interface CustomOrderRequest {
   created_at?: string;
   updated_at?: string;
   approximate_total?: number | null;
+  address?: CustomOrderNestedAddress | null;
+  payment_method?: CustomOrderNestedPayment | null;
 }
 
 export interface CustomOrderListParams {

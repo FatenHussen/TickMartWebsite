@@ -10,10 +10,10 @@ interface PaymentMethodOptionCardProps {
 }
 
 const selectedRowClassName =
-    "border-[var(--color-api-second)] shadow-sm bg-[color-mix(in_srgb,var(--color-api-second)_12%,var(--color-bg-card))] dark:border-[var(--color-border-accent)] dark:bg-[color-mix(in_srgb,var(--color-api-second)_8%,rgba(16,17,20,0.9))] dark:shadow-[0_4px_20px_-8px_color-mix(in_srgb,var(--color-api-second)_18%,transparent)]";
+    "border-[#ff9f00] bg-[color-mix(in_srgb,#ff9f00_10%,var(--color-bg-card))]";
 
 const unselectedRowClassName =
-    "border-[var(--color-border-primary)] bg-[var(--color-bg-card)] hover:border-[var(--color-border-accent-light)] hover:bg-[color-mix(in_srgb,var(--color-api-second)_4%,var(--color-bg-card))]";
+    "border-[var(--color-border-primary)] bg-[var(--color-bg-card)] hover:border-[#ff9f00]/40";
 
 export function PaymentMethodOptionCard({
     method,
@@ -35,7 +35,7 @@ export function PaymentMethodOptionCard({
             onClick={handleRowClick}
         >
             <div className="flex items-center gap-4">
-                <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl bg-custom-light">
+                <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#f6efe4] dark:bg-[color-mix(in_srgb,#ff9f00_18%,#2A2622)]">
                     {method.icon ? (
                         <img
                             src={method.icon}
@@ -59,7 +59,7 @@ export function PaymentMethodOptionCard({
                 </div>
 
                 {showDefaultBadge ? (
-                    <span className="flex-shrink-0 rounded-full bg-[var(--color-api-second)] px-3 py-1 text-xs font-semibold text-white shadow-sm ring-1 ring-[color-mix(in_srgb,var(--color-api-second)_55%,transparent)]">
+                    <span className="flex-shrink-0 rounded-full bg-cta px-3 py-1 text-xs font-semibold text-white">
                         {defaultBadgeLabel}
                     </span>
                 ) : null}
@@ -68,13 +68,13 @@ export function PaymentMethodOptionCard({
                     className={cn(
                         "flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-all",
                         isSelected
-                            ? "border-[var(--color-api-second)] bg-[color-mix(in_srgb,var(--color-api-second)_12%,var(--color-bg-card))]"
+                            ? "border-[#ff9f00] bg-[#ff9f00]/15"
                             : "border-custom-secondary bg-custom-card",
                     )}
                     aria-hidden
                 >
                     {isSelected ? (
-                        <div className="h-3 w-3 rounded-full bg-[var(--color-api-second)] shadow-[0_0_0_1px_color-mix(in_srgb,var(--color-bg-card)_90%,transparent)]" />
+                        <div className="h-3 w-3 rounded-full bg-[#ff9f00]" />
                     ) : null}
                 </div>
             </div>

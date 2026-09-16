@@ -12,7 +12,7 @@ export default function AuthHeader() {
  "fixed end-0 top-0 z-50 flex h-12 w-full shrink-0 items-center justify-center border-b md:h-14",
  theme ==="dark"
  ?"border-[rgba(255,255,255,0.06)] bg-[rgba(8,8,10,0.72)] backdrop-blur-xl"
- :"border-custom-primary bg-[var(--color-bg-card)]/90 backdrop-blur-md"
+ :"border-stone-200/90 bg-white/95 backdrop-blur-md"
  )}
  >
 

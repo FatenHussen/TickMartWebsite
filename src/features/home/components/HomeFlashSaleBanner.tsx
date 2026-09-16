@@ -94,7 +94,7 @@ export default function HomeFlashSaleBanner({
                     <button
                         type="button"
                         onClick={handleViewAll}
-                        className="group inline-flex shrink-0 items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-semibold text-white transition-all duration-300 hover:brightness-110 active:scale-[0.98]"
+                        className="cta-on-gradient group inline-flex shrink-0 items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-semibold transition-all duration-300 hover:brightness-110 active:scale-[0.98]"
                         style={{
                             background: "linear-gradient(135deg, var(--color-gradient-from) 0%, var(--color-gradient-to) 100%)",
                             boxShadow: "0 8px 28px -8px color-mix(in srgb, var(--color-main) 50%, transparent)",

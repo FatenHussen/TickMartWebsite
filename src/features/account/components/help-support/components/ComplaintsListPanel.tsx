@@ -24,7 +24,9 @@ export function ComplaintsListPanel({
 
     if (complaints.length === 0) {
         return (
-            <div className="py-12 text-center text-custom-secondary">{t("complaints.noComplaints")}</div>
+            <div className="rounded-xl border border-dashed border-[var(--color-border-primary)] bg-[var(--color-bg-primary)] py-8 text-center text-sm text-custom-secondary">
+                {t("complaints.noComplaints")}
+            </div>
         );
     }
 

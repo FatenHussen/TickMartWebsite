@@ -1,34 +1,47 @@
 import type { AppSettingsColorPalette } from "@/features/account/api/settingsApi";
-import { lighten, darken, withAlpha, shade, tint, mixHex } from "./colorUtils";
+import { lighten, darken, withAlpha, shade, mixHex } from "./colorUtils";
 
 /** CSS variable name → value */
 export type CSSVariableMap = Record<string, string>;
 
+/** Warm paper — 60% of light UI. Brand orange stays on CTAs, not the canvas. */
+const LIGHT_CREAM = "#F6F3EE";
+const LIGHT_PAPER = "#FFFcf8";
+
+/** Grocery dark: warm charcoal shelves, not OLED black. */
+export const DARK_CANVAS = "#171412";
+export const DARK_SECTION = "#1C1916";
+export const DARK_ELEVATED = "#24201C";
+
 /**
- * Light-mode page chrome from API `main_color` / `second_color`
- * (tints toward white so contrast stays readable).
+ * Light-mode page chrome.
+ * Surfaces stay cream / white with a whisper of `main_color` (60/30/10).
+ * Brand colour is reserved for buttons, logo, and status — not page wash.
  */
 export function buildApiTintedLightSurfaces(main: string, second: string): CSSVariableMap {
+  const canvas = mixHex(LIGHT_CREAM, main, 0.035);
+  const card = mixHex(LIGHT_PAPER, main, 0.012);
+  const muted = mixHex(LIGHT_CREAM, second, 0.04);
   return {
-    "--color-bg": tint(main, 0.97),
-    "--color-blue-off": tint(main, 0.88),
-    "--color-blue-very-light": tint(main, 0.9),
-    "--color-blue-border": tint(main, 0.93),
-    "--color-bg-primary": tint(main, 0.985),
-    "--color-bg-secondary": tint(main, 0.88),
-    "--color-bg-tertiary": tint(second, 0.92),
-    "--color-bg-hover": tint(main, 0.86),
-    "--color-bg-active": withAlpha(main, 0.14),
-    "--color-bg-light": tint(main, 0.92),
-    "--color-bg-card": tint(main, 0.993),
-    "--color-bg-muted": tint(second, 0.95),
-    "--color-bg-surface": tint(main, 0.99),
-    "--color-bg-input": tint(main, 0.995),
-    "--color-bg-accent-soft": withAlpha(second, 0.1),
+    "--color-bg": canvas,
+    "--color-blue-off": mixHex(LIGHT_CREAM, main, 0.06),
+    "--color-blue-very-light": mixHex(LIGHT_PAPER, main, 0.04),
+    "--color-blue-border": mixHex("#E8E4DC", main, 0.1),
+    "--color-bg-primary": canvas,
+    "--color-bg-secondary": mixHex(LIGHT_CREAM, main, 0.05),
+    "--color-bg-tertiary": muted,
+    "--color-bg-hover": mixHex(LIGHT_CREAM, main, 0.08),
+    "--color-bg-active": withAlpha(main, 0.1),
+    "--color-bg-light": mixHex(LIGHT_PAPER, main, 0.03),
+    "--color-bg-card": card,
+    "--color-bg-muted": muted,
+    "--color-bg-surface": card,
+    "--color-bg-input": "#ffffff",
+    "--color-bg-accent-soft": withAlpha(second, 0.08),
     "--color-text-inverse": "#ffffff",
-    "--color-border-primary": withAlpha(main, 0.22),
-    "--color-border-secondary": withAlpha(second, 0.18),
-    "--color-border-light": tint(main, 0.78),
+    "--color-border-primary": mixHex("#E4DFD6", main, 0.12),
+    "--color-border-secondary": mixHex("#DDD8D0", second, 0.1),
+    "--color-border-light": mixHex("#EDE9E2", main, 0.08),
     "--color-overlay-brand": withAlpha(darken(main, 12), 0.5),
     "--color-overlay-brand-light": withAlpha(darken(main, 12), 0.25),
   };
@@ -39,18 +52,15 @@ export function buildApiTintedLightSurfaces(main: string, second: string): CSSVa
  * (deep `shade` / alpha mixes — same idea as account dark scope).
  */
 export function buildApiTintedDarkSurfaces(main: string, second: string): CSSVariableMap {
-  const bgRoot = shade(main, 0.88);
-  const bgPrimary = shade(main, 0.85);
-  const bgSecondary = shade(second, 0.82);
-  const bgTertiary = shade(main, 0.92);
-  /** Cards: blend API `main` + `second` (dark only — see `buildApiTintedLightSurfaces` for light). */
-  const cardMain = shade(main, 0.82);
-  const cardSecond = shade(second, 0.8);
-  const bgCard = mixHex(cardMain, cardSecond, 0.36);
-  const bgLight = shade(main, 0.8);
-  const bgHover = shade(main, 0.7);
-  const bgActive = shade(main, 0.6);
-  const bgMuted = shade(second, 0.86);
+  const bgRoot = mixHex(DARK_CANVAS, shade(main, 0.88), 0.16);
+  const bgPrimary = mixHex(DARK_SECTION, shade(main, 0.85), 0.14);
+  const bgSecondary = mixHex(DARK_SECTION, shade(second, 0.82), 0.12);
+  const bgTertiary = mixHex(DARK_CANVAS, shade(main, 0.92), 0.1);
+  const bgCard = mixHex(DARK_ELEVATED, shade(main, 0.78), 0.12);
+  const bgLight = mixHex(DARK_ELEVATED, shade(main, 0.72), 0.16);
+  const bgHover = mixHex(DARK_ELEVATED, shade(main, 0.65), 0.22);
+  const bgActive = mixHex(DARK_ELEVATED, shade(main, 0.55), 0.28);
+  const bgMuted = mixHex(DARK_SECTION, shade(second, 0.86), 0.12);
   const bgAccentSoft = withAlpha(second, 0.16);
 
   return {
@@ -65,9 +75,10 @@ export function buildApiTintedDarkSurfaces(main: string, second: string): CSSVar
     "--color-bg-active": bgActive,
     "--color-bg-light": bgLight,
     "--color-bg-card": bgCard,
+    "--color-bg-card-elevated": bgCard,
     "--color-bg-muted": bgMuted,
     "--color-bg-surface": bgPrimary,
-    "--color-bg-input": shade(main, 0.9),
+    "--color-bg-input": mixHex(DARK_ELEVATED, shade(main, 0.9), 0.2),
     "--color-bg-accent-soft": bgAccentSoft,
     "--color-text-inverse": shade(main, 0.95),
     "--color-border-primary": withAlpha(main, 0.18),
@@ -98,11 +109,12 @@ export function buildLightPalette(colors: AppSettingsColorPalette): CSSVariableM
     "--color-api-second": second,
     "--color-api-second-hover": darken(second, 8),
 
-    // ── Brand / Accent (from main_color) ──
-    "--color-primary": main,
-    "--color-primary-light": lighten(main, 8),
-    "--color-primary-dark": darken(main, 12),
+    // ── Brand / Accent — slightly deeper orange for CTAs (not neon wash) ──
+    "--color-primary": darken(main, 6),
+    "--color-primary-light": lighten(main, 4),
+    "--color-primary-dark": darken(main, 14),
     "--color-secondary": darken(main, 5),
+    "--color-trust": "#0F766E",
 
     // ── Derived brand shades ──
     "--color-blue-light": lighten(main, 12),
@@ -175,6 +187,7 @@ export function buildDarkPalette(colors: AppSettingsColorPalette): CSSVariableMa
     "--color-primary-light": lighten(main, 8),
     "--color-primary-dark": darken(main, 12),
     "--color-secondary": text,
+    "--color-trust": "#2DD4BF",
 
     // ── Derived brand shades ──
     "--color-blue-light": lighten(main, 12),
@@ -186,7 +199,7 @@ export function buildDarkPalette(colors: AppSettingsColorPalette): CSSVariableMa
     "--color-text-secondary": withAlpha(text, 0.88),
     "--color-text-tertiary": withAlpha(text, 0.72),
     "--color-text-heading": text,
-    "--color-text-muted": withAlpha(text, 0.78),
+    "--color-text-muted": withAlpha("#E8E4DC", 0.82),
 
     // ── Borders ──
     "--color-border-accent": darken(main, 8),
