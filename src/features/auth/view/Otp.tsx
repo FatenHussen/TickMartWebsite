@@ -10,7 +10,7 @@ import { cn } from "@/shared/lib/utils";
 import { useOtpStore } from "@/store/otp";
 import {
     useVerifyOtp,
-    useSendOtp,
+    useResendRegisterOtp,
     useVerifyPassword,
     useForgotPassword,
 } from "@/features/auth/hooks/useAuth";
@@ -31,7 +31,8 @@ export default function Otp() {
     const { mutate: verifyOtp, isPending: isPendingOtp } = useVerifyOtp();
     const { mutate: verifyPassword, isPending: isPendingPassword } =
         useVerifyPassword();
-    const { mutate: sendOtp, isPending: isSendingOtp } = useSendOtp();
+    const { mutate: resendRegisterOtp, isPending: isResendingRegister } =
+        useResendRegisterOtp();
     const { mutate: sendPassword, isPending: isSendingPassword } =
         useForgotPassword();
 
@@ -75,7 +76,7 @@ export default function Otp() {
                 },
             });
         } else {
-            sendOtp(undefined, {
+            resendRegisterOtp(undefined, {
                 onSuccess: () => {
                     setTimer(60);
                     setCode("");
@@ -136,6 +137,11 @@ export default function Otp() {
                     <p className="text-sm font-medium text-custom-primary">
                         {getMaskedContact()}
                     </p>
+                    {!isPasswordReset && (
+                        <p className="text-xs text-custom-secondary">
+                            {t("auth.otpTemporaryCode")}
+                        </p>
+                    )}
                 </div>
 
                 <OTPInput
@@ -177,13 +183,13 @@ export default function Otp() {
                         onClick={handleResend}
                         disabled={
                             timer > 0 ||
-                            isSendingOtp ||
+                            isResendingRegister ||
                             isSendingPassword ||
                             (!email && !phone)
                         }
                         className="font-medium text-custom-secondary underline underline-offset-2 hover:text-custom-primary disabled:text-custom-tertiary dark:disabled:text-custom-secondary disabled:cursor-not-allowed"
                     >
-                        {isSendingOtp || isSendingPassword
+                        {isResendingRegister || isSendingPassword
                             ? t("common.sending")
                             : t("auth.resendCode")}
                     </button>

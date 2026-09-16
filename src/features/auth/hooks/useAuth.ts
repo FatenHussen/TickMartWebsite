@@ -3,9 +3,11 @@ import { useNavigate } from"react-router-dom";
 import { useEffect } from"react";
 import { toast } from"sonner";
 import { useTranslation } from"react-i18next";
+import axios from "axios";
 import {
  _AuthApi,
  type LoginPayload,
+ type LoginResponse,
  type RegisterPayload,
  type SellerRegisterPayload,
  type VerifyOtpPayload,
@@ -52,12 +54,14 @@ export function useRegister() {
  const qc = useQueryClient();
  const navigate = useNavigate();
  const { t } = useTranslation();
- const setPhone = useOtpStore((state) => state.setPhone);
+ const setRegisterCredentials = useOtpStore(
+ (state) => state.setRegisterCredentials,
+ );
 
  return useMutation({
  mutationFn: (payload: RegisterPayload) => _AuthApi.register(payload),
  onSuccess: (_, variables) => {
- setPhone(variables.phone);
+ setRegisterCredentials(variables.phone, variables.password);
 
  toast.success(t("auth.registerSuccess","تم إنشاء الحساب بنجاح. يرجى التحقق من رمز OTP"));
  qc.invalidateQueries({ queryKey: [queryKeys.auth.register] });
@@ -90,6 +94,48 @@ export function useSellerRegister() {
  console.error("[seller-register] error:", err);
  if (!isApiToastHandled(err)) {
  const errorMessage = getApiErrorMessage(err, t("auth.sellerRegisterError"));
+ toast.error(errorMessage);
+ }
+ },
+ });
+}
+
+/** Resend register OTP via POST /auth/login (403 expected). Do not use /auth/send-otp. */
+export function useResendRegisterOtp() {
+ const { t } = useTranslation();
+ const phone = useOtpStore((state) => state.phone);
+ const password = useOtpStore((state) => state.password);
+
+ return useMutation({
+ mutationFn: async () => {
+ if (!phone || !password) {
+ throw new Error("Missing register credentials");
+ }
+ try {
+ return await _AuthApi.login(
+ { phone, password },
+ { skipErrorToast: true, skipSuccessToast: true },
+ );
+ } catch (err) {
+ if (axios.isAxiosError(err) && err.response?.status === 403) {
+ return {
+ status: true,
+ message: "otp_resent",
+ data: { user: { id: 0, name: "" }, token: "" },
+ } satisfies LoginResponse;
+ }
+ throw err;
+ }
+ },
+ onSuccess: () => {
+ toast.success(t("auth.otpSentSuccess","تم إرسال رمز التحقق بنجاح"));
+ },
+ onError: (err: any) => {
+ if (!isApiToastHandled(err)) {
+ const errorMessage = getApiErrorMessage(
+ err,
+ t("auth.otpSentError","فشل إرسال رمز التحقق"),
+ );
  toast.error(errorMessage);
  }
  },
@@ -151,8 +197,10 @@ export function useVerifyOtp() {
  return _AuthApi.verifyOtp(payload);
  },
  onSuccess: (data) => {
- if (data.data.user && data.data.token) {
- setAuth(data.data.user, data.data.token);
+ const token = data.data?.token;
+ const user = data.data?.user;
+ if (token) {
+ setAuth(user ?? { id: 0, name: "" }, token);
  toast.success(t("auth.otpVerifiedSuccess","تم التحقق بنجاح"));
  }
 

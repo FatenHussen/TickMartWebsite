@@ -1,3 +1,4 @@
+import type { AxiosRequestConfig } from "axios";
 import _axios from"@/app/middleware/interceptor";
 import { apiRoutes } from"@/utils/apiRoutes";
 import type {
@@ -37,8 +38,15 @@ export type {
 };
 
 export const _AuthApi = {
- login: async (payload: LoginPayload): Promise<LoginResponse> => {
- const res = await _axios.post<LoginResponse>(apiRoutes.auth.login, payload);
+ login: async (
+ payload: LoginPayload,
+ config?: AxiosRequestConfig,
+ ): Promise<LoginResponse> => {
+ const res = await _axios.post<LoginResponse>(
+ apiRoutes.auth.login,
+ payload,
+ config,
+ );
  return res.data;
  },
 

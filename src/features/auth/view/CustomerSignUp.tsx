@@ -13,6 +13,7 @@ import { _LocationApi } from "@/features/auth/api/location.service";
 import { useInfiniteSelect } from "@/shared/hooks/useInfiniteSelect";
 import type { Governorate, City } from "@/features/auth/types";
 import { useRegister } from "@/features/auth/hooks/useAuth";
+import { isStrongPassword } from "@/features/auth/utils/passwordRules";
 import { paths } from "@/app/routes/path/paths";
 import type { SignUpFormValues, UserRole, RegisterPayload } from "@/features/auth/types";
 
@@ -189,10 +190,9 @@ export default function CustomerSignUp({ role, setRole }: CustomerSignUpProps) {
                             required
                             {...register("password", {
                                 required: t("validation.required"),
-                                minLength: {
-                                    value: 8,
-                                    message: t("validation.passwordTooShort"),
-                                },
+                                validate: (value) =>
+                                    isStrongPassword(value) ||
+                                    t("validation.passwordComplexity"),
                             })}
                             error={errors.password}
                             helperText={t("auth.passwordHelper")}

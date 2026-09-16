@@ -4,6 +4,13 @@ import { useAuthStore } from "@/store/auth";
 import i18n from "@/i18n/config";
 import { getApiErrorMessage, getApiSuccessMessage } from "@/shared/lib/apiMessage";
 
+declare module "axios" {
+    export interface AxiosRequestConfig {
+        skipErrorToast?: boolean;
+        skipSuccessToast?: boolean;
+    }
+}
+
 const MUTATION_METHODS = ["post", "put", "patch", "delete"] as const;
 
 function isMutationMethod(
@@ -66,7 +73,10 @@ _axios.interceptors.request.use(
 // Response interceptor
 _axios.interceptors.response.use(
     (response) => {
-        if (isMutationMethod(response.config.method ?? "")) {
+        if (
+            isMutationMethod(response.config.method ?? "") &&
+            !response.config.skipSuccessToast
+        ) {
             const message = getApiSuccessMessage(response.data);
             toast.success(message);
         }
@@ -78,18 +88,27 @@ _axios.interceptors.response.use(
                 useAuthStore.getState().logoutLocal();
             }
             const message = getApiErrorMessage(error);
-            if (isMutationMethod(error.config?.method ?? "")) {
+            if (
+                isMutationMethod(error.config?.method ?? "") &&
+                !error.config?.skipErrorToast
+            ) {
                 error.__toastHandled = true;
                 toast.error(message);
             }
             console.error("API Error:", error.response.data);
         } else if (error.request) {
-            if (isMutationMethod(error.config?.method ?? "")) {
+            if (
+                isMutationMethod(error.config?.method ?? "") &&
+                !error.config?.skipErrorToast
+            ) {
                 toast.error("Network error. Please try again.");
             }
             console.error("Network Error:", error.request);
         } else {
-            if (isMutationMethod(error.config?.method ?? "")) {
+            if (
+                isMutationMethod(error.config?.method ?? "") &&
+                !error.config?.skipErrorToast
+            ) {
                 toast.error(error.message || "Something went wrong.");
             }
             console.error("Error:", error.message);
