@@ -82,16 +82,30 @@ export function mapPreviewToCheckoutSummary(
   const couponDiscount = getPreviewCouponDiscountAmount(preview);
   const subtotalBeforeDiscount = toNum(preview.subtotal_before_discount);
   const subtotalAfterProductDiscount = toNum(preview.subtotal_after_product_discount);
+  const productDiscount = getPreviewProductDiscountAmount(preview);
   const deliveryPrice = toNum(preview.delivery_price);
   const basketDiscountAmount = toNum(preview.basket_discount_amount);
+  const subscriptionDiscount = toNum(preview.subscription_discount);
+  const promotionDiscount = toNum(preview.promotion_discount);
 
   return {
     items,
     itemsTotal: formatPrice(subtotalBeforeDiscount || subtotalAfterProductDiscount),
     subtotal: formatPrice(toNum(preview.subtotal)),
     deliveryFees: deliveryPrice === 0 ? "Free" : formatPrice(deliveryPrice),
+    shippingIsFree: deliveryPrice === 0,
     storeDiscounts: formatDiscount(formatPrice, basketDiscountAmount),
     couponDiscount: formatDiscount(formatPrice, couponDiscount),
+    ...(productDiscount > 0 && {
+      productDiscount: formatDiscount(formatPrice, productDiscount),
+    }),
+    ...(subscriptionDiscount > 0 && {
+      subscriptionDiscount: formatDiscount(formatPrice, subscriptionDiscount),
+    }),
+    ...(promotionDiscount > 0 && {
+      promotionDiscount: formatDiscount(formatPrice, promotionDiscount),
+    }),
     total: formatPrice(toNum(preview.total)),
+    numOfItems: toNum(preview.total_quantity),
   };
 }

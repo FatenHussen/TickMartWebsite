@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import type { PaymentMethodOption } from "../types";
 
 type ReviewPaymentCardProps = {
-    paymentMethod: PaymentMethodOption;
+    paymentMethod?: PaymentMethodOption;
     onEdit: () => void;
 };
 
@@ -28,7 +28,7 @@ export default function ReviewPaymentCard({
 }: ReviewPaymentCardProps) {
     const { t } = useTranslation();
     return (
-        <div className="rounded-2xl bg-custom-card border border-custom-primary shadow-sm p-4 transition-shadow hover:shadow-md">
+        <div className="flex h-full flex-col rounded-2xl bg-custom-card border border-custom-primary shadow-sm p-4">
             <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                     <span
@@ -75,13 +75,11 @@ export default function ReviewPaymentCard({
                     <p className="text-sm font-semibold text-[color:var(--color-text)] truncate">
                         {paymentMethod?.name || t("checkout.paymentMethod", "Payment Method")}
                     </p>
-                    <p className="text-xs text-custom-tertiary leading-snug">
-                        {paymentMethod?.description ||
-                            t(
-                                "checkout.selectPaymentMethod",
-                                "Select a payment method",
-                            )}
-                    </p>
+                    {paymentMethod?.description ? (
+                        <p className="text-xs text-custom-tertiary leading-snug">
+                            {paymentMethod.description}
+                        </p>
+                    ) : null}
                 </div>
             </div>
         </div>

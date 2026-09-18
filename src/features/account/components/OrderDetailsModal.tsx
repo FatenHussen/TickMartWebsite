@@ -2,6 +2,7 @@ import { useEffect, useState } from"react";
 import { useTranslation } from"react-i18next";
 import i18n from"@/i18n/config";
 import { useLanguage } from"@/context/LanguageContext";
+import { useCurrency } from"@/context/CurrencyContext";
 import {
  HiX,
  HiClipboardList,
@@ -16,6 +17,7 @@ import { PremiumInlineLoader } from "@/shared/component/loading";
 import { useOrderDetail } from"../hooks/useOrderDetail";
 import RatingFormModal from"./RatingFormModal";
 import type { OrderDetailItem, OrderDetailVariantAttribute } from"../types/order";
+import { flattenOrderDetailItems, formatOrderMoney } from"../utils/parseOrdersResponse";
 
 type OrderDetailsModalProps = {
  orderId: number | string | null;
@@ -25,13 +27,11 @@ type OrderDetailsModalProps = {
  onAddComplaint?: (orderId: number | string) => void;
 };
 
-function formatPrice(value: number): string {
- return `£${value.toLocaleString()}`;
-}
-
-function formatDate(createdAt: string): string {
+function formatDate(createdAt?: string): string {
  try {
+ if (!createdAt) return "";
  const d = new Date(createdAt);
+ if (Number.isNaN(d.getTime())) return createdAt;
  const locale = i18n.language ==="ar"?"ar":"en-GB";
  return d.toLocaleDateString(locale, {
  day:"2-digit",
@@ -41,7 +41,7 @@ function formatDate(createdAt: string): string {
  minute:"2-digit",
  });
  } catch {
- return createdAt;
+ return createdAt ?? "";
  }
 }
 
@@ -128,7 +128,14 @@ export default function OrderDetailsModal({
 }: OrderDetailsModalProps) {
  const { t } = useTranslation();
  const { isRTL } = useLanguage();
+ const { formatPrice, currency } = useCurrency();
  const { data: order, isLoading } = useOrderDetail(orderId);
+ const lineItems = flattenOrderDetailItems(order?.items);
+ const money = (
+ amount: unknown,
+ formatted?: string | null,
+ currencies?: Parameters<typeof formatOrderMoney>[0]["currencies"],
+ ) => formatOrderMoney({ amount, formatted, currencies }, currency, formatPrice);
  const [isSlideReady, setIsSlideReady] = useState(false);
  const [rateModalOpen, setRateModalOpen] = useState(false);
  const [rateModalState, setRateModalState] = useState<{
@@ -276,21 +283,29 @@ export default function OrderDetailsModal({
  <p className="text-[11px] uppercase tracking-wide text-white/70">
  {t("orders.orderItems","Order items")}
  </p>
- <p className="mt-1 text-lg font-bold">{order.items.length}</p>
+ <p className="mt-1 text-lg font-bold">{lineItems.length}</p>
  </div>
  <div className="rounded-2xl bg-white/15 border border-white/15 px-3 py-3 backdrop-blur-sm">
  <p className="text-[11px] uppercase tracking-wide text-white/70">
  {t("orders.delivery","Delivery")}
  </p>
  <p className="mt-1 text-lg font-bold">
- {order.delivery_price === 0 ? t("orders.free","Free") : formatPrice(order.delivery_price)}
+ {Number(order.delivery_price) === 0
+ ? t("orders.free","Free")
+ : money(
+ order.delivery_price,
+ order.delivery_price_formatted,
+ order.delivery_price_currencies,
+ )}
  </p>
  </div>
  <div className="rounded-2xl bg-white/15 border border-white/15 px-3 py-3 backdrop-blur-sm">
  <p className="text-[11px] uppercase tracking-wide text-white/70">
  {t("orders.total")}
  </p>
- <p className="mt-1 text-lg font-bold">{formatPrice(order.total)}</p>
+ <p className="mt-1 text-lg font-bold">
+ {money(order.total, order.total_formatted, order.total_currencies)}
+ </p>
  </div>
  </div>
  </>
@@ -311,10 +326,10 @@ export default function OrderDetailsModal({
  <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-cyan-50 text-cyan-700">
  <HiClipboardList className="h-5 w-5"/>
  </span>
- {t("orders.orderItems","Order items")} ({order.items.length})
+ {t("orders.orderItems","Order items")} ({lineItems.length})
  </h3>
  <div className="space-y-3">
- {order.items.map((item) => {
+ {lineItems.map((item) => {
  const productId = item.product_id ?? item.id;
   const variantAttributes = normalizeVariantAttributes(item);
  return (
@@ -361,10 +376,10 @@ export default function OrderDetailsModal({
  </div>
  <div className={cn("shrink-0 rounded-2xl bg-[#F7FBFC] px-3 py-2 text-right", isRTL &&"text-left")}>
  <p className="font-semibold text-custom-primary">
- {formatPrice((item.final_price_with_extras ?? item.price) * item.quantity)}
+ {money(Number(item.final_price_with_extras ?? item.price) * Number(item.quantity || 0))}
  </p>
  <p className="text-xs text-custom-secondary">
- {formatPrice(item.final_price_with_extras ?? item.price)} each
+ {t("orders.priceEach", { price: money(item.final_price_with_extras ?? item.price) })}
  </p>
  </div>
  </div>
@@ -390,36 +405,36 @@ export default function OrderDetailsModal({
  <div className="space-y-2 text-sm">
  <div className="flex justify-between">
  <span className="text-custom-secondary">{t("orders.subtotal","Subtotal")}</span>
- <span className="font-medium">{formatPrice(order.subtotal)}</span>
+ <span className="font-medium">{money(order.subtotal, order.subtotal_formatted, order.subtotal_currencies)}</span>
  </div>
- {order.basket_discount > 0 && (
+ {Number(order.basket_discount) > 0 && (
  <div className="flex justify-between text-green-600">
  <span>{t("orders.basketDiscount","Basket discount")}</span>
- <span>-{formatPrice(order.basket_discount)}</span>
+ <span>-{money(order.basket_discount)}</span>
  </div>
  )}
- {order.coupon_discount != null && order.coupon_discount > 0 && (
+ {order.coupon_discount != null && Number(order.coupon_discount) > 0 && (
  <div className="flex justify-between text-green-600">
  <span>{t("orders.couponDiscount","Coupon")}</span>
- <span>-{formatPrice(order.coupon_discount)}</span>
+ <span>-{money(order.coupon_discount)}</span>
  </div>
  )}
  {Number(order.promotion_discount ?? 0) > 0 && (
  <div className="flex justify-between text-green-600">
  <span>{t("orders.promotionDiscount","Promotion")}</span>
- <span>-{formatPrice(Number(order.promotion_discount))}</span>
+ <span>-{money(Number(order.promotion_discount))}</span>
  </div>
  )}
  {Number(order.subscription_discount ?? 0) > 0 && (
  <div className="flex justify-between text-green-600">
  <span>{t("orders.subscriptionDiscount","Subscription discount")}</span>
- <span>-{formatPrice(Number(order.subscription_discount))}</span>
+ <span>-{money(Number(order.subscription_discount))}</span>
  </div>
  )}
  {Number(order.coupon_discount_from_points ?? 0) > 0 && (
  <div className="flex justify-between text-green-600">
  <span>{t("orders.pointsDiscount","Points discount")}</span>
- <span>-{formatPrice(Number(order.coupon_discount_from_points))}</span>
+ <span>-{money(Number(order.coupon_discount_from_points))}</span>
  </div>
  )}
  <div className="flex justify-between">
@@ -427,9 +442,13 @@ export default function OrderDetailsModal({
  {t("orders.delivery","Delivery")}
  </span>
  <span className="font-medium">
- {order.delivery_price === 0
+ {Number(order.delivery_price) === 0
  ? t("orders.free","Free")
- : formatPrice(order.delivery_price)}
+ : money(
+ order.delivery_price,
+ order.delivery_price_formatted,
+ order.delivery_price_currencies,
+ )}
  </span>
  </div>
  <div className="flex justify-between pt-4 mt-4 border-t border-amber-200">
@@ -440,7 +459,7 @@ export default function OrderDetailsModal({
  className="text-lg font-bold"
  style={{ color:"#16A34A"}}
  >
- {formatPrice(order.total)}
+ {money(order.total, order.total_formatted, order.total_currencies)}
  </span>
  </div>
  </div>
@@ -458,14 +477,14 @@ export default function OrderDetailsModal({
  <div className="space-y-3 text-sm">
  <DetailRow
  label={t("orders.recipient","Recipient")}
- value={order.user.name}
+ value={order.user?.name ?? ""}
  icon={<HiUser className="h-5 w-5"/>}
  isRTL={isRTL}
  />
- {(order.user.phone ?? order.user_address.contact_phone) && (
+ {(order.user?.phone ?? order.user_address.contact_phone) && (
  <DetailRow
  label={t("orders.phone","Phone")}
- value={String(order.user.phone ?? order.user_address.contact_phone)}
+ value={String(order.user?.phone ?? order.user_address.contact_phone)}
  icon={<HiPhone className="h-5 w-5"/>}
  isRTL={isRTL}
  />

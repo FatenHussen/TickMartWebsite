@@ -1,5 +1,7 @@
 /** API response types for GET user/orders */
 
+import type { ApiDualCurrencies } from "@/shared/lib/formatApiPrice";
+
 export interface OrderListUser {
  id: number;
  name: string;
@@ -15,25 +17,32 @@ export interface OrderListUser {
 
 export interface OrderListItem {
  id: number;
- order_code?: string;
- status: string;
- cart_type: string;
- is_instant_delivery: boolean;
- delivery_price: number;
- total: number;
- subtotal: number;
- total_with_delivery: number;
- total_quantity: number;
- basket_discount: number;
- coupon_discount: number | null;
- created_at: string;
- assigned_by: string | null;
- affiliate_rate: number | null;
- affiliate_source: string | null;
- affiliate_commission: number;
- user: OrderListUser;
- /** Present when the list endpoint includes payment info */
+ order_code?: string | null;
+ status?: string;
+ cart_type?: string;
+ is_instant_delivery?: boolean;
+ delivery_price?: number | string | null;
+ total?: number | string | null;
+ subtotal?: number | string | null;
+ total_with_delivery?: number | string | null;
+ total_quantity?: number | null;
+ basket_discount?: number | null;
+ coupon_discount?: number | null;
+ created_at?: string;
+ assigned_by?: string | null;
+ affiliate_rate?: number | null;
+ affiliate_source?: string | null;
+ affiliate_commission?: number;
+ user?: OrderListUser;
  payment_method?: OrderDetailPaymentMethod | null;
+ currency?: string | null;
+ currency_symbol?: string | null;
+ delivery_price_formatted?: string | null;
+ delivery_price_currencies?: ApiDualCurrencies | null;
+ total_formatted?: string | null;
+ total_currencies?: ApiDualCurrencies | null;
+ total_with_delivery_formatted?: string | null;
+ total_with_delivery_currencies?: ApiDualCurrencies | null;
 }
 
 export interface OrdersListPagination {
@@ -44,12 +53,22 @@ export interface OrdersListPagination {
 }
 
 export interface OrdersListResponse {
- status: boolean;
- message: string;
- data: {
- items: OrderListItem[];
- pagination: OrdersListPagination;
- };
+ ok?: boolean;
+ status?: boolean;
+ msg?: string;
+ message?: string;
+ data?:
+  | OrderListItem[]
+  | {
+     items?: OrderListItem[];
+     data?: OrderListItem[];
+     pagination?: OrdersListPagination;
+    };
+ items?: OrderListItem[];
+ pagination?: OrdersListPagination;
+ meta?: OrdersListPagination;
+ current_page?: number;
+ last_page?: number;
 }
 
 /** API response types for GET user/orders/:id */
@@ -152,7 +171,7 @@ export interface OrderDetailData {
  created_at: string;
  affiliate?: OrderDetailAffiliate | null;
  timestamps?: OrderDetailTimestamps;
- user: OrderDetailUser;
+ user?: OrderDetailUser;
  driver?: {
  id: number;
  name: string;
@@ -169,11 +188,19 @@ export interface OrderDetailData {
  } | null;
  user_address?: OrderDetailAddress | null;
  payment_method?: OrderDetailPaymentMethod | null;
- items: OrderDetailItem[];
+ items?: OrderDetailItem[] | Record<string, { shop?: string; items?: OrderDetailItem[] }>;
+ delivery_price_formatted?: string | null;
+ delivery_price_currencies?: ApiDualCurrencies | null;
+ total_formatted?: string | null;
+ total_currencies?: ApiDualCurrencies | null;
+ subtotal_formatted?: string | null;
+ subtotal_currencies?: ApiDualCurrencies | null;
 }
 
 export interface OrderDetailResponse {
- status: boolean;
- message: string;
- data: OrderDetailData;
+ ok?: boolean;
+ status?: boolean;
+ msg?: string;
+ message?: string;
+ data?: OrderDetailData;
 }

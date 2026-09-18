@@ -6,6 +6,13 @@ import { cn } from "@/shared/lib/utils";
 import Button from "@/shared/ui/Button";
 import type { CheckoutOrderSummary } from "../types";
 
+function isZeroMoney(value?: string | null) {
+    if (value == null || value === "") return true;
+    if (/free/i.test(value)) return false;
+    const numeric = parseFloat(String(value).replace(/[^0-9.]/g, ""));
+    return !Number.isFinite(numeric) || numeric === 0;
+}
+
 type CheckoutOrderSummaryProps = {
     summary: CheckoutOrderSummary;
     onPlaceOrder?: () => void;
@@ -271,7 +278,11 @@ export default function CheckoutOrderSummary({
                             summary.deliveryFees !== "-" && (
                                 <SummaryRow
                                     label={t("checkout.deliveryFees")}
-                                    value={summary.deliveryFees}
+                                    value={
+                                        summary.deliveryFees === "Free"
+                                            ? t("cart.freeDelivery")
+                                            : summary.deliveryFees
+                                    }
                                     accent={
                                         summary.deliveryFees === "Free"
                                             ? "success"
@@ -279,23 +290,55 @@ export default function CheckoutOrderSummary({
                                     }
                                 />
                             )}
-                        {summary.storeDiscounts && (
-                            <SummaryRow
-                                label={t("cart.discounts", "Discounts")}
-                                value={summary.storeDiscounts}
-                                accent="success"
-                            />
-                        )}
-                        {summary.couponDiscount && (
-                            <SummaryRow
-                                label={t(
-                                    "checkout.couponDiscount",
-                                    "Coupon discount",
-                                )}
-                                value={summary.couponDiscount}
-                                accent="success"
-                            />
-                        )}
+                        {summary.productDiscount &&
+                            !isZeroMoney(summary.productDiscount) && (
+                                <SummaryRow
+                                    label={t("cart.productDiscount")}
+                                    value={summary.productDiscount}
+                                    accent="success"
+                                />
+                            )}
+                        {summary.storeDiscounts &&
+                            !isZeroMoney(summary.storeDiscounts) && (
+                                <SummaryRow
+                                    label={t("cart.discounts", "Discounts")}
+                                    value={summary.storeDiscounts}
+                                    accent="success"
+                                />
+                            )}
+                        {summary.couponDiscount &&
+                            !isZeroMoney(summary.couponDiscount) && (
+                                <SummaryRow
+                                    label={t(
+                                        "checkout.couponDiscount",
+                                        "Coupon discount",
+                                    )}
+                                    value={summary.couponDiscount}
+                                    accent="success"
+                                />
+                            )}
+                        {summary.subscriptionDiscount &&
+                            !isZeroMoney(summary.subscriptionDiscount) && (
+                                <SummaryRow
+                                    label={t(
+                                        "cart.subscriptionDiscount",
+                                        "Subscription discount",
+                                    )}
+                                    value={summary.subscriptionDiscount}
+                                    accent="success"
+                                />
+                            )}
+                        {summary.promotionDiscount &&
+                            !isZeroMoney(summary.promotionDiscount) && (
+                                <SummaryRow
+                                    label={t(
+                                        "cart.promotionDiscount",
+                                        "Promotion discount",
+                                    )}
+                                    value={summary.promotionDiscount}
+                                    accent="success"
+                                />
+                            )}
                     </div>
                 </div>
 
@@ -367,7 +410,13 @@ export default function CheckoutOrderSummary({
                                 "shadow-[0_10px_24px_-10px_color-mix(in_srgb,var(--color-main)_55%,transparent)]",
                             )}
                         >
-                            <span>{buttonText || t("checkout.placeOrder")}</span>
+                            <span>
+                                {buttonText ||
+                                    t(
+                                        "checkout.continueToReview",
+                                        "Continue to review",
+                                    )}
+                            </span>
                             <HiArrowRight
                                 className={cn(
                                     "w-5 h-5 transition-transform duration-200 group-hover:translate-x-0.5",

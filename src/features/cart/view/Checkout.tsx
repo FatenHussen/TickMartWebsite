@@ -45,10 +45,7 @@ function mapAddressToDeliveryAddress(addr: Address): DeliveryAddress {
         id: addr.id,
         fullName: addr.label,
         phoneNumber: addr.contact_phone,
-        address: [...parts, areaName].filter(Boolean).join(","),
-        tags: [addr.label, addr.is_default ? "Default" : null].filter(
-            (x): x is string => x != null
-        ),
+        address: [...parts, areaName].filter(Boolean).join(", "),
         isDefault: addr.is_default,
     };
 }
@@ -225,7 +222,7 @@ export default function Checkout() {
                     gapClassName="gap-6"
                     columnTemplate="1fr 500px"
                 >
-                    <div>
+                    <div className="space-y-6">
                         {/* Delivery Address Section */}
                         {!showAddAddressForm ? (
                             <CheckoutAddressSection
@@ -235,19 +232,11 @@ export default function Checkout() {
                                 onAddNewAddress={handleAddNewAddress}
                             />
                         ) : (
-                            <div
-                                className="mb-6 p-6 bg-custom-card rounded-2xl border shadow-sm"
-                                style={{
-                                    borderColor:
-                                        "color-mix(in srgb, var(--color-main) 25%, transparent)",
-                                }}
-                            >
-                                <AddressForm
-                                    inline
-                                    onSuccess={handleAddressFormSuccess}
-                                    onCancel={() => setShowAddAddressForm(false)}
-                                />
-                            </div>
+                            <AddressForm
+                                inline
+                                onSuccess={handleAddressFormSuccess}
+                                onCancel={() => setShowAddAddressForm(false)}
+                            />
                         )}
 
                         {/* Additional Info Section */}

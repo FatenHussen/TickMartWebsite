@@ -1,7 +1,8 @@
-import { useQuery, useInfiniteQuery } from"@tanstack/react-query";
-import { _OrdersApi } from"../api/ordersApi";
-import { queryKeys } from"@/utils/queryKeys";
-import type { OrderListItem, OrdersListPagination } from"../types/order";
+import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
+import { _OrdersApi } from "../api/ordersApi";
+import { queryKeys } from "@/utils/queryKeys";
+import type { OrderListItem, OrdersListPagination } from "../types/order";
+import type { OrdersListPage } from "../utils/parseOrdersResponse";
 
 export interface UseOrdersResult {
  data: OrderListItem[];
@@ -11,21 +12,21 @@ export interface UseOrdersResult {
  refetch: () => void;
 }
 
+function toApiStatus(status?: string): string | undefined {
+ return status === "all" || !status
+  ? undefined
+  : status === "out_for_delivery"
+    ? "out_delivery"
+    : status;
+}
+
 export function useOrders(page = 1, status?: string): UseOrdersResult {
- const apiStatus =
- status ==="all"|| !status
- ? undefined
- : status ==="out_for_delivery"
- ?"out_delivery"
- : status;
+ const apiStatus = toApiStatus(status);
 
  const { data, isLoading, error, refetch } = useQuery({
  queryKey: queryKeys.orders.list(page),
- queryFn: async () => {
- const res = await _OrdersApi.getOrders(page, apiStatus);
- return res.data;
- },
- staleTime: 1000 * 60, // 1 minute
+ queryFn: () => _OrdersApi.getOrders(page, apiStatus),
+ staleTime: 1000 * 60,
  });
 
  return {
@@ -48,13 +49,7 @@ export interface UseOrdersInfiniteResult {
 }
 
 export function useOrdersInfinite(status?: string): UseOrdersInfiniteResult {
- // Normalise frontend status value to API value
- const apiStatus =
- status ==="all"|| !status
- ? undefined
- : status ==="out_for_delivery"
- ?"out_delivery"
- : status;
+ const apiStatus = toApiStatus(status);
 
  const {
  data,
@@ -66,15 +61,10 @@ export function useOrdersInfinite(status?: string): UseOrdersInfiniteResult {
  refetch,
  } = useInfiniteQuery({
  queryKey: queryKeys.orders.listInfinite(apiStatus),
- queryFn: async ({ pageParam }) => {
- const res = await _OrdersApi.getOrders(pageParam as number, apiStatus);
- return res;
- },
+ queryFn: async ({ pageParam }) => _OrdersApi.getOrders(pageParam as number, apiStatus),
  initialPageParam: 1,
- getNextPageParam: (lastPage) => {
- const pagination =
- lastPage.data?.pagination ??
- (lastPage as { pagination?: OrdersListPagination }).pagination;
+ getNextPageParam: (lastPage: OrdersListPage) => {
+ const pagination = lastPage.pagination;
  if (!pagination) return undefined;
  const { current_page, last_page } = pagination;
  if (current_page == null || last_page == null) return undefined;
@@ -83,10 +73,9 @@ export function useOrdersInfinite(status?: string): UseOrdersInfiniteResult {
  staleTime: 1000 * 60,
  });
 
- const items =
- data?.pages.flatMap(
- (p) => (p as { data?: { items?: OrderListItem[] }; items?: OrderListItem[] }).data?.items ?? (p as { items?: OrderListItem[] }).items ?? [],
- ) ?? [];
+ const items = Array.isArray(data?.pages)
+  ? data.pages.flatMap((page) => (Array.isArray(page?.items) ? page.items : []))
+  : [];
 
  return {
  data: items,

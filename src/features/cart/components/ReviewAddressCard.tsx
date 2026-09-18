@@ -13,7 +13,7 @@ export default function ReviewAddressCard({
 }: ReviewAddressCardProps) {
     const { t } = useTranslation();
     return (
-        <div className="rounded-2xl bg-custom-card border border-custom-primary shadow-sm p-4 transition-shadow hover:shadow-md">
+        <div className="flex h-full flex-col rounded-2xl bg-custom-card border border-custom-primary shadow-sm p-4">
             <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                     <span

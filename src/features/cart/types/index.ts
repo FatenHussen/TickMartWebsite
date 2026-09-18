@@ -456,11 +456,16 @@ export type CheckoutOrderSummary = {
  itemsTotal: string;
  subtotal: string;
  deliveryFees: string;
+ shippingIsFree?: boolean;
  storeDiscounts: string;
  couponDiscount: string;
+ subscriptionDiscount?: string;
+ promotionDiscount?: string;
+ productDiscount?: string;
  total: string;
  estimatedDelivery?: string;
  deliveryNote?: string;
+ numOfItems?: number;
 };
 
 export type ReviewOrderSummary = {

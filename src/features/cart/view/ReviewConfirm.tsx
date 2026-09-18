@@ -47,10 +47,7 @@ function mapAddressToDeliveryAddress(addr: Address): DeliveryAddress {
         id: addr.id,
         fullName: addr.label,
         phoneNumber: addr.contact_phone,
-        address: [...parts, areaName].filter(Boolean).join(","),
-        tags: [addr.label, addr.is_default ? "Default" : null].filter(
-            (x): x is string => x != null,
-        ),
+        address: [...parts, areaName].filter(Boolean).join(", "),
         isDefault: addr.is_default,
     };
 }
@@ -139,35 +136,51 @@ export default function ReviewConfirm() {
     const reviewSummary = useMemo<ReviewOrderSummary | null>(() => {
         if (!preview) return null;
         const couponDiscount = preview.coupon?.applied
-            ? preview.coupon.discount
+            ? toNum(preview.coupon.discount)
             : 0;
+        const deliveryPrice = toNum(preview.delivery_price);
+        const basketDiscount = toNum(preview.basket_discount_amount);
         return {
             items: displayItems,
             numOfItems: toNum(preview.total_quantity),
-            subtotal: `£${toNum(preview.subtotal).toFixed(2)}`,
+            subtotal: formatPrice(toNum(preview.subtotal)),
             shipping:
-                toNum(preview.delivery_price) === 0
-                    ? "Free"
-                    : `£${toNum(preview.delivery_price).toFixed(2)}`,
-            discounts: `-£${toNum(preview.basket_discount_amount).toFixed(2)}`,
+                deliveryPrice === 0
+                    ? t("cart.freeDelivery")
+                    : formatPrice(deliveryPrice),
+            discounts:
+                basketDiscount > 0
+                    ? `-${formatPrice(basketDiscount)}`
+                    : formatPrice(0),
             tax: "0%",
-            couponDiscount: `-£${toNum(couponDiscount).toFixed(2)}`,
+            couponDiscount:
+                couponDiscount > 0
+                    ? `-${formatPrice(couponDiscount)}`
+                    : formatPrice(0),
             ...(toNum(preview.subscription_discount) > 0 && {
-                subscriptionDiscount: `-£${toNum(preview.subscription_discount).toFixed(2)}`,
+                subscriptionDiscount: `-${formatPrice(toNum(preview.subscription_discount))}`,
             }),
             ...(toNum(preview.promotion_discount) > 0 && {
-                promotionDiscount: `-£${toNum(preview.promotion_discount).toFixed(2)}`,
+                promotionDiscount: `-${formatPrice(toNum(preview.promotion_discount))}`,
             }),
             pointsRedeemed: 0,
-            pointsValue: "£0.00",
-            total: `£${toNum(preview.total).toFixed(2)}`,
-            estimatedDelivery: "2:00 PM - 4:00 PM",
-            pointsEarned: 0,
+            pointsValue: formatPrice(0),
+            total: formatPrice(toNum(preview.total)),
+            estimatedDelivery: t(
+                "checkout.estimatedDeliveryWindow",
+                "2:00 PM - 4:00 PM",
+            ),
+            pointsEarned:
+                typeof preview.automatic_promotions?.points_expected === "number"
+                    ? preview.automatic_promotions.points_expected
+                    : typeof preview.automatic_promotions?.points_awarded === "number"
+                      ? preview.automatic_promotions.points_awarded
+                      : 0,
             pointsBefore: 0,
             pointsNewBalance: 0,
-            pointsSavings: "£0.00",
+            pointsSavings: formatPrice(0),
         };
-    }, [preview, displayItems]);
+    }, [preview, displayItems, formatPrice, t]);
 
     const handleConfirmOrder = async () => {
         if (!addressId || !preview) return;
@@ -238,10 +251,6 @@ export default function ReviewConfirm() {
         navigate(paths.client.checkout);
     };
 
-    const handleMoveToWishlist = (itemId: number | string) => {
-        console.log("Move to wishlist:", itemId);
-    };
-
     const isSuccessState = showSuccessPopup || createdOrderId != null;
 
     if (
@@ -290,19 +299,19 @@ export default function ReviewConfirm() {
     const fallbackSummary: ReviewOrderSummary = {
         items: cartItems,
         numOfItems: cartItems.reduce((s, i) => s + i.quantity, 0),
-        subtotal: "£0.00",
+        subtotal: formatPrice(0),
         shipping: "-",
-        discounts: "£0.00",
+        discounts: formatPrice(0),
         tax: "0%",
-        couponDiscount: "£0.00",
+        couponDiscount: formatPrice(0),
         pointsRedeemed: 0,
-        pointsValue: "£0.00",
-        total: "£0.00",
+        pointsValue: formatPrice(0),
+        total: formatPrice(0),
         estimatedDelivery: "-",
         pointsEarned: 0,
         pointsBefore: 0,
         pointsNewBalance: 0,
-        pointsSavings: "£0.00",
+        pointsSavings: formatPrice(0),
     };
 
     return (
@@ -369,10 +378,7 @@ export default function ReviewConfirm() {
                                 />
                             )}
 
-                        <OrderItemsTable
-                            items={displayItems}
-                            onMoveToWishlist={handleMoveToWishlist}
-                        />
+                        <OrderItemsTable items={displayItems} />
                     </div>
                 </SideContentLayout>
 
@@ -380,7 +386,7 @@ export default function ReviewConfirm() {
                     isOpen={showSuccessPopup}
                     onClose={handleClosePopup}
                     pointsEarned={reviewSummary?.pointsEarned ?? 0}
-                    primaryButtonText={t("successPopup.detailsOrder", "Details Order")}
+                    primaryButtonText={t("orders.viewDetails")}
                     onPrimaryClick={handleOrderDetails}
                     secondaryButtonText={t("successPopup.backToHome", "Back to home page")}
                     onSecondaryClick={handleBackToHome}

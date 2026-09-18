@@ -97,6 +97,7 @@ const getAccentColors = (status: OrderStatus): AccentColors => {
 };
 
 const extractLast4 = (paymentMethod: string): string => {
+    if (typeof paymentMethod !== "string") return "1234";
     if (paymentMethod.includes("ending")) {
         return paymentMethod.split("ending")[1]?.trim() || "1234";
     }
@@ -317,9 +318,9 @@ export default function OrderCard({
                 )}
 
                 {/* Footer: payment, additionalInfo, refund */}
-                {(additionalInfo || refundStatus || (paymentMethod && paymentMethod !== "-")) && (
+                {(additionalInfo || refundStatus || (paymentMethod && paymentMethod !== "-" && paymentMethod !== "—")) && (
                     <div className="space-y-1 border-t border-custom-primary/80 bg-[color-mix(in_srgb,var(--color-bg-tertiary)_45%,transparent)] px-4 py-3 text-xs text-text-secondary backdrop-blur-[1px]">
-                        {paymentMethod && paymentMethod !== "-" && (
+                        {paymentMethod && paymentMethod !== "-" && paymentMethod !== "—" && (
                             <p>
                                 {t("orders.payment")}:{" "}
                                 {paymentMethod.includes("ending")

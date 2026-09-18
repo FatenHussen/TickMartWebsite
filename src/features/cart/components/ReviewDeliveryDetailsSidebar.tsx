@@ -7,6 +7,13 @@ import { cn } from "@/shared/lib/utils";
 import Button from "@/shared/ui/Button";
 import type { ReviewOrderSummary } from "../types";
 
+function isZeroMoney(value?: string | null) {
+    if (value == null || value === "") return true;
+    if (/free/i.test(value)) return false;
+    const numeric = parseFloat(String(value).replace(/[^0-9.]/g, ""));
+    return !Number.isFinite(numeric) || numeric === 0;
+}
+
 type ReviewDeliveryDetailsSidebarProps = {
     summary: ReviewOrderSummary;
     onConfirmOrder: () => void;
@@ -52,7 +59,7 @@ export default function ReviewDeliveryDetailsSidebar({
                                         "0 8px 18px -8px color-mix(in srgb, var(--color-main) 50%, transparent)",
                                 }}
                             >
-                                {t("checkout.deliveryDetails", "Delivery Details")}
+                                {t("checkout.orderSummary")}
                             </span>
                         </div>
                     </div>
@@ -70,25 +77,29 @@ export default function ReviewDeliveryDetailsSidebar({
                             <SummaryRow
                                 label={t("cart.shipping", "Shipping")}
                                 value={summary.shipping}
-                                accent="success"
-                            />
-                            <SummaryRow
-                                label={t("cart.discounts", "Discounts")}
-                                value={summary.discounts}
-                                accent="success"
-                            />
-                            <SummaryRow
-                                label={t(
-                                    "checkout.couponDiscount",
-                                    "Coupon discount",
-                                )}
-                                value={summary.couponDiscount}
                                 accent={
-                                    summary.couponDiscount.trim().startsWith("-")
+                                    /free/i.test(String(summary.shipping))
                                         ? "success"
-                                        : "muted"
+                                        : undefined
                                 }
                             />
+                            {!isZeroMoney(summary.discounts) && (
+                                <SummaryRow
+                                    label={t("cart.discounts", "Discounts")}
+                                    value={summary.discounts}
+                                    accent="success"
+                                />
+                            )}
+                            {!isZeroMoney(summary.couponDiscount) && (
+                                <SummaryRow
+                                    label={t(
+                                        "checkout.couponDiscount",
+                                        "Coupon discount",
+                                    )}
+                                    value={summary.couponDiscount}
+                                    accent="success"
+                                />
+                            )}
                             {summary.subscriptionDiscount != null && (
                                 <SummaryRow
                                     label={t(

@@ -4,6 +4,7 @@ import { useTranslation } from"react-i18next";
 import i18n from"@/i18n/config";
 import { useLanguage } from"@/context/LanguageContext";
 import { useCurrency } from"@/context/CurrencyContext";
+import { formatOrderMoney } from"../utils/parseOrdersResponse";
 import { Search } from "lucide-react";
 import { cn } from"@/shared/lib/utils";
 import { useMutation, useQueryClient } from"@tanstack/react-query";
@@ -21,9 +22,11 @@ import type { OrderStatus } from"@/features/cart/types";
 import type { Order } from"@/features/cart/types";
 import type { OrderListItem } from"../types/order";
 
-function formatOrderDate(createdAt: string): string {
+function formatOrderDate(createdAt?: string): string {
+ if (!createdAt) return "";
  try {
  const d = new Date(createdAt);
+ if (Number.isNaN(d.getTime())) return createdAt;
  const locale = i18n.language ==="ar"?"ar":"en-GB";
  return d.toLocaleDateString(locale, {
  day:"2-digit",
@@ -37,8 +40,11 @@ function formatOrderDate(createdAt: string): string {
  }
 }
 
-function toOrderStatus(apiStatus: string): OrderStatus {
- if (apiStatus ==="out_delivery") return"out_for_delivery";
+function toOrderStatus(apiStatus: unknown): OrderStatus {
+ const normalized = String(apiStatus ?? "")
+ .toLowerCase()
+ .replace(/-/g, "_");
+ if (normalized ==="out_delivery") return"out_for_delivery";
  if (
  [
 "pending",
@@ -46,14 +52,21 @@ function toOrderStatus(apiStatus: string): OrderStatus {
 "out_for_delivery",
 "delivered",
 "cancelled",
- ].includes(apiStatus)
+ ].includes(normalized)
  ) {
- return apiStatus as OrderStatus;
+ return normalized as OrderStatus;
  }
  return"pending";
 }
 
-function mapOrderToCard(item: OrderListItem, formatPrice: (n: number) => string): Order {
+function mapOrderToCard(
+ item: OrderListItem,
+ formatPrice: (n: number) => string,
+ currencyCode: string,
+): Order | null {
+ try {
+ if (item == null || typeof item !=="object" || item.id == null) return null;
+
  const status = toOrderStatus(item.status);
  const cartTypeLabel =
  item.cart_type ==="admin_cart"
@@ -62,29 +75,56 @@ function mapOrderToCard(item: OrderListItem, formatPrice: (n: number) => string)
  ? i18n.t("orders.cartType.recipe")
  : i18n.t("orders.cartType.products");
 
+ const quantity = Number(item.total_quantity);
+ const safeQuantity = Number.isFinite(quantity) ? quantity : 0;
  const itemCountLabel =
- item.total_quantity === 1
- ? i18n.t("orders.itemCountOne", { count: item.total_quantity })
- : i18n.t("orders.itemCountOther", { count: item.total_quantity });
+ safeQuantity === 1
+ ? i18n.t("orders.itemCountOne", { count: safeQuantity })
+ : i18n.t("orders.itemCountOther", { count: safeQuantity });
+
+ const total = formatOrderMoney(
+ {
+ amount: item.total_with_delivery ?? item.total,
+ formatted:
+ item.total_with_delivery_formatted ?? item.total_formatted,
+ currencies:
+ item.total_with_delivery_currencies ?? item.total_currencies,
+ },
+ currencyCode,
+ formatPrice,
+ );
+
+ const linePrice = formatOrderMoney(
+ {
+ amount: item.total,
+ formatted: item.total_formatted,
+ currencies: item.total_currencies,
+ },
+ currencyCode,
+ formatPrice,
+ );
+
+ const paymentName = item.payment_method?.name;
+ const orderNumber = String(item.order_code ?? item.id);
 
  return {
  id: item.id,
- orderNumber: item.order_code ?? String(item.id),
+ orderNumber,
  dateTime: formatOrderDate(item.created_at),
  status,
  items: [
  {
- name: itemCountLabel,
+ name: String(itemCountLabel ?? ""),
  category:"",
- store: cartTypeLabel,
- quantity: item.total_quantity,
- price: formatPrice(item.total),
+ store: String(cartTypeLabel ?? ""),
+ quantity: safeQuantity,
+ price: linePrice,
  },
  ],
  additionalInfo: undefined,
  deliveryAddress: undefined,
- total: formatPrice(item.total_with_delivery),
- paymentMethod:"—",
+ total,
+ paymentMethod: paymentName ? String(paymentName) : "",
  actions: {
  viewDetails: true,
  trackOrder: status !=="delivered"&& status !=="cancelled",
@@ -92,12 +132,15 @@ function mapOrderToCard(item: OrderListItem, formatPrice: (n: number) => string)
  addComplaint: status ==="delivered",
  },
  };
+ } catch {
+ return null;
+ }
 }
 
 export default function MyOrders() {
  const { t } = useTranslation();
  const { isRTL } = useLanguage();
- const { formatPrice } = useCurrency();
+ const { formatPrice, currency } = useCurrency();
  const navigate = useNavigate();
  const [searchQuery, setSearchQuery] = useState("");
  const [activeFilter, setActiveFilter] = useState<OrderStatus |"all">("all");
@@ -115,6 +158,7 @@ export default function MyOrders() {
  isFetchingNextPage,
  hasNextPage,
  fetchNextPage,
+ error: ordersError,
  } = useOrdersInfinite(activeFilter);
 
  const observerTarget = useInfiniteScroll({
@@ -139,17 +183,20 @@ export default function MyOrders() {
 
  const filteredOrders = useMemo(() => {
  // Status is now filtered server-side via useOrdersInfinite(activeFilter)
- let orders = ordersData.map((item) => mapOrderToCard(item, formatPrice));
+ const source = Array.isArray(ordersData) ? ordersData : [];
+ let orders = source
+ .map((item) => mapOrderToCard(item, formatPrice, currency))
+ .filter((order): order is Order => order != null);
 
  if (searchQuery.trim()) {
  const q = searchQuery.toLowerCase();
  orders = orders.filter(
  (o) =>
- o.orderNumber.toLowerCase().includes(q) ||
+ String(o.orderNumber).toLowerCase().includes(q) ||
  o.items.some(
  (i) =>
- i.name.toLowerCase().includes(q) ||
- i.store.toLowerCase().includes(q),
+ String(i.name).toLowerCase().includes(q) ||
+ String(i.store).toLowerCase().includes(q),
  ),
  );
  }
@@ -164,20 +211,20 @@ export default function MyOrders() {
  });
  } else if (sortBy ==="amount_high") {
  orders = [...orders].sort((a, b) => {
- const numA = parseFloat(a.total.replace(/[^0-9.]/g,"")) || 0;
- const numB = parseFloat(b.total.replace(/[^0-9.]/g,"")) || 0;
+ const numA = parseFloat(String(a.total).replace(/[^0-9.]/g,"")) || 0;
+ const numB = parseFloat(String(b.total).replace(/[^0-9.]/g,"")) || 0;
  return numB - numA;
  });
  } else if (sortBy ==="amount_low") {
  orders = [...orders].sort((a, b) => {
- const numA = parseFloat(a.total.replace(/[^0-9.]/g,"")) || 0;
- const numB = parseFloat(b.total.replace(/[^0-9.]/g,"")) || 0;
+ const numA = parseFloat(String(a.total).replace(/[^0-9.]/g,"")) || 0;
+ const numB = parseFloat(String(b.total).replace(/[^0-9.]/g,"")) || 0;
  return numA - numB;
  });
  }
 
  return orders;
- }, [ordersData, activeFilter, searchQuery, sortBy, formatPrice]);
+ }, [ordersData, activeFilter, searchQuery, sortBy, formatPrice, currency]);
 
  const handleViewDetails = (orderId: number | string) => {
  setSelectedOrderId(orderId);
@@ -315,6 +362,10 @@ export default function MyOrders() {
  {isLoading ? (
  <div className="py-14 text-center text-text-secondary">
  {t("common.loading")}
+ </div>
+ ) : ordersError ? (
+ <div className="py-14 text-center text-text-secondary">
+ {t("errors.pageLoadFailed","We could not display this page. Please try again.")}
  </div>
  ) : filteredOrders.length === 0 ? (
  <div className="py-14 text-center text-text-secondary">
