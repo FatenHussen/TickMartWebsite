@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
-import { useParams, useSearchParams, useNavigate } from "react-router-dom";
+import { useParams, useSearchParams, useNavigate, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContext";
 import { useCurrency } from "@/context/CurrencyContext";
@@ -57,6 +57,7 @@ import {
 } from "@/shared/lib/mapProductBadges";
 import { cn } from "@/shared/lib/utils";
 import { HiEye, HiShoppingCart } from "react-icons/hi";
+import { HiChevronRight, HiClock, HiHome, HiPencilSquare, HiShieldCheck } from "react-icons/hi2";
 
 function ProductDetails() {
     const { t } = useTranslation();
@@ -80,6 +81,8 @@ function ProductDetails() {
     const [specialInstructions, setSpecialInstructions] = useState("");
     /** Non-food: line note sent as `items[].note` (max 500). Food uses `specialInstructions` → same field. */
     const [lineItemNote, setLineItemNote] = useState("");
+    const [noteOpen, setNoteOpen] = useState(false);
+    const [detailsTab, setDetailsTab] = useState<"description" | "specs">("description");
     const [selectedExtraIds, setSelectedExtraIds] = useState<number[]>([]);
     /** Selected extra details (product extra_details): id → quantity (min from API per row). */
     const [extraDetailQtyById, setExtraDetailQtyById] = useState<
@@ -617,13 +620,26 @@ function ProductDetails() {
         toggleFavorite.mutate({ type: "product", id: productIdNum });
     };
 
-    const handleShare = () => {
-        if (navigator.share && product) {
-            navigator.share({
-                title: product.name,
-                text: product.description,
-                url: window.location.href,
-            });
+    const handleShare = async () => {
+        if (!product) return;
+        const url = window.location.href;
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: product.name,
+                    text: product.description,
+                    url,
+                });
+                return;
+            } catch (err) {
+                if ((err as Error).name === "AbortError") return;
+            }
+        }
+        try {
+            await navigator.clipboard.writeText(url);
+            toast.success(t("product.linkCopied", "Link copied"));
+        } catch {
+            toast.error(t("product.linkCopyFailed", "Could not copy link"));
         }
     };
 
@@ -753,12 +769,64 @@ function ProductDetails() {
         product.available_shops &&
         product.available_shops.length > 0;
 
+    const hasDescription = Boolean(
+        product.description?.trim() || product.full_description?.trim(),
+    );
+    const hasSpecs =
+        !isFood &&
+        Boolean(product.category_details && product.category_details.length > 0);
+    const activeDetailsTab =
+        detailsTab === "specs" && hasSpecs
+            ? "specs"
+            : hasDescription
+              ? "description"
+              : "specs";
+
+    const noteTextareaClass =
+        "w-full resize-none rounded-lg border border-black/8 bg-custom-card px-3.5 py-2.5 text-sm text-custom-primary placeholder:text-custom-tertiary outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/15 dark:border-white/10 dark:bg-[#0B0B0C] dark:placeholder:text-[#71717A]";
+
+    const crumbChevron = (
+        <HiChevronRight
+            className={cn("h-3.5 w-3.5 shrink-0 text-custom-tertiary", isRTL && "rotate-180")}
+            aria-hidden
+        />
+    );
+
     return (
-        <div className="">
-            <div className="page-container py-8" dir={isRTL ? "rtl" : "ltr"}>
-                <div className="grid grid-cols-1 gap-24 lg:grid-cols-2">
-                    {/* Left – Product Images */}
-                    <div className="flex flex-col gap-8">
+        <div className="pb-24 lg:pb-0" dir={isRTL ? "rtl" : "ltr"}>
+            <div className="page-container py-6 sm:py-8">
+                <nav
+                    className="mb-6 flex min-w-0 flex-wrap items-center gap-1.5 text-sm text-custom-secondary"
+                    aria-label="Breadcrumb"
+                >
+                    <HiHome className="h-4 w-4 shrink-0 text-primary/80" aria-hidden />
+                    <Link
+                        to={paths.client.home}
+                        className="hover:text-text-primary hover:underline"
+                    >
+                        {t("footer.home", "Home")}
+                    </Link>
+                    {crumbChevron}
+                    <Link
+                        to={paths.client.products}
+                        className="hover:text-text-primary hover:underline"
+                    >
+                        {t("footer.products", "Products")}
+                    </Link>
+                    {product.category?.name && (
+                        <>
+                            {crumbChevron}
+                            <span className="truncate">{product.category.name}</span>
+                        </>
+                    )}
+                    {crumbChevron}
+                    <span className="max-w-[min(100%,16rem)] truncate font-medium text-text-primary sm:max-w-md">
+                        {product.name}
+                    </span>
+                </nav>
+
+                <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-12 xl:gap-16">
+                    <div className="lg:sticky lg:top-[calc(var(--app-navbar-offset)+0.75rem)]">
                         <ProductImageGallery
                             key={selectedVariant?.id ?? "base"}
                             images={galleryImages}
@@ -766,50 +834,9 @@ function ProductDetails() {
                             onToggleFavorite={handleToggleFavorite}
                             onShare={handleShare}
                         />
-
-                        {(product.description || product.full_description) && (
-                            <div className="rounded-2xl border border-[color-mix(in_srgb,var(--color-api-second)_22%,var(--color-border-primary))] bg-gradient-to-br from-[color-mix(in_srgb,var(--color-api-second)_4%,var(--color-bg-card))] to-transparent p-5 dark:border-[rgba(255,255,255,0.06)]">
-                                <ProductDescription
-                                    description={product.description}
-                                    fullDescription={product.full_description}
-                                />
-                            </div>
-                        )}
-
-                        {/* Category Details – informational, kept on the left to
-                            balance the columns and fill the whitespace */}
-                        {!isFood &&
-                            product.category_details &&
-                            product.category_details.length > 0 && (
-                                <div className="rounded-2xl border border-[color-mix(in_srgb,var(--color-api-second)_22%,var(--color-border-primary))] bg-[color-mix(in_srgb,var(--color-api-second)_3%,var(--color-bg-card))] p-5 dark:border-[rgba(255,255,255,0.06)]">
-                                    <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-primary dark:text-[#FFFFFF]">
-                                        <span className="inline-block h-5 w-1.5 rounded-full bg-primary" />
-                                        {t(
-                                            "product.categoryDetails",
-                                            "Category Details"
-                                        )}
-                                    </h3>
-                                    <dl className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                                        {product.category_details.map((detail) => (
-                                            <div
-                                                key={detail.id}
-                                                className="flex flex-col gap-0.5 rounded-xl border border-[color-mix(in_srgb,var(--color-api-second)_16%,var(--color-border-primary))] bg-custom-primary px-3.5 py-2.5 dark:border-[rgba(255,255,255,0.05)]"
-                                            >
-                                                <dt className="text-xs font-medium text-custom-secondary">
-                                                    {detail.name}
-                                                </dt>
-                                                <dd className="text-sm font-semibold text-custom-primary">
-                                                    {detail.value}
-                                                </dd>
-                                            </div>
-                                        ))}
-                                    </dl>
-                                </div>
-                            )}
                     </div>
 
-                    {/* Right – Product Details */}
-                    <div className="flex flex-col gap-6">
+                    <div className="flex min-w-0 flex-col gap-5">
                         <ProductInfo
                             category={product.category?.name}
                             name={product.name}
@@ -829,43 +856,55 @@ function ProductDetails() {
                             savings={savings}
                             sold={product.sold_number}
                             rating={product.rating}
+                            reviewCount={totalReviewsCount}
                             badges={badges}
-                            topRightSlot={
-                                hasShops ? (
-                                    <ShopSelector
-                                        compact
-                                        shops={product.available_shops}
-                                        selectedShopId={selectedShopId}
-                                        onShopChange={setSelectedShopId}
-                                    />
-                                ) : undefined
-                            }
                         />
 
-                        {deliveryEstimate && (
-                            <p className="text-sm text-custom-secondary dark:text-[#A1A1AA]">
-                                {t("product.deliveryTime", "Delivery")}:{" "}
-                                <span className="font-medium text-custom-primary dark:text-[#E4E4E7]">
-                                    {deliveryEstimate}
-                                </span>
-                            </p>
-                        )}
-
-                        {warrantyName && (
-                            <div className="rounded-2xl border border-custom-primary/15 bg-custom-secondary/40 px-4 py-3 dark:border-white/10 dark:bg-white/[0.04]">
-                                <p className="text-sm font-semibold text-custom-primary dark:text-white">
-                                    {t("product.warranty", "Warranty")}:{" "}
-                                    {warrantyName}
-                                </p>
-                                {warrantyDescription ? (
-                                    <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-custom-secondary">
-                                        {warrantyDescription}
-                                    </p>
-                                ) : null}
+                        {(deliveryEstimate || warrantyName) && (
+                            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                {deliveryEstimate && (
+                                    <div className="flex items-start gap-2.5 rounded-xl bg-[color-mix(in_srgb,var(--color-api-second)_7%,var(--color-bg-card))] px-3.5 py-3 dark:bg-white/[0.03]">
+                                        <HiClock className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                                        <div className="min-w-0">
+                                            <p className="text-xs text-custom-secondary">
+                                                {t("product.deliveryTime", "Delivery")}
+                                            </p>
+                                            <p className="text-sm font-medium text-text-primary">
+                                                {deliveryEstimate}
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+                                {warrantyName && (
+                                    <div className="flex items-start gap-2.5 rounded-xl bg-[color-mix(in_srgb,var(--color-api-second)_7%,var(--color-bg-card))] px-3.5 py-3 dark:bg-white/[0.03]">
+                                        <HiShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                                        <div className="min-w-0">
+                                            <p className="text-xs text-custom-secondary">
+                                                {t("product.warranty", "Warranty")}
+                                            </p>
+                                            <p className="text-sm font-medium text-text-primary">
+                                                {warrantyName}
+                                            </p>
+                                            {warrantyDescription ? (
+                                                <p className="mt-1 whitespace-pre-wrap text-xs leading-relaxed text-custom-secondary">
+                                                    {warrantyDescription}
+                                                </p>
+                                            ) : null}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         )}
 
-                        {/* Attribute Selectors (color, size, etc.) */}
+                        {hasShops && (
+                            <ShopSelector
+                                compact
+                                shops={product.available_shops}
+                                selectedShopId={selectedShopId}
+                                onShopChange={setSelectedShopId}
+                            />
+                        )}
+
                         {availableAttributes.map((attribute) => (
                             <AttributeSelector
                                 key={attribute.attribute}
@@ -878,7 +917,6 @@ function ProductDetails() {
                             />
                         ))}
 
-                        {/* Food: Extras table with checkboxes */}
                         {isFood && product.extras && product.extras.length > 0 && (
                             <ExtrasCheckboxTable
                                 extras={product.extras}
@@ -887,126 +925,11 @@ function ProductDetails() {
                             />
                         )}
 
-                        {/* Food: Special instructions → cart line `note` */}
-                        {isFood && (
-                            <div
-                                className={cn(
-                                    "flex flex-col gap-2 rounded-xl border p-4",
-                                    "border-[color-mix(in_srgb,var(--color-api-second)_32%,var(--color-border-primary))]",
-                                    "bg-[color-mix(in_srgb,var(--color-api-second)_4%,var(--color-bg-card))]",
-                                )}
-                            >
-                                <label className="text-sm font-semibold text-text-primary dark:text-[#FFFFFF]">
-                                    {t("product.specialInstructions", "Special instructions")}
-                                </label>
-                                <textarea
-                                    value={specialInstructions}
-                                    onChange={(e) =>
-                                        setSpecialInstructions(
-                                            e.target.value.slice(0, 500)
-                                        )
-                                    }
-                                    placeholder={t(
-                                        "product.specialInstructionsPlaceholder",
-                                        "Any special requests..."
-                                    )}
-                                    rows={3}
-                                    maxLength={500}
-                                    className="w-full resize-none rounded-lg border border-custom-primary bg-custom-primary px-4 py-3 text-sm text-custom-primary placeholder-gray-400 outline-none transition-colors focus:border-primary-light focus:ring-1 focus:ring-primary-light dark:border-[rgba(255,255,255,0.06)] dark:bg-[#0B0B0C] dark:text-[#FFFFFF] dark:placeholder:text-[#71717A] dark:focus:border-[color-mix(in_srgb,var(--color-main)_45%,#71717A)] dark:focus:ring-[color-mix(in_srgb,var(--color-main)_18%,transparent)]"
-                                />
-                                <p className="text-xs text-custom-secondary dark:text-[#71717A]">
-                                    {specialInstructions.length}/500
-                                </p>
-                            </div>
-                        )}
-
-                        {/* Non-food: line note for checkout (`items[].note`) */}
-                        {!isFood && (
-                            <div
-                                className={cn(
-                                    "flex flex-col gap-2 rounded-xl border p-4",
-                                    "border-[color-mix(in_srgb,var(--color-api-second)_32%,var(--color-border-primary))]",
-                                    "bg-[color-mix(in_srgb,var(--color-api-second)_4%,var(--color-bg-card))]",
-                                )}
-                            >
-                                <label className="text-sm font-semibold text-text-primary dark:text-[#FFFFFF]">
-                                    {t(
-                                        "product.lineItemNote",
-                                        "Note for this item",
-                                    )}
-                                </label>
-                                <textarea
-                                    value={lineItemNote}
-                                    onChange={(e) =>
-                                        setLineItemNote(e.target.value.slice(0, 500))
-                                    }
-                                    placeholder={t(
-                                        "product.lineItemNotePlaceholder",
-                                        "Optional instructions for this product (e.g. packaging, preparation)",
-                                    )}
-                                    rows={3}
-                                    maxLength={500}
-                                    className="w-full resize-none rounded-lg border border-custom-primary bg-custom-primary px-4 py-3 text-sm text-custom-primary placeholder-gray-400 outline-none transition-colors focus:border-primary-light focus:ring-1 focus:ring-primary-light dark:border-[rgba(255,255,255,0.06)] dark:bg-[#0B0B0C] dark:text-[#FFFFFF] dark:placeholder:text-[#71717A] dark:focus:border-[color-mix(in_srgb,var(--color-main)_45%,#71717A)] dark:focus:ring-[color-mix(in_srgb,var(--color-main)_18%,transparent)]"
-                                />
-                                <p className="text-xs text-custom-secondary dark:text-[#71717A]">
-                                    {lineItemNote.length}/500
-                                </p>
-                            </div>
-                        )}
-
-                        {/* Quantity + Add to Cart */}
-                        <div className="flex flex-col gap-2">
-                            <ProductQuantitySelector
-                                quantity={quantity}
-                                min={1}
-                                max={maxOrderQuantity}
-                                onQuantityChange={setQuantity}
-                                onAddToCart={handleAddToCart}
-                                addToCartDisabled={!canAddToCart}
-                                addToCartText={
-                                    canAddToCart
-                                        ? t("product.addToCart", "Add To Cart")
-                                        : t(
-                                              "product.unavailable",
-                                              "Currently unavailable",
-                                          )
-                                }
-                            />
-                            {canAddToCart && selectedVariant?.quantity != null ? (
-                                <p className="text-sm text-custom-secondary dark:text-[#A1A1AA]">
-                                    {t("product.inStockCount", {
-                                        count: selectedVariant.quantity,
-                                    })}
-                                </p>
-                            ) : null}
-                            {!canAddToCart && (
-                                <p className="text-sm text-custom-secondary dark:text-[#A1A1AA]">
-                                    {selectedVariant != null &&
-                                    (selectedVariant.quantity == null ||
-                                        selectedVariant.quantity <= 0)
-                                        ? t("product.outOfStock", "Out of stock")
-                                        : cannotAddToCartReason}
-                                </p>
-                            )}
-                        </div>
-
-                        <ProductActions
-                            icons={product.icons ?? []}
-                            onIconClick={(icon) => {
-                                setSelectedIcon({
-                                    name: icon.name,
-                                    description: icon.description || "",
-                                });
-                                setIconPopupOpen(true);
-                            }}
-                        />
-
-                        {/* Extra Details Table (non-food static key/value + price) */}
                         {!isFood &&
                             product.extra_details &&
                             product.extra_details.length > 0 && (
-                                <div className="mt-4">
-                                    <h3 className="mb-3 border-b-2 border-primary/20 pb-2 text-lg font-semibold text-primary dark:border-[rgba(255,255,255,0.06)] dark:text-[#FFFFFF]">
+                                <div>
+                                    <h3 className="mb-2 text-sm font-semibold text-text-primary">
                                         {t("product.details", "Details")}
                                     </h3>
                                     <ExtraDetailsTable
@@ -1025,8 +948,188 @@ function ProductDetails() {
                                 </div>
                             )}
 
+                        <div className="flex flex-col gap-2 border-t border-black/6 pt-4 dark:border-white/8">
+                            <ProductQuantitySelector
+                                quantity={quantity}
+                                min={1}
+                                max={maxOrderQuantity}
+                                onQuantityChange={setQuantity}
+                                onAddToCart={handleAddToCart}
+                                addToCartDisabled={!canAddToCart}
+                                addToCartClassName="hidden lg:inline-flex"
+                                addToCartText={
+                                    canAddToCart
+                                        ? t("product.addToCart", "Add To Cart")
+                                        : t(
+                                              "product.unavailable",
+                                              "Currently unavailable",
+                                          )
+                                }
+                            />
+                            {canAddToCart && selectedVariant?.quantity != null ? (
+                                <p className="text-sm text-custom-secondary">
+                                    {t("product.inStockCount", {
+                                        count: selectedVariant.quantity,
+                                    })}
+                                </p>
+                            ) : null}
+                            {!canAddToCart && (
+                                <p className="text-sm text-custom-secondary">
+                                    {selectedVariant != null &&
+                                    (selectedVariant.quantity == null ||
+                                        selectedVariant.quantity <= 0)
+                                        ? t("product.outOfStock", "Out of stock")
+                                        : cannotAddToCartReason}
+                                </p>
+                            )}
+                        </div>
+
+                        <div>
+                            <button
+                                type="button"
+                                onClick={() => setNoteOpen((open) => !open)}
+                                className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+                                aria-expanded={noteOpen}
+                            >
+                                <HiPencilSquare className="h-4 w-4" aria-hidden />
+                                {isFood
+                                    ? t("product.specialInstructions", "Special instructions")
+                                    : t("product.addANote", "Add a note")}
+                            </button>
+                            {noteOpen && (
+                                <div className="mt-2 flex flex-col gap-1.5">
+                                    {isFood ? (
+                                        <>
+                                            <textarea
+                                                value={specialInstructions}
+                                                onChange={(e) =>
+                                                    setSpecialInstructions(
+                                                        e.target.value.slice(0, 500),
+                                                    )
+                                                }
+                                                placeholder={t(
+                                                    "product.specialInstructionsPlaceholder",
+                                                    "Any special requests...",
+                                                )}
+                                                rows={3}
+                                                maxLength={500}
+                                                className={noteTextareaClass}
+                                            />
+                                            <p className="text-xs text-custom-secondary">
+                                                {specialInstructions.length}/500
+                                            </p>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <textarea
+                                                value={lineItemNote}
+                                                onChange={(e) =>
+                                                    setLineItemNote(
+                                                        e.target.value.slice(0, 500),
+                                                    )
+                                                }
+                                                placeholder={t(
+                                                    "product.lineItemNotePlaceholder",
+                                                    "Optional instructions for this product (e.g. packaging, preparation)",
+                                                )}
+                                                rows={3}
+                                                maxLength={500}
+                                                className={noteTextareaClass}
+                                            />
+                                            <p className="text-xs text-custom-secondary">
+                                                {lineItemNote.length}/500
+                                            </p>
+                                        </>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+
+                        <ProductActions
+                            icons={product.icons ?? []}
+                            className="border-t border-black/6 pt-4 dark:border-white/8"
+                            onIconClick={(icon) => {
+                                setSelectedIcon({
+                                    name: icon.name,
+                                    description: icon.description || "",
+                                });
+                                setIconPopupOpen(true);
+                            }}
+                        />
                     </div>
                 </div>
+
+                {(hasDescription || hasSpecs) && (
+                    <section className="mt-10 border-t border-black/6 pt-8 dark:border-white/8">
+                        {hasDescription && hasSpecs ? (
+                            <div
+                                role="tablist"
+                                className="mb-5 flex gap-1 rounded-xl bg-[color-mix(in_srgb,var(--color-api-second)_8%,var(--color-bg-card))] p-1 dark:bg-white/[0.04]"
+                            >
+                                <button
+                                    type="button"
+                                    role="tab"
+                                    aria-selected={activeDetailsTab === "description"}
+                                    onClick={() => setDetailsTab("description")}
+                                    className={cn(
+                                        "flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-colors",
+                                        activeDetailsTab === "description"
+                                            ? "bg-custom-card text-text-primary shadow-sm"
+                                            : "text-custom-secondary hover:text-text-primary",
+                                    )}
+                                >
+                                    {t("product.description", "Description")}
+                                </button>
+                                <button
+                                    type="button"
+                                    role="tab"
+                                    aria-selected={activeDetailsTab === "specs"}
+                                    onClick={() => setDetailsTab("specs")}
+                                    className={cn(
+                                        "flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-colors",
+                                        activeDetailsTab === "specs"
+                                            ? "bg-custom-card text-text-primary shadow-sm"
+                                            : "text-custom-secondary hover:text-text-primary",
+                                    )}
+                                >
+                                    {t("product.categoryDetails", "Additional Details")}
+                                </button>
+                            </div>
+                        ) : (
+                            <h2 className="mb-4 text-lg font-semibold text-text-primary">
+                                {hasDescription
+                                    ? t("product.description", "Description")
+                                    : t("product.categoryDetails", "Additional Details")}
+                            </h2>
+                        )}
+
+                        {activeDetailsTab === "description" && hasDescription && (
+                            <ProductDescription
+                                description={product.description}
+                                fullDescription={product.full_description}
+                            />
+                        )}
+
+                        {activeDetailsTab === "specs" && hasSpecs && (
+                            <dl className="grid grid-cols-1 gap-px overflow-hidden rounded-xl ring-1 ring-black/8 sm:grid-cols-2 dark:ring-white/10">
+                                {product.category_details!.map((detail) => (
+                                    <div
+                                        key={detail.id}
+                                        className="flex items-baseline justify-between gap-4 bg-custom-card px-4 py-3"
+                                    >
+                                        <dt className="text-sm text-custom-secondary">
+                                            {detail.name}
+                                        </dt>
+                                        <dd className="text-sm font-medium text-text-primary">
+                                            {detail.value}
+                                        </dd>
+                                    </div>
+                                ))}
+                            </dl>
+                        )}
+                    </section>
+                )}
+            </div>
 
                 {/* Bought with this product */}
                 {boughtWithItems.length > 0 && (
@@ -1370,8 +1473,29 @@ function ProductDetails() {
                             : undefined
                     }
                 />
+
+                <div
+                    className="fixed inset-x-0 bottom-0 z-40 border-t border-black/8 bg-custom-card/95 px-4 py-3 backdrop-blur-md lg:hidden dark:border-white/10"
+                    style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
+                >
+                    <div className="flex items-center gap-3">
+                        <p className="min-w-0 truncate text-base font-semibold tabular-nums text-text-primary">
+                            {displaySalePrice}
+                        </p>
+                        <button
+                            type="button"
+                            onClick={handleAddToCart}
+                            disabled={!canAddToCart}
+                            className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-primary text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                            <HiShoppingCart className="h-4 w-4" aria-hidden />
+                            {canAddToCart
+                                ? t("product.addToCart", "Add To Cart")
+                                : t("product.unavailable", "Currently unavailable")}
+                        </button>
+                    </div>
+                </div>
             </div>
-        </div>
     );
 }
 

@@ -54,6 +54,26 @@ export function findSyriaCountry<T extends CountryLike>(countries: T[]): T | und
     });
 }
 
+/** Syria first so the dial dropdown never defaults to the first API page (e.g. Zimbabwe). */
+export function withSyriaFirst<T extends CountryLike & { id?: number; name?: string; code?: string }>(
+    countries: T[],
+    fallbackName = "Syria",
+): T[] {
+    const list = [...countries];
+    const syria = findSyriaCountry(list);
+    if (syria) {
+        return [syria, ...list.filter((c) => c.id !== syria.id)];
+    }
+    return [
+        {
+            id: SYRIA_FALLBACK.id,
+            name: fallbackName,
+            code: SYRIA_FALLBACK.code,
+        } as T,
+        ...list,
+    ];
+}
+
 /**
  * `0935931471` or `935931471` + `+963` → `963935931471`
  */

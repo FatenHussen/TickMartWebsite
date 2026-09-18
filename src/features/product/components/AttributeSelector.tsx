@@ -23,16 +23,17 @@ export default function AttributeSelector({
  const disabledValues = attribute.disabledValues || [];
 
  return (
- <div className={cn("flex flex-col gap-2", className)}>
- {/* Label with selected value */}
- <label className="text-sm text-gray">
- {attribute.attribute}:{""}
- <span className="font-semibold text-text-primary">
- {isColorType ? selectedValue : selectedValue}
- </span>
+ <div className={cn("flex flex-col gap-2.5", className)}>
+ <label className="text-sm text-custom-secondary">
+ {attribute.attribute}
+ {selectedValue ? (
+  <>
+   {": "}
+   <span className="font-semibold text-text-primary">{selectedValue}</span>
+  </>
+ ) : null}
  </label>
 
- {/* Options */}
  <div className="flex flex-wrap items-center gap-2">
  {attribute.values.map((value, index) => {
  const isSelected = selectedValue === value;
@@ -47,11 +48,11 @@ export default function AttributeSelector({
  onClick={() => !isDisabled && onValueChange?.(value)}
  disabled={isDisabled}
  className={cn(
-"h-8 w-8 rounded-full transition-all",
+"h-9 w-9 rounded-full transition-all",
 "border-2",
  isSelected
- ?"border-text-primary ring-2 ring-text-primary ring-offset-2"
- :"border-custom-primary hover:border-custom-secondary",
+ ?"border-text-primary ring-2 ring-primary/35 ring-offset-2 ring-offset-[var(--color-bg-primary)]"
+ :"border-black/10 hover:border-black/25 dark:border-white/20",
  isDisabled &&"opacity-30 cursor-not-allowed"
  )}
  style={{ backgroundColor: cssColorForAttributeLabel(index, value) }}
@@ -69,12 +70,12 @@ export default function AttributeSelector({
  onClick={() => !isDisabled && onValueChange?.(value)}
  disabled={isDisabled}
  className={cn(
-"h-9 min-w-9 px-4 rounded-full text-sm font-medium transition-all",
+"h-10 min-w-10 rounded-lg px-3.5 text-sm font-medium transition-all",
  isSelected
  ? activeColor ==="teal"
- ?"bg-primary-light text-white"
+ ?"bg-primary text-white ring-2 ring-primary/25"
  :"bg-gray-800 text-white dark:bg-[var(--color-main)] dark:text-[var(--color-text)]"
- :"bg-custom-tertiary text-custom-primary hover:bg-custom-muted",
+ :"bg-custom-card text-custom-primary ring-1 ring-black/8 hover:ring-black/16 dark:ring-white/10 dark:hover:ring-white/20",
  isDisabled &&"opacity-30 cursor-not-allowed"
  )}
  aria-label={`Select ${attribute.attribute} ${value}`}

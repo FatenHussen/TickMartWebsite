@@ -12,6 +12,7 @@ import {
     getCountryDialCode,
     SYRIA_FALLBACK,
     toInternationalPhone,
+    withSyriaFirst,
 } from "@/features/auth/utils/countryDialCode";
 import { CountryDialSelect } from "@/features/auth/components/CountryDialSelect";
 
@@ -69,27 +70,21 @@ function EmailOrPhoneInput({
         }),
     });
 
-    const countries = useMemo(() => {
-        const list = [...apiCountries];
-        if (!findSyriaCountry(list)) {
-            list.unshift({
-                id: SYRIA_FALLBACK.id,
-                name: t("auth.syria", "سوريا"),
-                code: SYRIA_FALLBACK.code,
-            });
-        }
-        return list;
-    }, [apiCountries, t]);
+    const countries = useMemo(
+        () => withSyriaFirst(apiCountries, t("auth.syria", "سوريا")),
+        [apiCountries, t],
+    );
 
     const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
 
     useEffect(() => {
-        if (selectedCountry) return;
         const syria = findSyriaCountry(countries);
-        if (syria) {
-            setSelectedCountry(syria);
-            onDialCodeChange?.(getCountryDialCode(syria));
-        }
+        if (!syria) return;
+        const stillValid =
+            selectedCountry && countries.some((c) => c.id === selectedCountry.id);
+        if (stillValid) return;
+        setSelectedCountry(syria);
+        onDialCodeChange?.(getCountryDialCode(syria));
     }, [countries, selectedCountry, onDialCodeChange]);
 
     const dial = getCountryDialCode(selectedCountry) || "+963";

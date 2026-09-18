@@ -188,32 +188,6 @@ export default function Cart() {
         return m;
     }, [preview?.non_discount_promotions]);
 
-    const promotionBadges = useMemo(() => {
-        const badges: string[] = [];
-
-        if (preview?.available_promotions?.length) {
-            preview.available_promotions.forEach((promotion) => {
-                if (!promotion?.name) return;
-                const name =
-                    typeof promotion.name === "string"
-                        ? promotion.name
-                        : (promotion.name.en ?? promotion.name.ar ?? "");
-                if (name) badges.push(name);
-            });
-        }
-
-        const nonDiscountPromotion = preview?.non_discount_promotions as
-            | { promotion_title?: string }
-            | null
-            | undefined;
-
-        if (nonDiscountPromotion?.promotion_title) {
-            badges.push(nonDiscountPromotion.promotion_title);
-        }
-
-        return Array.from(new Set(badges)).filter(Boolean);
-    }, [preview?.available_promotions, preview?.non_discount_promotions]);
-
     const orderItemsByVariant = useMemo(() => {
         const arr = preview?.orderItems as OrderPreviewOrderItem[] | undefined;
         if (!arr?.length) return new Map<number, OrderPreviewOrderItem>();
@@ -250,11 +224,6 @@ export default function Cart() {
         removeItem(itemId);
     };
 
-    const handleMoveToWishlist = (itemId: number | string) => {
-        // TODO: Implement move to wishlist
-        console.log("Move to wishlist:", itemId);
-    };
-
     const handleClearCartClick = () => {
         setShowClearCartPopup(true);
     };
@@ -263,11 +232,6 @@ export default function Cart() {
         clearCart();
         setShowClearCartPopup(false);
         toast.success(t("cart.cartCleared", "Cart cleared"));
-    };
-
-    const handleUpdateCart = () => {
-        // TODO: Update cart logic
-        console.log("Update cart");
     };
 
     const handleSelectCouponBenefit = (key: string | null, value: number | boolean | null) => {
@@ -346,14 +310,44 @@ export default function Cart() {
     };
 
     const isCartEmpty = items.length === 0;
+    const storeCount = useMemo(() => {
+        const keys = items.map((item) => item.shopId ?? item.storeId ?? item.store);
+        return new Set(keys.filter(Boolean)).size;
+    }, [items]);
+    const pointsEarned =
+        preview?.automatic_promotions?.points_expected ??
+        preview?.automatic_promotions?.points_awarded;
+    const benefitsContent = activeBenefitsData?.has_benefits ? (
+        <div className="space-y-3">
+            <ActiveBenefitsSelector
+                coupons={activeBenefitsData.coupons}
+                freeDeliveries={activeBenefitsData.free_deliveries}
+                selectedCouponKey={selectedCouponKey}
+                selectedDeliveryKey={selectedDeliveryKey}
+                onSelectCoupon={handleSelectCouponBenefit}
+                onSelectDelivery={handleSelectDeliveryBenefit}
+            />
+            {preview?.available_promotions && preview.available_promotions.length > 0 && (
+                <AvailablePromotionsSelector
+                    promotions={preview.available_promotions}
+                    selectedPromotionId={promotionId}
+                    onSelect={handleSelectPromotion}
+                />
+            )}
+        </div>
+    ) : preview?.available_promotions && preview.available_promotions.length > 0 ? (
+        <AvailablePromotionsSelector
+            promotions={preview.available_promotions}
+            selectedPromotionId={promotionId}
+            onSelect={handleSelectPromotion}
+        />
+    ) : null;
 
     return (
         <div className="min-h-screen bg-custom-tertiary">
-             {/* <OrderFlowHeader /> */}
-            <div className="page-container py-6" dir={isRTL ? "rtl" : "ltr"}>
-                {/* Progress Indicator - only when cart has items */}
+            <div className="page-container py-6 lg:pb-6 pb-28" dir={isRTL ? "rtl" : "ltr"}>
                 {!isCartEmpty && (
-                    <div className="mb-8">
+                    <div className="mb-6">
                         <CheckoutProgressIndicator currentStep="cart" />
                     </div>
                 )}
@@ -361,82 +355,37 @@ export default function Cart() {
                 <ScreenPromotions pageSlug="cart" placement="top" className="mb-6" />
 
                 {isCartEmpty ? (
-                    /* Creative empty cart — uses theme tokens */
-                    <div className="flex justify-center items-center min-h-[60vh]">
-                        <div className="relative w-full max-w-md mx-auto">
-                            <div
-                                className="relative overflow-hidden rounded-3xl border bg-custom-card p-12 text-center shadow-sm"
-                                style={{
-                                    borderColor:
-                                        "color-mix(in srgb, var(--color-main) 18%, transparent)",
-                                    boxShadow:
-                                        "0 12px 32px -16px color-mix(in srgb, var(--color-main) 22%, transparent)",
-                                }}
-                            >
-                                <div
-                                    className="pointer-events-none absolute -top-12 -right-12 h-36 w-36 rounded-full blur-3xl"
-                                    style={{
-                                        background:
-                                            "radial-gradient(circle, color-mix(in srgb, var(--color-main) 28%, transparent) 0%, transparent 70%)",
-                                    }}
+                    <div className="flex justify-center items-center min-h-[52vh]">
+                        <div className="w-full max-w-md rounded-2xl border border-custom-primary bg-custom-card px-8 py-12 text-center">
+                            <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-custom-muted text-custom-secondary">
+                                <svg
+                                    className="h-7 w-7"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
                                     aria-hidden
-                                />
-                                <div
-                                    className="pointer-events-none absolute -bottom-12 -left-12 h-32 w-32 rounded-full blur-2xl"
-                                    style={{
-                                        background:
-                                            "radial-gradient(circle, color-mix(in srgb, var(--color-api-second) 26%, transparent) 0%, transparent 72%)",
-                                    }}
-                                    aria-hidden
-                                />
-
-                                <div className="relative">
-                                    <div
-                                        className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-2xl text-white"
-                                        style={{
-                                            background:
-                                                "linear-gradient(135deg, var(--color-main) 0%, var(--color-api-second) 100%)",
-                                            boxShadow:
-                                                "0 12px 28px -10px color-mix(in srgb, var(--color-main) 50%, transparent)",
-                                        }}
-                                    >
-                                        <svg
-                                            className="h-10 w-10"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={1.5}
-                                                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-                                            />
-                                        </svg>
-                                    </div>
-                                    <h2 className="text-xl font-bold text-custom-primary mb-2">
-                                        {t("cart.yourCartIsEmpty")}
-                                    </h2>
-                                    <p className="text-sm text-custom-secondary mb-8 max-w-xs mx-auto leading-relaxed">
-                                        {t("cart.emptyCartHint")}
-                                    </p>
-                                    <Link
-                                        to="/home"
-                                        className="inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5"
-                                        style={{
-                                            backgroundColor:
-                                                "var(--color-api-second)",
-                                            boxShadow:
-                                                "0 8px 22px -8px color-mix(in srgb, var(--color-main) 45%, transparent)",
-                                        }}
-                                    >
-                                        <HiArrowLeft
-                                            className={`w-5 h-5 ${isRTL ? "rotate-180" : ""}`}
-                                        />
-                                        {t("cart.continueShopping")}
-                                    </Link>
-                                </div>
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={1.5}
+                                        d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+                                    />
+                                </svg>
                             </div>
+                            <h1 className="text-xl font-semibold text-custom-primary mb-2">
+                                {t("cart.yourCartIsEmpty")}
+                            </h1>
+                            <p className="text-sm text-custom-secondary mb-7 max-w-xs mx-auto leading-relaxed">
+                                {t("cart.emptyCartHint")}
+                            </p>
+                            <Link
+                                to={paths.client.home}
+                                className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white !bg-[color:var(--color-api-second)] hover:!bg-[color:var(--color-api-second-hover)]"
+                            >
+                                <HiArrowLeft className={`w-4 h-4 ${isRTL ? "rotate-180" : ""}`} />
+                                {t("cart.continueShopping")}
+                            </Link>
                         </div>
                     </div>
                 ) : (
@@ -451,41 +400,53 @@ export default function Cart() {
                                 status={summaryStatus}
                                 onAddAddress={() => navigate(paths.account.addAddress)}
                                 couponDisabled={!!selectedCouponKey}
-                                benefitsContent={
-                                    activeBenefitsData?.has_benefits ? (
-                                        <div className="space-y-3">
-                                            <ActiveBenefitsSelector
-                                                coupons={activeBenefitsData.coupons}
-                                                freeDeliveries={activeBenefitsData.free_deliveries}
-                                                selectedCouponKey={selectedCouponKey}
-                                                selectedDeliveryKey={selectedDeliveryKey}
-                                                onSelectCoupon={handleSelectCouponBenefit}
-                                                onSelectDelivery={handleSelectDeliveryBenefit}
-                                            />
-                                            {preview?.available_promotions && preview.available_promotions.length > 0 && (
-                                                <AvailablePromotionsSelector
-                                                    promotions={preview.available_promotions}
-                                                    selectedPromotionId={promotionId}
-                                                    onSelect={handleSelectPromotion}
-                                                />
-                                            )}
-                                        </div>
-                                    ) : preview?.available_promotions && preview.available_promotions.length > 0 ? (
-                                        <AvailablePromotionsSelector
-                                            promotions={preview.available_promotions}
-                                            selectedPromotionId={promotionId}
-                                            onSelect={handleSelectPromotion}
-                                        />
-                                    ) : null
-                                }
+                                pointsEarned={typeof pointsEarned === "number" ? pointsEarned : undefined}
+                                benefitsContent={benefitsContent}
                             />
                         }
                         sidebarPosition="right"
-                        gapClassName="gap-6"
+                        gapClassName="gap-6 lg:gap-8"
+                        columnTemplate="minmax(0,1fr) minmax(20rem,24rem)"
+                        mobileContentFirst
                     >
                         <div className="space-y-6">
-                            {/* Cart Items */}
-                            <div className="bg-cart-items space-y-5 rounded-[24px] p-6">
+                            <div className="flex flex-wrap items-end justify-between gap-3">
+                                <div>
+                                    <h1 className="text-2xl font-semibold tracking-tight text-custom-primary">
+                                        {t("cart.myShoppingCart")}
+                                    </h1>
+                                    <p className="mt-1 text-sm text-custom-secondary">
+                                        {t("cart.itemsInCart", "{{count}} items", {
+                                            count: summary.numOfItems || items.reduce((sum, i) => sum + i.quantity, 0),
+                                        })}
+                                    </p>
+                                </div>
+                                <div className="flex items-center gap-4 text-sm">
+                                    <Link
+                                        to={paths.client.home}
+                                        className="inline-flex items-center gap-1.5 font-medium text-custom-secondary hover:text-custom-primary"
+                                    >
+                                        <HiArrowLeft className={`w-4 h-4 ${isRTL ? "rotate-180" : ""}`} />
+                                        {t("cart.continueShopping")}
+                                    </Link>
+                                    <button
+                                        type="button"
+                                        onClick={handleClearCartClick}
+                                        className="inline-flex items-center gap-1.5 font-medium text-custom-secondary hover:text-[color:var(--color-error)]"
+                                    >
+                                        <HiTrash className="h-4 w-4" />
+                                        {t("cart.clearCart")}
+                                    </button>
+                                </div>
+                            </div>
+
+                            {storeCount > 1 && (
+                                <p className="-mt-3 text-sm text-custom-secondary">
+                                    {t("cart.buyingFromStores", { count: storeCount })}
+                                </p>
+                            )}
+
+                            <div className="overflow-hidden rounded-2xl border border-custom-primary bg-custom-card divide-y divide-[color:color-mix(in_srgb,var(--color-border-primary)_85%,transparent)]">
                                 {items.map((item) => {
                                     const orderItem = previewOrderItemByCartId.get(item.id);
                                     const previewPriceForItem = orderItem
@@ -505,6 +466,16 @@ export default function Cart() {
                                         orderItem?.subtotal != null
                                             ? formatPrice(toNum(orderItem.subtotal))
                                             : undefined;
+                                    const extrasTotal =
+                                        orderItem?.extras_total != null &&
+                                        toNum(orderItem.extras_total) > 0
+                                            ? formatPrice(toNum(orderItem.extras_total))
+                                            : undefined;
+                                    const productHref = item.productId
+                                        ? `${paths.client.productDetails(item.productId)}${
+                                              item.shopId != null ? `?shop_id=${item.shopId}` : ""
+                                          }`
+                                        : undefined;
                                     return (
                                         <CartItemCard
                                             key={item.id}
@@ -512,21 +483,23 @@ export default function Cart() {
                                             previewPrices={previewPricesMap}
                                             previewPrice={previewPriceForItem}
                                             previewSubtotal={previewSubtotalFormatted}
+                                            extrasTotal={extrasTotal}
+                                            note={orderItem?.note ?? item.note}
+                                            image={orderItem?.product_image || orderItem?.image}
                                             displayName={orderItem?.product_name}
                                             displayVariant={orderItem?.variant}
+                                            displayStore={orderItem?.shop_name}
+                                            productHref={productHref}
                                             freeQuantity={item.shop_product_variant_id != null ? freeItemsByVariant.get(item.shop_product_variant_id) : undefined}
                                             isExcludedFromCoupon={item.shop_product_variant_id != null ? excludedFromCouponSet.has(item.shop_product_variant_id) : false}
                                             canEditQuantity={cart_type === "default"}
-                                            promotionBadges={promotionBadges}
                                             onQuantityChange={handleQuantityChange}
                                             onRemove={handleRemoveItem}
-                                            onMoveToWishlist={handleMoveToWishlist}
                                         />
                                     );
                                 })}
                             </div>
 
-                            {/* Free gift promotions (buy_x_get_y) - items to offer */}
                             {preview?.non_discount_promotions &&
                                 !Array.isArray(preview.non_discount_promotions) &&
                                 (preview.non_discount_promotions as NonDiscountPromotion).free_items?.length > 0 && (
@@ -539,49 +512,9 @@ export default function Cart() {
 
                             <ScreenPromotions pageSlug="cart" placement="bottom" />
 
-                            {/* Action Buttons */}
-                            <div
-                                className="flex flex-col gap-3 rounded-2xl p-4 sm:px-6 sm:py-4 border md:flex-row md:flex-wrap md:items-center md:justify-between"
-                                style={{
-                                    backgroundColor:
-                                        "color-mix(in srgb, var(--color-main) 6%, var(--color-bg-card))",
-                                    borderColor:
-                                        "color-mix(in srgb, var(--color-main) 18%, transparent)",
-                                }}
-                            >
-                                <Link to="/home" className="block w-full md:w-auto md:shrink-0">
-                                    <Button
-                                        variant="primary"
-                                        className="h-12 w-full md:min-w-[252px] rounded-xl px-6 text-sm font-semibold text-white !bg-[color:var(--color-api-second)] hover:!bg-[color:var(--color-api-second-hover)] transition-colors"
-                                    >
-                                        <HiArrowLeft className={`w-5 h-5 ${isRTL ? "rotate-180" : ""}`} />
-                                        {t("cart.returnToShop")}
-                                    </Button>
-                                </Link>
-                                <div className="grid grid-cols-2 gap-3 md:flex md:items-center">
-                                    <Button
-                                        variant="outline"
-                                        onClick={handleClearCartClick}
-                                        className="h-12 w-full md:min-w-[150px] rounded-xl px-4 sm:px-6 text-sm font-medium transition-colors !bg-custom-card !border !border-[color:color-mix(in_srgb,var(--color-error)_35%,transparent)] !text-[color:var(--color-error)] hover:!bg-[color:color-mix(in_srgb,var(--color-error)_8%,var(--color-bg-card))]"
-                                    >
-                                        <HiTrash className="h-5 w-5" />
-                                        {t("cart.clearCart", "Delete all")}
-                                    </Button>
-                                    <Button
-                                        variant="outline"
-                                        onClick={handleUpdateCart}
-                                        className="h-12 w-full md:min-w-[150px] rounded-xl px-4 sm:px-6 text-sm font-medium !bg-custom-card !border !border-custom-primary !text-custom-primary hover:!border-[color:color-mix(in_srgb,var(--color-main)_35%,transparent)] hover:!bg-custom-hover transition-colors"
-                                    >
-                                        {t("cart.updateCart")}
-                                    </Button>
-                                </div>
-                            </div>
-
-                            {/* Schedule Delivery Section - only for product cart */}
                             {cart_type === "default" && (
                                 <ScheduleDelivery
                                     onSaveSchedule={handleSaveSchedule}
-                                    onCancelSchedule={() => console.log("Cancel schedule")}
                                     isSaving={createScheduledBasketMutation.isPending}
                                 />
                             )}
@@ -589,6 +522,36 @@ export default function Cart() {
                     </SideContentLayout>
                 )}
             </div>
+
+            {!isCartEmpty && (
+                <div className="lg:hidden fixed inset-x-0 bottom-0 z-40 border-t border-custom-primary bg-custom-card/95 backdrop-blur-md px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+                    <div className="flex items-center gap-3">
+                        <div className="min-w-0">
+                            <p className="text-[11px] text-custom-secondary">
+                                {t("orders.total", "Total")}
+                            </p>
+                            <p className="text-lg font-bold tabular-nums text-custom-primary leading-tight">
+                                {summaryStatus === "ready" ? summary.total : "—"}
+                            </p>
+                        </div>
+                        <Button
+                            type="button"
+                            variant="primary"
+                            className="flex-1 h-11 rounded-xl text-white font-semibold !bg-[color:var(--color-api-second)] hover:!bg-[color:var(--color-api-second-hover)]"
+                            onClick={() =>
+                                summaryStatus === "no-address"
+                                    ? navigate(paths.account.addAddress)
+                                    : handleCheckout()
+                            }
+                            disabled={summaryStatus === "loading"}
+                        >
+                            {summaryStatus === "no-address"
+                                ? t("cart.addAddress")
+                                : t("cart.proceedToCheckout")}
+                        </Button>
+                    </div>
+                </div>
+            )}
 
             {/* Clear cart confirmation popup */}
             <BasePopup

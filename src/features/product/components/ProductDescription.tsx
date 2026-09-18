@@ -35,7 +35,7 @@ function DescriptionBlock({
     if (HTML_TAG_RE.test(text)) {
         return (
             <div className="flex flex-col gap-2">
-                <h3 className="text-base font-bold text-text-primary">
+                <h3 className="text-sm font-semibold text-text-primary">
                     {label}
                 </h3>
                 <ExpandableHtmlContent
@@ -51,7 +51,7 @@ function DescriptionBlock({
 
     return (
         <div className="flex flex-col gap-2">
-            <h3 className="text-base font-bold text-text-primary">{label}</h3>
+            <h3 className="text-sm font-semibold text-text-primary">{label}</h3>
             <p className="whitespace-pre-wrap text-sm leading-relaxed text-custom-secondary">
                 {displayText}
                 {shouldTruncate && (

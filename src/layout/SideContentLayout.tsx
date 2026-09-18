@@ -81,10 +81,32 @@ export default function SideContentLayout({
 
     const gridTemplate = getGridTemplate();
 
-    const orderSidebarRight =
-        !isLeft && (bp === "md" ? "md:order-2" : "lg:order-2");
-    const orderContentRight =
-        !isLeft && (bp === "md" ? "md:order-1" : "lg:order-1");
+    const orderSidebarRight = !isLeft
+        ? mobileContentFirst
+            ? bp === "md"
+                ? "order-2 md:order-2"
+                : "order-2 lg:order-2"
+            : bp === "md"
+              ? "md:order-2"
+              : "lg:order-2"
+        : mobileContentFirst
+          ? bp === "md"
+              ? "order-2 md:order-1"
+              : "order-2 lg:order-1"
+          : undefined;
+    const orderContentRight = !isLeft
+        ? mobileContentFirst
+            ? bp === "md"
+                ? "order-1 md:order-1"
+                : "order-1 lg:order-1"
+            : bp === "md"
+              ? "md:order-1"
+              : "lg:order-1"
+        : mobileContentFirst
+          ? bp === "md"
+              ? "order-1 md:order-2"
+              : "order-1 lg:order-2"
+          : undefined;
 
     const stickyAside =
         stickySidebar &&

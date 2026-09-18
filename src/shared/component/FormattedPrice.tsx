@@ -24,6 +24,8 @@ type FormattedPriceProps = {
      * `$8.82  $9` then `114,660 ل.س  117,000 ل.س`.
      */
     compareValue?: string;
+    /** Extra classes for the struck original / list price. */
+    compareClassName?: string;
 };
 
 function pairPriceChunks(
@@ -104,6 +106,7 @@ export default function FormattedPrice({
     strikethrough = false,
     layout,
     compareValue,
+    compareClassName,
 }: FormattedPriceProps) {
     const currencyCode = useCurrencyOptional()?.currency;
     const displayValue = selectFormattedForCurrency(value, currencyCode);
@@ -154,6 +157,7 @@ export default function FormattedPrice({
                                 className={cn(
                                     "inline-flex items-baseline font-medium leading-none text-custom-tertiary line-through decoration-custom-tertiary/50 dark:text-zinc-500 dark:decoration-zinc-600",
                                     primary ? "text-[15px]" : "text-[13px]",
+                                    compareClassName,
                                 )}
                             >
                                 <GlyphLine value={pair.original} prominent={false} />

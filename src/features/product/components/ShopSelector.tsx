@@ -21,25 +21,25 @@ export default function ShopSelector({
     const { t } = useTranslation();
 
     if (compact) {
-        const selectedShop = shops.find((s) => s.id === selectedShopId);
         return (
-            <div className={cn("relative inline-flex items-center", className)}>
-                <div className="relative flex items-center">
+            <div className={cn("flex w-full flex-col gap-1.5", className)}>
+                <label className="text-sm text-custom-secondary">
+                    {t("product.branch", "Branch")}
+                </label>
+                <div className="relative">
                     <select
                         value={selectedShopId}
                         onChange={(e) => onShopChange(Number(e.target.value))}
-                        className="min-w-[170px] appearance-none rounded-full border border-[#E7EEF3] dark:border-[color-mix(in_srgb,var(--color-main)_22%,#1f2230)] bg-[#F8FBFD] dark:bg-[color-mix(in_srgb,var(--color-main)_18%,#13151c)] py-2 pl-4 pr-9 text-sm font-medium text-[#495666] dark:text-[var(--color-text)] outline-none transition-colors focus:border-[#B8DDEA] dark:focus:border-[color-mix(in_srgb,var(--color-api-second)_45%,transparent)] cursor-pointer"
+                        className="h-11 w-full cursor-pointer appearance-none rounded-xl border border-[color-mix(in_srgb,var(--color-api-second)_28%,var(--color-border-primary))] bg-custom-card ps-3.5 pe-9 text-sm font-medium text-text-primary outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/20 dark:border-white/10"
                     >
                         {shops.map((shop) => (
                             <option key={shop.id} value={shop.id}>
-                                {`${t("product.branch", "Branch")}: ${shop.name}`}
+                                {shop.name}
                             </option>
                         ))}
                     </select>
-                    <HiChevronDown className="pointer-events-none absolute right-3 h-4 w-4 text-[#7C8A97] dark:text-[color-mix(in_srgb,var(--color-text)_70%,transparent)]" />
+                    <HiChevronDown className="pointer-events-none absolute end-3 top-1/2 h-4 w-4 -translate-y-1/2 text-custom-secondary" />
                 </div>
-                {/* Hidden – keeps selectedShop in scope to avoid unused var */}
-                {selectedShop && null}
             </div>
         );
     }

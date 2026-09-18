@@ -27,7 +27,7 @@ export default function ProductActions({
                     const src = productIconImageUrl(icon);
                     if (!src) return null;
                     const sharedClassName =
-                        "flex flex-col items-center justify-center gap-1 rounded-lg border border-[color-mix(in_srgb,var(--color-api-second)_32%,var(--color-border-primary))] bg-custom-card px-3 py-3 text-center transition-all hover:border-primary hover:bg-[color-mix(in_srgb,var(--color-api-second)_6%,var(--color-bg-card))] hover:shadow-sm";
+                        "flex flex-col items-center justify-center gap-1.5 rounded-xl bg-transparent px-2 py-2 text-center transition-colors hover:bg-black/[0.03] dark:hover:bg-white/[0.04]";
                     const isClickable = onIconClick && icon.description;
                     const content = (
                         <>

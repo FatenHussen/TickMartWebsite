@@ -45,7 +45,10 @@ export function CountryDialSelect({
     const buttonRef = useRef<HTMLButtonElement>(null);
     const menuRef = useRef<HTMLUListElement>(null);
     const listId = useId();
-    const selected = options.find((option) => option.id === value) ?? options[0];
+    const selected =
+        options.find((option) => option.id === value) ??
+        options.find((option) => /syria|سوريا|\+963/i.test(option.label)) ??
+        options[0];
 
     const updateMenuRect = () => {
         const rect = buttonRef.current?.getBoundingClientRect();

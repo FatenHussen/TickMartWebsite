@@ -1,264 +1,313 @@
-import { AnimatePresence, motion } from"framer-motion";
-import { memo, useCallback, useEffect, useMemo, useState } from"react";
-import { HiShare } from"react-icons/hi2";
-import { HiChevronLeft, HiChevronRight } from"react-icons/hi";
-import { cn } from"@/shared/lib/utils";
-import Button from"@/shared/ui/Button";
-import LazyImage from"@/shared/component/LazyImage";
-import FavoriteButton from"@/shared/component/FavoriteButton";
+import { AnimatePresence, motion } from "framer-motion";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { HiShare } from "react-icons/hi2";
+import { HiChevronLeft, HiChevronRight } from "react-icons/hi";
+import { cn } from "@/shared/lib/utils";
+import { useLanguage } from "@/context/LanguageContext";
+import Button from "@/shared/ui/Button";
+import LazyImage from "@/shared/component/LazyImage";
+import FavoriteButton from "@/shared/component/FavoriteButton";
 
 export type ProductImageGalleryProps = {
- images: string[];
- isFavorite?: boolean;
- onToggleFavorite?: () => void;
- onShare?: () => void;
- className?: string;
+    images: string[];
+    isFavorite?: boolean;
+    onToggleFavorite?: () => void;
+    onShare?: () => void;
+    className?: string;
 };
 
-const MAIN_IMAGE_TRANSITION_SECONDS = 0.38;
-const THUMBNAILS_TO_SHOW = 4;
+const MAIN_IMAGE_TRANSITION_SECONDS = 0.28;
+const THUMBNAILS_TO_SHOW = 5;
 
 type ThumbnailButtonProps = {
- image: string;
- index: number;
- isSelected: boolean;
- onSelect: (index: number) => void;
+    image: string;
+    index: number;
+    isSelected: boolean;
+    onSelect: (index: number) => void;
+    label: string;
 };
 
 const ThumbnailButton = memo(function ThumbnailButton({
- image,
- index,
- isSelected,
- onSelect,
+    image,
+    index,
+    isSelected,
+    onSelect,
+    label,
 }: ThumbnailButtonProps) {
- return (
-  <button
-   type="button"
-   onClick={() => onSelect(index)}
-   className={cn(
-    "group relative shrink-0 overflow-hidden rounded-xl bg-slate-100 dark:bg-[color-mix(in_srgb,var(--color-api-second)_14%,#10121a)] ring-1 transition-all duration-300 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900/30 dark:focus-visible:ring-[color-mix(in_srgb,var(--color-main)_45%,transparent)]",
-    "h-16 w-16 sm:h-[72px] sm:w-[72px]",
-    isSelected
-     ?"scale-105 ring-2 ring-slate-900 dark:ring-[color-mix(in_srgb,var(--color-main)_45%,transparent)] shadow-sm"
-     :"ring-slate-200 dark:ring-[color-mix(in_srgb,var(--color-main)_22%,#1f2230)] hover:-translate-y-0.5 hover:ring-slate-300 dark:hover:ring-[color-mix(in_srgb,var(--color-api-second)_30%,#22253a)] hover:shadow-sm"
-   )}
-   aria-label={`Thumbnail ${index + 1}`}
-   aria-pressed={isSelected}
-  >
-   <div className="absolute inset-0">
-    <LazyImage
-     src={image}
-     alt={`Thumbnail ${index + 1}`}
-     className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-     wrapperClassName="h-full w-full"
-     effect=""
-    />
-   </div>
-   <span
-    className={cn(
-     "absolute inset-0 transition-colors duration-300",
-     isSelected ?"bg-slate-900/5 dark:bg-[color-mix(in_srgb,var(--color-main)_18%,transparent)]":"bg-transparent group-hover:bg-slate-900/5 dark:group-hover:bg-[color-mix(in_srgb,var(--color-main)_14%,transparent)]"
-    )}
-   />
-  </button>
- );
+    return (
+        <button
+            type="button"
+            onClick={() => onSelect(index)}
+            className={cn(
+                "group relative h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-[color-mix(in_srgb,var(--color-api-second)_8%,var(--color-bg-card))] ring-1 transition duration-200 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 sm:h-[4.5rem] sm:w-[4.5rem]",
+                isSelected
+                    ? "ring-2 ring-primary"
+                    : "ring-black/8 hover:ring-black/20 dark:ring-white/10 dark:hover:ring-white/25",
+            )}
+            aria-label={label}
+            aria-pressed={isSelected}
+        >
+            <LazyImage
+                src={image}
+                alt=""
+                className="h-full w-full object-contain p-1"
+                wrapperClassName="h-full w-full"
+                effect=""
+            />
+        </button>
+    );
 });
 
 export default function ProductImageGallery({
- images,
- isFavorite = false,
- onToggleFavorite,
- onShare,
- className,
+    images,
+    isFavorite = false,
+    onToggleFavorite,
+    onShare,
+    className,
 }: ProductImageGalleryProps) {
- const safeImages = useMemo(() => images.filter(Boolean), [images]);
- const [selectedIndex, setSelectedIndex] = useState(0);
- const [thumbnailStartIndex, setThumbnailStartIndex] = useState(0);
+    const { t } = useTranslation();
+    const { isRTL } = useLanguage();
+    const safeImages = useMemo(() => images.filter(Boolean), [images]);
+    const [selectedIndex, setSelectedIndex] = useState(0);
+    const [thumbnailStartIndex, setThumbnailStartIndex] = useState(0);
 
- useEffect(() => {
-  setSelectedIndex((prev) => {
-   if (safeImages.length === 0) return 0;
-   return Math.min(prev, safeImages.length - 1);
-  });
- }, [safeImages.length]);
+    useEffect(() => {
+        setSelectedIndex((prev) => {
+            if (safeImages.length === 0) return 0;
+            return Math.min(prev, safeImages.length - 1);
+        });
+    }, [safeImages.length]);
 
- useEffect(() => {
-  setThumbnailStartIndex((prev) => {
-   if (safeImages.length <= THUMBNAILS_TO_SHOW) return 0;
-   return Math.min(prev, Math.max(0, safeImages.length - THUMBNAILS_TO_SHOW));
-  });
- }, [safeImages.length]);
+    useEffect(() => {
+        setThumbnailStartIndex((prev) => {
+            if (safeImages.length <= THUMBNAILS_TO_SHOW) return 0;
+            return Math.min(prev, Math.max(0, safeImages.length - THUMBNAILS_TO_SHOW));
+        });
+    }, [safeImages.length]);
 
- useEffect(() => {
-  if (selectedIndex < thumbnailStartIndex) {
-   setThumbnailStartIndex(selectedIndex);
-   return;
-  }
+    useEffect(() => {
+        if (selectedIndex < thumbnailStartIndex) {
+            setThumbnailStartIndex(selectedIndex);
+            return;
+        }
+        if (selectedIndex >= thumbnailStartIndex + THUMBNAILS_TO_SHOW) {
+            setThumbnailStartIndex(selectedIndex - THUMBNAILS_TO_SHOW + 1);
+        }
+    }, [selectedIndex, thumbnailStartIndex]);
 
-  if (selectedIndex >= thumbnailStartIndex + THUMBNAILS_TO_SHOW) {
-   setThumbnailStartIndex(selectedIndex - THUMBNAILS_TO_SHOW + 1);
-  }
- }, [selectedIndex, thumbnailStartIndex]);
+    const canGoPrev = thumbnailStartIndex > 0;
+    const canGoNext =
+        thumbnailStartIndex + THUMBNAILS_TO_SHOW < safeImages.length;
 
- const canGoPrev = thumbnailStartIndex > 0;
- const canGoNext =
- thumbnailStartIndex + THUMBNAILS_TO_SHOW < safeImages.length;
+    const visibleThumbnails = safeImages.slice(
+        thumbnailStartIndex,
+        thumbnailStartIndex + THUMBNAILS_TO_SHOW,
+    );
 
- const visibleThumbnails = safeImages.slice(
- thumbnailStartIndex,
-  thumbnailStartIndex + THUMBNAILS_TO_SHOW
- );
+    const handleThumbnailSelect = useCallback(
+        (nextIndex: number) => {
+            if (!safeImages[nextIndex]) return;
+            setSelectedIndex(nextIndex);
+        },
+        [safeImages],
+    );
 
- const handleThumbnailSelect = useCallback((nextIndex: number) => {
-  if (!safeImages[nextIndex]) return;
-  setSelectedIndex(nextIndex);
- }, [safeImages]);
+    const goTo = useCallback(
+        (dir: -1 | 1) => {
+            if (safeImages.length < 2) return;
+            setSelectedIndex((prev) => {
+                const next = prev + dir;
+                if (next < 0) return safeImages.length - 1;
+                if (next >= safeImages.length) return 0;
+                return next;
+            });
+        },
+        [safeImages.length],
+    );
 
- const handlePreviousThumbnails = useCallback(() => {
- setThumbnailStartIndex((prev) => Math.max(0, prev - 1));
- }, []);
+    useEffect(() => {
+        if (safeImages.length < 2) return;
+        const onKey = (event: KeyboardEvent) => {
+            const target = event.target as HTMLElement | null;
+            if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) {
+                return;
+            }
+            if (event.key === "ArrowLeft") goTo(isRTL ? 1 : -1);
+            if (event.key === "ArrowRight") goTo(isRTL ? -1 : 1);
+        };
+        window.addEventListener("keydown", onKey);
+        return () => window.removeEventListener("keydown", onKey);
+    }, [goTo, isRTL, safeImages.length]);
 
- const handleNextThumbnails = useCallback(() => {
- setThumbnailStartIndex((prev) =>
-   Math.min(safeImages.length - THUMBNAILS_TO_SHOW, prev + 1)
- );
- }, [safeImages.length]);
+    const actions = (
+        <div className="absolute end-3 top-3 z-10 flex gap-2">
+            {onShare && (
+                <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    aria-label={t("product.share", "Share product")}
+                    onClick={onShare}
+                    className="h-10 w-10 rounded-full bg-white/95 p-0 shadow-sm ring-1 ring-black/8 hover:bg-white dark:bg-[#121318]/90 dark:ring-white/10 dark:hover:bg-[#1a1b22]"
+                >
+                    <HiShare className="h-5 w-5 text-text-primary" />
+                </Button>
+            )}
+            {onToggleFavorite && (
+                <FavoriteButton
+                    isFavorite={isFavorite}
+                    onToggle={onToggleFavorite}
+                    size="md"
+                    ariaLabel={t("product.toggleFavorite", "Toggle favorite")}
+                    className="rounded-full bg-white/95 shadow-sm ring-1 ring-black/8 hover:bg-white dark:bg-[#121318]/90 dark:ring-white/10 dark:hover:bg-[#1a1b22] border-0"
+                />
+            )}
+        </div>
+    );
 
- if (safeImages.length === 0) {
-  return (
-   <div className={cn("flex flex-col gap-4", className)}>
-    <div className="relative w-full overflow-hidden rounded-2xl bg-slate-100 dark:bg-[color-mix(in_srgb,var(--color-api-second)_14%,#10121a)]">
-     <div className="flex aspect-[1/1] w-full items-center justify-center text-sm text-slate-400 dark:text-[color-mix(in_srgb,var(--color-text)_55%,transparent)]">
-      No image
-     </div>
-     <div className="absolute right-4 top-4 z-10 flex gap-2">
-      {onShare && (
-       <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        aria-label="Share product"
-        onClick={onShare}
-        className="h-10 w-10 rounded-xl bg-custom-card/95 dark:bg-[color-mix(in_srgb,var(--color-main)_22%,#0e1017)]/90 p-0 shadow-sm ring-1 ring-slate-200 dark:ring-[color-mix(in_srgb,var(--color-api-second)_28%,transparent)] hover:bg-custom-card dark:hover:bg-[color-mix(in_srgb,var(--color-main)_28%,#0e1017)]"
-       >
-        <HiShare className="h-5 w-5 text-slate-700 dark:text-[var(--color-text)]"/>
-       </Button>
-      )}
-      {onToggleFavorite && (
-       <FavoriteButton
-        isFavorite={isFavorite}
-        onToggle={onToggleFavorite}
-        size="md"
-        ariaLabel="Toggle favorite"
-        className="rounded-xl bg-custom-card/95 dark:bg-[color-mix(in_srgb,var(--color-main)_22%,#0e1017)]/90 shadow-sm ring-1 ring-slate-200 dark:ring-[color-mix(in_srgb,var(--color-api-second)_28%,transparent)] hover:bg-custom-card dark:hover:bg-[color-mix(in_srgb,var(--color-main)_28%,#0e1017)] border-0"
-       />
-      )}
-     </div>
-    </div>
-   </div>
-  );
- }
+    if (safeImages.length === 0) {
+        return (
+            <div className={cn("flex flex-col gap-3", className)}>
+                <div className="relative w-full overflow-hidden rounded-2xl bg-[color-mix(in_srgb,var(--color-api-second)_8%,var(--color-bg-card))] ring-1 ring-black/6 dark:ring-white/8">
+                    <div className="flex aspect-square w-full items-center justify-center text-sm text-custom-secondary">
+                        {t("product.noImage", "No image")}
+                    </div>
+                    {actions}
+                </div>
+            </div>
+        );
+    }
 
- return (
- <div className={cn("flex flex-col gap-4", className)}>
- {/* Main Image */}
- <div className="relative w-full overflow-hidden rounded-2xl bg-slate-100 dark:bg-[color-mix(in_srgb,var(--color-api-second)_14%,#10121a)]">
- <div className="aspect-[1/1] w-full">
-  <div className="relative h-full w-full">
-   <AnimatePresence mode="wait" initial={false}>
-    <motion.div
-     key={safeImages[selectedIndex]}
-     className="absolute inset-0"
-     initial={{ opacity: 0, scale: 1.02 }}
-     animate={{ opacity: 1, scale: 1 }}
-     exit={{ opacity: 0, scale: 0.985 }}
-     transition={{ duration: MAIN_IMAGE_TRANSITION_SECONDS, ease:"easeOut" }}
-    >
-     <LazyImage
-      src={safeImages[selectedIndex]}
-      alt={`Product view ${selectedIndex + 1}`}
-      className="h-full w-full object-cover"
-      wrapperClassName="h-full w-full"
-      effect=""
-     />
-    </motion.div>
-   </AnimatePresence>
-  </div>
- </div>
+    return (
+        <div className={cn("flex flex-col gap-3", className)}>
+            <div className="relative w-full overflow-hidden rounded-2xl bg-[color-mix(in_srgb,var(--color-api-second)_8%,var(--color-bg-card))] ring-1 ring-black/6 dark:ring-white/8">
+                <div className="aspect-square w-full">
+                    <div className="relative h-full w-full">
+                        <AnimatePresence mode="wait" initial={false}>
+                            <motion.div
+                                key={safeImages[selectedIndex]}
+                                className="absolute inset-0"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{
+                                    duration: MAIN_IMAGE_TRANSITION_SECONDS,
+                                    ease: "easeOut",
+                                }}
+                            >
+                                <LazyImage
+                                    src={safeImages[selectedIndex]}
+                                    alt={t("product.imageAlt", {
+                                        current: selectedIndex + 1,
+                                        total: safeImages.length,
+                                        defaultValue: "Product image {{current}} of {{total}}",
+                                    })}
+                                    className="h-full w-full object-contain p-4 sm:p-6"
+                                    wrapperClassName="h-full w-full"
+                                    effect=""
+                                />
+                            </motion.div>
+                        </AnimatePresence>
+                    </div>
+                </div>
 
- {/* Top-right icons */}
- <div className="absolute right-4 top-4 z-10 flex gap-2">
- {onShare && (
- <Button
- type="button"
- variant="ghost"
- size="sm"
- aria-label="Share product"
- onClick={onShare}
- className="h-10 w-10 rounded-xl bg-custom-card/95 dark:bg-[color-mix(in_srgb,var(--color-main)_22%,#0e1017)]/90 p-0 shadow-sm ring-1 ring-slate-200 dark:ring-[color-mix(in_srgb,var(--color-api-second)_28%,transparent)] hover:bg-custom-card dark:hover:bg-[color-mix(in_srgb,var(--color-main)_28%,#0e1017)]"
- >
- <HiShare className="h-5 w-5 text-slate-700 dark:text-[var(--color-text)]"/>
- </Button>
- )}
+                {actions}
 
- {onToggleFavorite && (
- <FavoriteButton
- isFavorite={isFavorite}
- onToggle={onToggleFavorite}
- size="md"
- ariaLabel="Toggle favorite"
- className="rounded-xl bg-custom-card/95 dark:bg-[color-mix(in_srgb,var(--color-main)_22%,#0e1017)]/90 shadow-sm ring-1 ring-slate-200 dark:ring-[color-mix(in_srgb,var(--color-api-second)_28%,transparent)] hover:bg-custom-card dark:hover:bg-[color-mix(in_srgb,var(--color-main)_28%,#0e1017)] border-0"
- />
- )}
- </div>
- </div>
+                {safeImages.length > 1 && (
+                    <>
+                        <button
+                            type="button"
+                            onClick={() => goTo(-1)}
+                            className="absolute start-3 top-1/2 z-10 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-white/95 text-text-primary shadow-sm ring-1 ring-black/8 hover:bg-white dark:bg-[#121318]/90 dark:ring-white/10"
+                            aria-label={t("product.previousImage", "Previous image")}
+                        >
+                            {isRTL ? (
+                                <HiChevronRight className="h-5 w-5" />
+                            ) : (
+                                <HiChevronLeft className="h-5 w-5" />
+                            )}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => goTo(1)}
+                            className="absolute end-3 top-1/2 z-10 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-white/95 text-text-primary shadow-sm ring-1 ring-black/8 hover:bg-white dark:bg-[#121318]/90 dark:ring-white/10"
+                            aria-label={t("product.nextImage", "Next image")}
+                        >
+                            {isRTL ? (
+                                <HiChevronLeft className="h-5 w-5" />
+                            ) : (
+                                <HiChevronRight className="h-5 w-5" />
+                            )}
+                        </button>
+                        <span className="absolute bottom-3 start-1/2 z-10 -translate-x-1/2 rounded-full bg-black/55 px-2.5 py-1 text-[11px] font-medium tabular-nums text-white backdrop-blur-sm">
+                            {selectedIndex + 1} / {safeImages.length}
+                        </span>
+                    </>
+                )}
+            </div>
 
- {/* Thumbnail Carousel */}
-  {safeImages.length > 1 && (
- <div className="relative flex items-center">
- {/* Prev */}
- {canGoPrev && (
- <button
- type="button"
- onClick={handlePreviousThumbnails}
- className="absolute left-0 z-10 grid h-9 w-9 place-items-center rounded-xl bg-custom-card dark:bg-[color-mix(in_srgb,var(--color-main)_18%,#13151c)] shadow-sm ring-1 ring-slate-200 dark:ring-[color-mix(in_srgb,var(--color-api-second)_28%,transparent)] hover:bg-slate-50 dark:hover:bg-[color-mix(in_srgb,var(--color-api-second)_18%,#10121a)]"
- aria-label="Previous thumbnails"
- >
- <HiChevronLeft className="h-5 w-5 text-slate-700 dark:text-[var(--color-text)]"/>
- </button>
- )}
+            {safeImages.length > 1 && (
+                <div className="relative flex items-center">
+                    {canGoPrev && (
+                        <button
+                            type="button"
+                            onClick={() =>
+                                setThumbnailStartIndex((prev) => Math.max(0, prev - 1))
+                            }
+                            className="absolute start-0 z-10 grid h-8 w-8 place-items-center rounded-full bg-custom-card shadow-sm ring-1 ring-black/8 dark:ring-white/10"
+                            aria-label={t("product.previousThumbnails", "Previous thumbnails")}
+                        >
+                            {isRTL ? (
+                                <HiChevronRight className="h-4 w-4" />
+                            ) : (
+                                <HiChevronLeft className="h-4 w-4" />
+                            )}
+                        </button>
+                    )}
 
- {/* Thumbnails */}
-   <div className="mx-auto flex w-full justify-center gap-3 overflow-x-auto px-0 py-1 sm:px-12 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
- {visibleThumbnails.map((image, idx) => {
- const actualIndex = thumbnailStartIndex + idx;
- const isSelected = selectedIndex === actualIndex;
+                    <div className="mx-auto flex w-full justify-center gap-2 overflow-x-auto px-10 py-0.5 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
+                        {visibleThumbnails.map((image, idx) => {
+                            const actualIndex = thumbnailStartIndex + idx;
+                            return (
+                                <ThumbnailButton
+                                    key={`${image}-${actualIndex}`}
+                                    image={image}
+                                    index={actualIndex}
+                                    isSelected={selectedIndex === actualIndex}
+                                    onSelect={handleThumbnailSelect}
+                                    label={t("product.thumbnailAlt", {
+                                        index: actualIndex + 1,
+                                        defaultValue: "Thumbnail {{index}}",
+                                    })}
+                                />
+                            );
+                        })}
+                    </div>
 
- return (
-    <ThumbnailButton
-    key={`${image}-${actualIndex}`}
-    image={image}
-    index={actualIndex}
-    isSelected={isSelected}
-    onSelect={handleThumbnailSelect}
-    />
- );
- })}
- </div>
-
- {/* Next */}
- {canGoNext && (
- <button
- type="button"
- onClick={handleNextThumbnails}
- className="absolute right-0 z-10 grid h-9 w-9 place-items-center rounded-xl bg-custom-card dark:bg-[color-mix(in_srgb,var(--color-main)_18%,#13151c)] shadow-sm ring-1 ring-slate-200 dark:ring-[color-mix(in_srgb,var(--color-api-second)_28%,transparent)] hover:bg-slate-50 dark:hover:bg-[color-mix(in_srgb,var(--color-api-second)_18%,#10121a)]"
- aria-label="Next thumbnails"
- >
- <HiChevronRight className="h-5 w-5 text-slate-700 dark:text-[var(--color-text)]"/>
- </button>
- )}
- </div>
- )}
- </div>
- );
+                    {canGoNext && (
+                        <button
+                            type="button"
+                            onClick={() =>
+                                setThumbnailStartIndex((prev) =>
+                                    Math.min(
+                                        safeImages.length - THUMBNAILS_TO_SHOW,
+                                        prev + 1,
+                                    ),
+                                )
+                            }
+                            className="absolute end-0 z-10 grid h-8 w-8 place-items-center rounded-full bg-custom-card shadow-sm ring-1 ring-black/8 dark:ring-white/10"
+                            aria-label={t("product.nextThumbnails", "Next thumbnails")}
+                        >
+                            {isRTL ? (
+                                <HiChevronLeft className="h-4 w-4" />
+                            ) : (
+                                <HiChevronRight className="h-4 w-4" />
+                            )}
+                        </button>
+                    )}
+                </div>
+            )}
+        </div>
+    );
 }

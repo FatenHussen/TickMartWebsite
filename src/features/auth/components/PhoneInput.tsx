@@ -16,6 +16,7 @@ import {
     getCountryDialCode,
     SYRIA_FALLBACK,
     toInternationalPhone,
+    withSyriaFirst,
 } from "@/features/auth/utils/countryDialCode";
 import { cn } from "@/shared/lib/utils";
 import { CountryDialSelect } from "@/features/auth/components/CountryDialSelect";
@@ -70,26 +71,20 @@ export default function PhoneInput({
         }),
     });
 
-    const countries = useMemo(() => {
-        const list = [...apiCountries];
-        if (!findSyriaCountry(list)) {
-            list.unshift({
-                id: SYRIA_FALLBACK.id,
-                name: t("auth.syria", "سوريا"),
-                code: SYRIA_FALLBACK.code,
-            });
-        }
-        return list;
-    }, [apiCountries, t]);
+    const countries = useMemo(
+        () => withSyriaFirst(apiCountries, t("auth.syria", "سوريا")),
+        [apiCountries, t],
+    );
 
     const phoneCountry = useWatch({ control, name: "phoneCountry" });
 
     useEffect(() => {
         const syria = findSyriaCountry(countries);
         if (!syria) return;
-        if (!phoneCountry) {
-            setValue("phoneCountry", String(syria.id), { shouldValidate: false });
-        }
+        const stillValid =
+            phoneCountry && countries.some((c) => String(c.id) === String(phoneCountry));
+        if (stillValid) return;
+        setValue("phoneCountry", String(syria.id), { shouldValidate: false });
         setValue("phoneCountryCode", getCountryDialCode(syria), { shouldValidate: false });
     }, [countries, phoneCountry, setValue]);
 

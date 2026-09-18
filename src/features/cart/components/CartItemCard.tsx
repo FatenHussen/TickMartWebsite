@@ -1,31 +1,29 @@
+import { Link } from "react-router-dom";
 import { HiMinus, HiPlus, HiTrash } from "react-icons/hi";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContext";
 import { useCurrency } from "@/context/CurrencyContext";
+import { cn } from "@/shared/lib/utils";
 import { toNum } from "../utils";
 import type { CartItem } from "../types";
 
 type CartItemCardProps = {
     item: CartItem;
     previewPrices?: Map<number, { price: number; priceBeforeDiscount?: number }>;
-    /** When set, overrides previewPrices lookup (e.g. same variant, different extras) */
     previewPrice?: { price: number; priceBeforeDiscount?: number };
-    /** Line subtotal from order preview (e.g. product × qty, before extras) */
     previewSubtotal?: string | null;
-    /** Product name from preview orderItems (takes precedence over item.name) */
+    extrasTotal?: string | null;
+    note?: string | null;
+    image?: string | null;
     displayName?: string;
-    /** Variant values from preview orderItems (e.g. ["#fc0303", "Medium"]) */
     displayVariant?: string[];
+    displayStore?: string;
+    productHref?: string;
     freeQuantity?: number;
     isExcludedFromCoupon?: boolean;
-    /** When false, plus/minus and delete are disabled (e.g. when cart_type !== "default") */
     canEditQuantity?: boolean;
-    promotionBadges?: Array<
-        string | { ar?: string | null; en?: string | null } | null | undefined
-    >;
     onQuantityChange: (itemId: number | string, quantity: number) => void;
     onRemove: (itemId: number | string) => void;
-    onMoveToWishlist?: (itemId: number | string) => void;
 };
 
 export default function CartItemCard({
@@ -33,17 +31,20 @@ export default function CartItemCard({
     previewPrices,
     previewPrice,
     previewSubtotal,
+    extrasTotal,
+    note,
+    image,
     displayName,
     displayVariant,
+    displayStore,
+    productHref,
     freeQuantity = 0,
     isExcludedFromCoupon = false,
     canEditQuantity = true,
-    promotionBadges = [],
     onQuantityChange,
     onRemove,
-    onMoveToWishlist,
 }: CartItemCardProps) {
-    const { t, i18n } = useTranslation();
+    const { t } = useTranslation();
     const { isRTL } = useLanguage();
     const { formatPrice } = useCurrency();
 
@@ -52,34 +53,29 @@ export default function CartItemCard({
         (item.shop_product_variant_id != null
             ? previewPrices?.get(item.shop_product_variant_id)
             : undefined);
-    const displayPrice = preview
-        ? formatPrice(preview.price)
-        : item.price;
-    const displayOriginalPrice = preview?.priceBeforeDiscount != null && preview.priceBeforeDiscount > (preview.price ?? 0)
-        ? formatPrice(preview.priceBeforeDiscount)
-        : item.originalPrice;
+    const displayPrice = preview ? formatPrice(preview.price) : item.price;
+    const displayOriginalPrice =
+        preview?.priceBeforeDiscount != null &&
+        preview.priceBeforeDiscount > (preview.price ?? 0)
+            ? formatPrice(preview.priceBeforeDiscount)
+            : item.originalPrice;
     const priceNum = preview?.price ?? (item.priceNumeric ?? toNum(item.price));
     const priceBeforeNum = preview?.priceBeforeDiscount;
-    const originalSubtotal = priceBeforeNum != null ? priceBeforeNum * item.quantity : undefined;
-    const displayOriginalSubtotal = originalSubtotal != null && originalSubtotal > (priceNum * item.quantity)
-        ? formatPrice(originalSubtotal)
-        : undefined;
+    const originalSubtotal =
+        priceBeforeNum != null ? priceBeforeNum * item.quantity : undefined;
+    const savedAmount =
+        originalSubtotal != null
+            ? originalSubtotal - priceNum * item.quantity
+            : 0;
     const variantText = displayVariant?.length
-        ? displayVariant.join(", ")
+        ? displayVariant.join(" · ")
         : item.selectedAttributes && Object.keys(item.selectedAttributes).length > 0
-            ? Object.entries(item.selectedAttributes)
-                .map(([k, v]) => `${k}: ${v}`)
-                .join(", ")
+            ? Object.values(item.selectedAttributes).join(" · ")
             : undefined;
-
-    const resolveLocalizedText = (
-        value: string | { ar?: string | null; en?: string | null } | null | undefined
-    ): string => {
-        if (typeof value === "string") return value;
-        if (!value || typeof value !== "object") return "";
-        const isArabic = i18n.language.toLowerCase().startsWith("ar");
-        return (isArabic ? value.ar : value.en) ?? value.en ?? value.ar ?? "";
-    };
+    const storeName = displayStore ?? item.store;
+    const imageSrc = image || item.image;
+    const title = displayName ?? item.name;
+    const lineNote = note ?? item.note;
 
     const handleDecrease = () => {
         onQuantityChange(item.id, Math.max(1, item.quantity - 1));
@@ -89,157 +85,148 @@ export default function CartItemCard({
         onQuantityChange(item.id, item.quantity + 1);
     };
 
+    const titleClassName = cn(
+        "block text-[15px] font-semibold leading-snug text-custom-primary",
+        productHref && "hover:text-[color:var(--color-main)] transition-colors",
+    );
+
     return (
-        <div
-            className="relative rounded-3xl border border-[var(--color-border-primary)] bg-gradient-to-br from-[color-mix(in_srgb,var(--color-main)_10%,white)] via-[color-mix(in_srgb,var(--color-main)_5%,color-mix(in_srgb,var(--color-api-second)_50%,white)))] to-[color-mix(in_srgb,var(--color-api-second)_11%,white)] p-4 text-[var(--color-text-primary)] shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--color-primary)_10%,transparent)] dark:from-[var(--color-bg-primary)] dark:via-[var(--color-bg-muted)] dark:to-[var(--color-bg-tertiary)] md:p-5"
+        <article
+            className="px-4 py-4 sm:px-5 sm:py-5"
             dir={isRTL ? "rtl" : "ltr"}
         >
-            {/* Delete button - top right (hidden when canEditQuantity is false) */}
-            {canEditQuantity && (
-                <button
-                    onClick={() => onRemove(item.id)}
-                    className="absolute right-4 top-4 z-10 text-[var(--color-delete)] transition-colors hover:opacity-90"
-                    aria-label="Remove item"
-                >
-                    <HiTrash className="h-5 w-5" />
-                </button>
-            )}
-
-            <div className={canEditQuantity ? "flex flex-col gap-4 pr-8 md:flex-row md:items-stretch md:gap-4" : "flex flex-col gap-4 md:flex-row md:items-stretch md:gap-4"}>
-                {/* Product Image */}
-                <div className="h-[126px] w-[126px] shrink-0 overflow-hidden rounded-2xl bg-[var(--color-bg-input)] shadow-sm md:h-auto md:self-stretch">
-                    {item.image ? (
+            <div className="flex gap-3 sm:gap-4">
+                <div className="h-[72px] w-[72px] sm:h-24 sm:w-24 shrink-0 overflow-hidden rounded-xl bg-custom-muted ring-1 ring-[color:color-mix(in_srgb,var(--color-border-primary)_80%,transparent)]">
+                    {imageSrc ? (
                         <img
-                            src={item.image}
-                            alt={item.name}
+                            src={imageSrc}
+                            alt=""
                             className="h-full w-full object-cover"
                         />
                     ) : (
-                        <div className="flex h-full w-full items-center justify-center bg-custom-muted dark:bg-custom-hover">
-                            <span className="text-gray-light text-xs">No image</span>
-                        </div>
-                    )}
-                </div>
-
-                {/* Product Details - Middle Section */}
-                <div className="min-w-0 flex-1">
-                    <h3 className="mb-1 text-[17px] font-bold leading-7 text-custom-primary">
-                        {displayName ?? item.name}
-                    </h3>
-                    {item.store && (
-                        <p className="mb-1 text-sm text-custom-secondary">
-                            {t("cart.store", "Store")}: {item.store}
-                        </p>
-                    )}
-                    {variantText && (
-                        <p className="mb-1 text-sm text-custom-secondary">
-                            {t("cart.variant", "Variant")}: {variantText}
-                        </p>
-                    )}
-                    {freeQuantity > 0 && (
-                        <p className="text-sm font-medium text-green-700 dark:text-green-400 mb-1">
-                            {t("cart.free", "FREE")} × {freeQuantity}
-                        </p>
-                    )}
-                    {isExcludedFromCoupon && (
-                        <p className="text-xs text-amber-600 dark:text-amber-400 mb-1">
-                            {t("cart.excludedFromCoupon", "Not eligible for coupon")}
-                        </p>
-                    )}
-                    {item.description && (
-                        <p className="mb-3 text-sm leading-6 text-custom-secondary">
-                            {item.description}
-                        </p>
-                    )}
-
-                    {promotionBadges.length > 0 && (
-                        <div className="mb-3 flex flex-wrap items-center gap-2">
-                            {promotionBadges.map((badge, index) => (
-                                <span
-                                    key={`promotion-badge-${index}`}
-                                    className={`rounded-full px-3 py-1 text-sm font-medium leading-5 ${
-                                        index % 2 === 0
-                                            ? "bg-[color-mix(in_srgb,var(--color-success)_14%,var(--color-bg-card))] text-[var(--color-success)] dark:bg-emerald-950/55 dark:text-emerald-300"
-                                            : "bg-[color-mix(in_srgb,var(--color-warning)_16%,var(--color-bg-card))] text-[var(--color-warning-dark)] dark:bg-amber-950/45 dark:text-amber-300"
-                                    }`}
-                                >
-                                    {resolveLocalizedText(badge)}
-                                </span>
-                            ))}
-                        </div>
-                    )}
-
-                    {/* Price before and after discount */}
-                    <div className="space-y-1">
-                        <div className="flex items-end gap-2">
-                            {displayOriginalPrice && (
-                                <span className="text-[14px] font-medium leading-5 text-custom-tertiary line-through">
-                                    {displayOriginalPrice}
-                                </span>
-                            )}
-                            <span className="text-[36px] font-extrabold leading-none text-custom-primary md:text-[40px]">
-                                {displayPrice}
+                        <div className="flex h-full w-full items-center justify-center">
+                            <span className="text-custom-tertiary text-[11px]">
+                                {t("cart.noImage", "No image")}
                             </span>
                         </div>
-                        {previewSubtotal != null && previewSubtotal !== "" && (
-                            <p className="text-sm text-custom-secondary">
-                                {t("cart.subtotal", "Subtotal")}:{" "}
-                                <span className="font-semibold text-custom-primary">{previewSubtotal}</span>
-                            </p>
-                        )}
-                        <div>
-                            {displayOriginalSubtotal != null ? (
-                                <span className="text-sm font-semibold text-[var(--color-success)]">
-                                    {t("cart.youSave", "You save")}{" "}
-                                    {formatPrice((originalSubtotal ?? 0) - priceNum * item.quantity)}
-                                </span>
+                    )}
+                </div>
+
+                <div className="min-w-0 flex-1">
+                    <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                            {productHref ? (
+                                <Link to={productHref} className={titleClassName}>
+                                    {title}
+                                </Link>
                             ) : (
-                                <span className="text-sm font-semibold text-[var(--color-success)]">
-                                    {item.savingsText || ""}
+                                <h3 className={titleClassName}>{title}</h3>
+                            )}
+                            <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-custom-secondary">
+                                {storeName && <span>{storeName}</span>}
+                                {storeName && variantText && (
+                                    <span aria-hidden className="text-custom-tertiary">
+                                        ·
+                                    </span>
+                                )}
+                                {variantText && <span>{variantText}</span>}
+                            </div>
+                        </div>
+
+                        {canEditQuantity && (
+                            <button
+                                type="button"
+                                onClick={() => onRemove(item.id)}
+                                className="shrink-0 rounded-lg p-1.5 text-custom-tertiary transition-colors hover:bg-[color:color-mix(in_srgb,var(--color-error)_10%,transparent)] hover:text-[color:var(--color-error)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:color-mix(in_srgb,var(--color-error)_35%,transparent)]"
+                                aria-label={t("cart.removeItem")}
+                            >
+                                <HiTrash className="h-4 w-4" />
+                            </button>
+                        )}
+                    </div>
+
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                        {freeQuantity > 0 && (
+                            <span className="rounded-md bg-[color:color-mix(in_srgb,var(--color-success)_12%,var(--color-bg-card))] px-2 py-0.5 text-[11px] font-medium text-[var(--color-success)]">
+                                {t("cart.free")} × {freeQuantity}
+                            </span>
+                        )}
+                        {isExcludedFromCoupon && (
+                            <span className="rounded-md bg-[color:color-mix(in_srgb,var(--color-warning)_14%,var(--color-bg-card))] px-2 py-0.5 text-[11px] font-medium text-[var(--color-warning-dark)]">
+                                {t("cart.excludedFromCoupon")}
+                            </span>
+                        )}
+                    </div>
+
+                    {lineNote && (
+                        <p className="mt-2 text-xs text-custom-secondary">
+                            {t("cart.note", "Note")}: {lineNote}
+                        </p>
+                    )}
+
+                    <div className="mt-3 flex flex-wrap items-end justify-between gap-3">
+                        <div
+                            className="inline-flex items-center rounded-lg border border-custom-primary bg-custom-card"
+                            role="group"
+                            aria-label={t("cart.quantity")}
+                        >
+                            <button
+                                type="button"
+                                onClick={canEditQuantity ? handleDecrease : undefined}
+                                disabled={!canEditQuantity || item.quantity <= 1}
+                                className="flex h-9 w-9 items-center justify-center text-custom-secondary transition-colors hover:bg-custom-hover disabled:cursor-not-allowed disabled:opacity-40"
+                                aria-label={t("cart.decreaseQuantity")}
+                            >
+                                <HiMinus className="h-3.5 w-3.5" />
+                            </button>
+                            <span className="min-w-[2rem] text-center text-sm font-semibold tabular-nums text-custom-primary">
+                                {item.quantity}
+                            </span>
+                            <button
+                                type="button"
+                                onClick={canEditQuantity ? handleIncrease : undefined}
+                                disabled={!canEditQuantity}
+                                className="flex h-9 w-9 items-center justify-center text-custom-secondary transition-colors hover:bg-custom-hover disabled:cursor-not-allowed disabled:opacity-40"
+                                aria-label={t("cart.increaseQuantity")}
+                            >
+                                <HiPlus className="h-3.5 w-3.5" />
+                            </button>
+                        </div>
+
+                        <div className="text-end">
+                            <div className="flex items-baseline justify-end gap-2">
+                                {displayOriginalPrice && (
+                                    <span className="text-xs text-custom-tertiary line-through tabular-nums">
+                                        {displayOriginalPrice}
+                                    </span>
+                                )}
+                                <span className="text-base font-bold tabular-nums text-custom-primary">
+                                    {displayPrice}
                                 </span>
+                            </div>
+                            <p className="mt-0.5 text-[11px] text-custom-secondary">
+                                {t("cart.each", "each")}
+                            </p>
+                            {previewSubtotal != null && previewSubtotal !== "" && (
+                                <p className="mt-1 text-sm font-semibold tabular-nums text-custom-primary">
+                                    {previewSubtotal}
+                                </p>
+                            )}
+                            {extrasTotal && (
+                                <p className="text-[11px] text-custom-secondary">
+                                    {t("cart.extras", "Extras")}: {extrasTotal}
+                                </p>
+                            )}
+                            {savedAmount > 0 && (
+                                <p className="mt-0.5 text-[11px] font-medium text-[var(--color-success)]">
+                                    {t("cart.youSave", "You save")}{" "}
+                                    {formatPrice(savedAmount)}
+                                </p>
                             )}
                         </div>
                     </div>
                 </div>
-
-                {/* Quantity Selector and Save for Later - Right Section */}
-                <div className="flex shrink-0 flex-col items-end justify-center gap-4 md:min-w-[210px]">
-                    {/* Quantity Selector */}
-                    <div className="flex items-center rounded-full border border-[var(--color-border-primary)] bg-[var(--color-bg-input)] shadow-sm">
-                        <button
-                            type="button"
-                            onClick={canEditQuantity ? handleDecrease : undefined}
-                            disabled={!canEditQuantity}
-                            className={canEditQuantity ? "p-3 text-custom-secondary transition-colors hover:bg-[var(--color-bg-hover)]" : "cursor-not-allowed p-3 opacity-50"}
-                            aria-label="Decrease quantity"
-                        >
-                            <HiMinus className="h-4 w-4" />
-                        </button>
-                        <span className="min-w-[2.5rem] px-3 py-2 text-center text-2xl font-semibold leading-none text-custom-primary">
-                            {item.quantity}
-                        </span>
-                        <button
-                            type="button"
-                            onClick={canEditQuantity ? handleIncrease : undefined}
-                            disabled={!canEditQuantity}
-                            className={canEditQuantity ? "p-3 text-custom-secondary transition-colors hover:bg-[var(--color-bg-hover)]" : "cursor-not-allowed p-3 opacity-50"}
-                            aria-label="Increase quantity"
-                        >
-                            <HiPlus className="h-4 w-4" />
-                        </button>
-                    </div>
-
-                    {/* Save for later */}
-                    {onMoveToWishlist && (
-                        <button
-                            onClick={() => onMoveToWishlist(item.id)}
-                            className="whitespace-nowrap text-base font-medium text-primary-light hover:underline"
-                        >
-                            {t("cart.saveForLater", "Save for later")}
-                        </button>
-                    )}
-                </div>
             </div>
-        </div>
+        </article>
     );
 }
