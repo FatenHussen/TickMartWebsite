@@ -991,7 +991,7 @@ function ProductDetails() {
                         </div>
 
                         <ProductActions
-                            icons={product.icons}
+                            icons={product.icons ?? []}
                             onIconClick={(icon) => {
                                 setSelectedIcon({
                                     name: icon.name,

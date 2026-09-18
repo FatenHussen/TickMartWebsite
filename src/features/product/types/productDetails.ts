@@ -187,8 +187,10 @@ export interface ExtraDetail {
 export interface ProductIcon {
  id: number;
  name: string;
- image: string;
- description: string;
+ /** Full SVG URL. Same as `image`. */
+ icon?: string | null;
+ image?: string | null;
+ description?: string | null;
 }
 
 export interface ProductApiBadge {
