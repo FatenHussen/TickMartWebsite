@@ -205,8 +205,8 @@ export default function ReviewDeliveryDetailsSidebar({
                                 )}
                             >
                                 {isLoading
-                                    ? t("cart.confirming", "Confirming…")
-                                    : t("cart.confirmOrder", "Confirm Order")}
+                                    ? t("checkout.confirming")
+                                    : t("checkout.confirmOrder")}
                             </Button>
 
                             <Link

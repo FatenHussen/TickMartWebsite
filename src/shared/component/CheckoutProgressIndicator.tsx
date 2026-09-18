@@ -16,15 +16,15 @@ export default function CheckoutProgressIndicator({
     const steps: ProgressStep[] = [
         {
             id: "cart",
-            label: t("checkout.cart") || "Shopping cart",
+            label: t("checkout.cart", "Shopping cart"),
         },
         {
             id: "checkout",
-            label: t("checkout.checkoutTitle") || "Checkout details",
+            label: t("checkout.checkoutTitle", "Checkout"),
         },
         {
             id: "review",
-            label: t("checkout.reviewConfirm") || "Review & confirm",
+            label: t("checkout.reviewConfirm", "Review & confirm"),
         },
     ];
 
