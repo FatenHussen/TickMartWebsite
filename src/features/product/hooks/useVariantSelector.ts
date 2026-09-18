@@ -6,11 +6,13 @@ import type {
  SelectedAttributes,
 } from"../types/productDetails";
 import { isPurchasableVariant, isVariantInStock } from"../types/productDetails";
+import { gallerySrcsForSelection } from "../lib/productMedia";
 
 interface UseVariantSelectorParams {
  attributesMap: AttributeMapItem[];
  shopVariants: ShopVariant[];
  defaultImages: ProductImage[];
+ thumbnail?: string | null;
  basePrice: number;
  basePriceAfterDiscount: number;
 }
@@ -18,6 +20,24 @@ interface UseVariantSelectorParams {
 interface AvailableAttribute extends AttributeMapItem {
  availableValues: string[]; // Values available (exist in any variant)
  disabledValues: string[]; // Values that don't exist in any variant
+}
+
+function comboAttributes(variant: ShopVariant) {
+ return variant.attributes ?? [];
+}
+
+/** Identity is attributes + sku. Empty `attributes` is a display-only fallback row. */
+function matchesSelection(
+ variant: ShopVariant,
+ selected: SelectedAttributes,
+): boolean {
+ const attrs = comboAttributes(variant);
+ if (attrs.length === 0) return false;
+ return attrs.every((attr) => selected[attr.attribute] === attr.value);
+}
+
+function firstComboVariant(variants: ShopVariant[]): ShopVariant | undefined {
+ return variants.find((variant) => comboAttributes(variant).length > 0);
 }
 
 interface UseVariantSelectorReturn {
@@ -36,6 +56,7 @@ export function useVariantSelector({
  attributesMap,
  shopVariants,
  defaultImages,
+ thumbnail,
  basePrice,
  basePriceAfterDiscount,
 }: UseVariantSelectorParams): UseVariantSelectorReturn {
@@ -46,16 +67,14 @@ export function useVariantSelector({
  useEffect(() => {
  if (shopVariants.length === 0) return;
 
- const firstVariant = shopVariants[0];
+ const firstVariant = firstComboVariant(shopVariants) ?? shopVariants[0];
  const initialAttrs: SelectedAttributes = {};
- (firstVariant.attributes ?? []).forEach((attr) => {
+ comboAttributes(firstVariant).forEach((attr) => {
  initialAttrs[attr.attribute] = attr.value;
  });
 
  const hasMatch = shopVariants.some((v) =>
- (v.attributes ?? []).every(
- (attr) => selectedAttributes[attr.attribute] === attr.value
- )
+ matchesSelection(v, selectedAttributes)
  );
  if (!hasMatch) {
  setSelectedAttributes(initialAttrs);
@@ -65,23 +84,32 @@ export function useVariantSelector({
  // Set a single attribute value - auto-select first available option for other attributes
  const setAttributeValue = useCallback(
  (attributeName: string, value: string) => {
- // Find first variant that has this attribute value
- const variantWithValue = shopVariants.find((variant) =>
- (variant.attributes ?? []).some(
+ const hasValue = (variant: ShopVariant) =>
+ comboAttributes(variant).some(
  (attr) => attr.attribute === attributeName && attr.value === value
- )
  );
 
+ const keepsOthers = (variant: ShopVariant) =>
+ Object.entries(selectedAttributes).every(([name, val]) => {
+ if (!val || name === attributeName) return true;
+ return comboAttributes(variant).some(
+ (attr) => attr.attribute === name && attr.value === val
+ );
+ });
+
+ const variantWithValue =
+ shopVariants.find((variant) => hasValue(variant) && keepsOthers(variant)) ??
+ shopVariants.find(hasValue);
+
  if (variantWithValue) {
- // Set all attributes from this variant
  const newAttrs: SelectedAttributes = {};
- (variantWithValue.attributes ?? []).forEach((attr) => {
+ comboAttributes(variantWithValue).forEach((attr) => {
  newAttrs[attr.attribute] = attr.value;
  });
  setSelectedAttributes(newAttrs);
  }
  },
- [shopVariants]
+ [shopVariants, selectedAttributes]
  );
 
  // Calculate available values — filter by other selected attributes (no Cartesian)
@@ -137,11 +165,9 @@ export function useVariantSelector({
  }
 
  return (
- shopVariants.find((variant) => {
- return (variant.attributes ?? []).every((attr) => {
- return selectedAttributes[attr.attribute] === attr.value;
- });
- }) || null
+ shopVariants.find((variant) =>
+ matchesSelection(variant, selectedAttributes)
+ ) || null
  );
  }, [selectedAttributes, shopVariants, attributesMap.length]);
 
@@ -158,13 +184,14 @@ export function useVariantSelector({
  return basePriceAfterDiscount;
  }, [selectedVariant, basePriceAfterDiscount]);
 
- // Current images - from variant, then the product's own images
- const currentImages = useMemo(() => {
- if (selectedVariant?.images && selectedVariant.images.length > 0) {
- return selectedVariant.images.map((img) => img.path);
- }
- return (defaultImages ?? []).map((img) => img.path);
- }, [selectedVariant, defaultImages]);
+ const currentImages = useMemo(
+ () =>
+ gallerySrcsForSelection(selectedVariant, {
+ images: defaultImages,
+ thumbnail,
+ }),
+ [selectedVariant, defaultImages, thumbnail],
+ );
 
  // Current quantity
  const currentQuantity = useMemo(() => {

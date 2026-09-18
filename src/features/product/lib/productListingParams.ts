@@ -47,19 +47,24 @@ function parseIntOpt(v: string | null): number | undefined {
     return Number.isFinite(n) ? n : undefined;
 }
 
-/** Build filters from URL search params (shareable product listing URLs). */
-export function parseProductListingParams(searchParams: URLSearchParams): ProductsFilters {
-    const attrKeys = ["attribute_values[]", "attribute_values"];
-    let attribute_values: number[] | undefined;
-    for (const key of attrKeys) {
-        const raw = searchParams.getAll(key);
-        if (raw.length) {
-            attribute_values = raw
-                .map((s) => Number(s))
-                .filter((n) => Number.isFinite(n));
-            break;
+/** `31,40` (spec) or repeated `attribute_values[]` — OR logic. */
+function parseAttributeValues(searchParams: URLSearchParams): number[] | undefined {
+    const nums: number[] = [];
+    for (const key of ["attribute_values[]", "attribute_values"]) {
+        for (const raw of searchParams.getAll(key)) {
+            for (const part of raw.split(",")) {
+                const n = Number(part.trim());
+                if (Number.isFinite(n)) nums.push(n);
+            }
         }
     }
+    if (!nums.length) return undefined;
+    return [...new Set(nums)];
+}
+
+/** Build filters from URL search params (shareable product listing URLs). */
+export function parseProductListingParams(searchParams: URLSearchParams): ProductsFilters {
+    const attribute_values = parseAttributeValues(searchParams);
 
     return {
         category_id: parseIntOpt(searchParams.get("category_id")),
@@ -102,9 +107,9 @@ export function serializeProductListingParams(f: ProductsFilters): string {
     appendBool(params, "on_sale", f.on_sale === true);
     appendBool(params, "in_stock_only", f.in_stock_only === true);
 
-    f.attribute_values?.forEach((id) =>
-        params.append("attribute_values[]", String(id))
-    );
+    if (f.attribute_values?.length) {
+        params.set("attribute_values", f.attribute_values.join(","));
+    }
 
     return params.toString();
 }

@@ -11,6 +11,7 @@ import { _ProductApi } from "@/features/product/api/productApi";
 import { queryKeys } from "@/utils/queryKeys";
 import ShopVariantsPreview from "@/features/product/components/ShopVariantsPreview";
 import { isPurchasableVariant } from "@/features/product/types/productDetails";
+import { gallerySrcsForSelection } from "@/features/product/lib/productMedia";
 import { PremiumInlineLoader } from "@/shared/component/loading";
 import type { ScheduledBasketDetail } from "../types/scheduledBasket";
 import type { ScheduledBasketExtraItem } from "../types/scheduledBasket";
@@ -120,7 +121,12 @@ export default function AddProductModal({
      * real `shop_product_variant_id`), so only purchasable ones count here.
      */
     const purchasableVariants = useMemo(
-        () => (productDetails?.shop_variants ?? []).filter(isPurchasableVariant),
+        () => {
+            const all = productDetails?.shop_variants ?? [];
+            const combos = all.filter((v) => (v.attributes?.length ?? 0) > 0);
+            const pool = combos.length ? combos : all;
+            return pool.filter(isPurchasableVariant);
+        },
         [productDetails?.shop_variants],
     );
 
@@ -221,8 +227,14 @@ export default function AddProductModal({
 
     const isAdding = addingProductId != null || updateMutation.isPending;
     const detailTitle = productDetails?.name ?? listProductForDetail?.name ?? "";
+    const selectedDetailVariant =
+        purchasableVariants.find((v) => v.id === selectedVariantId) ??
+        productDetails?.shop_variants?.find((v) => v.id === selectedVariantId) ??
+        null;
     const detailImage =
-        productDetails?.images?.[0]?.path ?? listProductForDetail?.image ?? "";
+        gallerySrcsForSelection(selectedDetailVariant, productDetails)[0] ||
+        listProductForDetail?.image ||
+        "";
     const descriptionSnippet = useMemo(() => {
         const raw = productDetails?.full_description ?? productDetails?.description ?? "";
         if (!raw) return "";
@@ -312,6 +324,7 @@ export default function AddProductModal({
                                 <ShopVariantsPreview
                                     variants={purchasableVariants}
                                     availableShops={productDetails?.available_shops}
+                                    productMedia={productDetails}
                                     selectedId={selectedVariantId}
                                     onSelect={(id) => setSelectedVariantId(id)}
                                 />

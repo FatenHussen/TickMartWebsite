@@ -2,12 +2,15 @@ import { useTranslation } from "react-i18next";
 import { cn } from "@/shared/lib/utils";
 import type { AvailableShop, ShopVariant, VariantAttribute } from "../types/productDetails";
 import { isPurchasableVariant } from "../types/productDetails";
+import { gallerySrcsForSelection, mediaSrc, type ProductMediaSource } from "../lib/productMedia";
 import { resolveDisplaySalePrice } from "@/shared/lib/formatApiPrice";
 
 export type ShopVariantsPreviewProps = {
     variants: ShopVariant[];
     availableShops?: AvailableShop[];
     className?: string;
+    /** Product gallery used when a row has `has_variant_images === false`. */
+    productMedia?: ProductMediaSource | null;
     /** When set, one variant can be chosen (e.g. add to cart) */
     selectedId?: number | null;
     onSelect?: (shopVariantId: number) => void;
@@ -36,6 +39,7 @@ export default function ShopVariantsPreview({
     variants,
     availableShops,
     className,
+    productMedia,
     selectedId,
     onSelect,
 }: ShopVariantsPreviewProps) {
@@ -43,6 +47,13 @@ export default function ShopVariantsPreview({
     const selectable = typeof onSelect === "function";
 
     if (!variants?.length) return null;
+
+    const hasComboRows = variants.some((v) => (v.attributes?.length ?? 0) > 0);
+    const rows = hasComboRows
+        ? variants.filter((v) => (v.attributes?.length ?? 0) > 0)
+        : variants;
+
+    if (!rows.length) return null;
 
     return (
         <div className={cn("space-y-3", className)}>
@@ -58,8 +69,10 @@ export default function ShopVariantsPreview({
                 </p>
             )}
             <ul className="flex max-h-[min(320px,40vh)] flex-col gap-3 overflow-y-auto pr-1">
-                {variants.map((v, index) => {
-                    const thumb = v.images?.[0]?.path;
+                {rows.map((v, index) => {
+                    const thumb =
+                        gallerySrcsForSelection(v, productMedia)[0] ||
+                        mediaSrc(v.images?.[0]);
                     const shopName =
                         v.shop_id != null
                             ? availableShops?.find((s) => s.id === v.shop_id)?.name

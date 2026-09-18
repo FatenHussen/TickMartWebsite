@@ -41,7 +41,8 @@ import { resolveProductCountry } from "../lib/resolveLocalizedOrString";
 import {
     resolveVariantPriceDisplay,
 } from "../lib/variantPriceDisplay";
-import { isPurchasableVariant, variantOrderLimit, exceedsVariantStock, warrantyTitle, warrantyBody } from "../types/productDetails";
+import { isPurchasableVariant, firstPurchasableVariant, variantOrderLimit, exceedsVariantStock, warrantyTitle, warrantyBody } from "../types/productDetails";
+import { gallerySrcsForSelection, mediaSrc } from "../lib/productMedia";
 import { postCartItemsSafe } from "@/features/cart/api/cartApi";
 import { useFavorites, useToggleFavorite } from "@/features/account/hooks/useFavorites";
 import { useCanRate } from "@/features/account/hooks/useRatings";
@@ -180,8 +181,7 @@ function ProductDetails() {
             return;
         }
         const variants = boughtWithPreview.shop_variants;
-        // Only variants linked to a branch can be selected/ordered.
-        const firstOk = variants.find(isPurchasableVariant);
+        const firstOk = firstPurchasableVariant(variants);
         setPreviewSelectedShopVariantId((prev) => {
             if (prev != null && variants.some((v) => v.id === prev)) return prev;
             return firstOk?.id ?? null;
@@ -233,6 +233,7 @@ function ProductDetails() {
         attributesMap: product?.attributes_map || [],
         shopVariants: product?.shop_variants || [],
         defaultImages: product?.images || [],
+        thumbnail: product?.thumbnail,
         basePrice: product?.price || 0,
         basePriceAfterDiscount: product?.price_after_discount || 0,
     });
@@ -293,13 +294,8 @@ function ProductDetails() {
           ? t("product.selectVariant", "Select a variant")
           : t("product.outOfStock", "Out of stock");
 
-    /** Variant images → product images → single thumbnail. */
-    const galleryImages =
-        currentImages.length > 0
-            ? currentImages
-            : product?.thumbnail
-              ? [product.thumbnail]
-              : [];
+    /** Bound to the selected shop variant via `galleryFor` (`has_variant_images` + `images[].path`). */
+    const galleryImages = currentImages;
 
     const handleAddPreviewToCart = useCallback(() => {
         if (!boughtWithPreview) return;
@@ -337,10 +333,7 @@ function ProductDetails() {
         const subtotalStr = `${sym}${subtotalNum.toFixed(2)}`;
 
         const imagePath =
-            v.images?.[0]?.path ??
-            boughtWithPreview.images?.[0]?.path ??
-            boughtWithPreview.thumbnail ??
-            "";
+            gallerySrcsForSelection(v, boughtWithPreview)[0] ?? "";
 
         const lineId = `spv-${v.id}`;
 
@@ -387,6 +380,7 @@ function ProductDetails() {
                 {
                     shop_product_variant_id: v.id,
                     quantity: previewQuantity,
+                    ...(cartItem.note ? { note: cartItem.note } : {}),
                 },
             ]);
             toast.success(t("cart.addedToCart", "Added to cart"));
@@ -596,6 +590,7 @@ function ProductDetails() {
                 {
                     shop_product_variant_id: selectedVariant.id,
                     quantity,
+                    ...(cartItem.note ? { note: cartItem.note } : {}),
                 },
             ]);
             toast.success(t("cart.addedToCart", "Added to cart"));
@@ -828,7 +823,7 @@ function ProductDetails() {
                 <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-12 xl:gap-16">
                     <div className="lg:sticky lg:top-[calc(var(--app-navbar-offset)+0.75rem)]">
                         <ProductImageGallery
-                            key={selectedVariant?.id ?? "base"}
+                            key={`${selectedVariant?.id ?? "base"}:${galleryImages.join("|")}`}
                             images={galleryImages}
                             isFavorite={isFavorite}
                             onToggleFavorite={handleToggleFavorite}
@@ -1341,12 +1336,10 @@ function ProductDetails() {
                                         <div className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-t from-black/35 via-transparent to-transparent" />
                                         <img
                                             src={
-                                                previewSelectedVariant?.images?.[0]
-                                                    ?.path ??
-                                                boughtWithPreview.images?.[0]
-                                                    ?.path ??
-                                                boughtWithPreview.thumbnail ??
-                                                ""
+                                                gallerySrcsForSelection(
+                                                    previewSelectedVariant,
+                                                    boughtWithPreview,
+                                                )[0] ?? ""
                                             }
                                             alt=""
                                             className="mx-auto w-full max-h-60 object-cover transition duration-500 group-hover:scale-[1.02]"
@@ -1410,6 +1403,7 @@ function ProductDetails() {
                                             availableShops={
                                                 boughtWithPreview.available_shops
                                             }
+                                            productMedia={boughtWithPreview}
                                             selectedId={
                                                 previewSelectedShopVariantId
                                             }
@@ -1464,7 +1458,7 @@ function ProductDetails() {
                     rateableType="product"
                     rateableId={productIdNum}
                     productName={product?.name}
-                    productImageUrl={currentImages?.[0] ?? product?.images?.[0]?.path}
+                    productImageUrl={galleryImages[0] ?? mediaSrc(product?.images?.[0])}
                     productAttributes={
                         selectedVariant?.attributes?.length
                             ? selectedVariant.attributes

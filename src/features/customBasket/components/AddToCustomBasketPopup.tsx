@@ -16,6 +16,7 @@ import {
     variantOrderLimit,
     exceedsVariantStock,
 } from "@/features/product/types/productDetails";
+import { gallerySrcsForSelection } from "@/features/product/lib/productMedia";
 import { resolveDisplaySalePrice } from "@/shared/lib/formatApiPrice";
 import type { ProductItem } from "@/features/home/types";
 import type { UseMutationResult } from "@tanstack/react-query";
@@ -65,7 +66,12 @@ export default function AddToCustomBasketPopup({
     });
 
     const purchasable = useMemo(
-        () => (details?.shop_variants ?? []).filter(isPurchasableVariant),
+        () => {
+            const all = details?.shop_variants ?? [];
+            const combos = all.filter((v) => (v.attributes?.length ?? 0) > 0);
+            const pool = combos.length ? combos : all;
+            return pool.filter(isPurchasableVariant);
+        },
         [details?.shop_variants],
     );
 
@@ -133,7 +139,9 @@ export default function AddToCustomBasketPopup({
     };
 
     const canAdd = resolvedVariantId() != null && quantity >= 1;
-    const imageSrc = details?.images?.[0]?.path ?? product?.image;
+    const imageSrc =
+        gallerySrcsForSelection(selectedVariant, details)[0] ||
+        product?.image;
 
     return (
         <BasePopup
@@ -182,6 +190,7 @@ export default function AddToCustomBasketPopup({
                         <ShopVariantsPreview
                             variants={details?.shop_variants ?? []}
                             availableShops={details?.available_shops}
+                            productMedia={details}
                             selectedId={selectedVariantId}
                             onSelect={setSelectedVariantId}
                         />

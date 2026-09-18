@@ -3,8 +3,11 @@
 import type { ApiDualCurrencies } from "@/shared/lib/formatApiPrice";
 
 export interface ProductImage {
- id: number;
- path: string;
+ id?: number;
+ /** Full URL on user/product APIs. */
+ path?: string;
+ /** Full URL on some admin payloads; treat as `path` on the storefront. */
+ url?: string;
 }
 
 export interface ProductCategory {
@@ -63,6 +66,11 @@ export interface ShopVariant {
  shop_id: number | null;
  is_restaurant?: boolean;
  city_id?: number | null;
+ /**
+  * `true` = `images[]` are this variant's own photos.
+  * `false` = `images[]` is a copy of the product gallery (do not treat as own).
+  */
+ has_variant_images?: boolean | 0 | 1 | "0" | "1";
  images: ProductImage[];
 }
 
@@ -113,6 +121,23 @@ export function isPurchasableVariant(
         variant.shop_id != null &&
         isVariantInStock(variant)
     );
+}
+
+/** A real color/size combo — not the empty-attributes fallback row. */
+export function isComboVariant(
+    variant: ShopVariant | null | undefined,
+): boolean {
+    return Boolean(variant && (variant.attributes?.length ?? 0) > 0);
+}
+
+/** Prefer a purchasable combo; fall back to any purchasable row. */
+export function firstPurchasableVariant(
+    variants: ShopVariant[] | null | undefined,
+): (ShopVariant & { id: number; shop_id: number }) | undefined {
+    const list = variants ?? [];
+    const combos = list.filter(isComboVariant);
+    const pool = combos.length ? combos : list;
+    return pool.find(isPurchasableVariant);
 }
 
 export function warrantyTitle(

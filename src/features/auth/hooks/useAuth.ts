@@ -21,6 +21,7 @@ import { useOtpStore } from"@/store/otp";
 import { useAuthStore } from"@/store/auth";
 import { paths } from"@/app/routes/path/paths";
 import { getApiErrorMessage, isApiToastHandled } from"@/shared/lib/apiMessage";
+import { syncLocalCartToServer } from "@/features/cart/api/cartApi";
 
 export function useLogin() {
  const qc = useQueryClient();
@@ -34,6 +35,7 @@ export function useLogin() {
  onSuccess: (data) => {
  if (data.data.user && data.data.token) {
  setAuth(data.data.user, data.data.token);
+ syncLocalCartToServer();
  toast.success(t("auth.loginSuccess","تم تسجيل الدخول بنجاح"));
  }
  qc.invalidateQueries({ queryKey: queryKeys.auth.login() });
@@ -201,6 +203,7 @@ export function useVerifyOtp() {
  const user = data.data?.user;
  if (token) {
  setAuth(user ?? { id: 0, name: "" }, token);
+ syncLocalCartToServer();
  toast.success(t("auth.otpVerifiedSuccess","تم التحقق بنجاح"));
  }
 

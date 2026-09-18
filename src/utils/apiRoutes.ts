@@ -55,9 +55,11 @@ function appendUserProductListFilters(
     if (filters?.in_stock_only === true || filters?.in_stock_only === 1)
         params.append("in_stock_only", "true");
     if (filters?.attribute_values?.length) {
-        filters.attribute_values.forEach((v) =>
-            params.append("attribute_values[]", String(v)),
-        );
+        const ids = filters.attribute_values.filter((v) => Number.isFinite(v));
+        if (ids.length) {
+            params.append("attribute_values", ids.join(","));
+            ids.forEach((v) => params.append("attribute_values[]", String(v)));
+        }
     }
     if (filters?.type) params.append("type", filters.type);
     if (filters?.search) params.append("search", filters.search.trim());
@@ -111,10 +113,13 @@ export const apiRoutes = {
     },
 
     /**
-    * Site cart — add lines without a client-calculated price.
+    * Site cart. Token required (401 without). Guests keep a local cart and
+    * POST the same payloads after login. Checkout remains `POST /user/orders`.
     */
     cart: {
+        get: "/user/cart" as const,
         items: "/user/cart/items" as const,
+        item: (id: number | string) => `/user/cart/items/${id}` as const,
     },
 
     /**

@@ -69,22 +69,14 @@ export default function ProductImageGallery({
     const { t } = useTranslation();
     const { isRTL } = useLanguage();
     const safeImages = useMemo(() => images.filter(Boolean), [images]);
+    const imagesKey = safeImages.join("|");
     const [selectedIndex, setSelectedIndex] = useState(0);
     const [thumbnailStartIndex, setThumbnailStartIndex] = useState(0);
 
     useEffect(() => {
-        setSelectedIndex((prev) => {
-            if (safeImages.length === 0) return 0;
-            return Math.min(prev, safeImages.length - 1);
-        });
-    }, [safeImages.length]);
-
-    useEffect(() => {
-        setThumbnailStartIndex((prev) => {
-            if (safeImages.length <= THUMBNAILS_TO_SHOW) return 0;
-            return Math.min(prev, Math.max(0, safeImages.length - THUMBNAILS_TO_SHOW));
-        });
-    }, [safeImages.length]);
+        setSelectedIndex(0);
+        setThumbnailStartIndex(0);
+    }, [imagesKey]);
 
     useEffect(() => {
         if (selectedIndex < thumbnailStartIndex) {
