@@ -15,10 +15,21 @@ export interface ProductCategory {
  name: string;
 }
 
+/** `attributes_map[].options[]` — identity is `id`; `name` / `hex` come from the last GET. */
+export interface AttributeMapOption {
+ id: number;
+ name: string;
+ hex?: string | null;
+}
+
 export interface AttributeMapItem {
+ /** Category attribute id (10 = color, 11 = size). Not the value id. */
+ id?: number;
  attribute: string;
- type:"color"|"square";
+ type: "color" | "square" | string;
+ /** Legacy string list — prefer `options`. */
  values: string[];
+ options?: AttributeMapOption[];
 }
 
 /** API: `percentage` | `fixed` | `null`. `"none"` is a leftover alias. */

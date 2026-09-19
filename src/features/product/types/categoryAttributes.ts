@@ -5,6 +5,7 @@ export type CategoryAttributeUiType = "square" | "color" | "circle";
 export interface CategoryAttributeValue {
     id: number;
     name: LocalizedTextValue;
+    hex?: string | null;
 }
 
 export interface CategoryAttribute {

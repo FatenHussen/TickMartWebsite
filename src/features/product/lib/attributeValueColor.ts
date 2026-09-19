@@ -25,7 +25,7 @@ function hexLabelToRgb(label: string): string | null {
 }
 
 /**
- * Swatch fill: prefer `shop_variants[].attributes[].hex`, then the label, then a stable HSL.
+ * Swatch fill: prefer `options[].hex` / `attributes[].hex`, then the label, then a stable HSL.
  */
 export function cssColorForSwatch(options: {
     hex?: string | null;

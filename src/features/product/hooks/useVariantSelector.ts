@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
 import type {
     AttributeMapItem,
+    AttributeMapOption,
     ShopVariant,
     ProductImage,
     SelectedAttributes,
@@ -8,10 +9,15 @@ import type {
 import { isPurchasableVariant, isVariantInStock } from "../types/productDetails";
 import { gallerySrcsForSelection } from "../lib/productMedia";
 import {
-    attributeValueHexMap,
     findShopVariant,
+    findShopVariantByNames,
+    findShopVariantWithOptionId,
     findShopVariantWithValue,
     isIndependentPickerAttribute,
+    optionHexById,
+    resolveAttributeOptions,
+    selectedIdsFromVariant,
+    variantHasOption,
 } from "../lib/findShopVariant";
 
 interface UseVariantSelectorParams {
@@ -26,9 +32,12 @@ interface UseVariantSelectorParams {
 }
 
 interface AvailableAttribute extends AttributeMapItem {
-    availableValues: string[];
-    disabledValues: string[];
-    valueHex: Record<string, string>;
+    options: AttributeMapOption[];
+    availableIds: number[];
+    disabledIds: number[];
+    selectedId: number | null;
+    selectedName: string;
+    valueHex: Record<number, string>;
 }
 
 function comboAttributes(variant: ShopVariant) {
@@ -73,7 +82,8 @@ function findVariantById(
 
 interface UseVariantSelectorReturn {
     selectedAttributes: SelectedAttributes;
-    setAttributeValue: (attributeName: string, value: string) => void;
+    selectedIds: number[];
+    setAttributeOption: (attr: AttributeMapItem, optionId: number) => void;
     selectedVariant: ShopVariant | null;
     selectedShopVariantId: number | null;
     currentPrice: number;
@@ -85,9 +95,9 @@ interface UseVariantSelectorReturn {
 }
 
 /**
- * Picker labels come from the last GET (`attributes[].value` / `attributes_map`).
- * Purchase identity is `shop_variants[].id` so an admin rename (صغير → XS)
- * keeps the same row and only updates the shown name.
+ * Picker state is `options[].id` / `attributes[].id`.
+ * Labels (`name` / `value`) come from the last GET so a rename (صغير → XS)
+ * only updates the shown text. Purchase identity is `shop_variants[].id`.
  */
 export function useVariantSelector({
     productId,
@@ -139,70 +149,119 @@ export function useVariantSelector({
         [selectedVariant],
     );
 
-    const setAttributeValue = useCallback(
-        (attributeName: string, value: string) => {
-            const nextSelected = {
-                ...selectedAttributes,
-                [attributeName]: value,
-            };
+    const selectedIds = useMemo(
+        () => selectedIdsFromVariant(selectedVariant),
+        [selectedVariant],
+    );
+
+    const setAttributeOption = useCallback(
+        (attr: AttributeMapItem, optionId: number) => {
+            const options = resolveAttributeOptions(attr, shopVariants);
+            const option = options.find((o) => o.id === optionId);
+            if (!option) return;
+
+            const axisIds = new Set(
+                options.map((o) => o.id).filter((id) => id > 0),
+            );
+            const currentIds = selectedIdsFromVariant(selectedVariant);
+            const nextIds = [
+                ...currentIds.filter((id) => !axisIds.has(id)),
+                ...(optionId > 0 ? [optionId] : []),
+            ];
+
             // Keep the other axes when that combo exists (أزرق + S).
             // Otherwise pick the first row with the new value (أسود → L).
             const match =
-                findShopVariant(shopVariants, nextSelected) ??
-                findShopVariantWithValue(shopVariants, attributeName, value);
+                (nextIds.length
+                    ? findShopVariant(shopVariants, nextIds)
+                    : null) ??
+                findShopVariantWithOptionId(shopVariants, optionId) ??
+                findShopVariantByNames(shopVariants, {
+                    ...attributesFromVariant(selectedVariant),
+                    [attr.attribute]: option.name,
+                }) ??
+                findShopVariantWithValue(
+                    shopVariants,
+                    attr.attribute,
+                    option.name,
+                );
             if (!match) return;
             setSelectedShopVariantId(match.id ?? null);
         },
-        [shopVariants, selectedAttributes],
+        [shopVariants, selectedVariant],
     );
 
-    const hexByAttribute = useMemo(
-        () => attributeValueHexMap(shopVariants),
-        [shopVariants],
+    const hexById = useMemo(
+        () => optionHexById(attributesMap, shopVariants),
+        [attributesMap, shopVariants],
     );
 
     const availableAttributes = useMemo((): AvailableAttribute[] => {
         return attributesMap.map((attr) => {
-            const availableValues: string[] = [];
-            const disabledValues: string[] = [];
+            const options = resolveAttributeOptions(attr, shopVariants);
+            const axisIds = new Set(
+                options.map((o) => o.id).filter((id) => id > 0),
+            );
             const independent = isIndependentPickerAttribute(attr.type);
+            const otherIds = selectedIds.filter((id) => !axisIds.has(id));
 
-            // Colors that exist on any row stay clickable. Sizes are limited
-            // to the current color so a missing combo is not left "stuck".
             const matchingVariants = independent
                 ? shopVariants
-                : shopVariants.filter((variant) =>
-                      Object.entries(selectedAttributes).every(([name, val]) => {
-                          if (!val || name === attr.attribute) return true;
-                          return (variant.attributes ?? []).some(
-                              (a) => a.attribute === name && a.value === val,
+                : shopVariants.filter((variant) => {
+                      if (otherIds.length) {
+                          return otherIds.every((id) =>
+                              (variant.attributes ?? []).some((a) => a.id === id),
                           );
-                      }),
-                  );
+                      }
+                      return Object.entries(selectedAttributes).every(
+                          ([name, val]) => {
+                              if (!val || name === attr.attribute) return true;
+                              return (variant.attributes ?? []).some(
+                                  (a) =>
+                                      a.attribute === name && a.value === val,
+                              );
+                          },
+                      );
+                  });
 
-            attr.values.forEach((value) => {
+            const availableIds: number[] = [];
+            const disabledIds: number[] = [];
+            for (const option of options) {
                 const hasAnyVariant = matchingVariants.some((variant) =>
-                    (variant.attributes ?? []).some(
-                        (a) =>
-                            a.attribute === attr.attribute && a.value === value,
-                    ),
+                    variantHasOption(variant, option, attr.attribute),
                 );
+                if (hasAnyVariant) availableIds.push(option.id);
+                else disabledIds.push(option.id);
+            }
 
-                if (hasAnyVariant) {
-                    availableValues.push(value);
-                } else {
-                    disabledValues.push(value);
-                }
-            });
+            const selectedId =
+                options.find((o) => o.id > 0 && selectedIds.includes(o.id))
+                    ?.id ??
+                options.find(
+                    (o) => o.name === selectedAttributes[attr.attribute],
+                )?.id ??
+                null;
 
             return {
                 ...attr,
-                availableValues,
-                disabledValues,
-                valueHex: hexByAttribute[attr.attribute] ?? {},
+                options,
+                availableIds,
+                disabledIds,
+                selectedId,
+                selectedName:
+                    options.find((o) => o.id === selectedId)?.name ??
+                    selectedAttributes[attr.attribute] ??
+                    "",
+                valueHex: hexById,
             };
         });
-    }, [attributesMap, shopVariants, selectedAttributes, hexByAttribute]);
+    }, [
+        attributesMap,
+        shopVariants,
+        selectedAttributes,
+        selectedIds,
+        hexById,
+    ]);
 
     const currentPrice = useMemo(() => {
         return selectedVariant?.price ?? basePrice;
@@ -234,7 +293,8 @@ export function useVariantSelector({
 
     return {
         selectedAttributes,
-        setAttributeValue,
+        selectedIds,
+        setAttributeOption,
         selectedVariant,
         selectedShopVariantId,
         currentPrice,

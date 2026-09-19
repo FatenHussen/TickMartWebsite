@@ -237,7 +237,7 @@ function ProductDetails() {
 
     const {
         selectedAttributes,
-        setAttributeValue,
+        setAttributeOption,
         currentPrice,
         currentPriceAfterDiscount,
         currentImages,
@@ -835,7 +835,7 @@ function ProductDetails() {
                     </span>
                 </nav>
 
-                <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:gap-10">
+                <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(16rem,26rem)_minmax(0,1fr)] lg:gap-10">
                     <div className="relative z-0 min-w-0">
                         <ProductImageGallery
                             key={`${selectedVariant?.id ?? "base"}:${galleryImages.join("|")}`}
@@ -917,11 +917,11 @@ function ProductDetails() {
 
                         {availableAttributes.map((attribute) => (
                             <AttributeSelector
-                                key={attribute.attribute}
+                                key={attribute.id ?? attribute.attribute}
                                 attribute={attribute}
-                                selectedValue={selectedAttributes[attribute.attribute]}
-                                onValueChange={(value) =>
-                                    setAttributeValue(attribute.attribute, value)
+                                selectedId={attribute.selectedId}
+                                onValueChange={(optionId) =>
+                                    setAttributeOption(attribute, optionId)
                                 }
                                 activeColor={isFood ? "teal" : "dark"}
                             />

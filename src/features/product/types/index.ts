@@ -36,14 +36,23 @@ export type ProductFilters = {
 };
 
 // Component Types
+export interface AttributePickerOption {
+ id: number;
+ name: string;
+ hex?: string | null;
+}
+
 export interface AttributeOption {
+ id?: number;
  attribute: string;
- type:"color"|"square";
- values: string[];
- availableValues?: string[];
- disabledValues?: string[];
- /** `shop_variants[].attributes[].hex` keyed by the value label. */
- valueHex?: Record<string, string>;
+ type: "color" | "square" | string;
+ /** Legacy string list — prefer `options`. */
+ values?: string[];
+ options?: AttributePickerOption[];
+ availableIds?: number[];
+ disabledIds?: number[];
+ /** Swatch fill keyed by `options[].id`. */
+ valueHex?: Record<number, string>;
 }
 
 export type DeliveryOption = {

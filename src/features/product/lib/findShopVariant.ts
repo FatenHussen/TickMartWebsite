@@ -1,11 +1,54 @@
-import type { ShopVariant, VariantAttribute } from "../types/productDetails";
+import type {
+    AttributeMapItem,
+    AttributeMapOption,
+    ShopVariant,
+    VariantAttribute,
+} from "../types/productDetails";
 
 function attrs(variant: ShopVariant): VariantAttribute[] {
     return variant.attributes ?? [];
 }
 
-/** Match a shop row by `attribute` + `value` (names from the last GET). */
+export function selectedIdsFromVariant(
+    variant: ShopVariant | null | undefined,
+): number[] {
+    if (!variant) return [];
+    return attrs(variant)
+        .map((a) => a.id)
+        .filter((id): id is number => id != null && Number.isFinite(id) && id > 0);
+}
+
+/**
+ * Match a shop row by attribute-value IDs.
+ * Admin rename (صغير → XS) keeps the same `id`; only `name` / `value` change.
+ */
 export function findShopVariant(
+    variants: ShopVariant[],
+    selectedIds: number[],
+): ShopVariant | null {
+    const ids = selectedIds.filter((id) => Number.isFinite(id) && id > 0);
+    if (!ids.length) return null;
+    return (
+        variants.find((variant) =>
+            ids.every((id) => attrs(variant).some((a) => a.id === id)),
+        ) ?? null
+    );
+}
+
+/** First row that has this option id — used when the current combo does not exist. */
+export function findShopVariantWithOptionId(
+    variants: ShopVariant[],
+    optionId: number,
+): ShopVariant | null {
+    if (!Number.isFinite(optionId) || optionId <= 0) return null;
+    return (
+        variants.find((variant) => attrs(variant).some((a) => a.id === optionId)) ??
+        null
+    );
+}
+
+/** Legacy name match when a payload has no option ids. */
+export function findShopVariantByNames(
     variants: ShopVariant[],
     selected: Record<string, string>,
 ): ShopVariant | null {
@@ -22,7 +65,6 @@ export function findShopVariant(
     );
 }
 
-/** First row that has this attribute value — used when the current combo does not exist. */
 export function findShopVariantWithValue(
     variants: ShopVariant[],
     attribute: string,
@@ -46,18 +88,82 @@ export function isIndependentPickerAttribute(type: string | undefined): boolean 
     return String(type ?? "").toLowerCase() === "color";
 }
 
-/** `attributes[].hex` keyed by attribute name → value label. */
-export function attributeValueHexMap(
+/** Prefer `attributes_map[].options[]`; fall back to variant attrs / `values[]`. */
+export function resolveAttributeOptions(
+    attr: AttributeMapItem,
     variants: ShopVariant[],
-): Record<string, Record<string, string>> {
-    const map: Record<string, Record<string, string>> = {};
+): AttributeMapOption[] {
+    if (attr.options?.length) {
+        return attr.options.filter((o) => Number.isFinite(o.id));
+    }
+
+    const seen = new Set<number>();
+    const fromVariants: AttributeMapOption[] = [];
+    for (const variant of variants) {
+        for (const a of attrs(variant)) {
+            if (a.attribute !== attr.attribute) continue;
+            if (a.id == null || !Number.isFinite(a.id) || seen.has(a.id)) continue;
+            seen.add(a.id);
+            fromVariants.push({
+                id: a.id,
+                name: a.value,
+                hex: a.hex ?? null,
+            });
+        }
+    }
+
+    if (fromVariants.length) {
+        if (attr.values?.length) {
+            const byName = new Map(fromVariants.map((o) => [o.name, o]));
+            const ordered: AttributeMapOption[] = [];
+            for (const name of attr.values) {
+                const hit = byName.get(name);
+                if (hit) {
+                    ordered.push(hit);
+                    byName.delete(name);
+                }
+            }
+            ordered.push(...byName.values());
+            return ordered;
+        }
+        return fromVariants;
+    }
+
+    return (attr.values ?? []).map((name, index) => ({
+        id: -(index + 1),
+        name,
+        hex: null,
+    }));
+}
+
+export function variantHasOption(
+    variant: ShopVariant,
+    option: AttributeMapOption,
+    attributeName: string,
+): boolean {
+    return attrs(variant).some((a) => {
+        if (option.id > 0 && a.id != null) return a.id === option.id;
+        return a.attribute === attributeName && a.value === option.name;
+    });
+}
+
+/** Swatch fill: `options[].hex` first, then `shop_variants[].attributes[].hex`. */
+export function optionHexById(
+    attributesMap: AttributeMapItem[],
+    variants: ShopVariant[],
+): Record<number, string> {
+    const map: Record<number, string> = {};
+    for (const attr of attributesMap) {
+        for (const option of attr.options ?? []) {
+            const hex = option.hex?.trim();
+            if (hex && option.id > 0) map[option.id] = hex;
+        }
+    }
     for (const variant of variants) {
         for (const attr of attrs(variant)) {
             const hex = attr.hex?.trim();
-            if (!hex) continue;
-            map[attr.attribute] ??= {};
-            if (!map[attr.attribute][attr.value]) {
-                map[attr.attribute][attr.value] = hex;
+            if (hex && attr.id != null && attr.id > 0 && !map[attr.id]) {
+                map[attr.id] = hex;
             }
         }
     }

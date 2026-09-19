@@ -18,7 +18,7 @@ export type ProductImageGalleryProps = {
 
 const THUMBNAILS_TO_SHOW = 5;
 const MAIN_FRAME_CLASS =
-    "relative flex h-[220px] w-full items-center justify-center overflow-hidden sm:h-[250px] lg:h-[280px]";
+    "relative flex h-[320px] w-full items-center justify-center overflow-hidden sm:h-[360px] lg:aspect-square lg:h-auto";
 
 type ThumbnailButtonProps = {
     image: string;
@@ -40,7 +40,7 @@ const ThumbnailButton = memo(function ThumbnailButton({
             type="button"
             onClick={() => onSelect(index)}
             className={cn(
-                "group relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-[color-mix(in_srgb,var(--color-api-second)_8%,var(--color-bg-card))] ring-1 transition duration-200 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 sm:h-14 sm:w-14",
+                "group relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-[color-mix(in_srgb,var(--color-api-second)_8%,var(--color-bg-card))] ring-1 transition duration-200 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 sm:h-16 sm:w-16",
                 isSelected
                     ? "ring-2 ring-primary"
                     : "ring-black/8 hover:ring-black/20 dark:ring-white/10 dark:hover:ring-white/25",
@@ -182,7 +182,7 @@ export default function ProductImageGallery({
                             total: safeImages.length,
                             defaultValue: "Product image {{current}} of {{total}}",
                         })}
-                        className="max-h-full max-w-full object-contain p-3"
+                        className="max-h-full max-w-full object-contain p-4 sm:p-5"
                     />
                 </div>
 
@@ -193,7 +193,7 @@ export default function ProductImageGallery({
                         <button
                             type="button"
                             onClick={() => goTo(-1)}
-                            className="absolute start-2 top-1/2 z-10 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full bg-white/95 text-text-primary shadow-sm ring-1 ring-black/8 hover:bg-white dark:bg-[#121318]/90 dark:ring-white/10"
+                            className="absolute start-3 top-1/2 z-10 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-white/95 text-text-primary shadow-sm ring-1 ring-black/8 hover:bg-white dark:bg-[#121318]/90 dark:ring-white/10"
                             aria-label={t("product.previousImage", "Previous image")}
                         >
                             {isRTL ? (
@@ -205,7 +205,7 @@ export default function ProductImageGallery({
                         <button
                             type="button"
                             onClick={() => goTo(1)}
-                            className="absolute end-2 top-1/2 z-10 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full bg-white/95 text-text-primary shadow-sm ring-1 ring-black/8 hover:bg-white dark:bg-[#121318]/90 dark:ring-white/10"
+                            className="absolute end-3 top-1/2 z-10 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-white/95 text-text-primary shadow-sm ring-1 ring-black/8 hover:bg-white dark:bg-[#121318]/90 dark:ring-white/10"
                             aria-label={t("product.nextImage", "Next image")}
                         >
                             {isRTL ? (

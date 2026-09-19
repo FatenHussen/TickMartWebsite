@@ -3,7 +3,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { cn } from "@/shared/lib/utils";
 import { resolveLocalizedText } from "@/shared/lib/localizedText";
 import {
-    cssColorForAttributeLabel,
+    cssColorForSwatch,
     isLikelyHexColorLabel,
     isLightSwatchFill,
 } from "@/features/product/lib/attributeValueColor";
@@ -93,6 +93,7 @@ export default function CategoryAttributeFilters({
                 const values = attr.values.map((v) => ({
                     id: v.id,
                     name: labelOf(v.name),
+                    hex: v.hex,
                 }));
 
                 return (
@@ -148,7 +149,7 @@ function SquareValues({
     selected,
     onToggle,
 }: {
-    values: { id: number; name: string }[];
+    values: { id: number; name: string; hex?: string | null }[];
     selected: Set<number>;
     onToggle: (id: number) => void;
 }) {
@@ -191,7 +192,7 @@ function ColorValues({
     selected,
     onToggle,
 }: {
-    values: { id: number; name: string }[];
+    values: { id: number; name: string; hex?: string | null }[];
     selected: Set<number>;
     onToggle: (id: number) => void;
 }) {
@@ -199,7 +200,11 @@ function ColorValues({
         <div className="grid grid-cols-4 gap-x-2 gap-y-3" role="list">
             {values.map((v) => {
                 const active = selected.has(v.id);
-                const fill = cssColorForAttributeLabel(v.id, v.name);
+                const fill = cssColorForSwatch({
+                    hex: v.hex,
+                    id: v.id,
+                    label: v.name,
+                });
                 const hideLabel = isLikelyHexColorLabel(v.name);
                 const light = isLightSwatchFill(fill);
                 return (
@@ -266,7 +271,7 @@ function CircleValues({
     selected,
     onToggle,
 }: {
-    values: { id: number; name: string }[];
+    values: { id: number; name: string; hex?: string | null }[];
     selected: Set<number>;
     onToggle: (id: number) => void;
 }) {

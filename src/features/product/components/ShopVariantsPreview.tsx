@@ -120,7 +120,7 @@ export default function ShopVariantsPreview({
                                 <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
                                     {(v.attributes ?? []).map((attr) => (
                                         <div
-                                            key={`${v.id ?? index}-${attr.attribute}`}
+                                            key={`${v.id ?? index}-${attr.id ?? attr.attribute}`}
                                             className="flex items-center gap-2"
                                         >
                                             <span className="text-xs text-custom-secondary">
