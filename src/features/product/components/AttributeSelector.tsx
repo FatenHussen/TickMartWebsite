@@ -1,5 +1,5 @@
 import { cn } from "@/shared/lib/utils";
-import { cssColorForAttributeLabel } from "../lib/attributeValueColor";
+import { cssColorForSwatch } from "../lib/attributeValueColor";
 import type { AttributeOption } from "../types";
 
 export type { AttributeOption };
@@ -40,7 +40,11 @@ export default function AttributeSelector({
  const isDisabled = disabledValues.includes(value);
 
  if (isColorType) {
- // Color selector — names from attributes_map (no hex in shop_variants)
+ const fill = cssColorForSwatch({
+ hex: attribute.valueHex?.[value],
+ id: index,
+ label: value,
+ });
  return (
  <button
  key={value}
@@ -55,7 +59,7 @@ export default function AttributeSelector({
  :"border-black/10 hover:border-black/25 dark:border-white/20",
  isDisabled &&"opacity-30 cursor-not-allowed"
  )}
- style={{ backgroundColor: cssColorForAttributeLabel(index, value) }}
+ style={{ backgroundColor: fill }}
  aria-label={`Select color ${value}`}
  title={value}
  />

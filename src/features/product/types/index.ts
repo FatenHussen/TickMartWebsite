@@ -42,6 +42,8 @@ export interface AttributeOption {
  values: string[];
  availableValues?: string[];
  disabledValues?: string[];
+ /** `shop_variants[].attributes[].hex` keyed by the value label. */
+ valueHex?: Record<string, string>;
 }
 
 export type DeliveryOption = {

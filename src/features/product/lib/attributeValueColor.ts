@@ -25,6 +25,26 @@ function hexLabelToRgb(label: string): string | null {
 }
 
 /**
+ * Swatch fill: prefer `shop_variants[].attributes[].hex`, then the label, then a stable HSL.
+ */
+export function cssColorForSwatch(options: {
+    hex?: string | null;
+    id?: number;
+    label: string;
+}): string {
+    const hex = options.hex?.trim();
+    if (hex) {
+        if (hex.startsWith("rgb") || hex.startsWith("hsl")) return hex;
+        const normalized = hex.startsWith("#") ? hex : `#${hex}`;
+        if (isLikelyHexColorLabel(normalized)) {
+            return hexLabelToRgb(normalized) ?? normalized;
+        }
+        return hex;
+    }
+    return cssColorForAttributeLabel(options.id ?? 0, options.label);
+}
+
+/**
  * CSS color for `type: "color"` swatches — prefers HSL / `rgb()` (no `#hex` in style).
  * Named colors (EN/AR); hex-like labels become `rgb()`; unknown text uses stable HSL from id.
  */

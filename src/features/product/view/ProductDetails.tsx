@@ -835,8 +835,8 @@ function ProductDetails() {
                     </span>
                 </nav>
 
-                <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-12 xl:gap-16">
-                    <div className="lg:sticky lg:top-[calc(var(--app-navbar-offset)+0.75rem)]">
+                <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:gap-10">
+                    <div className="relative z-0 min-w-0">
                         <ProductImageGallery
                             key={`${selectedVariant?.id ?? "base"}:${galleryImages.join("|")}`}
                             images={galleryImages}

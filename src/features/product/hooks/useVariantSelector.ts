@@ -7,6 +7,12 @@ import type {
 } from "../types/productDetails";
 import { isPurchasableVariant, isVariantInStock } from "../types/productDetails";
 import { gallerySrcsForSelection } from "../lib/productMedia";
+import {
+    attributeValueHexMap,
+    findShopVariant,
+    findShopVariantWithValue,
+    isIndependentPickerAttribute,
+} from "../lib/findShopVariant";
 
 interface UseVariantSelectorParams {
     /** When this changes, selection is dropped so we never keep another product's variant id. */
@@ -22,6 +28,7 @@ interface UseVariantSelectorParams {
 interface AvailableAttribute extends AttributeMapItem {
     availableValues: string[];
     disabledValues: string[];
+    valueHex: Record<string, string>;
 }
 
 function comboAttributes(variant: ShopVariant) {
@@ -134,49 +141,50 @@ export function useVariantSelector({
 
     const setAttributeValue = useCallback(
         (attributeName: string, value: string) => {
-            const hasValue = (variant: ShopVariant) =>
-                comboAttributes(variant).some(
-                    (attr) =>
-                        attr.attribute === attributeName && attr.value === value,
-                );
-
-            const keepsOthers = (variant: ShopVariant) =>
-                Object.entries(selectedAttributes).every(([name, val]) => {
-                    if (!val || name === attributeName) return true;
-                    return comboAttributes(variant).some(
-                        (attr) => attr.attribute === name && attr.value === val,
-                    );
-                });
-
-            const variantWithValue =
-                shopVariants.find(
-                    (variant) => hasValue(variant) && keepsOthers(variant),
-                ) ?? shopVariants.find(hasValue);
-
-            if (!variantWithValue) return;
-            setSelectedShopVariantId(variantWithValue.id ?? null);
+            const nextSelected = {
+                ...selectedAttributes,
+                [attributeName]: value,
+            };
+            // Keep the other axes when that combo exists (أزرق + S).
+            // Otherwise pick the first row with the new value (أسود → L).
+            const match =
+                findShopVariant(shopVariants, nextSelected) ??
+                findShopVariantWithValue(shopVariants, attributeName, value);
+            if (!match) return;
+            setSelectedShopVariantId(match.id ?? null);
         },
         [shopVariants, selectedAttributes],
+    );
+
+    const hexByAttribute = useMemo(
+        () => attributeValueHexMap(shopVariants),
+        [shopVariants],
     );
 
     const availableAttributes = useMemo((): AvailableAttribute[] => {
         return attributesMap.map((attr) => {
             const availableValues: string[] = [];
             const disabledValues: string[] = [];
+            const independent = isIndependentPickerAttribute(attr.type);
 
-            const matchingVariants = shopVariants.filter((variant) =>
-                Object.entries(selectedAttributes).every(([name, val]) => {
-                    if (!val || name === attr.attribute) return true;
-                    return (variant.attributes ?? []).some(
-                        (a) => a.attribute === name && a.value === val,
-                    );
-                }),
-            );
+            // Colors that exist on any row stay clickable. Sizes are limited
+            // to the current color so a missing combo is not left "stuck".
+            const matchingVariants = independent
+                ? shopVariants
+                : shopVariants.filter((variant) =>
+                      Object.entries(selectedAttributes).every(([name, val]) => {
+                          if (!val || name === attr.attribute) return true;
+                          return (variant.attributes ?? []).some(
+                              (a) => a.attribute === name && a.value === val,
+                          );
+                      }),
+                  );
 
             attr.values.forEach((value) => {
                 const hasAnyVariant = matchingVariants.some((variant) =>
                     (variant.attributes ?? []).some(
-                        (a) => a.attribute === attr.attribute && a.value === value,
+                        (a) =>
+                            a.attribute === attr.attribute && a.value === value,
                     ),
                 );
 
@@ -191,9 +199,10 @@ export function useVariantSelector({
                 ...attr,
                 availableValues,
                 disabledValues,
+                valueHex: hexByAttribute[attr.attribute] ?? {},
             };
         });
-    }, [attributesMap, shopVariants, selectedAttributes]);
+    }, [attributesMap, shopVariants, selectedAttributes, hexByAttribute]);
 
     const currentPrice = useMemo(() => {
         return selectedVariant?.price ?? basePrice;

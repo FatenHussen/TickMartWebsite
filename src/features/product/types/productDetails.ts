@@ -25,9 +25,13 @@ export interface AttributeMapItem {
 export type VariantDiscountType = "percentage" | "fixed" | "none" | null;
 
 export interface VariantAttribute {
+ /** Category attribute-value id — stable across renames. */
+ id?: number;
  attribute: string;
  value: string;
  type: "color" | "square" | "circle" | string;
+ /** Swatch fill for `type: "color"`. Without it the radio looks empty. */
+ hex?: string | null;
 }
 
 /**

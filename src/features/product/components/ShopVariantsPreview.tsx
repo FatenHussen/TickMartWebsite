@@ -4,6 +4,7 @@ import type { AvailableShop, ShopVariant, VariantAttribute } from "../types/prod
 import { isPurchasableVariant } from "../types/productDetails";
 import { gallerySrcsForSelection, mediaSrc, type ProductMediaSource } from "../lib/productMedia";
 import { resolveDisplaySalePrice } from "@/shared/lib/formatApiPrice";
+import { cssColorForSwatch } from "../lib/attributeValueColor";
 
 export type ShopVariantsPreviewProps = {
     variants: ShopVariant[];
@@ -23,7 +24,13 @@ function renderAttributeValue(attr: VariantAttribute) {
                 role="img"
                 aria-label={`${attr.attribute}: ${attr.value}`}
                 className="inline-block h-7 w-7 shrink-0 rounded-full border-2 border-custom-primary shadow-sm"
-                style={{ backgroundColor: attr.value }}
+                style={{
+                    backgroundColor: cssColorForSwatch({
+                        hex: attr.hex,
+                        id: attr.id,
+                        label: attr.value,
+                    }),
+                }}
                 title={`${attr.attribute}: ${attr.value}`}
             />
         );

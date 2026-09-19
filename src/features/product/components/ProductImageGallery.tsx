@@ -1,4 +1,3 @@
-import { AnimatePresence, motion } from "framer-motion";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { HiShare } from "react-icons/hi2";
@@ -17,8 +16,9 @@ export type ProductImageGalleryProps = {
     className?: string;
 };
 
-const MAIN_IMAGE_TRANSITION_SECONDS = 0.28;
 const THUMBNAILS_TO_SHOW = 5;
+const MAIN_FRAME_CLASS =
+    "relative flex h-[220px] w-full items-center justify-center overflow-hidden sm:h-[250px] lg:h-[280px]";
 
 type ThumbnailButtonProps = {
     image: string;
@@ -40,7 +40,7 @@ const ThumbnailButton = memo(function ThumbnailButton({
             type="button"
             onClick={() => onSelect(index)}
             className={cn(
-                "group relative h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-[color-mix(in_srgb,var(--color-api-second)_8%,var(--color-bg-card))] ring-1 transition duration-200 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 sm:h-[4.5rem] sm:w-[4.5rem]",
+                "group relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-[color-mix(in_srgb,var(--color-api-second)_8%,var(--color-bg-card))] ring-1 transition duration-200 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 sm:h-14 sm:w-14",
                 isSelected
                     ? "ring-2 ring-primary"
                     : "ring-black/8 hover:ring-black/20 dark:ring-white/10 dark:hover:ring-white/25",
@@ -52,7 +52,7 @@ const ThumbnailButton = memo(function ThumbnailButton({
                 src={image}
                 alt=""
                 className="h-full w-full object-contain p-1"
-                wrapperClassName="h-full w-full"
+                wrapperClassName="h-full w-full overflow-hidden"
                 effect=""
             />
         </button>
@@ -160,9 +160,9 @@ export default function ProductImageGallery({
 
     if (safeImages.length === 0) {
         return (
-            <div className={cn("flex flex-col gap-3", className)}>
-                <div className="relative w-full overflow-hidden rounded-2xl bg-[color-mix(in_srgb,var(--color-api-second)_8%,var(--color-bg-card))] ring-1 ring-black/6 dark:ring-white/8">
-                    <div className="flex aspect-square w-full items-center justify-center text-sm text-custom-secondary">
+            <div className={cn("flex flex-col gap-2.5", className)}>
+                <div className="relative isolate overflow-hidden rounded-2xl bg-[color-mix(in_srgb,var(--color-api-second)_8%,var(--color-bg-card))] ring-1 ring-black/6 dark:ring-white/8">
+                    <div className={cn(MAIN_FRAME_CLASS, "text-sm text-custom-secondary")}>
                         {t("product.noImage", "No image")}
                     </div>
                     {actions}
@@ -172,36 +172,18 @@ export default function ProductImageGallery({
     }
 
     return (
-        <div className={cn("flex flex-col gap-3", className)}>
-            <div className="relative w-full overflow-hidden rounded-2xl bg-[color-mix(in_srgb,var(--color-api-second)_8%,var(--color-bg-card))] ring-1 ring-black/6 dark:ring-white/8">
-                <div className="aspect-square w-full">
-                    <div className="relative h-full w-full">
-                        <AnimatePresence mode="wait" initial={false}>
-                            <motion.div
-                                key={safeImages[selectedIndex]}
-                                className="absolute inset-0"
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                transition={{
-                                    duration: MAIN_IMAGE_TRANSITION_SECONDS,
-                                    ease: "easeOut",
-                                }}
-                            >
-                                <LazyImage
-                                    src={safeImages[selectedIndex]}
-                                    alt={t("product.imageAlt", {
-                                        current: selectedIndex + 1,
-                                        total: safeImages.length,
-                                        defaultValue: "Product image {{current}} of {{total}}",
-                                    })}
-                                    className="h-full w-full object-contain p-4 sm:p-6"
-                                    wrapperClassName="h-full w-full"
-                                    effect=""
-                                />
-                            </motion.div>
-                        </AnimatePresence>
-                    </div>
+        <div className={cn("relative z-0 flex flex-col gap-2.5", className)}>
+            <div className="relative isolate overflow-hidden rounded-2xl bg-[color-mix(in_srgb,var(--color-api-second)_8%,var(--color-bg-card))] ring-1 ring-black/6 dark:ring-white/8">
+                <div className={MAIN_FRAME_CLASS}>
+                    <img
+                        src={safeImages[selectedIndex]}
+                        alt={t("product.imageAlt", {
+                            current: selectedIndex + 1,
+                            total: safeImages.length,
+                            defaultValue: "Product image {{current}} of {{total}}",
+                        })}
+                        className="max-h-full max-w-full object-contain p-3"
+                    />
                 </div>
 
                 {actions}
@@ -211,7 +193,7 @@ export default function ProductImageGallery({
                         <button
                             type="button"
                             onClick={() => goTo(-1)}
-                            className="absolute start-3 top-1/2 z-10 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-white/95 text-text-primary shadow-sm ring-1 ring-black/8 hover:bg-white dark:bg-[#121318]/90 dark:ring-white/10"
+                            className="absolute start-2 top-1/2 z-10 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full bg-white/95 text-text-primary shadow-sm ring-1 ring-black/8 hover:bg-white dark:bg-[#121318]/90 dark:ring-white/10"
                             aria-label={t("product.previousImage", "Previous image")}
                         >
                             {isRTL ? (
@@ -223,7 +205,7 @@ export default function ProductImageGallery({
                         <button
                             type="button"
                             onClick={() => goTo(1)}
-                            className="absolute end-3 top-1/2 z-10 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-white/95 text-text-primary shadow-sm ring-1 ring-black/8 hover:bg-white dark:bg-[#121318]/90 dark:ring-white/10"
+                            className="absolute end-2 top-1/2 z-10 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full bg-white/95 text-text-primary shadow-sm ring-1 ring-black/8 hover:bg-white dark:bg-[#121318]/90 dark:ring-white/10"
                             aria-label={t("product.nextImage", "Next image")}
                         >
                             {isRTL ? (

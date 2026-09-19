@@ -152,15 +152,20 @@ export default function ProductInfo({
             <div className="rounded-2xl border border-[color-mix(in_srgb,var(--color-api-second)_18%,var(--color-border-primary))] bg-[color-mix(in_srgb,var(--color-api-second)_5%,var(--color-bg-card))] px-4 py-4 dark:border-white/[0.08] dark:bg-white/[0.03]">
                 <FormattedPrice
                     value={price}
-                    compareValue={originalPrice}
                     prominent
                     layout="stack"
                     className="text-[1.85rem] font-semibold leading-none text-text-primary sm:text-[2rem]"
-                    compareClassName="text-[1.2rem] font-semibold text-red-600 decoration-2 decoration-red-600/80 dark:text-red-400 dark:decoration-red-400/80 sm:text-[1.35rem]"
                 />
-                {savings && (
-                    <p className="mt-2 text-sm font-medium text-[color-mix(in_srgb,var(--color-trust)_88%,#0f766e)] dark:text-[color-mix(in_srgb,#34d399_70%,#e4e4e7)]">
-                        {savings}
+                {(savings || originalPrice) && (
+                    <p className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-medium text-[color-mix(in_srgb,var(--color-trust)_88%,#0f766e)] dark:text-[color-mix(in_srgb,#34d399_70%,#e4e4e7)]">
+                        {savings ? <span>{savings}</span> : null}
+                        {originalPrice ? (
+                            <FormattedPrice
+                                value={originalPrice}
+                                strikethrough
+                                className="text-[0.95rem] font-semibold text-red-600 decoration-2 decoration-red-600/80 dark:text-red-400 dark:decoration-red-400/80"
+                            />
+                        ) : null}
                     </p>
                 )}
             </div>
