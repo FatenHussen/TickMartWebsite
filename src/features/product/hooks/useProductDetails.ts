@@ -8,5 +8,7 @@ export function useProductDetails(params: GetProductDetailsParams) {
  queryFn: () => _ProductApi.getProductDetails(params),
  select: (response) => response.data,
  enabled: !!params.productId,
+ // Fresh names after a dashboard rename; variant identity stays on `shop_variants[].id`.
+ refetchOnMount: "always",
  });
 }

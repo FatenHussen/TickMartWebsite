@@ -12,6 +12,10 @@ import { queryKeys } from "@/utils/queryKeys";
  *
  * Pass `knownRootId` (e.g. `trail[0]`) when the UI already knows the root —
  * the query key stays stable across the tree.
+ *
+ * Chip *state* is `values[].id`. Labels come from the latest GET so a
+ * dashboard rename (صغير → XS) updates the chip without dropping the filter.
+ * Cache by root, but always refetch on mount — `refetchOnWindowFocus` is off.
  */
 export function useCategoryAttributes(
     categoryId: number | undefined,
@@ -24,6 +28,7 @@ export function useCategoryAttributes(
         queryKey: queryKeys.categories.attributesRoot(cacheId ?? 0),
         enabled: categoryId != null && categoryId > 0 && cacheId != null && cacheId > 0,
         staleTime: 1000 * 60 * 10,
+        refetchOnMount: "always",
         queryFn: async (): Promise<CategoryAttribute[]> => {
             const res = await _CategoriesApi.getCategoryAttributes(categoryId!);
             const data = res.data ?? [];

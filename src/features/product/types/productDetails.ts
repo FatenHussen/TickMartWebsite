@@ -333,7 +333,7 @@ export interface ProductDetailsResponse {
  data: ProductDetailsData;
 }
 
-// Helper type for selected attributes
+/** Display labels from the last GET. Purchase identity is `shop_variants[].id`. */
 export interface SelectedAttributes {
  [attributeName: string]: string;
 }

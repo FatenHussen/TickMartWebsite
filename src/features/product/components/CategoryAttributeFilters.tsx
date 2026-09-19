@@ -89,6 +89,7 @@ export default function CategoryAttributeFilters({
         >
             {attributes.map((attr, index) => {
                 const type = normalizeType(String(attr.type));
+                // Filter key = `values[].id`. Label = latest GET `values[].name`.
                 const values = attr.values.map((v) => ({
                     id: v.id,
                     name: labelOf(v.name),

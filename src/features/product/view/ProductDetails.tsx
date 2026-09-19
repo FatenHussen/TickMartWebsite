@@ -41,7 +41,17 @@ import { resolveProductCountry } from "../lib/resolveLocalizedOrString";
 import {
     resolveVariantPriceDisplay,
 } from "../lib/variantPriceDisplay";
-import { isPurchasableVariant, firstPurchasableVariant, variantOrderLimit, exceedsVariantStock, warrantyTitle, warrantyBody } from "../types/productDetails";
+import {
+    isPurchasableVariant,
+    firstPurchasableVariant,
+    variantOrderLimit,
+    exceedsVariantStock,
+    warrantyTitle,
+    warrantyBody,
+    type AttributeMapItem,
+    type ProductImage,
+    type ShopVariant,
+} from "../types/productDetails";
 import { gallerySrcsForSelection, mediaSrc } from "../lib/productMedia";
 import { postCartItemsSafe } from "@/features/cart/api/cartApi";
 import { useFavorites, useToggleFavorite } from "@/features/account/hooks/useFavorites";
@@ -59,6 +69,10 @@ import {
 import { cn } from "@/shared/lib/utils";
 import { HiEye, HiShoppingCart } from "react-icons/hi";
 import { HiChevronRight, HiClock, HiHome, HiPencilSquare, HiShieldCheck } from "react-icons/hi2";
+
+const EMPTY_SHOP_VARIANTS: ShopVariant[] = [];
+const EMPTY_ATTRIBUTES_MAP: AttributeMapItem[] = [];
+const EMPTY_PRODUCT_IMAGES: ProductImage[] = [];
 
 function ProductDetails() {
     const { t } = useTranslation();
@@ -230,9 +244,10 @@ function ProductDetails() {
         selectedVariant,
         availableAttributes,
     } = useVariantSelector({
-        attributesMap: product?.attributes_map || [],
-        shopVariants: product?.shop_variants || [],
-        defaultImages: product?.images || [],
+        productId: productIdNum,
+        attributesMap: product?.attributes_map ?? EMPTY_ATTRIBUTES_MAP,
+        shopVariants: product?.shop_variants ?? EMPTY_SHOP_VARIANTS,
+        defaultImages: product?.images ?? EMPTY_PRODUCT_IMAGES,
         thumbnail: product?.thumbnail,
         basePrice: product?.price || 0,
         basePriceAfterDiscount: product?.price_after_discount || 0,

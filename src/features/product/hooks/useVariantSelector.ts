@@ -1,217 +1,238 @@
-import { useState, useMemo, useCallback, useEffect } from"react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import type {
- AttributeMapItem,
- ShopVariant,
- ProductImage,
- SelectedAttributes,
-} from"../types/productDetails";
-import { isPurchasableVariant, isVariantInStock } from"../types/productDetails";
+    AttributeMapItem,
+    ShopVariant,
+    ProductImage,
+    SelectedAttributes,
+} from "../types/productDetails";
+import { isPurchasableVariant, isVariantInStock } from "../types/productDetails";
 import { gallerySrcsForSelection } from "../lib/productMedia";
 
 interface UseVariantSelectorParams {
- attributesMap: AttributeMapItem[];
- shopVariants: ShopVariant[];
- defaultImages: ProductImage[];
- thumbnail?: string | null;
- basePrice: number;
- basePriceAfterDiscount: number;
+    /** When this changes, selection is dropped so we never keep another product's variant id. */
+    productId?: number;
+    attributesMap: AttributeMapItem[];
+    shopVariants: ShopVariant[];
+    defaultImages: ProductImage[];
+    thumbnail?: string | null;
+    basePrice: number;
+    basePriceAfterDiscount: number;
 }
 
 interface AvailableAttribute extends AttributeMapItem {
- availableValues: string[]; // Values available (exist in any variant)
- disabledValues: string[]; // Values that don't exist in any variant
+    availableValues: string[];
+    disabledValues: string[];
 }
 
 function comboAttributes(variant: ShopVariant) {
- return variant.attributes ?? [];
+    return variant.attributes ?? [];
 }
 
-/** Identity is attributes + sku. Empty `attributes` is a display-only fallback row. */
-function matchesSelection(
- variant: ShopVariant,
- selected: SelectedAttributes,
-): boolean {
- const attrs = comboAttributes(variant);
- if (attrs.length === 0) return false;
- return attrs.every((attr) => selected[attr.attribute] === attr.value);
+function attributesFromVariant(variant: ShopVariant | null): SelectedAttributes {
+    const attrs: SelectedAttributes = {};
+    if (!variant) return attrs;
+    for (const attr of comboAttributes(variant)) {
+        attrs[attr.attribute] = attr.value;
+    }
+    return attrs;
 }
 
 function firstComboVariant(variants: ShopVariant[]): ShopVariant | undefined {
- return variants.find((variant) => comboAttributes(variant).length > 0);
+    return variants.find((variant) => comboAttributes(variant).length > 0);
+}
+
+function defaultVariant(
+    shopVariants: ShopVariant[],
+    hasAttributeMatrix: boolean,
+): ShopVariant | undefined {
+    if (shopVariants.length === 0) return undefined;
+    if (!hasAttributeMatrix) {
+        return (
+            shopVariants.find(isPurchasableVariant) ??
+            shopVariants.find(isVariantInStock) ??
+            shopVariants[0]
+        );
+    }
+    return firstComboVariant(shopVariants) ?? shopVariants[0];
+}
+
+function findVariantById(
+    shopVariants: ShopVariant[],
+    id: number | null,
+): ShopVariant | undefined {
+    if (id == null) return undefined;
+    return shopVariants.find((variant) => variant.id === id);
 }
 
 interface UseVariantSelectorReturn {
- selectedAttributes: SelectedAttributes;
- setAttributeValue: (attributeName: string, value: string) => void;
- selectedVariant: ShopVariant | null;
- currentPrice: number;
- currentPriceAfterDiscount: number;
- currentImages: string[];
- currentQuantity: number | null;
- isVariantSelected: boolean;
- availableAttributes: AvailableAttribute[];
+    selectedAttributes: SelectedAttributes;
+    setAttributeValue: (attributeName: string, value: string) => void;
+    selectedVariant: ShopVariant | null;
+    selectedShopVariantId: number | null;
+    currentPrice: number;
+    currentPriceAfterDiscount: number;
+    currentImages: string[];
+    currentQuantity: number | null;
+    isVariantSelected: boolean;
+    availableAttributes: AvailableAttribute[];
 }
 
+/**
+ * Picker labels come from the last GET (`attributes[].value` / `attributes_map`).
+ * Purchase identity is `shop_variants[].id` so an admin rename (صغير → XS)
+ * keeps the same row and only updates the shown name.
+ */
 export function useVariantSelector({
- attributesMap,
- shopVariants,
- defaultImages,
- thumbnail,
- basePrice,
- basePriceAfterDiscount,
+    productId,
+    attributesMap,
+    shopVariants,
+    defaultImages,
+    thumbnail,
+    basePrice,
+    basePriceAfterDiscount,
 }: UseVariantSelectorParams): UseVariantSelectorReturn {
- const [selectedAttributes, setSelectedAttributes] =
- useState<SelectedAttributes>({});
+    const [selectedShopVariantId, setSelectedShopVariantId] = useState<
+        number | null
+    >(null);
+    const [boundProductId, setBoundProductId] = useState(productId);
 
- // Initialize with first available variant, or re-initialize when current selection is invalid (e.g. after language change)
- useEffect(() => {
- if (shopVariants.length === 0) return;
+    if (productId !== boundProductId) {
+        setBoundProductId(productId);
+        setSelectedShopVariantId(null);
+    }
 
- const firstVariant = firstComboVariant(shopVariants) ?? shopVariants[0];
- const initialAttrs: SelectedAttributes = {};
- comboAttributes(firstVariant).forEach((attr) => {
- initialAttrs[attr.attribute] = attr.value;
- });
+    const hasAttributeMatrix = attributesMap.length > 0;
 
- const hasMatch = shopVariants.some((v) =>
- matchesSelection(v, selectedAttributes)
- );
- if (!hasMatch) {
- setSelectedAttributes(initialAttrs);
- }
- }, [shopVariants]);
+    const selectedVariant = useMemo(() => {
+        if (shopVariants.length === 0) return null;
+        return (
+            findVariantById(shopVariants, selectedShopVariantId) ??
+            defaultVariant(shopVariants, hasAttributeMatrix) ??
+            null
+        );
+    }, [shopVariants, selectedShopVariantId, hasAttributeMatrix]);
 
- // Set a single attribute value - auto-select first available option for other attributes
- const setAttributeValue = useCallback(
- (attributeName: string, value: string) => {
- const hasValue = (variant: ShopVariant) =>
- comboAttributes(variant).some(
- (attr) => attr.attribute === attributeName && attr.value === value
- );
+    useEffect(() => {
+        if (shopVariants.length === 0) {
+            setSelectedShopVariantId((id) => (id == null ? id : null));
+            return;
+        }
 
- const keepsOthers = (variant: ShopVariant) =>
- Object.entries(selectedAttributes).every(([name, val]) => {
- if (!val || name === attributeName) return true;
- return comboAttributes(variant).some(
- (attr) => attr.attribute === name && attr.value === val
- );
- });
+        const stillThere =
+            selectedShopVariantId != null &&
+            shopVariants.some((variant) => variant.id === selectedShopVariantId);
+        if (stillThere) return;
 
- const variantWithValue =
- shopVariants.find((variant) => hasValue(variant) && keepsOthers(variant)) ??
- shopVariants.find(hasValue);
+        const nextId = defaultVariant(shopVariants, hasAttributeMatrix)?.id ?? null;
+        setSelectedShopVariantId((id) => (id === nextId ? id : nextId));
+    }, [shopVariants, selectedShopVariantId, hasAttributeMatrix]);
 
- if (variantWithValue) {
- const newAttrs: SelectedAttributes = {};
- comboAttributes(variantWithValue).forEach((attr) => {
- newAttrs[attr.attribute] = attr.value;
- });
- setSelectedAttributes(newAttrs);
- }
- },
- [shopVariants, selectedAttributes]
- );
+    const selectedAttributes = useMemo(
+        () => attributesFromVariant(selectedVariant),
+        [selectedVariant],
+    );
 
- // Calculate available values — filter by other selected attributes (no Cartesian)
- const availableAttributes = useMemo((): AvailableAttribute[] => {
- return attributesMap.map((attr) => {
- const availableValues: string[] = [];
- const disabledValues: string[] = [];
+    const setAttributeValue = useCallback(
+        (attributeName: string, value: string) => {
+            const hasValue = (variant: ShopVariant) =>
+                comboAttributes(variant).some(
+                    (attr) =>
+                        attr.attribute === attributeName && attr.value === value,
+                );
 
- const matchingVariants = shopVariants.filter((variant) =>
- Object.entries(selectedAttributes).every(([name, val]) => {
- if (!val || name === attr.attribute) return true;
- return (variant.attributes ?? []).some(
- (a) => a.attribute === name && a.value === val
- );
- })
- );
+            const keepsOthers = (variant: ShopVariant) =>
+                Object.entries(selectedAttributes).every(([name, val]) => {
+                    if (!val || name === attributeName) return true;
+                    return comboAttributes(variant).some(
+                        (attr) => attr.attribute === name && attr.value === val,
+                    );
+                });
 
- attr.values.forEach((value) => {
- const hasAnyVariant = matchingVariants.some((variant) =>
- (variant.attributes ?? []).some(
- (a) => a.attribute === attr.attribute && a.value === value
- )
- );
+            const variantWithValue =
+                shopVariants.find(
+                    (variant) => hasValue(variant) && keepsOthers(variant),
+                ) ?? shopVariants.find(hasValue);
 
- if (hasAnyVariant) {
- availableValues.push(value);
- } else {
- disabledValues.push(value);
- }
- });
+            if (!variantWithValue) return;
+            setSelectedShopVariantId(variantWithValue.id ?? null);
+        },
+        [shopVariants, selectedAttributes],
+    );
 
- return {
- ...attr,
- availableValues,
- disabledValues,
- };
- });
- }, [attributesMap, shopVariants, selectedAttributes]);
+    const availableAttributes = useMemo((): AvailableAttribute[] => {
+        return attributesMap.map((attr) => {
+            const availableValues: string[] = [];
+            const disabledValues: string[] = [];
 
- // Find the matching variant based on selected attributes
- const selectedVariant = useMemo(() => {
- if (shopVariants.length === 0) {
- return null;
- }
+            const matchingVariants = shopVariants.filter((variant) =>
+                Object.entries(selectedAttributes).every(([name, val]) => {
+                    if (!val || name === attr.attribute) return true;
+                    return (variant.attributes ?? []).some(
+                        (a) => a.attribute === name && a.value === val,
+                    );
+                }),
+            );
 
- // No attribute matrix → the product has a single option (possibly the
- // API's synthetic fallback variant), so use it directly instead of
- // falling back to the parent product's price/stock.
- if (attributesMap.length === 0) {
- return shopVariants.find(isPurchasableVariant)
- ?? shopVariants.find(isVariantInStock)
- ?? shopVariants[0];
- }
+            attr.values.forEach((value) => {
+                const hasAnyVariant = matchingVariants.some((variant) =>
+                    (variant.attributes ?? []).some(
+                        (a) => a.attribute === attr.attribute && a.value === value,
+                    ),
+                );
 
- return (
- shopVariants.find((variant) =>
- matchesSelection(variant, selectedAttributes)
- ) || null
- );
- }, [selectedAttributes, shopVariants, attributesMap.length]);
+                if (hasAnyVariant) {
+                    availableValues.push(value);
+                } else {
+                    disabledValues.push(value);
+                }
+            });
 
- // Current price - from variant or base price
- const currentPrice = useMemo(() => {
- return selectedVariant?.price ?? basePrice;
- }, [selectedVariant, basePrice]);
+            return {
+                ...attr,
+                availableValues,
+                disabledValues,
+            };
+        });
+    }, [attributesMap, shopVariants, selectedAttributes]);
 
- // Current price after discount — API-computed only (no local ratio)
- const currentPriceAfterDiscount = useMemo(() => {
- if (selectedVariant?.price_after_discount != null) {
- return selectedVariant.price_after_discount;
- }
- return basePriceAfterDiscount;
- }, [selectedVariant, basePriceAfterDiscount]);
+    const currentPrice = useMemo(() => {
+        return selectedVariant?.price ?? basePrice;
+    }, [selectedVariant, basePrice]);
 
- const currentImages = useMemo(
- () =>
- gallerySrcsForSelection(selectedVariant, {
- images: defaultImages,
- thumbnail,
- }),
- [selectedVariant, defaultImages, thumbnail],
- );
+    const currentPriceAfterDiscount = useMemo(() => {
+        if (selectedVariant?.price_after_discount != null) {
+            return selectedVariant.price_after_discount;
+        }
+        return basePriceAfterDiscount;
+    }, [selectedVariant, basePriceAfterDiscount]);
 
- // Current quantity
- const currentQuantity = useMemo(() => {
- return selectedVariant?.quantity ?? null;
- }, [selectedVariant]);
+    const currentImages = useMemo(
+        () =>
+            gallerySrcsForSelection(selectedVariant, {
+                images: defaultImages,
+                thumbnail,
+            }),
+        [selectedVariant, defaultImages, thumbnail],
+    );
 
- // Check if all attributes are selected
- const isVariantSelected = useMemo(() => {
- return attributesMap.length === 0 || selectedVariant !== null;
- }, [attributesMap, selectedVariant]);
+    const currentQuantity = useMemo(() => {
+        return selectedVariant?.quantity ?? null;
+    }, [selectedVariant]);
 
- return {
- selectedAttributes,
- setAttributeValue,
- selectedVariant,
- currentPrice,
- currentPriceAfterDiscount,
- currentImages,
- currentQuantity,
- isVariantSelected,
- availableAttributes,
- };
+    const isVariantSelected = useMemo(() => {
+        return !hasAttributeMatrix || selectedVariant !== null;
+    }, [hasAttributeMatrix, selectedVariant]);
+
+    return {
+        selectedAttributes,
+        setAttributeValue,
+        selectedVariant,
+        selectedShopVariantId,
+        currentPrice,
+        currentPriceAfterDiscount,
+        currentImages,
+        currentQuantity,
+        isVariantSelected,
+        availableAttributes,
+    };
 }
