@@ -53,13 +53,12 @@ export default function AddToCustomBasketPopup({
     const productId = product?.id ?? 0;
 
     const { data: details, isLoading } = useQuery({
-        queryKey: queryKeys.product.details(productId, 0),
+        queryKey: queryKeys.product.details(productId),
         queryFn: () =>
             _ProductApi.getProductDetails({
                 productId,
                 lat: DEFAULT_LAT,
                 lng: DEFAULT_LNG,
-                shopId: 0,
             }),
         select: (response) => response.data,
         enabled: isOpen && productId > 0,
@@ -189,7 +188,6 @@ export default function AddToCustomBasketPopup({
                     {purchasable.length > 0 && (
                         <ShopVariantsPreview
                             variants={details?.shop_variants ?? []}
-                            availableShops={details?.available_shops}
                             productMedia={details}
                             selectedId={selectedVariantId}
                             onSelect={setSelectedVariantId}

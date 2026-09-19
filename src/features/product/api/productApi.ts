@@ -6,16 +6,15 @@ export interface GetProductDetailsParams {
  productId: number;
  lat: number;
  lng: number;
- shopId: number;
 }
 
 export const _ProductApi = {
  getProductDetails: async (
  params: GetProductDetailsParams,
  ): Promise<ProductDetailsResponse> => {
- const { productId, lat, lng, shopId } = params;
+ const { productId, lat, lng } = params;
  const response = await _axios.get<ProductDetailsResponse>(
- apiRoutes.product.details(productId, lat, lng, shopId),
+ apiRoutes.product.details(productId, lat, lng),
  );
  return response.data;
  },

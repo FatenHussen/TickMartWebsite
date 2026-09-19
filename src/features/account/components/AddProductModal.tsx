@@ -102,23 +102,20 @@ export default function AddProductModal({
     }, [detailProductId]);
 
     const { data: productDetails, isLoading: detailsLoading } = useQuery({
-        queryKey: queryKeys.product.details(detailProductId ?? 0, 0),
+        queryKey: queryKeys.product.details(detailProductId ?? 0),
         queryFn: () =>
             _ProductApi.getProductDetails({
                 productId: detailProductId!,
                 lat: DEFAULT_LAT,
                 lng: DEFAULT_LNG,
-                shopId: 0,
             }),
         select: (response) => response.data,
         enabled: isOpen && detailProductId != null,
     });
 
     /**
-     * `shop_variants` always has at least one entry now: when the product is
-     * not linked to a branch the API synthesises one from the parent product
-     * with `id`/`shop_id` null. Those cannot be ordered (the basket needs a
-     * real `shop_product_variant_id`), so only purchasable ones count here.
+     * Rows with `id`/`shop_id` null are display-only. The basket needs a real
+     * `shop_product_variant_id` (`shop_variants[].id`).
      */
     const purchasableVariants = useMemo(
         () => {
@@ -323,7 +320,6 @@ export default function AddProductModal({
                             {showVariantPicker ? (
                                 <ShopVariantsPreview
                                     variants={purchasableVariants}
-                                    availableShops={productDetails?.available_shops}
                                     productMedia={productDetails}
                                     selectedId={selectedVariantId}
                                     onSelect={(id) => setSelectedVariantId(id)}

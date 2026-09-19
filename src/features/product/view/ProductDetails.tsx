@@ -12,7 +12,6 @@ import ProductDescription from "../components/ProductDescription";
 import ShopVariantsPreview from "../components/ShopVariantsPreview";
 import ExtraDetailsTable from "../components/ExtraDetailsTable";
 import ExtrasCheckboxTable from "../components/ExtrasCheckboxTable";
-import ShopSelector from "../components/ShopSelector";
 import {
     SoldWithThisProduct,
     SimilarProducts,
@@ -84,9 +83,7 @@ function ProductDetails() {
 
     const lat = parseFloat(searchParams.get("lat") || "33.51380000");
     const lng = parseFloat(searchParams.get("lng") || "36.27650000");
-    const initialShopId = parseInt(searchParams.get("shop_id") || "0", 10);
 
-    const [selectedShopId, setSelectedShopId] = useState(initialShopId);
     const [ratingModalOpen, setRatingModalOpen] = useState(false);
     const [iconPopupOpen, setIconPopupOpen] = useState(false);
     const [selectedIcon, setSelectedIcon] = useState<{
@@ -122,7 +119,6 @@ function ProductDetails() {
         productId: productIdNum,
         lat,
         lng,
-        shopId: selectedShopId,
     });
 
     const {
@@ -133,19 +129,7 @@ function ProductDetails() {
         productId: boughtWithPreviewId ?? 0,
         lat,
         lng,
-        shopId: selectedShopId,
     });
-
-    useEffect(() => {
-        if (product?.available_shops?.length) {
-            const shopExists = product.available_shops.some(
-                (s) => s.id === selectedShopId
-            );
-            if (!shopExists) {
-                setSelectedShopId(product.available_shops[0].id);
-            }
-        }
-    }, [product?.available_shops, selectedShopId]);
 
     useEffect(() => {
         setSelectedExtraIds([]);
@@ -232,9 +216,6 @@ function ProductDetails() {
         product?.category?.id
     );
 
-    const { data: sellerProducts = [] } =
-        useProductsFromSameSeller(selectedShopId);
-
     const {
         selectedAttributes,
         setAttributeOption,
@@ -252,6 +233,10 @@ function ProductDetails() {
         basePrice: product?.price || 0,
         basePriceAfterDiscount: product?.price_after_discount || 0,
     });
+
+    const { data: sellerProducts = [] } = useProductsFromSameSeller(
+        selectedVariant?.shop_id ?? undefined,
+    );
 
     const isFoodProduct = product?.product_type === "food";
 
@@ -304,7 +289,7 @@ function ProductDetails() {
         : null;
     const warrantyDescription = product ? warrantyBody(product) : null;
     const cannotAddToCartReason = !hasPurchasableVariant
-        ? t("product.notAvailableInBranch", "Not available in any branch")
+        ? t("product.unavailable", "Currently unavailable")
         : selectedVariant == null
           ? t("product.selectVariant", "Select a variant")
           : t("product.outOfStock", "Out of stock");
@@ -317,16 +302,12 @@ function ProductDetails() {
         const variants = boughtWithPreview.shop_variants ?? [];
         const v = variants.find((x) => x.id === previewSelectedShopVariantId);
 
-        // The cart line needs a real `shop_product_variant_id`, so a product
-        // that is not linked to a branch cannot be ordered.
+        // Cart needs a real `shop_product_variant_id` (`shop_variants[].id`).
         if (!isPurchasableVariant(v)) {
             toast.error(
                 variants.some(isPurchasableVariant)
                     ? t("product.selectVariant", "Select a variant")
-                    : t(
-                          "product.notAvailableInBranch",
-                          "Not available in any branch",
-                      ),
+                    : t("product.unavailable", "Currently unavailable"),
             );
             return;
         }
@@ -361,9 +342,6 @@ function ProductDetails() {
         }
 
         const shopIdForLine = v.shop_id;
-        const selectedShop = boughtWithPreview.available_shops?.find(
-            (s) => s.id === shopIdForLine,
-        );
 
         const cartItem: CartItem = {
             id: lineId,
@@ -372,7 +350,6 @@ function ProductDetails() {
             category: boughtWithPreview.category?.name,
             category_id: boughtWithPreview.category?.id,
             image: imagePath,
-            store: selectedShop?.name,
             price: priceStr,
             priceNumeric: unitPrice,
             quantity: previewQuantity,
@@ -420,7 +397,6 @@ function ProductDetails() {
         previewQuantity,
         addItem,
         t,
-        selectedShopId,
     ]);
 
     const handleProductClick = useCallback(
@@ -526,8 +502,6 @@ function ProductDetails() {
 
     const handleAddToCart = () => {
         if (!product) return;
-        // Checkout drops any line without a real `shop_product_variant_id`, so
-        // a product that is not linked to a branch cannot be ordered at all.
         if (!isPurchasableVariant(selectedVariant)) {
             toast.error(cannotAddToCartReason);
             return;
@@ -553,9 +527,6 @@ function ProductDetails() {
         const imagePath = galleryImages[0] ?? "";
         const isInstant = !!product.is_instant_delivery;
         const shopIdForLine = selectedVariant.shop_id;
-        const selectedShop = product.available_shops?.find(
-            (s) => s.id === shopIdForLine
-        );
         const cartItem: CartItem = {
             id: lineId,
             name: product.name,
@@ -563,7 +534,6 @@ function ProductDetails() {
             category: product.category?.name,
             category_id: product.category?.id,
             image: imagePath,
-            store: selectedShop?.name,
             price: `${cartCurrencySymbol}${price.toFixed(2)}`,
             priceNumeric: price,
             quantity,
@@ -774,11 +744,6 @@ function ProductDetails() {
         language
     );
 
-    const hasShops =
-        !isFood &&
-        product.available_shops &&
-        product.available_shops.length > 0;
-
     const hasDescription = Boolean(
         product.description?.trim() || product.full_description?.trim(),
     );
@@ -904,15 +869,6 @@ function ProductDetails() {
                                     </div>
                                 )}
                             </div>
-                        )}
-
-                        {hasShops && (
-                            <ShopSelector
-                                compact
-                                shops={product.available_shops}
-                                selectedShopId={selectedShopId}
-                                onShopChange={setSelectedShopId}
-                            />
                         )}
 
                         {availableAttributes.map((attribute) => (
@@ -1414,9 +1370,6 @@ function ProductDetails() {
                                             variants={
                                                 boughtWithPreview.shop_variants ??
                                                 []
-                                            }
-                                            availableShops={
-                                                boughtWithPreview.available_shops
                                             }
                                             productMedia={boughtWithPreview}
                                             selectedId={

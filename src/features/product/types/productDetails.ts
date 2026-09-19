@@ -46,12 +46,9 @@ export interface VariantAttribute {
 }
 
 /**
- * A shop variant. The API always returns at least one entry, falling back to a
- * synthetic variant built from the parent product when nothing is linked to a
- * branch. In that fallback `id` is `null`, which means the variant is
- * displayable but **not purchasable** (the cart needs a real
- * `shop_product_variant_id` and `shop_id`). `quantity` of `null` or `0` is
- * unavailable.
+ * A product combination (color / size), not a branch list.
+ * When `id` or `shop_id` is `null` the row is display-only: show the price
+ * but do not enable add-to-cart. `quantity` of `null` or `0` is unavailable.
  */
 export interface ShopVariant {
  id: number | null;
@@ -124,8 +121,8 @@ export function exceedsVariantStock(
 }
 
 /**
- * Cart requires a real shop line: `id` + `shop_id` + stock `quantity > 0`.
- * A fallback `shop_variants[0]` with null ids is display-only.
+ * Cart requires `shop_variants[].id` plus a non-null `shop_id` and stock.
+ * Null ids are display-only (price stays visible, add-to-cart stays off).
  */
 export function isPurchasableVariant(
     variant: ShopVariant | null | undefined
@@ -334,6 +331,7 @@ export interface ProductDetailsData {
  category_details: CategoryDetail[];
  extra_details: ExtraDetail[];
  images: ProductImage[];
+ /** Always `[]` — do not render branch / shop UI from this field. */
  available_shops: AvailableShop[];
  is_favorite?: boolean;
  icons?: ProductIcon[];

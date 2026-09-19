@@ -230,8 +230,8 @@ export const apiRoutes = {
             return `/user/products${params.toString() ? `?${params.toString()}` : ""
                 }` as const;
         },
-        details: (productId: number, lat: number, lng: number, shopId?: number) =>
-            `/user/products/${productId}?lat=${lat}&lng=${lng}${shopId ? `&shop_id=${shopId}` : ""}` as const,
+        details: (productId: number, lat: number, lng: number) =>
+            `/user/products/${productId}?lat=${lat}&lng=${lng}` as const,
         listByCategory: (categoryId: number, page?: number) =>
             `/user/products?category_id=${categoryId}${page ? `&page=${page}` : ""
             }` as const,

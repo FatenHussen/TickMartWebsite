@@ -114,9 +114,9 @@ export const queryKeys = {
  */
  product: {
  all: () => ["product"] as const,
- details: (productId?: number, shopId?: number) =>
- productId !== undefined && shopId !== undefined
- ? (["product","details", productId, shopId] as const)
+ details: (productId?: number) =>
+ productId !== undefined
+ ? (["product","details", productId] as const)
  : (["product","details"] as const),
  listByCategory: (categoryId?: number, page?: number) =>
  categoryId !== undefined

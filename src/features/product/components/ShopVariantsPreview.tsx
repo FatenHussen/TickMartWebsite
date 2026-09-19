@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { cn } from "@/shared/lib/utils";
-import type { AvailableShop, ShopVariant, VariantAttribute } from "../types/productDetails";
+import type { ShopVariant, VariantAttribute } from "../types/productDetails";
 import { isPurchasableVariant } from "../types/productDetails";
 import { gallerySrcsForSelection, mediaSrc, type ProductMediaSource } from "../lib/productMedia";
 import { resolveDisplaySalePrice } from "@/shared/lib/formatApiPrice";
@@ -8,7 +8,6 @@ import { cssColorForSwatch } from "../lib/attributeValueColor";
 
 export type ShopVariantsPreviewProps = {
     variants: ShopVariant[];
-    availableShops?: AvailableShop[];
     className?: string;
     /** Product gallery used when a row has `has_variant_images === false`. */
     productMedia?: ProductMediaSource | null;
@@ -44,7 +43,6 @@ function renderAttributeValue(attr: VariantAttribute) {
 
 export default function ShopVariantsPreview({
     variants,
-    availableShops,
     className,
     productMedia,
     selectedId,
@@ -65,7 +63,7 @@ export default function ShopVariantsPreview({
     return (
         <div className={cn("space-y-3", className)}>
             <h3 className="text-base font-semibold text-custom-primary">
-                {t("product.shopVariants", "Shop variants")}
+                {t("product.shopVariants", "Variants")}
             </h3>
             {selectable && (
                 <p className="text-xs text-custom-secondary">
@@ -80,13 +78,8 @@ export default function ShopVariantsPreview({
                     const thumb =
                         gallerySrcsForSelection(v, productMedia)[0] ||
                         mediaSrc(v.images?.[0]);
-                    const shopName =
-                        v.shop_id != null
-                            ? availableShops?.find((s) => s.id === v.shop_id)?.name
-                            : undefined;
                     const priceLabel = resolveDisplaySalePrice(v);
-                    // `shop_id`/`id` are null when the API falls back to the
-                    // parent product: displayable, but not selectable.
+                    // `id`/`shop_id` null = display-only (price shown, not addable).
                     const purchasable = isPurchasableVariant(v);
                     const outOfStock = !purchasable;
                     const isSelected = v.id != null && selectedId === v.id;
@@ -145,18 +138,12 @@ export default function ShopVariantsPreview({
                                             {t("product.sku", "SKU")}: {v.sku}
                                         </span>
                                     ) : null}
-                                    {v.shop_id != null && (
-                                        <span className="text-xs text-custom-secondary">
-                                            {shopName ??
-                                                `${t("product.shop", "Shop")} · #${v.shop_id}`}
-                                        </span>
-                                    )}
                                     {outOfStock && (
                                         <span className="text-xs font-medium text-red-600">
-                                            {v.id == null
+                                            {v.id == null || v.shop_id == null
                                                 ? t(
-                                                      "product.notAvailableInBranch",
-                                                      "Not available in any branch",
+                                                      "product.unavailable",
+                                                      "Currently unavailable",
                                                   )
                                                 : t("product.outOfStock", "Out of stock")}
                                         </span>
