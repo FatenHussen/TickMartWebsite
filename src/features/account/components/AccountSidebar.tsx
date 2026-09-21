@@ -339,7 +339,7 @@ export default function AccountSidebar({
 
   const isApprovedMarketer =
     authUser?.affiliate?.is_affiliate === true &&
-    authUser?.affiliate?.approved === true;
+    authUser?.affiliate?.approved === true; // both flags required — hide dashboard nav otherwise
 
   const { quickOrder } = useQuickOrderSettings();
 

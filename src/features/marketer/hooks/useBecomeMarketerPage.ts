@@ -31,10 +31,10 @@ export function useBecomeMarketerPage() {
 
     const affiliate = user?.affiliate;
     const isAffiliate = affiliate?.is_affiliate === true;
-    const isApproved = affiliate?.approved === true;
+    const approved = isApprovedMarketer(user);
 
-    const shouldRedirectToDashboard = isApprovedMarketer(user);
-    const isAwaitingAffiliateApproval = isAffiliate && !isApproved;
+    const shouldRedirectToDashboard = approved;
+    const isAwaitingAffiliateApproval = isAffiliate && !approved;
 
     const benefitItems = useMemo(() => buildBecomeMarketerBenefitItems(t), [t]);
 

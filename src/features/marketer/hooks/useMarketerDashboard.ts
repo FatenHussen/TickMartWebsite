@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import {
@@ -11,92 +10,54 @@ import {
     useMarketerWithdrawRequests,
     useCreateWithdrawRequest,
 } from "@/features/marketer/hooks/useMarketer";
-import { useMarketerAccess } from "@/features/marketer/hooks/useMarketerAccess";
-import {
-    isAffiliateNotAuthorizedError,
-} from "@/features/marketer/utils/isApprovedMarketer";
+import { isAffiliateNotAuthorizedError } from "@/features/marketer/utils/isApprovedMarketer";
 import { buildMarketerDashboardHeroBenefits } from "@/features/marketer/utils/buildMarketerDashboardHeroBenefits";
-import type { MarketerDashboardTab, MarketerTransactionFilter } from "@/features/marketer/types/dashboard";
-import { paths } from "@/app/routes/path/paths";
-import { useAuthStore } from "@/store/auth";
-import { useQueryClient } from "@tanstack/react-query";
-import { queryKeys } from "@/utils/queryKeys";
+import type {
+    MarketerDashboardTab,
+    MarketerTransactionFilter,
+} from "@/features/marketer/types/dashboard";
 
-export function useMarketerDashboard() {
+/**
+ * Marketer API data for the dashboard. Call only when the user is an approved marketer.
+ */
+export function useMarketerDashboard(enabled = true) {
     const { t } = useTranslation();
-    const navigate = useNavigate();
-    const queryClient = useQueryClient();
-    const setUser = useAuthStore((s) => s.setUser);
-    const { isApprovedMarketer, isAffiliateStatusPending } = useMarketerAccess();
-
     const [ordersPage, setOrdersPage] = useState(1);
     const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
     const [activeTab, setActiveTab] = useState<MarketerDashboardTab>("orders");
-    const [transactionFilter, setTransactionFilter] = useState<MarketerTransactionFilter>("");
+    const [transactionFilter, setTransactionFilter] =
+        useState<MarketerTransactionFilter>("");
     const [transactionsPage, setTransactionsPage] = useState(1);
 
-    const canFetchMarketerApis = isApprovedMarketer;
-
-    const statisticsQuery = useMarketerStatistics({ enabled: canFetchMarketerApis });
-    const profileQuery = useMarketerProfile({ enabled: canFetchMarketerApis });
+    const statisticsQuery = useMarketerStatistics({ enabled });
+    const profileQuery = useMarketerProfile({ enabled });
     const ordersQuery = useMarketerOrders(
         { per_page: 10, page: ordersPage },
-        { enabled: canFetchMarketerApis },
+        { enabled },
     );
-    const monthlyOrdersQuery = useMonthlyOrders(undefined, {
-        enabled: canFetchMarketerApis,
-    });
+    const monthlyOrdersQuery = useMonthlyOrders(undefined, { enabled });
     const transactionsQuery = useMarketerTransactions(
         {
             per_page: 10,
             type: transactionFilter || undefined,
             page: transactionsPage,
         },
-        { enabled: canFetchMarketerApis },
+        { enabled },
     );
     const withdrawRequestsQuery = useMarketerWithdrawRequests(
         { per_page: 10 },
-        { enabled: canFetchMarketerApis },
+        { enabled },
     );
     const withdrawMutation = useCreateWithdrawRequest();
 
-    const demoteAndRedirect = useCallback(() => {
-        const current = useAuthStore.getState().user;
-        if (current?.affiliate) {
-            setUser({
-                ...current,
-                affiliate: {
-                    ...current.affiliate,
-                    approved: false,
-                },
-            });
-        }
-        void queryClient.invalidateQueries({ queryKey: queryKeys.auth.me() });
-        void queryClient.removeQueries({ queryKey: queryKeys.marketer.all() });
-        navigate(paths.becomeMarketer, { replace: true });
-    }, [navigate, queryClient, setUser]);
-
-    useEffect(() => {
-        const errors = [
-            statisticsQuery.error,
-            profileQuery.error,
-            ordersQuery.error,
-            monthlyOrdersQuery.error,
-            transactionsQuery.error,
-            withdrawRequestsQuery.error,
-        ];
-        if (errors.some(isAffiliateNotAuthorizedError)) {
-            demoteAndRedirect();
-        }
-    }, [
-        demoteAndRedirect,
+    const isUnauthorized = [
         statisticsQuery.error,
         profileQuery.error,
         ordersQuery.error,
         monthlyOrdersQuery.error,
         transactionsQuery.error,
         withdrawRequestsQuery.error,
-    ]);
+    ].some(isAffiliateNotAuthorizedError);
 
     const copyAffiliateLink = useCallback(() => {
         const link = profileQuery.data?.affiliate_link;
@@ -114,12 +75,18 @@ export function useMarketerDashboard() {
         [withdrawMutation],
     );
 
-    const selectTransactionFilter = useCallback((filter: MarketerTransactionFilter) => {
-        setTransactionFilter(filter);
-        setTransactionsPage(1);
-    }, []);
+    const selectTransactionFilter = useCallback(
+        (filter: MarketerTransactionFilter) => {
+            setTransactionFilter(filter);
+            setTransactionsPage(1);
+        },
+        [],
+    );
 
-    const heroBenefitItems = useMemo(() => buildMarketerDashboardHeroBenefits(t), [t]);
+    const heroBenefitItems = useMemo(
+        () => buildMarketerDashboardHeroBenefits(t),
+        [t],
+    );
 
     const stats = statisticsQuery.data;
     const availableBalance = stats?.available_balance ?? 0;
@@ -130,8 +97,7 @@ export function useMarketerDashboard() {
     const withdrawRequestsPayload = withdrawRequestsQuery.data;
 
     return {
-        isApprovedMarketer,
-        isAffiliateStatusPending,
+        isUnauthorized,
         stats,
         isStatsLoading: statisticsQuery.isLoading,
         profile: profileQuery.data,

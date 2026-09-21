@@ -21,16 +21,28 @@ export function isAffiliateNotAuthorizedError(error: unknown): boolean {
 /** Clear local approval so UI falls back to "Become a marketer". */
 export function demoteLocalAffiliateApproval(): void {
     const { user, setUser } = useAuthStore.getState();
-    if (!user) return;
+    if (!user?.affiliate) {
+        if (user) {
+            setUser({
+                ...user,
+                affiliate: {
+                    is_affiliate: false,
+                    approved: false,
+                    affiliate_id: null,
+                    coupon_id: null,
+                    rate: null,
+                },
+            });
+        }
+        return;
+    }
 
     setUser({
         ...user,
         affiliate: {
-            is_affiliate: false,
+            ...user.affiliate,
             approved: false,
             affiliate_id: null,
-            coupon_id: user.affiliate?.coupon_id ?? null,
-            rate: user.affiliate?.rate ?? null,
         },
     });
 }

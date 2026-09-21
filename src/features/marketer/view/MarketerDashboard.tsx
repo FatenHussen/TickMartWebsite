@@ -1,7 +1,9 @@
 import { Navigate } from "react-router-dom";
 import { useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useLanguage } from "@/context/LanguageContext";
 import { paths } from "@/app/routes/path/paths";
+import { queryKeys } from "@/utils/queryKeys";
 import { useMarketerAccess } from "@/features/marketer/hooks/useMarketerAccess";
 import { useMarketerDashboard } from "@/features/marketer/hooks/useMarketerDashboard";
 import { demoteLocalAffiliateApproval } from "@/features/marketer/utils/isApprovedMarketer";
@@ -17,20 +19,33 @@ import { MarketerWithdrawalsPanel } from "@/features/marketer/components/dashboa
 
 export default function MarketerDashboard() {
     const { isRTL } = useLanguage();
-    const { isApprovedMarketer } = useMarketerAccess();
+    const queryClient = useQueryClient();
+    const { isApprovedMarketer, isAffiliateStatusPending } = useMarketerAccess();
     const dashboard = useMarketerDashboard(isApprovedMarketer);
 
     useEffect(() => {
-        if (dashboard.isUnauthorized) {
-            demoteLocalAffiliateApproval();
-        }
-    }, [dashboard.isUnauthorized]);
+        if (!dashboard.isUnauthorized) return;
+        demoteLocalAffiliateApproval();
+        void queryClient.removeQueries({ queryKey: queryKeys.marketer.all() });
+        void queryClient.invalidateQueries({ queryKey: queryKeys.auth.me() });
+    }, [dashboard.isUnauthorized, queryClient]);
+
+    if (isAffiliateStatusPending) {
+        return (
+            <div className="space-y-4" dir={isRTL ? "rtl" : "ltr"}>
+                <div className="h-40 animate-pulse rounded-2xl bg-custom-card" />
+                <div className="h-28 animate-pulse rounded-2xl bg-custom-card" />
+                <div className="h-48 animate-pulse rounded-2xl bg-custom-card" />
+            </div>
+        );
+    }
 
     if (!isApprovedMarketer || dashboard.isUnauthorized) {
         return <Navigate to={paths.becomeMarketer} replace />;
     }
 
-    const showAffiliateCard = dashboard.isProfileLoading || Boolean(dashboard.profile);
+    const showAffiliateCard =
+        dashboard.isProfileLoading || Boolean(dashboard.profile);
 
     return (
         <div className="space-y-6" dir={isRTL ? "rtl" : "ltr"}>
@@ -48,7 +63,10 @@ export default function MarketerDashboard() {
                 />
             )}
 
-            <MarketerStatisticsGrid stats={dashboard.stats} isLoading={dashboard.isStatsLoading} />
+            <MarketerStatisticsGrid
+                stats={dashboard.stats}
+                isLoading={dashboard.isStatsLoading}
+            />
 
             {dashboard.isMonthlyChartLoading ? (
                 <div className="h-48 animate-pulse rounded-2xl bg-custom-card p-6" />
@@ -59,7 +77,10 @@ export default function MarketerDashboard() {
                 />
             )}
 
-            <MarketerDashboardTabList activeTab={dashboard.activeTab} onTabChange={dashboard.setActiveTab} />
+            <MarketerDashboardTabList
+                activeTab={dashboard.activeTab}
+                onTabChange={dashboard.setActiveTab}
+            />
 
             {dashboard.activeTab === "orders" && (
                 <OrdersTable
@@ -86,7 +107,10 @@ export default function MarketerDashboard() {
             )}
 
             {dashboard.activeTab === "withdrawals" && (
-                <MarketerWithdrawalsPanel requests={dashboard.withdrawalItems} isRTL={isRTL} />
+                <MarketerWithdrawalsPanel
+                    requests={dashboard.withdrawalItems}
+                    isRTL={isRTL}
+                />
             )}
 
             {dashboard.isWithdrawModalOpen && (
