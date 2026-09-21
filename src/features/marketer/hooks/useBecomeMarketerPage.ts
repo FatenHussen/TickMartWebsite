@@ -2,17 +2,22 @@ import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 import { useMarketerTermsConditions } from "@/features/legal/hooks/useLegalDocument";
 import { useSendMarketerRequest } from "@/features/marketer/hooks/useMarketer";
+import { useMarketerAccess } from "@/features/marketer/hooks/useMarketerAccess";
+import { isApprovedMarketer } from "@/features/marketer/utils/isApprovedMarketer";
 import { useAuthStore } from "@/store/auth";
 import { getApiErrorMessage, getApiSuccessMessage } from "@/shared/lib/apiMessage";
 import { paths } from "@/app/routes/path/paths";
+import { queryKeys } from "@/utils/queryKeys";
 import type { LegalDocumentData } from "@/features/legal/types";
 import { buildBecomeMarketerBenefitItems } from "@/features/marketer/utils/buildBecomeMarketerBenefitItems";
 
 export function useBecomeMarketerPage() {
     const { t } = useTranslation();
     const navigate = useNavigate();
+    const qc = useQueryClient();
     const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
 
     const {
@@ -21,13 +26,14 @@ export function useBecomeMarketerPage() {
         error: termsError,
     } = useMarketerTermsConditions();
     const sendMarketerRequest = useSendMarketerRequest();
-    const { user } = useAuthStore();
+    const { user } = useMarketerAccess();
+    const setUser = useAuthStore((s) => s.setUser);
 
     const affiliate = user?.affiliate;
     const isAffiliate = affiliate?.is_affiliate === true;
     const isApproved = affiliate?.approved === true;
 
-    const shouldRedirectToDashboard = isAffiliate && isApproved;
+    const shouldRedirectToDashboard = isApprovedMarketer(user);
     const isAwaitingAffiliateApproval = isAffiliate && !isApproved;
 
     const benefitItems = useMemo(() => buildBecomeMarketerBenefitItems(t), [t]);
@@ -36,6 +42,19 @@ export function useBecomeMarketerPage() {
         sendMarketerRequest.mutate(undefined, {
             onSuccess: (res) => {
                 if (res.status || res.success) {
+                    if (user) {
+                        setUser({
+                            ...user,
+                            affiliate: {
+                                is_affiliate: true,
+                                approved: false,
+                                affiliate_id: user.affiliate?.affiliate_id ?? null,
+                                coupon_id: user.affiliate?.coupon_id ?? null,
+                                rate: user.affiliate?.rate ?? null,
+                            },
+                        });
+                    }
+                    void qc.invalidateQueries({ queryKey: queryKeys.auth.me() });
                     setIsSuccessModalOpen(true);
                 } else {
                     toast.error(getApiSuccessMessage(res, "Request failed"));
@@ -45,7 +64,7 @@ export function useBecomeMarketerPage() {
                 toast.error(getApiErrorMessage(err, "Request failed"));
             },
         });
-    }, [sendMarketerRequest]);
+    }, [sendMarketerRequest, user, setUser, qc]);
 
     const dismissSuccessModal = useCallback(() => {
         setIsSuccessModalOpen(false);

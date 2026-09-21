@@ -1,15 +1,38 @@
 import { useTranslation } from "react-i18next";
 import { HiMinus, HiPlus } from "react-icons/hi";
 import { cn } from "@/shared/lib/utils";
+import {
+    pickCurrencyAmount,
+    pickCurrencyFormatted,
+} from "@/shared/lib/formatApiPrice";
 import type { ExtraDetail } from "../types/productDetails";
 import { resolveLocalizedOrString } from "../lib/resolveLocalizedOrString";
 
-function minQtyForDetail(detail: ExtraDetail): number {
-    return Math.max(1, detail.quantity ?? 1);
+/** Selection floor is always 1; API `quantity` is the max when present. */
+function maxQtyForDetail(
+    detail: ExtraDetail,
+    maxQuantityPerExtra: number,
+): number {
+    const fromApi =
+        detail.quantity != null && Number.isFinite(Number(detail.quantity))
+            ? Math.max(1, Math.trunc(Number(detail.quantity)))
+            : maxQuantityPerExtra;
+    return Math.max(1, Math.min(fromApi, maxQuantityPerExtra));
+}
+
+function resolveDescription(
+    detail: ExtraDetail,
+    language: string,
+): string | null {
+    const text = resolveLocalizedOrString(detail.value, language).trim();
+    return text || null;
 }
 
 export interface ExtraDetailsTableProps {
     details: ExtraDetail[];
+    /** User currency code (`USD` | `SYP` …) for `price_currencies` display. */
+    currencyCode?: string | null;
+    /** Fallback symbol only when `price_currencies` is missing. */
     currencySymbol?: string;
     className?: string;
     /** When set, rows show checkboxes and `onToggle` is called with extra detail id */
@@ -25,6 +48,7 @@ export interface ExtraDetailsTableProps {
 
 export default function ExtraDetailsTable({
     details,
+    currencyCode,
     currencySymbol = "$",
     className,
     selectable = false,
@@ -39,16 +63,45 @@ export default function ExtraDetailsTable({
         return null;
     }
 
-    const hasPriceColumn = details.some((d) => d.price != null);
-    const showQtyColumn = selectable && onToggle && onQuantityChange;
+    const hasPriceColumn = details.some(
+        (d) =>
+            d.price != null ||
+            Boolean(pickCurrencyFormatted(d.price_currencies, currencyCode)),
+    );
+    const hasAnyDescription = details.some(
+        (d) => resolveDescription(d, i18n.language) != null,
+    );
+    const showQtyColumn =
+        selectable &&
+        !!onToggle &&
+        !!onQuantityChange &&
+        details.some((d) => maxQtyForDetail(d, maxQuantityPerExtra) > 1);
 
     const formatPriceCell = (detail: ExtraDetail, lineQuantity: number) => {
-        if (detail.price == null) return "—";
-        if (detail.price === 0) {
+        const unitLabel = pickCurrencyFormatted(
+            detail.price_currencies,
+            currencyCode,
+        );
+        const unitAmount =
+            pickCurrencyAmount(detail.price_currencies, currencyCode) ??
+            (detail.price != null && Number.isFinite(Number(detail.price))
+                ? Number(detail.price)
+                : null);
+
+        if (unitAmount != null && unitAmount === 0) {
             return t("product.free", "Free");
         }
-        const total = detail.price * lineQuantity;
-        return `${currencySymbol}${total.toFixed(2)}`;
+
+        if (unitLabel) {
+            if (lineQuantity > 1) {
+                return `${unitLabel} × ${lineQuantity}`;
+            }
+            return unitLabel;
+        }
+
+        if (unitAmount == null) return "—";
+        const total = unitAmount * lineQuantity;
+        return `${currencySymbol}${total}`;
     };
 
     return (
@@ -56,7 +109,7 @@ export default function ExtraDetailsTable({
             className={cn(
                 "w-full overflow-hidden rounded-xl border",
                 "border-[color-mix(in_srgb,var(--color-api-second)_32%,var(--color-border-primary))]",
-                className
+                className,
             )}
         >
             <table className="w-full border-collapse">
@@ -68,11 +121,13 @@ export default function ExtraDetailsTable({
                             </th>
                         )}
                         <th className="px-4 py-3 text-start text-xs font-semibold text-primary">
-                            {t("product.extraDetailKey", "Key")}
+                            {t("product.extraDetailName", "Name")}
                         </th>
-                        <th className="px-4 py-3 text-start text-xs font-semibold text-primary">
-                            {t("product.extraDetailValue", "Value")}
-                        </th>
+                        {hasAnyDescription && (
+                            <th className="px-4 py-3 text-start text-xs font-semibold text-primary">
+                                {t("product.extraDetailDescription", "Description")}
+                            </th>
+                        )}
                         {showQtyColumn && (
                             <th className="px-4 py-3 text-start text-xs font-semibold text-primary whitespace-nowrap">
                                 {t("product.extraDetailQuantity", "Quantity")}
@@ -88,14 +143,18 @@ export default function ExtraDetailsTable({
                 <tbody>
                     {details.map((detail, index) => {
                         const isSelected = selection[detail.id] != null;
-                        const minQ = minQtyForDetail(detail);
-                        const currentQ = selection[detail.id] ?? minQ;
-                        const cap = Math.max(minQ, maxQuantityPerExtra);
+                        const maxQ = maxQtyForDetail(detail, maxQuantityPerExtra);
+                        const currentQ = selection[detail.id] ?? 1;
                         const priceLineQty = showQtyColumn
                             ? isSelected
                                 ? currentQ
-                                : minQ
-                            : minQ;
+                                : 1
+                            : isSelected
+                              ? currentQ
+                              : 1;
+                        const description = hasAnyDescription
+                            ? resolveDescription(detail, i18n.language)
+                            : null;
                         const rowClick =
                             selectable && onToggle
                                 ? () => onToggle(detail.id)
@@ -111,7 +170,7 @@ export default function ExtraDetailsTable({
                                         : "bg-custom-primary",
                                     selectable &&
                                         onToggle &&
-                                        "cursor-pointer transition-colors hover:bg-[color-mix(in_srgb,var(--color-api-second)_11%,var(--color-bg-card))]"
+                                        "cursor-pointer transition-colors hover:bg-[color-mix(in_srgb,var(--color-api-second)_11%,var(--color-bg-card))]",
                                 )}
                             >
                                 {selectable && onToggle && (
@@ -124,7 +183,7 @@ export default function ExtraDetailsTable({
                                             className={cn(
                                                 "h-4 w-4 cursor-pointer rounded border-2",
                                                 "border-[color-mix(in_srgb,var(--color-api-second)_45%,var(--color-border-secondary))]",
-                                                "text-primary accent-primary focus:ring-2 focus:ring-primary/30 focus:ring-offset-0"
+                                                "text-primary accent-primary focus:ring-2 focus:ring-primary/30 focus:ring-offset-0",
                                             )}
                                         />
                                     </td>
@@ -132,15 +191,14 @@ export default function ExtraDetailsTable({
                                 <td className="px-4 py-3 text-sm font-medium text-custom-secondary w-1/3">
                                     {resolveLocalizedOrString(
                                         detail.key,
-                                        i18n.language
+                                        i18n.language,
                                     )}
                                 </td>
-                                <td className="px-4 py-3 text-sm text-custom-primary">
-                                    {resolveLocalizedOrString(
-                                        detail.value,
-                                        i18n.language
-                                    )}
-                                </td>
+                                {hasAnyDescription && (
+                                    <td className="px-4 py-3 text-sm text-custom-primary">
+                                        {description ?? "—"}
+                                    </td>
+                                )}
                                 {showQtyColumn && onQuantityChange && onToggle && (
                                     <td
                                         className="px-4 py-3 align-middle"
@@ -152,29 +210,28 @@ export default function ExtraDetailsTable({
                                                 onClick={() => {
                                                     if (
                                                         !isSelected ||
-                                                        currentQ <= minQ
+                                                        currentQ <= 1
                                                     ) {
                                                         return;
                                                     }
                                                     onQuantityChange(
                                                         detail.id,
-                                                        currentQ - 1
+                                                        currentQ - 1,
                                                     );
                                                 }}
                                                 disabled={
-                                                    !isSelected ||
-                                                    currentQ <= minQ
+                                                    !isSelected || currentQ <= 1
                                                 }
                                                 className={cn(
                                                     "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border-2",
                                                     "border-[color-mix(in_srgb,var(--color-api-second)_42%,var(--color-border-primary))] bg-white",
                                                     "dark:bg-[color-mix(in_srgb,var(--color-main)_18%,#13151c)] text-primary",
                                                     "transition-colors hover:border-[var(--color-api-second)]/80",
-                                                    "disabled:cursor-not-allowed disabled:opacity-40"
+                                                    "disabled:cursor-not-allowed disabled:opacity-40",
                                                 )}
                                                 aria-label={t(
                                                     "product.decreaseQuantity",
-                                                    "Decrease quantity"
+                                                    "Decrease quantity",
                                                 )}
                                             >
                                                 <HiMinus className="h-3.5 w-3.5" />
@@ -184,10 +241,10 @@ export default function ExtraDetailsTable({
                                                     "min-w-[2rem] text-center text-sm font-medium tabular-nums",
                                                     isSelected
                                                         ? "text-custom-primary"
-                                                        : "text-custom-secondary"
+                                                        : "text-custom-secondary",
                                                 )}
                                             >
-                                                {isSelected ? currentQ : minQ}
+                                                {isSelected ? currentQ : 1}
                                             </span>
                                             <button
                                                 type="button"
@@ -196,26 +253,26 @@ export default function ExtraDetailsTable({
                                                         onToggle(detail.id);
                                                         return;
                                                     }
-                                                    if (currentQ < cap) {
+                                                    if (currentQ < maxQ) {
                                                         onQuantityChange(
                                                             detail.id,
-                                                            currentQ + 1
+                                                            currentQ + 1,
                                                         );
                                                     }
                                                 }}
                                                 disabled={
-                                                    isSelected && currentQ >= cap
+                                                    isSelected && currentQ >= maxQ
                                                 }
                                                 className={cn(
                                                     "flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg border-2",
                                                     "border-[color-mix(in_srgb,var(--color-api-second)_42%,var(--color-border-primary))] bg-white",
                                                     "dark:bg-[color-mix(in_srgb,var(--color-main)_18%,#13151c)] text-primary",
                                                     "transition-colors hover:border-[var(--color-api-second)]/80",
-                                                    "disabled:cursor-not-allowed disabled:opacity-40"
+                                                    "disabled:cursor-not-allowed disabled:opacity-40",
                                                 )}
                                                 aria-label={t(
                                                     "product.increaseQuantity",
-                                                    "Increase quantity"
+                                                    "Increase quantity",
                                                 )}
                                             >
                                                 <HiPlus className="h-3.5 w-3.5" />

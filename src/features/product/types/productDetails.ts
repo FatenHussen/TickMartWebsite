@@ -213,11 +213,19 @@ export interface ExtraDetailCategory {
 
 export interface ExtraDetail {
  id: number;
+ /** Display name for the paid add-on — use `key[locale]`, never `value`. */
  key: LocalizedOrString;
+ /** Optional description — hide when empty. Not a price. */
  value: LocalizedOrString;
- /** Minimum selectable quantity for this extra (cannot go below). */
+ /**
+  * Max selectable quantity of this add-on on the product (when provided).
+  * Selection always starts at 1; clamp to this ceiling.
+  */
  quantity?: number;
+ /** Base unit price (typically USD). Prefer `price_currencies` for display. */
  price?: number;
+ /** Unit price for display — same shape as other storefront prices. */
+ price_currencies?: ApiDualCurrencies;
  category?: ExtraDetailCategory;
 }
 

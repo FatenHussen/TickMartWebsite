@@ -37,6 +37,14 @@ export interface RegisterPayload {
  governorate_id: number;
 }
 
+export interface AuthAffiliateInfo {
+ is_affiliate: boolean;
+ approved: boolean;
+ affiliate_id: string | null;
+ coupon_id: number | null;
+ rate: string | null;
+}
+
 export interface LoginResponse {
  status: boolean;
  message: string;
@@ -46,6 +54,7 @@ export interface LoginResponse {
  name: string;
  email?: string;
  phone?: string;
+ affiliate?: AuthAffiliateInfo;
  };
  token: string;
  };
@@ -75,6 +84,7 @@ export interface VerifyOtpResponse {
  name: string;
  email?: string;
  phone?: string;
+ affiliate?: AuthAffiliateInfo;
  };
  token: string;
  };

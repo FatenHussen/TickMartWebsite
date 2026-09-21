@@ -1,5 +1,5 @@
-import { useCallback, useMemo } from "react";
-import { Link } from "react-router-dom";
+import { useCallback, useEffect, useMemo } from "react";
+import { Link, Navigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { Copy, MapPin, Plus, Wallet } from "lucide-react";
@@ -15,6 +15,11 @@ import {
     useMarketerProfile,
     useMarketerStatistics,
 } from "@/features/marketer/hooks/useMarketer";
+import { useMarketerAccess } from "@/features/marketer/hooks/useMarketerAccess";
+import {
+    demoteLocalAffiliateApproval,
+    isAffiliateNotAuthorizedError,
+} from "@/features/marketer/utils/isApprovedMarketer";
 import { useQuickActions } from "../hooks/useQuickActions";
 import { useAffiliateDarkScopeStyle } from "../hooks/useAffiliateDarkScopeStyle";
 import AffiliateQuickActionsStage from "../components/AffiliateQuickActionsStage";
@@ -39,21 +44,36 @@ export default function AffiliateWelcomePage() {
     const { t, i18n } = useTranslation();
     const lang = i18n.language || "en";
     const { isRTL } = useLanguage();
+    const { isApprovedMarketer } = useMarketerAccess();
     const { data: profile } = useProfile();
     const { data: addresses = [] } = useAddresses();
     const { addressId } = useCheckoutStore();
-    const { data: stats } = useMarketerStatistics();
-    const { data: marketerProfile } = useMarketerProfile();
+    const { data: stats, error: statsError } = useMarketerStatistics({
+        enabled: isApprovedMarketer,
+    });
+    const { data: marketerProfile, error: profileError } = useMarketerProfile({
+        enabled: isApprovedMarketer,
+    });
     const {
         data: quickActions = [],
         isLoading: quickActionsLoading,
         isError: quickActionsError,
-    } = useQuickActions();
+    } = useQuickActions({ enabled: isApprovedMarketer });
+
+    const unauthorized =
+        isAffiliateNotAuthorizedError(statsError) ||
+        isAffiliateNotAuthorizedError(profileError);
+
+    useEffect(() => {
+        if (unauthorized) {
+            demoteLocalAffiliateApproval();
+        }
+    }, [unauthorized]);
 
     const selectedAddress = useMemo(() => {
         if (addressId != null) {
             return addresses.find(
-                (a: Address) => a.id === addressId || a.id === Number(addressId)
+                (a: Address) => a.id === addressId || a.id === Number(addressId),
             );
         }
         return addresses.find((a: Address) => a.is_default) ?? addresses[0];
@@ -90,6 +110,10 @@ export default function AffiliateWelcomePage() {
     const addressHref = selectedAddress
         ? paths.account.editAddress(selectedAddress.id)
         : paths.account.addAddress;
+
+    if (!isApprovedMarketer || unauthorized) {
+        return <Navigate to={paths.becomeMarketer} replace />;
+    }
 
     return (
         <div

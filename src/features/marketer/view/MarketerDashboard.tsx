@@ -1,5 +1,10 @@
+import { Navigate } from "react-router-dom";
+import { useEffect } from "react";
 import { useLanguage } from "@/context/LanguageContext";
+import { paths } from "@/app/routes/path/paths";
+import { useMarketerAccess } from "@/features/marketer/hooks/useMarketerAccess";
 import { useMarketerDashboard } from "@/features/marketer/hooks/useMarketerDashboard";
+import { demoteLocalAffiliateApproval } from "@/features/marketer/utils/isApprovedMarketer";
 import { OrdersTable } from "@/features/marketer/components/orders-table/OrdersTable";
 import { MarketerDashboardHero } from "@/features/marketer/components/MarketerDashboardHero";
 import { MarketerWithdrawModal } from "@/features/marketer/components/MarketerWithdrawModal";
@@ -12,7 +17,18 @@ import { MarketerWithdrawalsPanel } from "@/features/marketer/components/dashboa
 
 export default function MarketerDashboard() {
     const { isRTL } = useLanguage();
-    const dashboard = useMarketerDashboard();
+    const { isApprovedMarketer } = useMarketerAccess();
+    const dashboard = useMarketerDashboard(isApprovedMarketer);
+
+    useEffect(() => {
+        if (dashboard.isUnauthorized) {
+            demoteLocalAffiliateApproval();
+        }
+    }, [dashboard.isUnauthorized]);
+
+    if (!isApprovedMarketer || dashboard.isUnauthorized) {
+        return <Navigate to={paths.becomeMarketer} replace />;
+    }
 
     const showAffiliateCard = dashboard.isProfileLoading || Boolean(dashboard.profile);
 

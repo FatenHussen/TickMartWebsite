@@ -2,6 +2,8 @@ import { Link } from "react-router-dom";
 import { useLanguage } from "@/context/LanguageContext";
 import { useTranslation } from "react-i18next";
 import { paths } from "@/app/routes/path/paths";
+import { useAuthStore } from "@/store/auth";
+import { isApprovedMarketer } from "@/features/marketer/utils/isApprovedMarketer";
 import {
     HiTruck,
     HiShieldCheck,
@@ -16,6 +18,8 @@ const PLAY_STORE_FALLBACK = "https://play.google.com/store";
 export default function Footer() {
     const { isRTL } = useLanguage();
     const { t } = useTranslation();
+    const { authenticated, user } = useAuthStore();
+    const approvedMarketer = authenticated && isApprovedMarketer(user);
 
     const iosAppUrl =
         (import.meta.env.VITE_IOS_APP_URL as string | undefined) ||
@@ -42,7 +46,12 @@ export default function Footer() {
         ],
         partners: [
             { label: t("footer.becomeVendor"), path: paths.becomeVendor },
-            { label: t("footer.becomeMarketer"), path: paths.becomeMarketer },
+            approvedMarketer
+                ? {
+                      label: t("account.menu.marketerDashboard"),
+                      path: paths.marketerDashboard,
+                  }
+                : { label: t("footer.becomeMarketer"), path: paths.becomeMarketer },
         ],
         legal: [
             { label: t("footer.privacyPolicy"), path: paths.client.privacyPolicy },

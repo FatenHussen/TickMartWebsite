@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { _quickActionsApi } from "../api/quickActions.service";
 import { queryKeys } from "@/utils/queryKeys";
 
-export function useQuickActions() {
+export function useQuickActions(options?: { enabled?: boolean }) {
     return useQuery({
         queryKey: queryKeys.affiliate.quickActions(),
         queryFn: () => _quickActionsApi.list(),
@@ -11,5 +11,6 @@ export function useQuickActions() {
             return [...res.data].sort((a, b) => a.order - b.order);
         },
         staleTime: 1000 * 60 * 5,
+        enabled: options?.enabled ?? true,
     });
 }

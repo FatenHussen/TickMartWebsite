@@ -58,14 +58,12 @@ export default function Navbar() {
     const location = useLocation();
     const { authenticated, user: authUser } = useAuthStore();
 
-    // Show"Become a Marketer"only when logged in AND (not affiliate OR not approved)
-    const showBecomeMarketer =
-        authenticated &&
-        (!authUser?.affiliate?.is_affiliate || !authUser?.affiliate?.approved);
-
-    const isApprovedMarketer =
+    // Guests + non-approved users see "Become a Marketer"; approved see dashboard only
+    const isApprovedMarketerUser =
         authUser?.affiliate?.is_affiliate === true &&
         authUser?.affiliate?.approved === true;
+    const showBecomeMarketer = !authenticated || !isApprovedMarketerUser;
+    const isApprovedMarketer = authenticated && isApprovedMarketerUser;
     const [showLocationDropdown, setShowLocationDropdown] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [showAccountDropdown, setShowAccountDropdown] = useState(false);

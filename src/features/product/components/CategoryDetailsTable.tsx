@@ -1,4 +1,3 @@
-import { useTranslation } from "react-i18next";
 import { cn } from "@/shared/lib/utils";
 import type { CategoryDetail } from "../types/productDetails";
 
@@ -11,7 +10,6 @@ export default function CategoryDetailsTable({
     details,
     className,
 }: CategoryDetailsTableProps) {
-    const { t } = useTranslation();
     if (!details || details.length === 0) {
         return null;
     }
@@ -19,43 +17,25 @@ export default function CategoryDetailsTable({
     return (
         <div
             className={cn(
-                "w-full overflow-hidden rounded-xl border",
-                "border-[color-mix(in_srgb,var(--color-api-second)_32%,var(--color-border-primary))]",
-                className
+                "overflow-hidden rounded-2xl border border-[color-mix(in_srgb,var(--color-api-second)_18%,var(--color-border-primary))] bg-custom-card dark:border-white/[0.08]",
+                className,
             )}
         >
-            <table className="w-full border-collapse">
-                <thead>
-                    <tr className="border-b-2 border-primary/20 bg-[color-mix(in_srgb,var(--color-primary)_9%,var(--color-bg-card))]">
-                        <th className="px-4 py-3 text-start text-xs font-semibold text-primary">
-                            {t("product.categoryDetailName", "Name")}
-                        </th>
-                        <th className="px-4 py-3 text-start text-xs font-semibold text-primary">
-                            {t("product.categoryDetailValue", "Value")}
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {details.map((detail, index) => (
-                        <tr
-                            key={detail.id}
-                            className={cn(
-                                "border-b border-[color-mix(in_srgb,var(--color-api-second)_22%,var(--color-border-primary))] last:border-b-0",
-                                index % 2 === 0
-                                    ? "bg-[color-mix(in_srgb,var(--color-api-second)_4%,var(--color-bg-card))]"
-                                    : "bg-custom-primary"
-                            )}
-                        >
-                            <td className="px-4 py-3 text-sm font-medium text-custom-secondary w-1/3">
-                                {detail.name}
-                            </td>
-                            <td className="px-4 py-3 text-sm text-custom-primary">
-                                {detail.value}
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
+            <dl className="divide-y divide-black/6 dark:divide-white/8">
+                {details.map((detail) => (
+                    <div
+                        key={detail.id}
+                        className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] items-baseline gap-x-4 gap-y-1 px-4 py-3.5 transition-colors hover:bg-[color-mix(in_srgb,var(--color-api-second)_5%,transparent)] sm:px-5 sm:py-4 dark:hover:bg-white/[0.025]"
+                    >
+                        <dt className="min-w-0 text-sm font-medium text-custom-secondary">
+                            {detail.name}
+                        </dt>
+                        <dd className="min-w-0 text-end text-sm font-semibold tracking-tight text-text-primary sm:text-[0.9375rem]">
+                            {detail.value}
+                        </dd>
+                    </div>
+                ))}
+            </dl>
         </div>
     );
 }

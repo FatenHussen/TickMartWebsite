@@ -1,18 +1,21 @@
-import { Navigate, Outlet } from"react-router-dom";
-import { useAuthStore } from"@/store/auth";
-import { paths } from"../path/paths";
+import { Navigate, Outlet } from "react-router-dom";
+import { useAuthStore } from "@/store/auth";
+import { isApprovedMarketer } from "@/features/marketer/utils/isApprovedMarketer";
+import { paths } from "../path/paths";
 
 /**
- * GuestGuard - Protects auth routes from authenticated users
- * If user is authenticated, redirect to home
- * If user is not authenticated, render the children (auth pages)
+ * GuestGuard - Protects auth routes from authenticated users.
+ * Approved marketers land on the marketer welcome; everyone else goes home.
  */
 export default function GuestGuard() {
- const { authenticated } = useAuthStore();
+    const { authenticated, user } = useAuthStore();
 
- if (authenticated) {
- return <Navigate to={paths.affiliateWelcome} replace />;
- }
+    if (authenticated) {
+        const destination = isApprovedMarketer(user)
+            ? paths.affiliateWelcome
+            : paths.client.home;
+        return <Navigate to={destination} replace />;
+    }
 
- return <Outlet />;
+    return <Outlet />;
 }

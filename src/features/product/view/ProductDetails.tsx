@@ -11,6 +11,7 @@ import ProductActions from "../components/ProductActions";
 import ProductDescription from "../components/ProductDescription";
 import ShopVariantsPreview from "../components/ShopVariantsPreview";
 import ExtraDetailsTable from "../components/ExtraDetailsTable";
+import CategoryDetailsTable from "../components/CategoryDetailsTable";
 import ExtrasCheckboxTable from "../components/ExtrasCheckboxTable";
 import {
     SoldWithThisProduct,
@@ -26,6 +27,7 @@ import { useVariantSelector } from "../hooks/useVariantSelector";
 import { useSimilarProducts } from "../hooks/useSimilarProducts";
 import { useProductsFromSameSeller } from "../hooks/useProductsFromSameSeller";
 import {
+    pickCurrencyAmount,
     resolveDisplayListPrice,
     resolveDisplaySalePrice,
     resolveListingCardPrices,
@@ -68,7 +70,15 @@ import {
 } from "@/shared/lib/mapProductBadges";
 import { cn } from "@/shared/lib/utils";
 import { HiEye, HiShoppingCart } from "react-icons/hi";
-import { HiChevronRight, HiClock, HiHome, HiPencilSquare, HiShieldCheck } from "react-icons/hi2";
+import {
+    HiChevronRight,
+    HiClock,
+    HiDocumentText,
+    HiHome,
+    HiListBullet,
+    HiPencilSquare,
+    HiShieldCheck,
+} from "react-icons/hi2";
 
 const EMPTY_SHOP_VARIANTS: ShopVariant[] = [];
 const EMPTY_ATTRIBUTES_MAP: AttributeMapItem[] = [];
@@ -96,7 +106,7 @@ function ProductDetails() {
     const [lineItemNote, setLineItemNote] = useState("");
     const [noteOpen, setNoteOpen] = useState(false);
     const [selectedExtraIds, setSelectedExtraIds] = useState<number[]>([]);
-    /** Selected extra details (product extra_details): id → quantity (min from API per row). */
+    /** Selected extra details (product extra_details): id → quantity (starts at 1). */
     const [extraDetailQtyById, setExtraDetailQtyById] = useState<
         Record<number, number>
     >({});
@@ -255,14 +265,39 @@ function ProductDetails() {
         return variantOrderLimit(selectedVariant, product.max_purchase_quantity);
     }, [product, selectedVariant]);
 
+    /** USD/base unit add-ons for cart `priceNumeric` (matches variant numeric prices). */
     const extraDetailsUnitAddon = useMemo(() => {
         if (!product?.extra_details?.length || isFoodProduct) return 0;
         return product.extra_details.reduce((sum, d) => {
             const q = extraDetailQtyById[d.id];
             if (q == null) return sum;
-            return sum + (d.price ?? 0) * q;
+            const unit =
+                d.price != null && Number.isFinite(Number(d.price))
+                    ? Number(d.price)
+                    : 0;
+            return sum + unit * q;
         }, 0);
     }, [product?.extra_details, extraDetailQtyById, isFoodProduct]);
+
+    /** Display-currency add-on total from `price_currencies` (no local FX). */
+    const extraDetailsDisplayAddon = useMemo(() => {
+        if (!product?.extra_details?.length || isFoodProduct) return 0;
+        return product.extra_details.reduce((sum, d) => {
+            const q = extraDetailQtyById[d.id];
+            if (q == null) return sum;
+            const unit =
+                pickCurrencyAmount(d.price_currencies, currency) ??
+                (d.price != null && Number.isFinite(Number(d.price))
+                    ? Number(d.price)
+                    : 0);
+            return sum + unit * q;
+        }, 0);
+    }, [
+        product?.extra_details,
+        extraDetailQtyById,
+        isFoodProduct,
+        currency,
+    ]);
 
     const [quantity, setQuantity] = useState(1);
     const { data: favoriteProducts = [] } = useFavorites("product", false);
@@ -634,26 +669,25 @@ function ProductDetails() {
 
     const handleToggleExtraDetail = (id: number) => {
         if (!product?.extra_details) return;
-        const detail = product.extra_details.find((d) => d.id === id);
-        const minQ = Math.max(1, detail?.quantity ?? 1);
         setExtraDetailQtyById((prev) => {
             if (prev[id] != null) {
                 const next = { ...prev };
                 delete next[id];
                 return next;
             }
-            return { ...prev, [id]: minQ };
+            return { ...prev, [id]: 1 };
         });
     };
 
     const handleExtraDetailQuantityChange = (id: number, nextQty: number) => {
         if (!product?.extra_details) return;
         const detail = product.extra_details.find((d) => d.id === id);
-        const minQ = Math.max(1, detail?.quantity ?? 1);
-        const clamped = Math.min(
-            Math.max(nextQty, minQ),
-            extraQuantityMax
-        );
+        const apiMax =
+            detail?.quantity != null && Number.isFinite(Number(detail.quantity))
+                ? Math.max(1, Math.trunc(Number(detail.quantity)))
+                : extraQuantityMax;
+        const maxQ = Math.max(1, Math.min(apiMax, extraQuantityMax));
+        const clamped = Math.min(Math.max(nextQty, 1), maxQ);
         setExtraDetailQtyById((prev) => ({ ...prev, [id]: clamped }));
     };
 
@@ -713,25 +747,36 @@ function ProductDetails() {
 
     // Prefer API `*_formatted` / `*_currencies` — never invent FX locally.
     // Extra-detail addons force a numeric compose because formatted fields are
-    // for the base variant only.
+    // for the base variant only; amounts come from `price_currencies` when present.
     const currencySymbol =
         selectedVariant?.currency_symbol ?? product.currency_symbol ?? "";
     const formatPrice = (price: number) =>
         `${currencySymbol}${Number(price).toFixed(2)}`;
 
-    const extraAddon = isFood ? 0 : extraDetailsUnitAddon;
+    const extraAddon = isFood ? 0 : extraDetailsDisplayAddon;
     const priceSource = selectedVariant ?? product;
+    const baseSaleAmount =
+        pickCurrencyAmount(
+            priceSource.price_after_discount_currencies,
+            currency,
+        ) ??
+        pickCurrencyAmount(priceSource.price_currencies, currency) ??
+        currentPriceAfterDiscount ??
+        currentPrice ??
+        0;
+    const baseListAmount =
+        pickCurrencyAmount(priceSource.price_currencies, currency) ??
+        currentPrice ??
+        0;
     const displaySalePrice =
         extraAddon > 0
-            ? formatPrice(
-                  (currentPriceAfterDiscount ?? currentPrice) + extraAddon,
-              )
+            ? formatPrice(baseSaleAmount + extraAddon)
             : resolveDisplaySalePrice(priceSource, currency) ||
               formatPrice(currentPriceAfterDiscount ?? currentPrice);
     const displayListPrice =
         extraAddon > 0
-            ? currentPriceAfterDiscount < currentPrice
-                ? formatPrice(currentPrice + extraAddon)
+            ? baseListAmount > baseSaleAmount
+                ? formatPrice(baseListAmount + extraAddon)
                 : undefined
             : resolveDisplayListPrice(priceSource, currency);
 
@@ -902,10 +947,11 @@ function ProductDetails() {
                             product.extra_details.length > 0 && (
                                 <div>
                                     <h3 className="mb-2 text-sm font-semibold text-text-primary">
-                                        {t("product.details", "Details")}
+                                        {t("product.extras", "Extras")}
                                     </h3>
                                     <ExtraDetailsTable
                                         details={product.extra_details}
+                                        currencyCode={currency}
                                         currencySymbol={
                                             product.currency_symbol ?? "$"
                                         }
@@ -1035,15 +1081,20 @@ function ProductDetails() {
                     <section className="mt-10 border-t border-black/6 pt-8 dark:border-white/8">
                         <div
                             className={cn(
-                                "grid gap-8",
+                                "grid gap-8 lg:gap-10",
                                 hasDescription && hasSpecs && "md:grid-cols-2",
                             )}
                         >
                             {hasDescription && (
                                 <div className="min-w-0">
-                                    <h2 className="mb-4 text-lg font-semibold text-text-primary">
-                                        {t("product.description", "Description")}
-                                    </h2>
+                                    <div className="mb-4 flex items-center gap-2.5">
+                                        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-[color-mix(in_srgb,var(--color-api-second)_10%,var(--color-bg-card))] text-primary dark:bg-white/[0.05]">
+                                            <HiDocumentText className="h-4 w-4" aria-hidden />
+                                        </span>
+                                        <h2 className="text-lg font-semibold tracking-tight text-text-primary">
+                                            {t("product.description", "Description")}
+                                        </h2>
+                                    </div>
                                     <ProductDescription
                                         description={product.description}
                                         fullDescription={product.full_description}
@@ -1053,36 +1104,18 @@ function ProductDetails() {
 
                             {hasSpecs && (
                                 <div className="min-w-0">
-                                    <h2 className="mb-4 text-lg font-semibold text-text-primary">
-                                        {t("product.categoryDetails", "Additional Details")}
-                                    </h2>
-                                    <div className="w-fit max-w-full overflow-hidden rounded-xl ring-1 ring-black/8 dark:ring-white/10">
-                                        <table className="w-auto min-w-[16rem] max-w-md border-collapse text-sm">
-                                            <tbody>
-                                                {product.category_details!.map((detail, index) => (
-                                                    <tr
-                                                        key={detail.id}
-                                                        className={cn(
-                                                            "border-b border-black/6 last:border-b-0 dark:border-white/8",
-                                                            index % 2 === 0
-                                                                ? "bg-[color-mix(in_srgb,var(--color-api-second)_6%,var(--color-bg-card))] dark:bg-white/[0.03]"
-                                                                : "bg-custom-card",
-                                                        )}
-                                                    >
-                                                        <th
-                                                            scope="row"
-                                                            className="whitespace-nowrap px-4 py-3 text-start font-medium text-custom-secondary"
-                                                        >
-                                                            {detail.name}
-                                                        </th>
-                                                        <td className="px-4 py-3 text-start font-medium text-text-primary">
-                                                            {detail.value}
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
+                                    <div className="mb-4 flex items-center gap-2.5">
+                                        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-[color-mix(in_srgb,var(--color-api-second)_10%,var(--color-bg-card))] text-primary dark:bg-white/[0.05]">
+                                            <HiListBullet className="h-4 w-4" aria-hidden />
+                                        </span>
+                                        <h2 className="text-lg font-semibold tracking-tight text-text-primary">
+                                            {t("product.categoryDetails", "Additional Details")}
+                                        </h2>
                                     </div>
+                                    <CategoryDetailsTable
+                                        details={product.category_details!}
+                                        className="w-full"
+                                    />
                                 </div>
                             )}
                         </div>

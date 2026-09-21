@@ -80,6 +80,37 @@ export function pickCurrencyFormatted(
     return first?.formatted?.trim() ?? "";
 }
 
+/** Numeric `amount` from `*_currencies` for the selected code — never convert FX. */
+export function pickCurrencyAmount(
+    currencies: ApiDualCurrencies | null | undefined,
+    currencyCode?: string | null,
+): number | null {
+    if (!currencies) return null;
+    const read = (entry?: ApiCurrencyFormatted | null): number | null => {
+        if (entry?.amount == null) return null;
+        const n = Number(entry.amount);
+        return Number.isFinite(n) ? n : null;
+    };
+    const code = (currencyCode ?? "").trim().toUpperCase();
+    if (code) {
+        const direct = read(currencies[code]);
+        if (direct != null) return direct;
+        const matched = Object.entries(currencies).find(
+            ([key]) => key.toUpperCase() === code,
+        );
+        const fromMatch = read(matched?.[1]);
+        if (fromMatch != null) return fromMatch;
+    }
+    return (
+        read(currencies.USD) ??
+        read(currencies.SYP) ??
+        Object.values(currencies).reduce<number | null>((found, entry) => {
+            if (found != null) return found;
+            return read(entry);
+        }, null)
+    );
+}
+
 /** Join USD / SYP (and any other) formatted lines with ` / `. */
 export function formatDualCurrencies(
     currencies: ApiDualCurrencies | null | undefined,
