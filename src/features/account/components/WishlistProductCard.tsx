@@ -128,6 +128,11 @@ export default function WishlistProductCard({
  {originalPrice}
  </span>
  )}
+ {listing.discountLabel && (
+ <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
+ {listing.discountLabel}
+ </span>
+ )}
  {savingsText && (
  <span className="text-sm font-medium text-green-600 dark:text-green-400">
  {savingsText}

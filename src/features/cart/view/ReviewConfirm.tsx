@@ -166,10 +166,6 @@ export default function ReviewConfirm() {
             pointsRedeemed: 0,
             pointsValue: formatPrice(0),
             total: formatPrice(toNum(preview.total)),
-            estimatedDelivery: t(
-                "checkout.estimatedDeliveryWindow",
-                "2:00 PM - 4:00 PM",
-            ),
             pointsEarned:
                 typeof preview.automatic_promotions?.points_expected === "number"
                     ? preview.automatic_promotions.points_expected
@@ -307,7 +303,6 @@ export default function ReviewConfirm() {
         pointsRedeemed: 0,
         pointsValue: formatPrice(0),
         total: formatPrice(0),
-        estimatedDelivery: "-",
         pointsEarned: 0,
         pointsBefore: 0,
         pointsNewBalance: 0,

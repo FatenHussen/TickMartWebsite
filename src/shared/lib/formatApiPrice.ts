@@ -4,6 +4,8 @@
  * Spec: display `*_formatted` or `*_currencies` from the API.
  */
 
+import { formatStorefrontDiscountBadge } from "@/shared/lib/productDiscountDisplay";
+
 export type ApiCurrencyFormatted = {
     formatted?: string | null;
     amount?: number | null;
@@ -155,14 +157,21 @@ export function hasEffectiveDiscount(
 function resolveDiscountLabel(
     source: FormattedPriceSource | null | undefined,
 ): string | undefined {
-    if (!source || !hasEffectiveDiscount(source)) return undefined;
+    if (!source) return undefined;
+
+    const typed = formatStorefrontDiscountBadge(source);
+    if (typed) return typed;
+
+    // Legacy listing: `discount` used to be a percent string when type was absent.
+    // Numeric `discount` is now the computed savings amount — not a badge value.
     const dtype = source.discount_type;
-    const dval = Number(source.discount_value ?? 0);
-    if (dtype === "percentage" && dval > 0) return `-${dval}%`;
+    if (dtype === "percentage" || dtype === "fixed" || dtype === "none") {
+        return undefined;
+    }
     const disc = source.discount;
-    if (typeof disc === "number" && disc > 0) return `-${disc}%`;
-    if (typeof disc === "string" && parseFloat(disc) > 0) {
-        return `-${parseFloat(disc)}%`;
+    if (typeof disc === "string" && disc.trim()) {
+        const n = Number(disc);
+        if (Number.isFinite(n) && n > 0) return `-${n}%`;
     }
     return undefined;
 }

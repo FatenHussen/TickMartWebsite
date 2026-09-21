@@ -6,6 +6,12 @@ import {
     selectFormattedForCurrency,
     type ApiDualCurrencies,
 } from "@/shared/lib/formatApiPrice";
+import {
+    formatStorefrontDiscountBadge,
+    readDiscountType,
+    readDiscountValue,
+    type DiscountFieldSource,
+} from "@/shared/lib/productDiscountDisplay";
 import type { ShopVariant, VariantDiscountType } from "../types/productDetails";
 
 export type VariantPriceDisplay = {
@@ -16,38 +22,43 @@ export type VariantPriceDisplay = {
     hasDiscount: boolean;
 };
 
-export function normalizeVariantDiscountFields(variant: ShopVariant): {
+export function normalizeVariantDiscountFields(
+    variant?: DiscountFieldSource | null,
+    product?: DiscountFieldSource | null,
+): {
     discountType: VariantDiscountType;
     discountValue: number;
 } {
-    const rawType = variant.discount_type;
-    const discountType: VariantDiscountType =
-        rawType === "percentage" || rawType === "fixed"
-            ? rawType
-            : "none";
     return {
-        discountType,
-        discountValue: variant.discount_value ?? 0,
+        discountType: readDiscountType(
+            variant?.discount_type ?? product?.discount_type,
+        ),
+        discountValue: readDiscountValue(
+            variant?.discount_value ?? product?.discount_value,
+        ),
     };
 }
 
 /** True when the API reports an effective variant-level discount. */
 export function hasVariantDiscount(
     variant: ShopVariant | null | undefined,
+    product?: DiscountFieldSource | null,
 ): boolean {
-    if (!variant) return false;
-
-    const { discountType, discountValue } = normalizeVariantDiscountFields(variant);
-    const discountAmount = variant.discount ?? 0;
-    const list = variant.price;
-    const after = variant.price_after_discount;
-
+    const { discountType, discountValue } = normalizeVariantDiscountFields(
+        variant,
+        product,
+    );
     if (
         (discountType === "percentage" || discountType === "fixed") &&
-        (discountValue > 0 || discountAmount > 0)
+        discountValue > 0
     ) {
         return true;
     }
+    if (!variant) return false;
+
+    const discountAmount = Number(variant.discount ?? 0);
+    const list = variant.price;
+    const after = variant.price_after_discount;
 
     return (
         discountAmount > 0 &&
@@ -60,19 +71,11 @@ export function hasVariantDiscount(
 }
 
 export function resolveVariantDiscountBadge(
-    variant: ShopVariant,
-    t: TFunction,
+    variant?: DiscountFieldSource | null,
+    t?: TFunction,
+    product?: DiscountFieldSource | null,
 ): string | null {
-    const { discountType, discountValue } = normalizeVariantDiscountFields(variant);
-    if (!hasVariantDiscount(variant)) return null;
-
-    if (discountType === "percentage" && discountValue > 0) {
-        return t("baskets.discountPercentOff", { value: discountValue });
-    }
-    if (discountType === "fixed" && discountValue > 0) {
-        return t("baskets.discountAmountOff", { value: discountValue });
-    }
-    return null;
+    return formatStorefrontDiscountBadge(variant, product, t);
 }
 
 function pickSavedLabel(
@@ -86,26 +89,32 @@ function pickSavedLabel(
 /**
  * Resolved display prices for the selected shop variant.
  * Prefer API `*_currencies` / `*_formatted` — never compute FX locally.
+ * `discount_type` / `discount_value` fall back to product-level fields.
  */
 export function resolveVariantPriceDisplay(
-    variant: ShopVariant,
+    variant: ShopVariant | null | undefined,
     t: TFunction,
     currencyCode?: string | null,
+    product?: DiscountFieldSource | null,
 ): VariantPriceDisplay {
-    const hasDiscount = hasVariantDiscount(variant);
+    const priceSource = variant ?? product;
+    const hasDiscount = hasVariantDiscount(variant, product);
 
     return {
-        current: resolveDisplaySalePrice(variant, currencyCode),
-        original: hasDiscount ? resolveDisplayListPrice(variant, currencyCode) : undefined,
-        badge: resolveVariantDiscountBadge(variant, t),
-        savedLabel: hasDiscount
-            ? pickSavedLabel(variant.discount_currencies, currencyCode) ||
-              selectFormattedForCurrency(
-                  variant.discount_formatted?.trim() ?? "",
-                  currencyCode,
-              ) ||
-              null
-            : null,
+        current: resolveDisplaySalePrice(priceSource, currencyCode),
+        original: hasDiscount
+            ? resolveDisplayListPrice(priceSource, currencyCode)
+            : undefined,
+        badge: resolveVariantDiscountBadge(variant, t, product),
+        savedLabel:
+            hasDiscount && variant
+                ? pickSavedLabel(variant.discount_currencies, currencyCode) ||
+                  selectFormattedForCurrency(
+                      variant.discount_formatted?.trim() ?? "",
+                      currencyCode,
+                  ) ||
+                  null
+                : null,
         hasDiscount,
     };
 }

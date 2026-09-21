@@ -1,9 +1,11 @@
 import { Link } from"react-router-dom";
 import { useTranslation } from"react-i18next";
+import { useCurrency } from "@/context/CurrencyContext";
 import Rating from"@/shared/component/Rating";
 import Badge from"@/shared/component/Badge";
 import FavoriteButton from"@/shared/component/FavoriteButton";
 import { paths } from"@/app/routes/path/paths";
+import { resolveListingCardPrices } from "@/shared/lib/formatApiPrice";
 import type { FavoriteItem, FavoriteType } from"../types";
 
 const badgeColorMap: Record<string, string> = {
@@ -44,17 +46,15 @@ export default function FavoriteItemCard({
  isFavorite = true,
 }: FavoriteItemCardProps) {
  const { t } = useTranslation();
+ const { currency } = useCurrency();
  const detailPath = getDetailPath(type, item.id);
- const priceDisplay =
- item.price_after_discount != null
- ? String(item.price_after_discount)
- : item.price != null
- ? String(item.price)
- :"";
- const originalPrice =
- item.price_after_discount != null && item.price != null
- ? String(item.price)
- : undefined;
+ const listing = resolveListingCardPrices(
+ item,
+ t("product.youSaved", "You saved"),
+ currency,
+ );
+ const priceDisplay = listing.price;
+ const originalPrice = listing.originalPrice;
  const topBadge = item.top_badges?.[0] ?? item.budges?.[0];
 
  return (
@@ -79,10 +79,10 @@ export default function FavoriteItemCard({
  />
  </div>
  )}
- {item.discount && parseFloat(item.discount) > 0 && (
+ {listing.discountLabel && (
  <div className="absolute left-3 top-3 z-10">
  <Badge
- label={`-${item.discount}%`}
+ label={listing.discountLabel}
  className="bg-red-500 text-white"
  />
  </div>

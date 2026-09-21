@@ -1,9 +1,14 @@
 import { useTranslation } from "react-i18next";
+import { useCurrency } from "@/context/CurrencyContext";
 import { cn } from "@/shared/lib/utils";
 import type { ShopVariant, VariantAttribute } from "../types/productDetails";
 import { isPurchasableVariant } from "../types/productDetails";
 import { gallerySrcsForSelection, mediaSrc, type ProductMediaSource } from "../lib/productMedia";
-import { resolveDisplaySalePrice } from "@/shared/lib/formatApiPrice";
+import {
+    resolveDisplayListPrice,
+    resolveDisplaySalePrice,
+} from "@/shared/lib/formatApiPrice";
+import { formatStorefrontDiscountBadge } from "@/shared/lib/productDiscountDisplay";
 import { cssColorForSwatch } from "../lib/attributeValueColor";
 
 export type ShopVariantsPreviewProps = {
@@ -49,6 +54,7 @@ export default function ShopVariantsPreview({
     onSelect,
 }: ShopVariantsPreviewProps) {
     const { t } = useTranslation();
+    const { currency } = useCurrency();
     const selectable = typeof onSelect === "function";
 
     if (!variants?.length) return null;
@@ -78,7 +84,9 @@ export default function ShopVariantsPreview({
                     const thumb =
                         gallerySrcsForSelection(v, productMedia)[0] ||
                         mediaSrc(v.images?.[0]);
-                    const priceLabel = resolveDisplaySalePrice(v);
+                    const priceLabel = resolveDisplaySalePrice(v, currency);
+                    const originalLabel = resolveDisplayListPrice(v, currency);
+                    const discountBadge = formatStorefrontDiscountBadge(v, undefined, t);
                     // `id`/`shop_id` null = display-only (price shown, not addable).
                     const purchasable = isPurchasableVariant(v);
                     const outOfStock = !purchasable;
@@ -127,6 +135,16 @@ export default function ShopVariantsPreview({
                                     <span className="font-bold text-custom-primary">
                                         {priceLabel}
                                     </span>
+                                    {originalLabel ? (
+                                        <span className="text-custom-tertiary line-through">
+                                            {originalLabel}
+                                        </span>
+                                    ) : null}
+                                    {discountBadge ? (
+                                        <span className="rounded-full bg-primary-light px-2 py-0.5 text-xs font-semibold text-white">
+                                            {discountBadge}
+                                        </span>
+                                    ) : null}
                                     <span className="text-custom-secondary">
                                         {t("product.quantity", "Quantity")}:{" "}
                                         {v.quantity == null

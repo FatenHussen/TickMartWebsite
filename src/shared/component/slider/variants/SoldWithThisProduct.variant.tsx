@@ -22,6 +22,7 @@ type Product = {
     category?: string;
     sold?: number;
     savings?: string;
+    discountLabel?: string;
     deliveryInfo?: string;
     isFavorite?: boolean;
 };
@@ -93,6 +94,7 @@ export default function SoldWithThisProductVariant({
                         category={product.category}
                         sold={product.sold}
                         savings={product.savings}
+                        discountLabel={product.discountLabel}
                         deliveryInfo={product.deliveryInfo}
                         isFavorite={(product as { isFavorite?: boolean }).isFavorite ?? favoriteIds.includes(product.id as number)}
                         onToggleFavorite={(id) => onToggleFavorite?.(id)}

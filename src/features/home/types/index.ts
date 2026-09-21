@@ -79,6 +79,7 @@ export interface ProductItem {
  price_after_discount_currencies?: ApiDualCurrencies | null;
  /** `null` = no discount (not `"none"`). */
  discount_type?: "percentage" | "fixed" | null;
+ /** Decimal. Percentage may be fractional; fixed may be fractional and > 100. */
  discount_value?: number | null;
  amount_saved: number;
  amount_saved_formatted?: string;

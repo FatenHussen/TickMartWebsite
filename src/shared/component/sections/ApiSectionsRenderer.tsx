@@ -42,6 +42,7 @@ import {
     type ApiProductBadgeLike,
 } from "@/shared/lib/mapProductBadges";
 import { resolveListingCardPrices } from "@/shared/lib/formatApiPrice";
+import { formatStorefrontDiscountBadge } from "@/shared/lib/productDiscountDisplay";
 import {
     getSectionCardVariant,
     getSectionLayout,
@@ -116,14 +117,15 @@ function getDiscountBadgeLabel(
     item: ProductItem,
     section: Section
 ): string | null {
-    if (item.discount_type === "percentage" && Number(item.discount_value) > 0) {
-        return `-${Number(item.discount_value)}%`;
-    }
-    if (item.discount_type === "fixed" && Number(item.discount_value) > 0) {
-        return `-${Number(item.discount_value)}`;
-    }
-    if (item.discount && parseFloat(item.discount) > 0) {
-        return `-${parseFloat(item.discount)}%`;
+    const fromItem = formatStorefrontDiscountBadge(item);
+    if (fromItem) return fromItem;
+    if (
+        item.discount_type !== "percentage" &&
+        item.discount_type !== "fixed" &&
+        item.discount
+    ) {
+        const n = Number(item.discount);
+        if (Number.isFinite(n) && n > 0) return `-${n}%`;
     }
     const sectionDiscount = section.discount;
     if (sectionDiscount != null && Number(sectionDiscount) > 0) {
@@ -1229,13 +1231,16 @@ function ProductSection({
                 }
                 // Fallback for backward compatibility
                 const data = getItemData(item) as any;
-                const hasDiscount = data.discount && parseFloat(data.discount) > 0;
                 const isFav = isFavoriteFor(data.id, data.is_favorite);
-
-                const discountBadgesFb: ProductCardBadge[] = hasDiscount
+                const listingFb = resolveListingCardPrices(
+                    data,
+                    t("product.youSaved"),
+                    currency,
+                );
+                const discountBadgesFb: ProductCardBadge[] = listingFb.discountLabel
                     ? [
                           {
-                              label: `-${data.discount}%`,
+                              label: listingFb.discountLabel,
                               className: "bg-red-500 text-white",
                               rawLabel: true,
                               align: "left",
@@ -1247,12 +1252,6 @@ function ProductSection({
                     mapApiTopBadgesToProductCard(
                         data.top_badges?.length ? data.top_badges : data.budges
                     ) ?? [];
-
-                const listingFb = resolveListingCardPrices(
-                    data,
-                    t("product.youSaved"),
-                    currency,
-                );
                 const topMergedFb = [...discountBadgesFb, ...fromApiFb];
                 const badgeFb = topMergedFb.length ? topMergedFb : undefined;
 
@@ -1398,13 +1397,16 @@ function RecipeSection({
                 }
                 // Fallback
                 const data = getItemData(item) as any;
-                const hasDiscount = data.discount && parseFloat(data.discount) > 0;
                 const isFav = isFavoriteFor(data.id, data.is_favorite);
-
-                const discountBadgesFb: ProductCardBadge[] = hasDiscount
+                const listingFb = resolveListingCardPrices(
+                    data,
+                    t("product.youSaved"),
+                    currency,
+                );
+                const discountBadgesFb: ProductCardBadge[] = listingFb.discountLabel
                     ? [
                           {
-                              label: `-${data.discount}%`,
+                              label: listingFb.discountLabel,
                               className: "bg-red-500 text-white",
                               rawLabel: true,
                               align: "left",
@@ -1416,12 +1418,6 @@ function RecipeSection({
                     mapApiTopBadgesToProductCard(
                         data.top_badges?.length ? data.top_badges : data.budges
                     ) ?? [];
-
-                const listingFb = resolveListingCardPrices(
-                    data,
-                    t("product.youSaved"),
-                    currency,
-                );
                 const topMergedFb = [...discountBadgesFb, ...fromApiFb];
                 const badgeFb = topMergedFb.length ? topMergedFb.slice(0, 1) : undefined;
 

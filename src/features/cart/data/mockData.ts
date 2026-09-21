@@ -484,8 +484,6 @@ export const mockCheckoutOrderSummary: CheckoutOrderSummary = {
  storeDiscounts:"-$2.00",
  couponDiscount:"-$5.00",
  total:"$39.25",
- estimatedDelivery:"Estimated delivery: Tomorrow, 2-4 PM",
- deliveryNote:"Delivery time may vary based on location and traffic",
 };
 
 export const mockReviewOrderSummary: ReviewOrderSummary = {
@@ -564,7 +562,6 @@ export const mockReviewOrderSummary: ReviewOrderSummary = {
  pointsRedeemed: 220,
  pointsValue:"$6.60",
  total:"$251.96",
- estimatedDelivery:"2:00 PM - 3:00 PM",
  pointsEarned: 145,
  pointsBefore: 1250,
  pointsNewBalance: 1175,

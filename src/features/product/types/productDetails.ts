@@ -61,7 +61,7 @@ export interface ShopVariant {
  currency?: string;
  currency_symbol?: string;
  price_formatted?: string;
- /** Admin-entered discount (10 = 10% or 10 units when fixed). */
+ /** Admin-entered decimal. Percentage may be fractional (≤ 100 from API). Fixed may be fractional and > 100 (e.g. 150.75). */
  discount_value?: number;
  /** `null` / omitted / `"none"` = no discount. */
  discount_type?: VariantDiscountType | string | null;
@@ -253,6 +253,9 @@ export interface BoughtWithProduct {
  price_after_discount_formatted?: string;
  price_currencies?: ApiDualCurrencies;
  price_after_discount_currencies?: ApiDualCurrencies;
+ discount_type?: VariantDiscountType | string | null;
+ /** Decimal. Fixed amounts may exceed 100. */
+ discount_value?: number | null;
  amount_saved?: number;
  amount_saved_formatted?: string;
  image: string;
@@ -314,6 +317,7 @@ export interface ProductDetailsData {
  delivery_time?: string | null;
  /** Product-level discount metadata — do not mix with variant discount. */
  discount_type?: VariantDiscountType | string | null;
+ /** Decimal. Fixed amounts may exceed 100. */
  discount_value?: number | null;
  bought_with: BoughtWithProduct[];
  is_instant_delivery: number;

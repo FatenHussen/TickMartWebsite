@@ -40,6 +40,7 @@ import { resolveProductCountry } from "../lib/resolveLocalizedOrString";
 import {
     resolveVariantPriceDisplay,
 } from "../lib/variantPriceDisplay";
+import { formatStorefrontDiscountBadge } from "@/shared/lib/productDiscountDisplay";
 import {
     isPurchasableVariant,
     firstPurchasableVariant,
@@ -94,7 +95,6 @@ function ProductDetails() {
     /** Non-food: line note sent as `items[].note` (max 500). Food uses `specialInstructions` → same field. */
     const [lineItemNote, setLineItemNote] = useState("");
     const [noteOpen, setNoteOpen] = useState(false);
-    const [detailsTab, setDetailsTab] = useState<"description" | "specs">("description");
     const [selectedExtraIds, setSelectedExtraIds] = useState<number[]>([]);
     /** Selected extra details (product extra_details): id → quantity (min from API per row). */
     const [extraDetailQtyById, setExtraDetailQtyById] = useState<
@@ -431,6 +431,7 @@ function ProductDetails() {
                 category: item.category,
                 sold: item.sold_number,
                 savings: listing.savings,
+                discountLabel: listing.discountLabel,
                 badge: topBadges.length ? topBadges : undefined,
                 bottomBadges: bottomBadges.length ? bottomBadges : undefined,
                 isFavorite: item.is_favorite ?? favoriteIds.includes(item.id),
@@ -458,6 +459,7 @@ function ProductDetails() {
                     category: p.category,
                     sold: p.sold_number,
                     savings: listing.savings,
+                    discountLabel: listing.discountLabel,
                     badge: mapApiTopBadgesToProductCard(
                         pi.top_badges?.length ? pi.top_badges : pi.budges
                     ),
@@ -489,6 +491,7 @@ function ProductDetails() {
                     category: p.category,
                     sold: p.sold_number,
                     savings: listing.savings,
+                    discountLabel: listing.discountLabel,
                     badge: mapApiTopBadgesToProductCard(
                         pi.top_badges?.length ? pi.top_badges : pi.budges
                     ),
@@ -676,9 +679,12 @@ function ProductDetails() {
 
     const isFood = product.product_type === "food";
 
-    const variantPriceDisplay = selectedVariant
-        ? resolveVariantPriceDisplay(selectedVariant, t, currency)
-        : null;
+    const variantPriceDisplay = resolveVariantPriceDisplay(
+        selectedVariant,
+        t,
+        currency,
+        product,
+    );
 
     // Build badges — variant-level discount from API (no local % math)
     const badges: Array<{ label: string; className?: string }> = [];
@@ -734,6 +740,12 @@ function ProductDetails() {
             ? `${t("product.youSaved", "You saved")} ${variantPriceDisplay.savedLabel}`
             : product.amount_saved_formatted?.trim() || undefined;
 
+    const previewDiscountBadge = formatStorefrontDiscountBadge(
+        previewSelectedVariant,
+        boughtWithPreview,
+        t,
+    );
+
     const deliveryEstimate =
         product.delivery_time?.trim() || product.time_prepare?.trim() || null;
 
@@ -750,12 +762,6 @@ function ProductDetails() {
     const hasSpecs =
         !isFood &&
         Boolean(product.category_details && product.category_details.length > 0);
-    const activeDetailsTab =
-        detailsTab === "specs" && hasSpecs
-            ? "specs"
-            : hasDescription
-              ? "description"
-              : "specs";
 
     const noteTextareaClass =
         "w-full resize-none rounded-lg border border-black/8 bg-custom-card px-3.5 py-2.5 text-sm text-custom-primary placeholder:text-custom-tertiary outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/15 dark:border-white/10 dark:bg-[#0B0B0C] dark:placeholder:text-[#71717A]";
@@ -1027,72 +1033,59 @@ function ProductDetails() {
 
                 {(hasDescription || hasSpecs) && (
                     <section className="mt-10 border-t border-black/6 pt-8 dark:border-white/8">
-                        {hasDescription && hasSpecs ? (
-                            <div
-                                role="tablist"
-                                className="mb-5 flex gap-1 rounded-xl bg-[color-mix(in_srgb,var(--color-api-second)_8%,var(--color-bg-card))] p-1 dark:bg-white/[0.04]"
-                            >
-                                <button
-                                    type="button"
-                                    role="tab"
-                                    aria-selected={activeDetailsTab === "description"}
-                                    onClick={() => setDetailsTab("description")}
-                                    className={cn(
-                                        "flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-colors",
-                                        activeDetailsTab === "description"
-                                            ? "bg-custom-card text-text-primary shadow-sm"
-                                            : "text-custom-secondary hover:text-text-primary",
-                                    )}
-                                >
-                                    {t("product.description", "Description")}
-                                </button>
-                                <button
-                                    type="button"
-                                    role="tab"
-                                    aria-selected={activeDetailsTab === "specs"}
-                                    onClick={() => setDetailsTab("specs")}
-                                    className={cn(
-                                        "flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-colors",
-                                        activeDetailsTab === "specs"
-                                            ? "bg-custom-card text-text-primary shadow-sm"
-                                            : "text-custom-secondary hover:text-text-primary",
-                                    )}
-                                >
-                                    {t("product.categoryDetails", "Additional Details")}
-                                </button>
-                            </div>
-                        ) : (
-                            <h2 className="mb-4 text-lg font-semibold text-text-primary">
-                                {hasDescription
-                                    ? t("product.description", "Description")
-                                    : t("product.categoryDetails", "Additional Details")}
-                            </h2>
-                        )}
+                        <div
+                            className={cn(
+                                "grid gap-8",
+                                hasDescription && hasSpecs && "md:grid-cols-2",
+                            )}
+                        >
+                            {hasDescription && (
+                                <div className="min-w-0">
+                                    <h2 className="mb-4 text-lg font-semibold text-text-primary">
+                                        {t("product.description", "Description")}
+                                    </h2>
+                                    <ProductDescription
+                                        description={product.description}
+                                        fullDescription={product.full_description}
+                                    />
+                                </div>
+                            )}
 
-                        {activeDetailsTab === "description" && hasDescription && (
-                            <ProductDescription
-                                description={product.description}
-                                fullDescription={product.full_description}
-                            />
-                        )}
-
-                        {activeDetailsTab === "specs" && hasSpecs && (
-                            <dl className="grid grid-cols-1 gap-px overflow-hidden rounded-xl ring-1 ring-black/8 sm:grid-cols-2 dark:ring-white/10">
-                                {product.category_details!.map((detail) => (
-                                    <div
-                                        key={detail.id}
-                                        className="flex items-baseline justify-between gap-4 bg-custom-card px-4 py-3"
-                                    >
-                                        <dt className="text-sm text-custom-secondary">
-                                            {detail.name}
-                                        </dt>
-                                        <dd className="text-sm font-medium text-text-primary">
-                                            {detail.value}
-                                        </dd>
+                            {hasSpecs && (
+                                <div className="min-w-0">
+                                    <h2 className="mb-4 text-lg font-semibold text-text-primary">
+                                        {t("product.categoryDetails", "Additional Details")}
+                                    </h2>
+                                    <div className="w-fit max-w-full overflow-hidden rounded-xl ring-1 ring-black/8 dark:ring-white/10">
+                                        <table className="w-auto min-w-[16rem] max-w-md border-collapse text-sm">
+                                            <tbody>
+                                                {product.category_details!.map((detail, index) => (
+                                                    <tr
+                                                        key={detail.id}
+                                                        className={cn(
+                                                            "border-b border-black/6 last:border-b-0 dark:border-white/8",
+                                                            index % 2 === 0
+                                                                ? "bg-[color-mix(in_srgb,var(--color-api-second)_6%,var(--color-bg-card))] dark:bg-white/[0.03]"
+                                                                : "bg-custom-card",
+                                                        )}
+                                                    >
+                                                        <th
+                                                            scope="row"
+                                                            className="whitespace-nowrap px-4 py-3 text-start font-medium text-custom-secondary"
+                                                        >
+                                                            {detail.name}
+                                                        </th>
+                                                        <td className="px-4 py-3 text-start font-medium text-text-primary">
+                                                            {detail.value}
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
                                     </div>
-                                ))}
-                            </dl>
-                        )}
+                                </div>
+                            )}
+                        </div>
                     </section>
                 )}
             </div>
@@ -1340,18 +1333,26 @@ function ProductDetails() {
                                             {resolveDisplaySalePrice(
                                                 previewSelectedVariant ??
                                                     boughtWithPreview,
+                                                currency,
                                             )}
                                         </p>
                                         {resolveDisplayListPrice(
                                             previewSelectedVariant ??
                                                 boughtWithPreview,
+                                            currency,
                                         ) ? (
                                             <p className="text-base text-custom-tertiary line-through dark:text-[#71717A]">
                                                 {resolveDisplayListPrice(
                                                     previewSelectedVariant ??
                                                         boughtWithPreview,
+                                                    currency,
                                                 )}
                                             </p>
+                                        ) : null}
+                                        {previewDiscountBadge ? (
+                                            <span className="rounded-full bg-primary-light px-2.5 py-0.5 text-sm font-semibold text-white">
+                                                {previewDiscountBadge}
+                                            </span>
                                         ) : null}
                                     </div>
                                     <div className="rounded-2xl border border-custom-primary/15 bg-gradient-to-br from-custom-secondary/50 to-transparent p-4 dark:border-[rgba(255,255,255,0.06)] dark:from-[rgba(16,17,20,0.75)] dark:to-[rgba(16,17,20,0.55)]">

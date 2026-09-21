@@ -1,4 +1,4 @@
-import { HiTruck, HiArrowRight } from "react-icons/hi";
+import { HiArrowRight } from "react-icons/hi";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContext";
@@ -360,40 +360,6 @@ export default function CheckoutOrderSummary({
                         <span className="text-2xl font-extrabold text-[color:var(--color-main)] tabular-nums">
                             {summary.total}
                         </span>
-                    </div>
-
-                    {/* Estimated Delivery */}
-                    <div
-                        className="mb-5 max-w-[360px] rounded-xl px-4 py-3 border"
-                        style={{
-                            backgroundColor:
-                                "color-mix(in srgb, var(--color-main) 6%, var(--color-bg-card))",
-                            borderColor:
-                                "color-mix(in srgb, var(--color-main) 18%, transparent)",
-                        }}
-                    >
-                        <div className="mb-1 flex items-center gap-2">
-                            <HiTruck
-                                className="h-4 w-4 shrink-0"
-                                style={{
-                                    color: "var(--color-main)",
-                                }}
-                            />
-                            <span className="text-xs font-semibold text-[color:var(--color-text)]">
-                                {summary.estimatedDelivery ||
-                                    t(
-                                        "checkout.estimatedDeliveryDefault",
-                                        "Estimated delivery: Tomorrow, 2-4 PM",
-                                    )}
-                            </span>
-                        </div>
-                        <p className="text-[11px] text-custom-tertiary ms-6">
-                            {summary.deliveryNote ||
-                                t(
-                                    "checkout.deliveryNoteDefault",
-                                    "Delivery time may vary based on location and traffic",
-                                )}
-                        </p>
                     </div>
 
                     {/* Action Buttons */}

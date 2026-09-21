@@ -16,6 +16,7 @@ type SellerProduct = {
     bottomBadges?: ProductCardBadge[];
     sold?: number;
     savings?: string;
+    discountLabel?: string;
     deliveryInfo?: string;
     isFavorite?: boolean;
 };
@@ -83,6 +84,7 @@ export default function ProductsFromSameSellerVariant({
                     bottomBadges={product.bottomBadges}
                     sold={product.sold}
                     savings={product.savings}
+                    discountLabel={product.discountLabel}
                     deliveryInfo={product.deliveryInfo}
                     isFavorite={(product as { isFavorite?: boolean }).isFavorite ?? favoriteIds.includes(product.id as number)}
                     onToggleFavorite={(id) => onToggleFavorite?.(id)}

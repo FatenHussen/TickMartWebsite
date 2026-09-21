@@ -151,7 +151,7 @@ export interface FavoriteItem {
  price_after_discount?: number;
  discount?: string;
  discount_amount?: number;
- discount_value?: string;
+ discount_value?: number | string | null;
  orders_count?: number;
  num_sold?: number;
  saving?: number;

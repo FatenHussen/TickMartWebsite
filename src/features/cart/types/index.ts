@@ -463,8 +463,6 @@ export type CheckoutOrderSummary = {
  promotionDiscount?: string;
  productDiscount?: string;
  total: string;
- estimatedDelivery?: string;
- deliveryNote?: string;
  numOfItems?: number;
 };
 
@@ -481,7 +479,6 @@ export type ReviewOrderSummary = {
  pointsRedeemed: number;
  pointsValue: string;
  total: string;
- estimatedDelivery: string;
  pointsEarned: number;
  pointsBefore: number;
  pointsNewBalance: number;

@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import { HiOutlineClock } from "react-icons/hi";
 import { FaStar } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContext";
@@ -146,32 +145,16 @@ export default function ReviewDeliveryDetailsSidebar({
                             </div>
                         </div>
 
-                        {/* Estimated delivery + points */}
-                        <div
-                            className="rounded-xl px-4 py-3 border space-y-2"
-                            style={{
-                                backgroundColor:
-                                    "color-mix(in srgb, var(--color-main) 6%, var(--color-bg-card))",
-                                borderColor:
-                                    "color-mix(in srgb, var(--color-main) 18%, transparent)",
-                            }}
-                        >
-                            <div className="flex items-center gap-2 text-xs font-medium text-custom-secondary">
-                                <HiOutlineClock
-                                    className="h-4 w-4 shrink-0"
-                                    style={{ color: "var(--color-main)" }}
-                                />
-                                <span>
-                                    {t(
-                                        "cart.estimatedDelivery",
-                                        "Estimated delivery:",
-                                    )}{" "}
-                                    <span className="font-semibold text-[color:var(--color-text)]">
-                                        {summary.estimatedDelivery}
-                                    </span>
-                                </span>
-                            </div>
-                            {summary.pointsEarned > 0 && (
+                        {summary.pointsEarned > 0 && (
+                            <div
+                                className="rounded-xl px-4 py-3 border"
+                                style={{
+                                    backgroundColor:
+                                        "color-mix(in srgb, var(--color-main) 6%, var(--color-bg-card))",
+                                    borderColor:
+                                        "color-mix(in srgb, var(--color-main) 18%, transparent)",
+                                }}
+                            >
                                 <div
                                     className="flex items-center gap-2 text-xs font-medium"
                                     style={{ color: "var(--color-success)" }}
@@ -185,8 +168,8 @@ export default function ReviewDeliveryDetailsSidebar({
                                         )}
                                     </span>
                                 </div>
-                            )}
-                        </div>
+                            </div>
+                        )}
 
                         <div className="space-y-3 pt-1">
                             <Button

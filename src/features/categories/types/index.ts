@@ -83,6 +83,7 @@ category_id?: number;
  price_currencies?: ApiDualCurrencies | null;
  price_after_discount_currencies?: ApiDualCurrencies | null;
  discount_type?: "percentage" | "fixed" | null;
+ /** Decimal. Fixed amounts may exceed 100. */
  discount_value?: number | null;
  amount_saved: number;
  amount_saved_formatted: string;
