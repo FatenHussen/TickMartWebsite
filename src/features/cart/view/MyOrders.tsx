@@ -73,7 +73,7 @@ export default function MyOrders() {
         const active =
             (counts.pending ?? 0) +
             (counts.preparing ?? 0) +
-            (counts.out_for_delivery ?? 0);
+            (counts.out_delivery ?? 0);
         return [
             {
                 key: "all",

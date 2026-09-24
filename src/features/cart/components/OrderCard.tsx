@@ -10,6 +10,7 @@ import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContext";
 import { cn } from "@/shared/lib/utils";
 import type { OrderStatus } from "../types";
+import { getOrderStatusLabel, isOutDeliveryStatus } from "@/shared/lib/orderStatus";
 
 type OrderItem = {
     name: string;
@@ -49,18 +50,21 @@ type AccentColors = {
 };
 
 const getStatusUI = (status: OrderStatus, t: (key: string) => string): StatusUI => {
+    if (isOutDeliveryStatus(status)) {
+        return { label: getOrderStatusLabel(status, { t }), dotColorVar: "#2563eb" };
+    }
     switch (status) {
-        case "out_for_delivery":
-            return { label: t("orders.out_for_delivery"), dotColorVar: "#2563eb" };
         case "delivered":
-            return { label: t("orders.delivered"), dotColorVar: "var(--color-success)" };
+            return { label: getOrderStatusLabel(status, { t }), dotColorVar: "var(--color-success)" };
         case "preparing":
-            return { label: t("orders.preparing"), dotColorVar: "var(--color-warning)" };
+            return { label: getOrderStatusLabel(status, { t }), dotColorVar: "var(--color-warning)" };
         case "cancelled":
-            return { label: t("orders.cancelled"), dotColorVar: "var(--color-error)" };
+        case "cancelled_by_admin":
+            return { label: getOrderStatusLabel(status, { t }), dotColorVar: "var(--color-error)" };
         case "pending":
+            return { label: getOrderStatusLabel(status, { t }), dotColorVar: "var(--color-primary)" };
         default:
-            return { label: t("orders.pending"), dotColorVar: "var(--color-primary)" };
+            return { label: getOrderStatusLabel(status, { t }), dotColorVar: "var(--color-primary)" };
     }
 };
 
@@ -69,27 +73,32 @@ const getCardBackground = (status: OrderStatus): string => {
     const mix = (color: string, pct1: number, pct2: number) =>
         `linear-gradient(165deg, color-mix(in srgb, ${color} ${pct1}%, ${bg}) 0%, ${bg} 42%, color-mix(in srgb, ${color} ${pct2}%, ${bg}) 100%)`;
 
+    if (isOutDeliveryStatus(status)) return mix("#3b82f6", 10, 4);
+
     switch (status) {
         case "pending":          return mix("var(--color-primary)", 13, 6);
         case "preparing":        return mix("var(--color-warning)", 11, 5);
-        case "out_for_delivery": return mix("#3b82f6", 10, 4);
         case "delivered":        return mix("var(--color-success)", 9, 4);
-        case "cancelled":        return mix("var(--color-error)", 9, 4);
+        case "cancelled":
+        case "cancelled_by_admin":
+            return mix("var(--color-error)", 9, 4);
         default:                 return mix("var(--color-primary)", 13, 6);
     }
 };
 
 const getAccentColors = (status: OrderStatus): AccentColors => {
+    if (isOutDeliveryStatus(status)) {
+        return { accent: "#3b82f6", orbStrong: "#3b82f6", orbSoft: "var(--color-primary)" };
+    }
     switch (status) {
         case "pending":
             return { accent: "var(--color-primary)", orbStrong: "var(--color-primary)", orbSoft: "var(--color-api-second)" };
         case "preparing":
             return { accent: "var(--color-warning)", orbStrong: "var(--color-warning)", orbSoft: "var(--color-primary)" };
-        case "out_for_delivery":
-            return { accent: "#3b82f6", orbStrong: "#3b82f6", orbSoft: "var(--color-primary)" };
         case "delivered":
             return { accent: "var(--color-success)", orbStrong: "var(--color-success)", orbSoft: "var(--color-primary)" };
         case "cancelled":
+        case "cancelled_by_admin":
             return { accent: "var(--color-error)", orbStrong: "var(--color-error)", orbSoft: "var(--color-text-tertiary)" };
         default:
             return { accent: "var(--color-primary)", orbStrong: "var(--color-primary)", orbSoft: "var(--color-api-second)" };

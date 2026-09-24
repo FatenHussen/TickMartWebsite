@@ -10,6 +10,7 @@ import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/context/LanguageContext";
 import SideContentLayout from "@/layout/SideContentLayout";
 import { cn } from "@/shared/lib/utils";
+import { getOrderStatusLabel, isOutDeliveryStatus, normalizeOrderStatus } from "@/shared/lib/orderStatus";
 import OrderStatusTimeline from "../components/OrderStatusTimeline";
 import OrderItemsTable from "../components/OrderItemsTable";
 import OrderSidebar from "../components/OrderSidebar";
@@ -24,40 +25,47 @@ type StatusVisuals = {
 const getStatusVisuals = (
     status: string,
     t: TFunction,
+    statusLabel?: string | null,
 ): StatusVisuals => {
-    switch (status) {
-        case "delivered":
-            return {
-                label: t("orders.delivered", "Delivered"),
-                color: "var(--color-success)",
-                bg: "color-mix(in srgb, var(--color-success) 12%, transparent)",
-            };
-        case "out_for_delivery":
-            return {
-                label: t("orders.out_for_delivery", "Out for Delivery"),
-                color: "var(--color-accent-primary)",
-                bg: "color-mix(in srgb, var(--color-accent-primary) 12%, transparent)",
-            };
-        case "preparing":
-            return {
-                label: t("orders.preparing", "Preparing"),
-                color: "var(--color-ui-amber-400)",
-                bg: "color-mix(in srgb, var(--color-ui-amber-400) 14%, transparent)",
-            };
-        case "cancelled":
-            return {
-                label: t("orders.cancelled", "Cancelled"),
-                color: "var(--color-error)",
-                bg: "color-mix(in srgb, var(--color-error) 12%, transparent)",
-            };
-        case "pending":
-        default:
-            return {
-                label: t("orders.pending", "Order received"),
-                color: "var(--color-text-tertiary)",
-                bg: "color-mix(in srgb, var(--color-text-tertiary) 14%, transparent)",
-            };
+    const label = getOrderStatusLabel(status, {
+        statusLabel,
+        t: (key, fallback) => t(key, fallback ?? ""),
+    });
+    const key = normalizeOrderStatus(status);
+
+    if (key === "delivered") {
+        return {
+            label,
+            color: "var(--color-success)",
+            bg: "color-mix(in srgb, var(--color-success) 12%, transparent)",
+        };
     }
+    if (isOutDeliveryStatus(key)) {
+        return {
+            label,
+            color: "var(--color-accent-primary)",
+            bg: "color-mix(in srgb, var(--color-accent-primary) 12%, transparent)",
+        };
+    }
+    if (key === "preparing") {
+        return {
+            label,
+            color: "var(--color-ui-amber-400)",
+            bg: "color-mix(in srgb, var(--color-ui-amber-400) 14%, transparent)",
+        };
+    }
+    if (key === "cancelled" || key === "cancelled_by_admin") {
+        return {
+            label,
+            color: "var(--color-error)",
+            bg: "color-mix(in srgb, var(--color-error) 12%, transparent)",
+        };
+    }
+    return {
+        label,
+        color: "var(--color-text-tertiary)",
+        bg: "color-mix(in srgb, var(--color-text-tertiary) 14%, transparent)",
+    };
 };
 
 export default function OrderDetails() {
@@ -118,7 +126,7 @@ export default function OrderDetails() {
         );
     }
 
-    const visuals = getStatusVisuals(order.status, t);
+    const visuals = getStatusVisuals(order.status, t, order.statusLabel);
     const canTrack =
         order.status !== "delivered" &&
         (order.status as string) !== "cancelled";

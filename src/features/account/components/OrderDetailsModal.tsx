@@ -18,6 +18,7 @@ import { useOrderDetail } from"../hooks/useOrderDetail";
 import RatingFormModal from"./RatingFormModal";
 import type { OrderDetailItem, OrderDetailVariantAttribute } from"../types/order";
 import { flattenOrderDetailItems, formatOrderMoney } from"../utils/parseOrdersResponse";
+import { getOrderStatusLabel, normalizeOrderStatus } from"@/shared/lib/orderStatus";
 
 type OrderDetailsModalProps = {
  orderId: number | string | null;
@@ -46,15 +47,20 @@ function formatDate(createdAt?: string): string {
 }
 
 function getStatusColor(status: string): string {
+ const key = normalizeOrderStatus(status);
  const map: Record<string, string> = {
  pending:"bg-amber-100 text-amber-800",
+ waiting_approval:"bg-amber-100 text-amber-800",
  preparing:"bg-yellow-100 text-yellow-800",
  out_delivery:"bg-sky-100 text-sky-800",
- out_for_delivery:"bg-sky-100 text-sky-800",
  delivered:"bg-green-100 text-green-800",
  cancelled:"bg-red-100 text-red-800",
+ cancelled_by_admin:"bg-red-100 text-red-800",
+ rejected_by_delivery:"bg-red-100 text-red-800",
+ faild_deliver:"bg-red-100 text-red-800",
+ returned_by_user:"bg-orange-100 text-orange-800",
  };
- return map[status] ??"bg-custom-tertiary text-custom-primary";
+ return map[key] ??"bg-custom-tertiary text-custom-primary";
 }
 
 function getCartTypeLabel(cartType: string): string {
@@ -266,7 +272,10 @@ export default function OrderDetailsModal({
  getStatusColor(order.status)
  )}
  >
- {t(`orders.${order.status ==="out_delivery"?"out_for_delivery": order.status}`)}
+ {getOrderStatusLabel(order.status, {
+ statusLabel: order.status_label,
+ t: (key, fallback) => t(key, fallback ?? ""),
+ })}
  </span>
  <span className="px-3 py-1 rounded-full text-xs bg-white/15 border border-white/20">
  {getCartTypeLabel(order.cart_type)}

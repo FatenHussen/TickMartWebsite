@@ -184,7 +184,7 @@ export const mockOrders: Order[] = [
  id: 2,
  orderNumber:"1234",
  dateTime:"07 Feb 2025, 11:42 AM",
- status:"out_for_delivery",
+ status:"out_delivery",
  items: [
  {
  name:"Organic Milk 1L",
@@ -307,7 +307,7 @@ export const mockOrders: Order[] = [
 export const mockOrderDetails: OrderDetails = {
  id: 1,
  orderNumber:"12345",
- status:"out_for_delivery",
+ status:"out_delivery",
  items: [
  {
  id: 1,

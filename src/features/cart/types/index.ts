@@ -130,12 +130,14 @@ export interface ActiveOrderShopGroup {
  items: ActiveOrderItem[];
 }
 
-export type ActiveOrderStatus = "pending" | "preparing" | "out_for_delivery" | "delivered";
+export type ActiveOrderStatus = "pending" | "preparing" | "out_delivery" | "delivered";
 
 export interface ActiveOrder {
  id: number;
  order_code: string | null;
  status: string;
+ /** Localized label from API — prefer for display over mapping `status`. */
+ status_label?: string | null;
  cart_type: string;
  is_instant_delivery: boolean;
  delivery_price: number;
@@ -358,10 +360,15 @@ export type DeliveryFrequency =
 
 export type OrderStatus =
  |"pending"
+ |"waiting_approval"
  |"preparing"
- |"out_for_delivery"
+ |"out_delivery"
  |"delivered"
- |"cancelled";
+ |"cancelled"
+ |"cancelled_by_admin"
+ |"rejected_by_delivery"
+ |"faild_deliver"
+ |"returned_by_user";
 
 export type OrderItem = {
  name: string;
@@ -395,7 +402,7 @@ export type OrderFilter ="all"|"active"|"completed"|"cancelled";
 export type OrderStatusStep =
  |"pending"
  |"preparing"
- |"out_for_delivery"
+ |"out_delivery"
  |"delivered";
 
 export type OrderDetails = {
@@ -403,6 +410,7 @@ export type OrderDetails = {
  /** From API order_code; empty when null */
  orderNumber: string;
  status: OrderStatusStep;
+ statusLabel?: string | null;
  items: CartItem[];
  priceSummary: {
  numOfItems: number;

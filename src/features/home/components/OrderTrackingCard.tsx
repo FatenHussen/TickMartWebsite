@@ -21,20 +21,14 @@ import type {
   ActiveOrderShopGroup,
   ActiveOrderStatus,
 } from "@/features/cart/types";
+import {
+  ORDER_STEPPER_PRIORITY,
+  ORDER_STEPPER_STAGES,
+  getOrderStatusLabel,
+  toOrderStepperStatus,
+} from "@/shared/lib/orderStatus";
 
-const STATUS_PRIORITY: Record<string, number> = {
-  pending: 0,
-  preparing: 1,
-  out_for_delivery: 2,
-  delivered: 3,
-};
-
-const STAGES: ActiveOrderStatus[] = [
-  "pending",
-  "preparing",
-  "out_for_delivery",
-  "delivered",
-];
+const STAGES: ActiveOrderStatus[] = [...ORDER_STEPPER_STAGES];
 
 function flattenOrderItems(order: ActiveOrder): ActiveOrderItem[] {
   const items = order.items;
@@ -48,16 +42,15 @@ function flattenOrderItems(order: ActiveOrder): ActiveOrderItem[] {
 function getStatusFromItems(order: ActiveOrder): ActiveOrderStatus {
   const flatItems = flattenOrderItems(order);
   if (flatItems.length === 0) {
-    const s = (order.status || "pending").toLowerCase().replace(/-/g, "_");
-    return (STATUS_PRIORITY[s] !== undefined ? s : "pending") as ActiveOrderStatus;
+    return toOrderStepperStatus(order.status) ?? "pending";
   }
-  let minPriority = STATUS_PRIORITY.delivered;
+  let minPriority = ORDER_STEPPER_PRIORITY.delivered;
   for (const item of flatItems) {
-    const s = (item.status || "pending").toLowerCase().replace(/-/g, "_");
-    const p = STATUS_PRIORITY[s] ?? 0;
+    const step = toOrderStepperStatus(item.status);
+    const p = step != null ? ORDER_STEPPER_PRIORITY[step] : 0;
     if (p < minPriority) minPriority = p;
   }
-  const statusKey = Object.entries(STATUS_PRIORITY).find(
+  const statusKey = Object.entries(ORDER_STEPPER_PRIORITY).find(
     ([, v]) => v === minPriority
   )?.[0];
   return (statusKey ?? "pending") as ActiveOrderStatus;
@@ -78,7 +71,7 @@ function getStatusSubtitleKey(status: ActiveOrderStatus): string {
   switch (status) {
     case "pending":      return "home.orderReceived";
     case "preparing":    return "home.storePreparing";
-    case "out_for_delivery": return "home.driverOnWay";
+    case "out_delivery": return "home.driverOnWay";
     case "delivered":    return "home.orderDelivered";
     default:             return "home.orderReceived";
   }
@@ -96,7 +89,7 @@ function getStageIcon(stage: ActiveOrderStatus, state: "completed" | "active" | 
       return <BsReceipt className={cn(size, color)} />;
     case "preparing":
       return <BsHourglassSplit className={cn(size, color, state === "active" && "animate-hourglass-flip")} />;
-    case "out_for_delivery":
+    case "out_delivery":
       return <MdDeliveryDining className={cn(size, color, state === "active" && "animate-truck-bounce")} />;
     case "delivered":
       return <HiHome className={cn(size, color)} />;
@@ -120,6 +113,19 @@ export default function OrderTrackingCard({ order }: OrderTrackingCardProps) {
   const isDelivered = currentStatus === "delivered";
   const showTrackOrderButton = !isDelivered;
   const statusSubtitleKey = getStatusSubtitleKey(currentStatus);
+  const statusRowLabel =
+    order.status_label?.trim() ||
+    (currentStatus === "pending"
+      ? t("home.pending")
+      : currentStatus === "preparing"
+        ? t("home.preparing")
+        : currentStatus === "out_delivery"
+          ? t("home.outForDeliveryTitle")
+          : currentStatus === "delivered"
+            ? t("home.delivered")
+            : getOrderStatusLabel(order.status, {
+                t: (key, fallback) => t(key, fallback ?? ""),
+              }));
 
   const gradientBg = {
     background: "linear-gradient(135deg, var(--color-gradient-from) 0%, var(--color-gradient-to) 100%)",
@@ -242,10 +248,10 @@ export default function OrderTrackingCard({ order }: OrderTrackingCardProps) {
                 : "text-custom-primary dark:text-white"
             )}
           >
-            {stage === "pending"           && t("home.pending")}
-            {stage === "preparing"         && t("home.preparing")}
-            {stage === "out_for_delivery"  && t("home.outForDeliveryTitle")}
-            {stage === "delivered"         && t("home.delivered")}
+            {stage === "pending"       && t("home.pending")}
+            {stage === "preparing"     && t("home.preparing")}
+            {stage === "out_delivery"  && t("home.outForDeliveryTitle")}
+            {stage === "delivered"     && t("home.delivered")}
           </p>
           <p
             className={cn(
@@ -255,10 +261,10 @@ export default function OrderTrackingCard({ order }: OrderTrackingCardProps) {
                 : "text-custom-secondary dark:text-[#A1A1AA]"
             )}
           >
-            {stage === "pending"           && t("home.orderReceived")}
-            {stage === "preparing"         && t("home.storePreparing")}
-            {stage === "out_for_delivery"  && t("home.driverOnWay")}
-            {stage === "delivered"         && t("home.orderDelivered")}
+            {stage === "pending"       && t("home.orderReceived")}
+            {stage === "preparing"     && t("home.storePreparing")}
+            {stage === "out_delivery"  && t("home.driverOnWay")}
+            {stage === "delivered"     && t("home.orderDelivered")}
           </p>
         </div>
       </div>
@@ -323,10 +329,7 @@ export default function OrderTrackingCard({ order }: OrderTrackingCardProps) {
           <span
             className="font-bold text-[var(--color-main)] dark:text-[color:color-mix(in_srgb,var(--color-primary)_52%,#ffffff_48%)]"
           >
-            {currentStatus === "pending"           && t("home.pending")}
-            {currentStatus === "preparing"         && t("home.preparing")}
-            {currentStatus === "out_for_delivery"  && t("home.outForDeliveryTitle")}
-            {currentStatus === "delivered"         && t("home.delivered")}
+            {statusRowLabel}
           </span>
           <span className="mx-1.5 opacity-40">·</span>
           <span>

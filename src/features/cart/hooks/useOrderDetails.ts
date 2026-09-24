@@ -25,6 +25,9 @@ import { _TrackOrderApi } from"@/features/trackOrder/api/trackOrderApi";
 import type { TrackOrderApiData } from"@/features/trackOrder/types";
 import type { OrderDetails, CartItem, OrderStatusStep } from"../types";
 import { paths } from"@/app/routes/path/paths";
+import {
+ toOrderStepperStatus,
+} from"@/shared/lib/orderStatus";
 
 function mapApiToOrderDetails(
  raw: TrackOrderApiData,
@@ -61,13 +64,14 @@ function mapApiToOrderDetails(
  ].filter(Boolean);
 
  const deliveryIsFree = raw.delivery_price === 0;
- const status = raw.status as OrderStatusStep;
+ const status = (toOrderStepperStatus(raw.status) ?? "pending") as OrderStatusStep;
  const eta = raw.driver?.eta ??"—";
 
  return {
  id: raw.id,
  orderNumber: raw.order_code ??"",
  status,
+ statusLabel: raw.status_label ?? null,
  items: cartItems,
  priceSummary: {
  numOfItems: raw.total_quantity,

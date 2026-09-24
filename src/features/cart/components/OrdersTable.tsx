@@ -1,6 +1,7 @@
 import { HiChevronUpDown } from"react-icons/hi2";
 import { cn } from"@/shared/lib/utils";
 import type { Order, OrderStatus } from"../types";
+import { getOrderStatusLabel, isOutDeliveryStatus, normalizeOrderStatus } from"@/shared/lib/orderStatus";
 
 type OrdersTableProps = {
  orders: Order[];
@@ -11,41 +12,25 @@ type OrdersTableProps = {
 };
 
 const getStatusVariant = (status: OrderStatus): string => {
- switch (status) {
+ const key = normalizeOrderStatus(status);
+ switch (key) {
  case"pending":
  return"bg-custom-tertiary text-custom-secondary";
  case"preparing":
  return"bg-custom-accent-light text-custom-accent";
- // TODO: out_for_delivery uses yellow color not in design system - using accent as closest semantic equivalent
- case"out_for_delivery":
+ case"out_delivery":
  return"bg-custom-accent-light text-custom-accent";
- // TODO: delivered uses green color - using CSS variable inline style
  case"delivered":
  return"";
- // TODO: cancelled uses red color not in design system - using closest semantic equivalent
  case"cancelled":
+ case"cancelled_by_admin":
  return"bg-custom-tertiary text-custom-secondary";
  default:
  return"bg-custom-tertiary text-custom-secondary";
  }
 };
 
-const getStatusLabel = (status: OrderStatus): string => {
- switch (status) {
- case"pending":
- return"Pending";
- case"preparing":
- return"Preparing";
- case"out_for_delivery":
- return"Out for Delivery";
- case"delivered":
- return"Delivered";
- case"cancelled":
- return"Cancelled";
- default:
- return status;
- }
-};
+const getStatusLabel = (status: OrderStatus): string => getOrderStatusLabel(status);
 
 export default function OrdersTable({
  orders,
@@ -121,7 +106,7 @@ export default function OrdersTable({
 "inline-flex items-center px-3 py-1 rounded-full text-xs font-medium",
  getStatusVariant(order.status)
  )}
- style={order.status ==="delivered"? { backgroundColor: 'var(--color-accent-light-bg)', color: 'var(--color-green)' } : order.status ==="out_for_delivery"? { backgroundColor: 'var(--color-accent-light-bg)' } : undefined}
+ style={order.status ==="delivered"? { backgroundColor: 'var(--color-accent-light-bg)', color: 'var(--color-green)' } : isOutDeliveryStatus(order.status)? { backgroundColor: 'var(--color-accent-light-bg)' } : undefined}
  >
  {getStatusLabel(order.status)}
  </span>

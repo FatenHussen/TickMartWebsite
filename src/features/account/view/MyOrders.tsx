@@ -21,6 +21,11 @@ import { paths } from"@/app/routes/path/paths";
 import type { OrderStatus } from"@/features/cart/types";
 import type { Order } from"@/features/cart/types";
 import type { OrderListItem } from"../types/order";
+import {
+ isApiOrderStatus,
+ normalizeOrderStatus,
+ type ApiOrderStatus,
+} from"@/shared/lib/orderStatus";
 
 function formatOrderDate(createdAt?: string): string {
  if (!createdAt) return "";
@@ -41,22 +46,12 @@ function formatOrderDate(createdAt?: string): string {
 }
 
 function toOrderStatus(apiStatus: unknown): OrderStatus {
- const normalized = String(apiStatus ?? "")
- .toLowerCase()
- .replace(/-/g, "_");
- if (normalized ==="out_delivery") return"out_for_delivery";
- if (
- [
-"pending",
-"preparing",
-"out_for_delivery",
-"delivered",
-"cancelled",
- ].includes(normalized)
- ) {
- return normalized as OrderStatus;
+ const normalized = normalizeOrderStatus(apiStatus);
+ if (isApiOrderStatus(normalized)) {
+  return normalized as ApiOrderStatus;
  }
- return"pending";
+ // Keep the unknown key for display — do not coerce to pending.
+ return (normalized || "pending") as OrderStatus;
 }
 
 function mapOrderToCard(
@@ -287,7 +282,7 @@ export default function MyOrders() {
  { value:"all", label: t("orders.all") },
  { value:"pending", label: t("orders.pending") },
  { value:"preparing", label: t("orders.preparing") },
- { value:"out_for_delivery", label: t("orders.out_for_delivery") },
+ { value:"out_delivery", label: t("orders.out_delivery") },
  { value:"delivered", label: t("orders.delivered") },
  { value:"cancelled", label: t("orders.cancelled") },
  ];

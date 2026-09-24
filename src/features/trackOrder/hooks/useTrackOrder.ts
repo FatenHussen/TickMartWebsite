@@ -9,6 +9,10 @@ import type {
  Driver,
  OrderItem,
 } from"../types";
+import {
+ normalizeOrderStatus,
+ toOrderStepperStatus,
+} from"@/shared/lib/orderStatus";
 
 function mapApiToTrackOrder(
  raw: TrackOrderApiData,
@@ -52,10 +56,13 @@ function mapApiToTrackOrder(
  const deliveryIsFree = raw.delivery_price === 0;
   const basketDiscount = Number(raw.basket_discount ?? 0);
   const couponDiscount = Number(raw.coupon_discount ?? 0);
+ const status =
+  (toOrderStepperStatus(raw.status) ??
+   normalizeOrderStatus(raw.status)) as TrackOrderStatus;
 
  return {
  orderNumber: raw.order_code ?? String(raw.id),
- status: raw.status as TrackOrderStatus,
+ status,
  store: storeName,
  items,
     totalQuantity: raw.total_quantity,

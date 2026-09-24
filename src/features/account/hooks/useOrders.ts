@@ -13,11 +13,7 @@ export interface UseOrdersResult {
 }
 
 function toApiStatus(status?: string): string | undefined {
- return status === "all" || !status
-  ? undefined
-  : status === "out_for_delivery"
-    ? "out_delivery"
-    : status;
+ return status === "all" || !status ? undefined : status;
 }
 
 export function useOrders(page = 1, status?: string): UseOrdersResult {

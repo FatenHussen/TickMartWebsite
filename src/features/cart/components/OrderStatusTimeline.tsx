@@ -2,14 +2,18 @@ import { HiCheck, HiTruck, HiCube } from "react-icons/hi";
 import { HiClock } from "react-icons/hi2";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/shared/lib/utils";
-import type { OrderStatusStep } from "../types";
+import {
+    ORDER_STEPPER_STAGES,
+    normalizeOrderStatus,
+    type OrderStepperStatus,
+} from "@/shared/lib/orderStatus";
 
 type OrderStatusTimelineProps = {
-    currentStatus: OrderStatusStep;
+    currentStatus: string;
 };
 
 type StepDef = {
-    key: OrderStatusStep;
+    key: OrderStepperStatus;
     labelKey: string;
     descriptionKey: string;
     fallbackLabel: string;
@@ -32,9 +36,9 @@ const steps: StepDef[] = [
         fallbackDescription: "Store is preparing your order.",
     },
     {
-        key: "out_for_delivery",
-        labelKey: "orders.timeline.out_for_delivery.label",
-        descriptionKey: "orders.timeline.out_for_delivery.description",
+        key: "out_delivery",
+        labelKey: "orders.timeline.out_delivery.label",
+        descriptionKey: "orders.timeline.out_delivery.description",
         fallbackLabel: "Out for Delivery",
         fallbackDescription: "Driver is on the way.",
     },
@@ -49,13 +53,13 @@ const steps: StepDef[] = [
 
 type StepStatus = "completed" | "active" | "upcoming";
 
-const getStepIcon = (stepKey: OrderStatusStep) => {
+const getStepIcon = (stepKey: OrderStepperStatus) => {
     switch (stepKey) {
         case "pending":
             return HiClock;
         case "preparing":
             return HiCube;
-        case "out_for_delivery":
+        case "out_delivery":
             return HiTruck;
         case "delivered":
             return HiCheck;
@@ -66,7 +70,8 @@ export default function OrderStatusTimeline({
     currentStatus,
 }: OrderStatusTimelineProps) {
     const { t } = useTranslation();
-    const currentIndex = steps.findIndex((s) => s.key === currentStatus);
+    const normalized = normalizeOrderStatus(currentStatus);
+    const currentIndex = steps.findIndex((s) => s.key === normalized);
     const progressPct =
         currentIndex <= 0
             ? 0
@@ -85,7 +90,7 @@ export default function OrderStatusTimeline({
                     {t("orders.statusTimeline", "Order Status")}
                 </h3>
                 <span className="text-xs font-medium text-custom-secondary">
-                    {Math.max(currentIndex, 0) + 1} / {steps.length}
+                    {Math.max(currentIndex, 0) + 1} / {ORDER_STEPPER_STAGES.length}
                 </span>
             </div>
 

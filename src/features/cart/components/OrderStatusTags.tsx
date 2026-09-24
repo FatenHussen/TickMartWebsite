@@ -3,6 +3,7 @@ import { HiTruck, HiClock } from "react-icons/hi2";
 import type { ComponentType, SVGProps } from "react";
 import { cn } from "@/shared/lib/utils";
 import type { OrderStatus } from "../types";
+import { isOutDeliveryStatus, normalizeOrderStatus } from "@/shared/lib/orderStatus";
 
 type StatusTag = {
     orderNumber: string;
@@ -20,19 +21,20 @@ type TagConfig = {
 };
 
 const getTagConfig = (status: OrderStatus): TagConfig => {
-    switch (status) {
-        case "delivered":
-            return { icon: HiCheck, color: "var(--color-success)" };
-        case "out_for_delivery":
-            return { icon: HiTruck, color: "var(--color-accent-primary)" };
-        case "preparing":
-            return { icon: HiClock, color: "var(--color-ui-amber-400)" };
-        case "cancelled":
-            return { icon: HiX, color: "var(--color-error)" };
-        case "pending":
-        default:
-            return { icon: HiClock, color: "var(--color-text-tertiary)" };
+    const key = normalizeOrderStatus(status);
+    if (key === "delivered") {
+        return { icon: HiCheck, color: "var(--color-success)" };
     }
+    if (isOutDeliveryStatus(key)) {
+        return { icon: HiTruck, color: "var(--color-accent-primary)" };
+    }
+    if (key === "preparing") {
+        return { icon: HiClock, color: "var(--color-ui-amber-400)" };
+    }
+    if (key === "cancelled" || key === "cancelled_by_admin") {
+        return { icon: HiX, color: "var(--color-error)" };
+    }
+    return { icon: HiClock, color: "var(--color-text-tertiary)" };
 };
 
 export default function OrderStatusTags({

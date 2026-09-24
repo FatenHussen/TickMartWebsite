@@ -19,6 +19,7 @@ export interface OrderListItem {
  id: number;
  order_code?: string | null;
  status?: string;
+ status_label?: string | null;
  cart_type?: string;
  is_instant_delivery?: boolean;
  delivery_price?: number | string | null;
@@ -151,6 +152,7 @@ export interface OrderDetailData {
  id: number;
  order_code?: string | null;
  status: string;
+ status_label?: string | null;
  cart_type: string;
  is_instant_delivery: boolean;
  delivery_price: number;

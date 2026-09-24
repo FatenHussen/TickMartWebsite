@@ -288,7 +288,7 @@
     "noActiveSubscription": "لا يوجد اشتراك نشط",
     "orderNumber": "الطلب #12345",
     "outForDelivery": "قيد التوصيل · متوقع: 15-20 دقيقة · السوق الطازج",
-    "outForDeliveryTitle": "قيد التوصيل",
+    "outForDeliveryTitle": "خرج للتوصيل",
     "trackOrder": "تتبع الطلب",
     "pending": "قيد الانتظار",
     "orderReceived": "تم استلام طلبك",
@@ -763,10 +763,34 @@
     "searchPlaceholder": "ابحث برقم الطلب أو المتجر أو المنتج",
     "noOrdersFound": "لم يتم العثور على طلبات.",
     "delivered": "تم التوصيل",
-    "out_for_delivery": "قيد التوصيل",
+    "out_delivery": "خرج للتوصيل",
+    "out_for_delivery": "خرج للتوصيل",
+    "waiting_approval": "بانتظار موافقة الزبون",
+    "cancelled_by_admin": "ملغي من الإدارة",
+    "rejected_by_delivery": "مرفوض من الدليفري",
+    "faild_deliver": "فشل التوصيل",
+    "returned_by_user": "مرتجع من المستخدم",
     "preparing": "قيد التحضير",
-    "cancelled": "ملغى",
+    "cancelled": "ملغي",
     "pending": "قيد الانتظار",
+    "timeline": {
+      "pending": {
+        "label": "قيد الانتظار",
+        "description": "تم استلام طلبك."
+      },
+      "preparing": {
+        "label": "قيد التحضير",
+        "description": "المتجر يجهّز طلبك."
+      },
+      "out_delivery": {
+        "label": "خرج للتوصيل",
+        "description": "السائق في الطريق."
+      },
+      "delivered": {
+        "label": "تم التوصيل",
+        "description": "تم توصيل الطلب."
+      }
+    },
     "all": "الكل",
     "qty": "الكمية",
     "total": "المجموع",

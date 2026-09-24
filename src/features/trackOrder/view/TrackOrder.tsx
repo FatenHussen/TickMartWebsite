@@ -7,6 +7,7 @@ import TrackOrderMap from "../components/TrackOrderMap";
 import TrackOrderSidebar from "../components/TrackOrderSidebar";
 import { useTrackOrder } from "../hooks/useTrackOrder";
 import { getSocket, joinOrderRoom, useOrderLocation } from "@/lib/socket";
+import { isOutDeliveryStatus } from "@/shared/lib/orderStatus";
 import { PremiumInlineLoader } from "@/shared/component/loading";
 
 export default function TrackOrder() {
@@ -15,12 +16,7 @@ export default function TrackOrder() {
     const { isRTL } = useLanguage();
     const { data: orderData, isLoading, error } = useTrackOrder(orderId ?? null);
 
-    const normalizedTrackStatus = orderData?.status
-        ? String(orderData.status).toLowerCase().replace(/-/g, "_")
-        : "";
-    const showMap =
-        normalizedTrackStatus === "out_for_delivery" ||
-        normalizedTrackStatus === "out_delivery";
+    const showMap = isOutDeliveryStatus(orderData?.status);
 
     const liveLocation = useOrderLocation(
         showMap && orderId ? orderId : null

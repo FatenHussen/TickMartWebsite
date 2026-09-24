@@ -46,7 +46,7 @@ export default function OrderFilters({
         { key: "all", label: t("orders.all") },
         { key: "pending", label: t("orders.pending") },
         { key: "preparing", label: t("orders.preparing") },
-        { key: "out_for_delivery", label: t("orders.out_for_delivery") },
+        { key: "out_delivery", label: t("orders.out_delivery") },
         { key: "delivered", label: t("orders.delivered") },
         { key: "cancelled", label: t("orders.cancelled") },
     ];

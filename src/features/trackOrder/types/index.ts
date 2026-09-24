@@ -1,4 +1,4 @@
-export type TrackOrderStatus ="pending"|"preparing"|"out_for_delivery"|"delivered";
+export type TrackOrderStatus ="pending"|"preparing"|"out_delivery"|"delivered";
 
 export type Driver = {
  name: string;
@@ -109,6 +109,7 @@ export interface TrackOrderApiData {
  id: number;
  order_code: string | null;
  status: string;
+ status_label?: string | null;
  cart_type: string;
  is_instant_delivery: boolean;
  delivery_price: number;

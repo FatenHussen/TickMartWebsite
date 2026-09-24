@@ -760,10 +760,34 @@
     "searchPlaceholder": "Search by order number, store or item",
     "noOrdersFound": "No orders found.",
     "delivered": "Delivered",
+    "out_delivery": "Out for delivery",
     "out_for_delivery": "Out for delivery",
+    "waiting_approval": "Waiting approval",
+    "cancelled_by_admin": "Cancelled by admin",
+    "rejected_by_delivery": "Rejected by delivery",
+    "faild_deliver": "Failed delivery",
+    "returned_by_user": "Returned by user",
     "preparing": "Preparing",
     "cancelled": "Cancelled",
     "pending": "Pending",
+    "timeline": {
+      "pending": {
+        "label": "Pending",
+        "description": "Your order was received."
+      },
+      "preparing": {
+        "label": "Preparing",
+        "description": "Store is preparing your order."
+      },
+      "out_delivery": {
+        "label": "Out for Delivery",
+        "description": "Driver is on the way."
+      },
+      "delivered": {
+        "label": "Delivered",
+        "description": "Order delivered."
+      }
+    },
     "all": "All",
     "qty": "Qty",
     "total": "Total",
