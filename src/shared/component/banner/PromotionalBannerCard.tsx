@@ -3,6 +3,7 @@ import BannerHero from "./BannerHero";
 import { cn } from "@/shared/lib/utils";
 import { openSectionLink } from "@/shared/lib/sectionLink";
 import type { SectionItemBase } from "@/features/home/types";
+import { bannerText } from "./utils";
 import "./promotional-banner.css";
 
 type PromotionalBannerCardProps = {
@@ -30,13 +31,15 @@ export default function PromotionalBannerCard({
 }: PromotionalBannerCardProps) {
     const navigate = useNavigate();
 
-    const interactive = Boolean(onClick || link);
+    const href = bannerText(link);
+    const interactive = href.length > 0;
 
     const handleClick = () => {
+        if (!interactive) return;
         if (onClick) {
             onClick();
-        } else if (link) {
-            openSectionLink(link, navigate);
+        } else {
+            openSectionLink(href, navigate);
         }
     };
 

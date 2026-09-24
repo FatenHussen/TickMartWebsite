@@ -433,10 +433,14 @@ export default function ApiSectionsRenderer({
     };
 
     const handleItemClick = (section: Section, item: SectionItem) => {
-        if (isManualItem(item) && item.link) {
+        if (isManualItem(item) && item.link?.trim()) {
             // A manual item's link may point outside the app (banners often do).
             openSectionLink(item.link, navigate);
-        } else if (section.action?.page_slug) {
+            return;
+        }
+        // Cleared banner link (null or "") must not fall through to the section action.
+        if (getSectionKind(section) === "banner") return;
+        if (section.action?.page_slug) {
             const itemData = getItemData(item);
             const route = mapActionPageSlugToRoute(
                 section.action.page_slug,

@@ -7,7 +7,7 @@ import { HiChevronLeft, HiChevronRight } from "react-icons/hi2";
 import BannerHero from "./BannerHero";
 import { openSectionLink } from "@/shared/lib/sectionLink";
 import type { SectionItem, SectionItemBase } from "@/features/home/types";
-import { getItemData } from "./utils";
+import { bannerText, getItemData } from "./utils";
 import "./promotional-banner.css";
 
 type PromotionalHeroSliderProps = {
@@ -22,10 +22,10 @@ type PromotionalHeroSliderProps = {
 function getItemLink(
     item: SectionItem,
     getLink?: (item: SectionItem) => string | undefined,
-): string | undefined {
-    if (getLink) return getLink(item);
-    if ("link" in item && item.link) return item.link;
-    return undefined;
+): string {
+    if (getLink) return bannerText(getLink(item));
+    if ("link" in item) return bannerText(item.link);
+    return "";
 }
 
 /**
@@ -54,12 +54,13 @@ export default function PromotionalHeroSlider({
     const [nextEl, setNextEl] = useState<HTMLButtonElement | null>(null);
 
     const handleSlideClick = (item: SectionItem) => {
+        const link = getItemLink(item, getLink);
+        if (!link) return;
         if (onItemClick) {
             onItemClick(item);
             return;
         }
-        const link = getItemLink(item, getLink);
-        if (link) openSectionLink(link, navigate);
+        openSectionLink(link, navigate);
     };
 
     if (!items.length) return null;
@@ -101,24 +102,35 @@ export default function PromotionalHeroSlider({
             >
                 {items.map((item) => {
                     const data = getItemData(item) as SectionItemBase;
+                    const href = getItemLink(item, getLink);
                     return (
                         <SwiperSlide key={data.id}>
                             <div
-                                className="promo-banner-slide promo-banner-frame"
+                                className={
+                                    href
+                                        ? "promo-banner-slide promo-banner-frame cursor-pointer"
+                                        : "promo-banner-slide promo-banner-frame"
+                                }
                                 style={
                                     cardSurfaceColor
                                         ? { background: cardSurfaceColor }
                                         : undefined
                                 }
-                                onClick={() => handleSlideClick(item)}
-                                role="button"
-                                tabIndex={0}
-                                onKeyDown={(e) => {
-                                    if (e.key === "Enter" || e.key === " ") {
-                                        e.preventDefault();
-                                        handleSlideClick(item);
-                                    }
-                                }}
+                                onClick={
+                                    href ? () => handleSlideClick(item) : undefined
+                                }
+                                role={href ? "button" : undefined}
+                                tabIndex={href ? 0 : undefined}
+                                onKeyDown={
+                                    href
+                                        ? (e) => {
+                                              if (e.key === "Enter" || e.key === " ") {
+                                                  e.preventDefault();
+                                                  handleSlideClick(item);
+                                              }
+                                          }
+                                        : undefined
+                                }
                             >
                                 <BannerHero item={data} />
                             </div>

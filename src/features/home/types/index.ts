@@ -204,7 +204,7 @@ export type SectionItemApi =
 // For Manual type sections (banners, selected products)
 export interface SectionItemManual {
  id: number;
- link: string;
+ link: string | null;
  order: number;
  item: SectionItemBase;
 }

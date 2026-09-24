@@ -2,25 +2,23 @@ import { useState } from "react";
 import { HiArrowRight } from "react-icons/hi2";
 import LazyImage from "@/shared/component/LazyImage";
 import type { SectionItemBase } from "@/features/home/types";
+import { bannerText } from "./utils";
 
 /**
  * The inside of a promo banner frame, shared by {@link PromotionalBannerCard}
- * and {@link PromotionalHeroSlider}: the CMS artwork full-bleed, a start-side
- * scrim over it, and the item's copy on top — title, description and CTA from
- * the dashboard (`title` / `desc` / `button_text`).
+ * and {@link PromotionalHeroSlider}: the CMS artwork full-bleed, and — only
+ * when the dashboard left them filled — title, description and CTA.
  *
- * Empty strings are the fallback for legacy rows that pre-date required fields;
- * the frame (and image) still render — never hide the card for missing copy.
- * Absolute CMS image URLs are not verified upstream, so `onError` drops the
- * <img> and lets the frame background stand in.
+ * `null` and `""` are empty. The image still renders; cleared copy is not
+ * shown and is never filled from a previous value.
  */
 export default function BannerHero({ item }: { item: SectionItemBase }) {
     const [imageFailed, setImageFailed] = useState(false);
 
-    const title = item.title?.trim() ?? "";
-    const desc = item.desc?.trim() ?? "";
-    const buttonText = item.button_text?.trim() ?? "";
-    const image = item.image || "";
+    const title = bannerText(item.title);
+    const desc = bannerText(item.desc);
+    const buttonText = bannerText(item.button_text);
+    const image = bannerText(item.image);
     const hasCopy = Boolean(title || desc || buttonText);
 
     return (
@@ -34,7 +32,7 @@ export default function BannerHero({ item }: { item: SectionItemBase }) {
                     onError={() => setImageFailed(true)}
                 />
             )}
-            <div className="promo-banner-overlay" aria-hidden />
+            {hasCopy ? <div className="promo-banner-overlay" aria-hidden /> : null}
 
             {hasCopy && (
                 <div className="promo-banner-content">
