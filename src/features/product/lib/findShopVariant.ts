@@ -88,15 +88,11 @@ export function isIndependentPickerAttribute(type: string | undefined): boolean 
     return String(type ?? "").toLowerCase() === "color";
 }
 
-/** Prefer `attributes_map[].options[]`; fall back to variant attrs / `values[]`. */
-export function resolveAttributeOptions(
+/** Options that actually appear on at least one shop variant for this attribute. */
+function optionsFromVariants(
     attr: AttributeMapItem,
     variants: ShopVariant[],
 ): AttributeMapOption[] {
-    if (attr.options?.length) {
-        return attr.options.filter((o) => Number.isFinite(o.id));
-    }
-
     const seen = new Set<number>();
     const fromVariants: AttributeMapOption[] = [];
     for (const variant of variants) {
@@ -110,6 +106,39 @@ export function resolveAttributeOptions(
                 hex: a.hex ?? null,
             });
         }
+    }
+    return fromVariants;
+}
+
+/**
+ * Prefer `attributes_map[].options[]`, but only keep values that exist on
+ * `shop_variants` when the product has rows — avoids the full category palette
+ * (24+ colors) on a product that only ships 1–2 shades.
+ */
+export function resolveAttributeOptions(
+    attr: AttributeMapItem,
+    variants: ShopVariant[],
+): AttributeMapOption[] {
+    const fromVariants = optionsFromVariants(attr, variants);
+
+    if (attr.options?.length) {
+        const fromApi = attr.options.filter((o) => Number.isFinite(o.id));
+        if (fromVariants.length) {
+            const onProduct = new Set(fromVariants.map((o) => o.id));
+            const present = fromApi.filter((o) => onProduct.has(o.id));
+            if (present.length) {
+                return present.map((o) => {
+                    const hit = fromVariants.find((v) => v.id === o.id);
+                    return {
+                        ...o,
+                        name: o.name || hit?.name || o.name,
+                        hex: o.hex ?? hit?.hex ?? null,
+                    };
+                });
+            }
+            return fromVariants;
+        }
+        return fromApi;
     }
 
     if (fromVariants.length) {

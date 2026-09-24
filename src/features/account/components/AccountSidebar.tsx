@@ -7,6 +7,7 @@ import { cn } from "@/shared/lib/utils";
 import { LogoutPopup } from "@/shared/component";
 import { useLogout } from "@/features/auth/hooks/useAuth";
 import { useAuthStore } from "@/store/auth";
+import { isApprovedMarketer as checkApprovedMarketer } from "@/features/marketer/utils/isApprovedMarketer";
 import { useQuickOrderSettings } from "@/features/account/hooks/useQuickOrderSettings";
 import {
   User,
@@ -337,9 +338,7 @@ export default function AccountSidebar({
     onToggle?.(next);
   };
 
-  const isApprovedMarketer =
-    authUser?.affiliate?.is_affiliate === true &&
-    authUser?.affiliate?.approved === true; // both flags required — hide dashboard nav otherwise
+  const isApprovedMarketer = checkApprovedMarketer(authUser);
 
   const { quickOrder } = useQuickOrderSettings();
 

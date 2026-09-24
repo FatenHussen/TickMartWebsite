@@ -160,7 +160,7 @@ export default function NavbarSearch({
                     onFocus={() => hasQuery && openDropdown()}
                     placeholder={
                         t("home.searchProducts") ||
-                        "Search products and stores..."
+                        "Type anything you want to search for"
                     }
                     className={cn(
                         "navbar-search-input h-12 w-full rounded-2xl border border-stone-300 bg-white text-[15px] leading-none text-custom-primary transition-[border-color,box-shadow] duration-200 ease-out placeholder:text-stone-500 hover:border-[#ff9f00]/55 focus:border-[#ff9f00] focus:outline-none focus:ring-2 focus:ring-[#ff9f00]/25 dark:border-white/20 dark:placeholder:text-[#B8B0A4] dark:focus:ring-[#ff9f00]/30",

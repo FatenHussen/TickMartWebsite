@@ -44,7 +44,7 @@ export default function AffiliateWelcomePage() {
     const { t, i18n } = useTranslation();
     const lang = i18n.language || "en";
     const { isRTL } = useLanguage();
-    const { isApprovedMarketer } = useMarketerAccess();
+    const { isApprovedMarketer, isAffiliateStatusPending } = useMarketerAccess();
     const { data: profile } = useProfile();
     const { data: addresses = [] } = useAddresses();
     const { addressId } = useCheckoutStore();
@@ -110,6 +110,18 @@ export default function AffiliateWelcomePage() {
     const addressHref = selectedAddress
         ? paths.account.editAddress(selectedAddress.id)
         : paths.account.addAddress;
+
+    if (isAffiliateStatusPending) {
+        return (
+            <div
+                className="page-container space-y-4 py-8"
+                dir={isRTL ? "rtl" : "ltr"}
+            >
+                <div className="h-40 animate-pulse rounded-2xl bg-custom-card" />
+                <div className="h-24 animate-pulse rounded-2xl bg-custom-card" />
+            </div>
+        );
+    }
 
     if (!isApprovedMarketer || unauthorized) {
         return <Navigate to={paths.becomeMarketer} replace />;

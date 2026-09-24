@@ -43,8 +43,10 @@ export default function ScheduleDelivery({
     const { isRTL } = useLanguage();
     const { items: schedules = [], isLoading: isSchedulesLoading } =
         useSchedules();
+    /** Collapsed by default — full scheduling UI only after user opens details. */
+    const [detailsOpen, setDetailsOpen] = useState(false);
     const [orderType, setOrderType] = useState<"one_time" | "schedule">(
-        "schedule",
+        "one_time",
     );
     const [selectedScheduleId, setSelectedScheduleId] = useState<number | null>(
         schedules[0]?.id ?? null,
@@ -119,20 +121,66 @@ export default function ScheduleDelivery({
         ? ["SAT", "FRI", "THU", "WED", "TUE", "MON", "SUN"]
         : ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 
+    if (!detailsOpen) {
+        return (
+            <div
+                className="flex flex-col gap-3 rounded-xl border border-custom-primary bg-custom-card px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
+                dir={isRTL ? "rtl" : "ltr"}
+            >
+                <p className="min-w-0 text-sm leading-snug text-[color:var(--color-text)]/80">
+                    {t(
+                        "cart.schedulePrompt",
+                        "Want to schedule delivery or set a recurring delivery?",
+                    )}
+                </p>
+                <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setDetailsOpen(true)}
+                    className={cn(
+                        "h-10 w-full shrink-0 rounded-xl px-4 text-sm font-semibold sm:w-auto",
+                        "!border-custom-primary text-[color:var(--color-text)]",
+                        "hover:!border-[color:color-mix(in_srgb,var(--color-main)_35%,transparent)] hover:!bg-custom-hover",
+                    )}
+                >
+                    {t("cart.showSchedulingDetails", "Show scheduling details")}
+                </Button>
+            </div>
+        );
+    }
+
     return (
         <div
             className="rounded-2xl border border-custom-primary bg-custom-card p-4 sm:p-5 md:p-6 shadow-sm space-y-6"
             dir={isRTL ? "rtl" : "ltr"}
         >
-            {/* Repeat this basket? */}
-            <section>
-                <div className="flex items-center gap-2.5 mb-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-center gap-2.5">
                     <HeaderIcon icon={<HiOutlineRefresh className="w-4 h-4" />} />
                     <h3 className="text-base sm:text-lg font-bold text-[color:var(--color-text)]">
                         {t("cart.repeatBasket")}?
                     </h3>
                 </div>
+                <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                        setDetailsOpen(false);
+                        setOrderType("one_time");
+                        onCancelSchedule?.();
+                    }}
+                    className={cn(
+                        "h-9 w-full shrink-0 rounded-xl px-3 text-xs font-medium sm:w-auto",
+                        "!border-custom-primary text-[color:var(--color-text)]/70",
+                        "hover:!bg-custom-hover hover:text-[color:var(--color-text)]",
+                    )}
+                >
+                    {t("cart.hideSchedulingDetails", "Hide scheduling details")}
+                </Button>
+            </div>
 
+            {/* Repeat this basket? */}
+            <section>
                 <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                     <OrderTypeOption
                         value="one_time"

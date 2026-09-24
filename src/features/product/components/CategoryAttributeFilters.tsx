@@ -1,10 +1,10 @@
+import { useEffect, useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContext";
 import { cn } from "@/shared/lib/utils";
 import { resolveLocalizedText } from "@/shared/lib/localizedText";
 import {
     cssColorForSwatch,
-    isLikelyHexColorLabel,
     isLightSwatchFill,
 } from "@/features/product/lib/attributeValueColor";
 import type {
@@ -196,72 +196,177 @@ function ColorValues({
     selected: Set<number>;
     onToggle: (id: number) => void;
 }) {
-    return (
-        <div className="grid grid-cols-4 gap-x-2 gap-y-3" role="list">
-            {values.map((v) => {
-                const active = selected.has(v.id);
-                const fill = cssColorForSwatch({
-                    hex: v.hex,
-                    id: v.id,
-                    label: v.name,
+    const { t } = useTranslation();
+    const listId = useId();
+    const rootRef = useRef<HTMLDivElement>(null);
+    const [open, setOpen] = useState(false);
+    const selectedValues = values.filter((v) => selected.has(v.id));
+
+    useEffect(() => {
+        if (!open) return;
+        const onPointer = (event: MouseEvent) => {
+            if (!rootRef.current?.contains(event.target as Node)) {
+                setOpen(false);
+            }
+        };
+        const onKey = (event: KeyboardEvent) => {
+            if (event.key === "Escape") setOpen(false);
+        };
+        document.addEventListener("mousedown", onPointer);
+        document.addEventListener("keydown", onKey);
+        return () => {
+            document.removeEventListener("mousedown", onPointer);
+            document.removeEventListener("keydown", onKey);
+        };
+    }, [open]);
+
+    const summary =
+        selectedValues.length === 0
+            ? t("productsListing.selectColor", "Select color")
+            : selectedValues.length === 1
+              ? selectedValues[0].name
+              : t("productsListing.colorsSelected", {
+                    count: selectedValues.length,
+                    defaultValue: "{{count}} colors",
                 });
-                const hideLabel = isLikelyHexColorLabel(v.name);
-                const light = isLightSwatchFill(fill);
-                return (
-                    <button
-                        key={v.id}
-                        type="button"
-                        role="listitem"
-                        title={v.name}
-                        aria-label={v.name}
-                        aria-pressed={active}
-                        onClick={() => onToggle(v.id)}
-                        className="flex min-w-0 flex-col items-center gap-1.5 rounded-lg py-0.5 transition-transform active:scale-[0.97]"
-                    >
-                        <span
-                            className={cn(
-                                "relative grid h-8 w-8 place-items-center rounded-full border shadow-[inset_0_0_0_1px_rgba(15,23,42,0.06)]",
-                                light
-                                    ? "border-slate-300 dark:border-white/35"
-                                    : "border-black/10 dark:border-white/15",
-                                active &&
-                                    "ring-2 ring-[var(--color-main,#00ACC1)] ring-offset-2 ring-offset-[var(--color-bg-card,#fff)]",
-                            )}
-                            style={{ background: fill }}
-                        >
-                            {active && (
-                                <svg
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="3"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    className={cn(
-                                        "h-3.5 w-3.5",
-                                        light ? "text-slate-800" : "text-white",
-                                    )}
-                                    aria-hidden
-                                >
-                                    <path d="M5 12.5 9.5 17 19 7.5" />
-                                </svg>
-                            )}
+
+    return (
+        <div ref={rootRef} className="relative">
+            <button
+                type="button"
+                aria-haspopup="listbox"
+                aria-expanded={open}
+                aria-controls={listId}
+                onClick={() => setOpen((v) => !v)}
+                className={cn(
+                    "flex w-full items-center gap-2 rounded-lg border bg-white/95 px-3 py-2.5 text-start text-sm transition-colors dark:bg-[color-mix(in_srgb,var(--color-main)_18%,#13151c)]",
+                    "border-slate-200 hover:border-slate-300 dark:border-[color-mix(in_srgb,var(--color-main)_22%,#1f2230)] dark:hover:border-[color-mix(in_srgb,var(--color-main)_40%,#1f2230)]",
+                    open &&
+                        "border-[var(--color-main,#00ACC1)]/50 ring-2 ring-[var(--color-main,#00ACC1)]/20",
+                )}
+            >
+                <span className="flex min-w-0 flex-1 items-center gap-1.5">
+                    {selectedValues.length > 0 ? (
+                        <span className="flex shrink-0 items-center -space-x-1.5 rtl:space-x-reverse">
+                            {selectedValues.slice(0, 4).map((v) => {
+                                const fill = cssColorForSwatch({
+                                    hex: v.hex,
+                                    id: v.id,
+                                    label: v.name,
+                                });
+                                const light = isLightSwatchFill(fill);
+                                return (
+                                    <span
+                                        key={v.id}
+                                        title={v.name}
+                                        className={cn(
+                                            "h-5 w-5 rounded-full border shadow-sm",
+                                            light
+                                                ? "border-slate-300 dark:border-white/35"
+                                                : "border-black/10 dark:border-white/15",
+                                        )}
+                                        style={{ background: fill }}
+                                    />
+                                );
+                            })}
                         </span>
-                        {!hideLabel && (
-                            <span
-                                className={cn(
-                                    "w-full truncate text-center text-[11px] leading-tight",
-                                    active
-                                        ? "font-semibold text-custom-primary dark:text-[var(--color-text)]"
-                                        : "text-custom-secondary dark:text-[color-mix(in_srgb,var(--color-text)_75%,transparent)]",
-                                )}
-                            >
-                                {v.name}
-                            </span>
+                    ) : (
+                        <span
+                            className="h-5 w-5 shrink-0 rounded-full border border-dashed border-slate-300 dark:border-white/25"
+                            aria-hidden
+                        />
+                    )}
+                    <span
+                        className={cn(
+                            "min-w-0 truncate",
+                            selectedValues.length
+                                ? "font-medium text-slate-800 dark:text-[var(--color-text)]"
+                                : "text-slate-500 dark:text-[color-mix(in_srgb,var(--color-text)_70%,transparent)]",
                         )}
-                    </button>
-                );
-            })}
+                    >
+                        {summary}
+                    </span>
+                </span>
+                <svg
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    className={cn(
+                        "h-4 w-4 shrink-0 text-slate-400 transition-transform dark:text-[color-mix(in_srgb,var(--color-text)_55%,transparent)]",
+                        open && "rotate-180",
+                    )}
+                    aria-hidden
+                >
+                    <path
+                        fillRule="evenodd"
+                        d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.17l3.71-3.94a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z"
+                        clipRule="evenodd"
+                    />
+                </svg>
+            </button>
+
+            {open ? (
+                <ul
+                    id={listId}
+                    role="listbox"
+                    aria-multiselectable
+                    className="absolute z-30 mt-1.5 max-h-56 w-full overflow-auto rounded-lg border border-slate-200 bg-white py-1 shadow-lg dark:border-[color-mix(in_srgb,var(--color-main)_22%,#1f2230)] dark:bg-[color-mix(in_srgb,var(--color-main)_14%,#13151c)]"
+                >
+                    {values.map((v) => {
+                        const active = selected.has(v.id);
+                        const fill = cssColorForSwatch({
+                            hex: v.hex,
+                            id: v.id,
+                            label: v.name,
+                        });
+                        const light = isLightSwatchFill(fill);
+                        return (
+                            <li key={v.id} role="option" aria-selected={active}>
+                                <button
+                                    type="button"
+                                    onClick={() => onToggle(v.id)}
+                                    className={cn(
+                                        "flex w-full items-center gap-2.5 px-3 py-2 text-start text-sm transition-colors",
+                                        active
+                                            ? "bg-[color-mix(in_srgb,var(--color-main,#00ACC1)_12%,transparent)] font-semibold text-slate-800 dark:text-[var(--color-text)]"
+                                            : "text-slate-700 hover:bg-slate-50 dark:text-[var(--color-text)] dark:hover:bg-[color-mix(in_srgb,var(--color-main)_18%,#13151c)]",
+                                    )}
+                                >
+                                    <span
+                                        className={cn(
+                                            "relative grid h-5 w-5 shrink-0 place-items-center rounded-full border",
+                                            light
+                                                ? "border-slate-300 dark:border-white/35"
+                                                : "border-black/10 dark:border-white/15",
+                                        )}
+                                        style={{ background: fill }}
+                                        aria-hidden
+                                    >
+                                        {active ? (
+                                            <svg
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                strokeWidth="3"
+                                                className={cn(
+                                                    "h-3 w-3",
+                                                    light
+                                                        ? "text-slate-800"
+                                                        : "text-white",
+                                                )}
+                                            >
+                                                <path d="M5 12.5 9.5 17 19 7.5" />
+                                            </svg>
+                                        ) : null}
+                                    </span>
+                                    <span className="min-w-0 flex-1 truncate">
+                                        {v.name}
+                                    </span>
+                                </button>
+                            </li>
+                        );
+                    })}
+                </ul>
+            ) : null}
         </div>
     );
 }

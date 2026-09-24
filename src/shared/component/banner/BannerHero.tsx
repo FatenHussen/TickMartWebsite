@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
 import { HiArrowRight } from "react-icons/hi2";
 import LazyImage from "@/shared/component/LazyImage";
 import type { SectionItemBase } from "@/features/home/types";
@@ -7,30 +6,29 @@ import type { SectionItemBase } from "@/features/home/types";
 /**
  * The inside of a promo banner frame, shared by {@link PromotionalBannerCard}
  * and {@link PromotionalHeroSlider}: the CMS artwork full-bleed, a start-side
- * scrim over it, and the item's copy on top — eyebrow pill, headline, blurb and
- * a "Shop Now" pill.
+ * scrim over it, and the item's copy on top — title, description and CTA from
+ * the dashboard (`title` / `desc` / `button_text`).
  *
- * The copy is always drawn, never a fallback for a missing image. The API hands
- * out absolute URLs it does not verify — the seeded `storage/banner/*` artwork
- * 404s on the current host — so `onError` drops the <img> and lets the frame's
- * brand gradient stand in, with the headline and CTA still on screen.
+ * Empty strings are the fallback for legacy rows that pre-date required fields;
+ * the frame (and image) still render — never hide the card for missing copy.
+ * Absolute CMS image URLs are not verified upstream, so `onError` drops the
+ * <img> and lets the frame background stand in.
  */
 export default function BannerHero({ item }: { item: SectionItemBase }) {
-    const { t } = useTranslation();
     const [imageFailed, setImageFailed] = useState(false);
 
-    const rawTitle = item.title?.trim() || "";
-    const title = rawTitle || t("hero.titleFallback", "Fresh Groceries Delivered");
-    const subtitle = item.desc?.trim() || "";
-    const buttonText = item.button_text?.trim() || t("hero.shopNow", "Shop Now");
+    const title = item.title?.trim() ?? "";
+    const desc = item.desc?.trim() ?? "";
+    const buttonText = item.button_text?.trim() ?? "";
     const image = item.image || "";
+    const hasCopy = Boolean(title || desc || buttonText);
 
     return (
         <>
             {image && !imageFailed && (
                 <LazyImage
                     src={image}
-                    alt={rawTitle}
+                    alt={title}
                     className="promo-banner-bg-img"
                     wrapperClassName="promo-banner-bg"
                     onError={() => setImageFailed(true)}
@@ -38,40 +36,25 @@ export default function BannerHero({ item }: { item: SectionItemBase }) {
             )}
             <div className="promo-banner-overlay" aria-hidden />
 
-            <div className="promo-banner-content">
-                <span className="promo-banner-eyebrow">
-                    <span className="promo-banner-eyebrow-dot" aria-hidden />
-                    {t("hero.eyebrow", "Fast local delivery")}
-                </span>
+            {hasCopy && (
+                <div className="promo-banner-content">
+                    {title ? (
+                        <h2 className="promo-banner-title">{title}</h2>
+                    ) : null}
 
-                <h2 className="promo-banner-title">
-                    {title}
-                    {/* Seeded rows repeat the title as the description; a second
-                        identical line reads as a bug, so only a distinct desc
-                        becomes the accent subtitle. */}
-                    {subtitle && subtitle !== title && (
-                        <>
-                            <br />
-                            <span className="promo-banner-title-sub">
-                                {subtitle}
-                            </span>
-                        </>
-                    )}
-                </h2>
+                    {desc ? (
+                        <p className="promo-banner-desc">{desc}</p>
+                    ) : null}
 
-                <p className="promo-banner-desc">
-                    {t(
-                        "hero.description",
-                        "Order from your favorite local stores and get everything delivered to your door.",
-                    )}
-                </p>
-
-                {/* A span, not a button: the whole frame is already the click target. */}
-                <span className="promo-banner-btn">
-                    {buttonText}
-                    <HiArrowRight className="promo-banner-btn-icon" />
-                </span>
-            </div>
+                    {/* A span, not a button: the whole frame is already the click target. */}
+                    {buttonText ? (
+                        <span className="promo-banner-btn">
+                            {buttonText}
+                            <HiArrowRight className="promo-banner-btn-icon" />
+                        </span>
+                    ) : null}
+                </div>
+            )}
         </>
     );
 }

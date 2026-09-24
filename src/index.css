@@ -15,20 +15,22 @@
 html {
   background-color: var(--color-bg-primary);
   color: var(--color-text-primary);
+  font-family: "Cairo", ui-sans-serif, system-ui, sans-serif;
 }
 
 .brand-display {
-  font-family: "Cormorant Garamond", "Amiri", Georgia, "Times New Roman", serif;
+  font-family: "Cormorant Garamond", "Cairo", Georgia, "Times New Roman", serif;
 }
 
 [dir="rtl"] .brand-display {
-  font-family: "Amiri", "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  font-family: "Cairo", "Cormorant Garamond", Georgia, "Times New Roman", serif;
 }
 
 body,
 #root {
   min-height: 100dvh;
   background-color: var(--color-bg-primary);
+  font-family: "Cairo", ui-sans-serif, system-ui, sans-serif;
 }
 
 /* Overscroll + short pages: match cinematic dark shell (see `.app-layout-canvas`). */
@@ -46,6 +48,9 @@ html.dark #root {
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
+  /* App-matching Arabic/Latin UI font (same geometric sans as the mobile app) */
+  --font-sans: "Cairo", ui-sans-serif, system-ui, sans-serif;
+
   /* Brand Colors - From Design Palette */
   --color-primary: #00aed1;
   --color-primary-light: #4cdaf6;

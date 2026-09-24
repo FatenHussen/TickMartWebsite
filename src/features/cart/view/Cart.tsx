@@ -5,7 +5,6 @@ import { useNavigate, Link } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { paths } from "@/app/routes/path/paths";
-import SideContentLayout from "@/layout/SideContentLayout";
 import { CartSummary } from "../components";
 import CartItemCard from "../components/CartItemCard";
 import ScheduleDelivery, {
@@ -345,7 +344,7 @@ export default function Cart() {
 
     return (
         <div className="min-h-screen bg-custom-tertiary">
-            <div className="page-container py-6 lg:pb-6 pb-28" dir={isRTL ? "rtl" : "ltr"}>
+            <div className="page-container py-6" dir={isRTL ? "rtl" : "ltr"}>
                 {!isCartEmpty && (
                     <div className="mb-6">
                         <CheckoutProgressIndicator currentStep="cart" />
@@ -389,26 +388,7 @@ export default function Cart() {
                         </div>
                     </div>
                 ) : (
-                    <SideContentLayout
-                        sidebar={
-                            <CartSummary
-                                summary={summary}
-                                onCheckout={handleCheckout}
-                                coupon={coupon}
-                                onCouponChange={setCoupon}
-                                isLoading={showSummaryLoading}
-                                status={summaryStatus}
-                                onAddAddress={() => navigate(paths.account.addAddress)}
-                                couponDisabled={!!selectedCouponKey}
-                                pointsEarned={typeof pointsEarned === "number" ? pointsEarned : undefined}
-                                benefitsContent={benefitsContent}
-                            />
-                        }
-                        sidebarPosition="right"
-                        gapClassName="gap-6 lg:gap-8"
-                        columnTemplate="minmax(0,1fr) minmax(20rem,24rem)"
-                        mobileContentFirst
-                    >
+                    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
                         <div className="space-y-6">
                             <div className="flex flex-wrap items-end justify-between gap-3">
                                 <div>
@@ -519,39 +499,22 @@ export default function Cart() {
                                 />
                             )}
                         </div>
-                    </SideContentLayout>
+
+                        <CartSummary
+                            summary={summary}
+                            onCheckout={handleCheckout}
+                            coupon={coupon}
+                            onCouponChange={setCoupon}
+                            isLoading={showSummaryLoading}
+                            status={summaryStatus}
+                            onAddAddress={() => navigate(paths.account.addAddress)}
+                            couponDisabled={!!selectedCouponKey}
+                            pointsEarned={typeof pointsEarned === "number" ? pointsEarned : undefined}
+                            benefitsContent={benefitsContent}
+                        />
+                    </div>
                 )}
             </div>
-
-            {!isCartEmpty && (
-                <div className="lg:hidden fixed inset-x-0 bottom-0 z-40 border-t border-custom-primary bg-custom-card/95 backdrop-blur-md px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-                    <div className="flex items-center gap-3">
-                        <div className="min-w-0">
-                            <p className="text-[11px] text-custom-secondary">
-                                {t("orders.total", "Total")}
-                            </p>
-                            <p className="text-lg font-bold tabular-nums text-custom-primary leading-tight">
-                                {summaryStatus === "ready" ? summary.total : "—"}
-                            </p>
-                        </div>
-                        <Button
-                            type="button"
-                            variant="primary"
-                            className="flex-1 h-11 rounded-xl text-white font-semibold !bg-[color:var(--color-api-second)] hover:!bg-[color:var(--color-api-second-hover)]"
-                            onClick={() =>
-                                summaryStatus === "no-address"
-                                    ? navigate(paths.account.addAddress)
-                                    : handleCheckout()
-                            }
-                            disabled={summaryStatus === "loading"}
-                        >
-                            {summaryStatus === "no-address"
-                                ? t("cart.addAddress")
-                                : t("cart.proceedToCheckout")}
-                        </Button>
-                    </div>
-                </div>
-            )}
 
             {/* Clear cart confirmation popup */}
             <BasePopup

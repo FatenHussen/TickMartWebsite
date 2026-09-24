@@ -15,6 +15,8 @@ type PromotionalHeroSliderProps = {
     /** Optional: link for manual items, or from action */
     getLink?: (item: SectionItem) => string | undefined;
     onItemClick?: (item: SectionItem) => void;
+    /** Section `background_card_color` when the API provides one. */
+    cardSurfaceColor?: string | null;
 };
 
 function getItemLink(
@@ -38,6 +40,7 @@ export default function PromotionalHeroSlider({
     items,
     getLink,
     onItemClick,
+    cardSurfaceColor,
 }: PromotionalHeroSliderProps) {
     const navigate = useNavigate();
     const { t } = useTranslation();
@@ -102,6 +105,11 @@ export default function PromotionalHeroSlider({
                         <SwiperSlide key={data.id}>
                             <div
                                 className="promo-banner-slide promo-banner-frame"
+                                style={
+                                    cardSurfaceColor
+                                        ? { background: cardSurfaceColor }
+                                        : undefined
+                                }
                                 onClick={() => handleSlideClick(item)}
                                 role="button"
                                 tabIndex={0}

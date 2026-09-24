@@ -887,6 +887,8 @@ function BannerSection({
     // `layout` still does: `slider` is the hero carousel these rows have always
     // been, `list` and `grid` show every banner at once instead of one at a time.
     const layout = getSectionLayout(section);
+    const cardSurfaceColor = getSectionCardSurfaceColor(section);
+    const sectionBackgroundColor = section.background_color || undefined;
     const viewAllButtonClass =
         "inline-flex items-center gap-1.5 rounded-full border border-primary-light/35 bg-primary-light/10 px-4 py-2 text-sm font-semibold text-primary-light transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary-light hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-light/40 dark:border-white/10 dark:bg-[#2A2622] dark:text-[#E8E4DC] dark:hover:border-white/16 dark:hover:bg-[#322E29] dark:hover:text-[#F3EFE8]";
     // If only one item, show promotional banner with container
@@ -896,7 +898,14 @@ function BannerSection({
         const link = isManualItem(item) ? item.link : undefined;
 
         return (
-            <div className="w-full">
+            <div
+                className="w-full"
+                style={
+                    sectionBackgroundColor
+                        ? { backgroundColor: sectionBackgroundColor }
+                        : undefined
+                }
+            >
                 {showViewAll && section.name && (
                     <div
                         className={`${innerMax} mb-4 flex items-center justify-between`}
@@ -919,6 +928,7 @@ function BannerSection({
                         link={link}
                         onClick={() => onItemClick(item)}
                         className="w-full"
+                        cardSurfaceColor={cardSurfaceColor}
                     />
                 </div>
             </div>
@@ -927,7 +937,14 @@ function BannerSection({
 
     // Multiple items - use hero-style slider (like HeroSlider)
     return (
-        <div className={innerMax}>
+        <div
+            className={innerMax}
+            style={
+                sectionBackgroundColor
+                    ? { backgroundColor: sectionBackgroundColor }
+                    : undefined
+            }
+        >
             {showViewAll && section.name && (
                 <div className="mb-4 flex items-center justify-between">
                     <h2 className="text-2xl font-bold text-custom-primary dark:text-[color:var(--color-text,var(--color-text-primary))]">
@@ -947,6 +964,7 @@ function BannerSection({
                     items={section.items}
                     getLink={(item) => (isManualItem(item) ? item.link : undefined)}
                     onItemClick={onItemClick}
+                    cardSurfaceColor={cardSurfaceColor}
                 />
             ) : (
                 <div
@@ -965,6 +983,7 @@ function BannerSection({
                                 link={isManualItem(item) ? item.link : undefined}
                                 onClick={() => onItemClick(item)}
                                 className="w-full"
+                                cardSurfaceColor={cardSurfaceColor}
                             />
                         );
                     })}

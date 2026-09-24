@@ -5,6 +5,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { useTheme } from "@/context/ThemeContext";
 import { cn } from "@/shared/lib/utils";
 import { useAuthStore } from "@/store/auth";
+import { isApprovedMarketer as checkApprovedMarketer } from "@/features/marketer/utils/isApprovedMarketer";
 import { useQuickOrderSettings } from "@/features/account/hooks/useQuickOrderSettings";
 import {
   User,
@@ -60,9 +61,7 @@ export default function MobileAccountMenu({ user }: MobileAccountMenuProps) {
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
 
-  const isApprovedMarketer =
-    authUser?.affiliate?.is_affiliate === true &&
-    authUser?.affiliate?.approved === true;
+  const isApprovedMarketer = checkApprovedMarketer(authUser);
 
   const { quickOrder } = useQuickOrderSettings();
 

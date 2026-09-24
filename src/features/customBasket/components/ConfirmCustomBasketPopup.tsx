@@ -36,11 +36,14 @@ export default function ConfirmCustomBasketPopup({
     const { t } = useTranslation();
     const minDate = useMemo(() => todayIsoDate(), []);
     const [startDate, setStartDate] = useState(minDate);
-    const [choice, setChoice] = useState<ConfirmChoice>("schedule");
+    /** Default once; schedule UI only after user opens details. */
+    const [choice, setChoice] = useState<ConfirmChoice>("once");
+    const [detailsOpen, setDetailsOpen] = useState(false);
 
     useEffect(() => {
         if (!isOpen) return;
-        setChoice("schedule");
+        setChoice("once");
+        setDetailsOpen(false);
         setStartDate(todayIsoDate());
     }, [isOpen]);
 
@@ -62,53 +65,108 @@ export default function ConfirmCustomBasketPopup({
                 />
             </p>
 
-            <div className="mt-5 grid gap-3">
-                <ChoiceCard
-                    active={choice === "schedule"}
-                    icon={<HiCalendar className="h-5 w-5" />}
-                    title={t("customBasket.yesSchedule")}
-                    body={t("customBasket.yesScheduleHint")}
-                    onClick={() => setChoice("schedule")}
-                />
-                <ChoiceCard
-                    active={choice === "once"}
-                    icon={<HiShoppingBag className="h-5 w-5" />}
-                    title={t("customBasket.noOnce")}
-                    body={t("customBasket.noOnceHint")}
-                    onClick={() => setChoice("once")}
-                />
-            </div>
+            {!detailsOpen ? (
+                <div className="mt-5 space-y-4">
+                    <div className="flex flex-col gap-3 rounded-xl border border-custom-secondary bg-custom-card px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+                        <p className="min-w-0 text-sm leading-snug text-custom-secondary">
+                            {t(
+                                "customBasket.schedulePrompt",
+                                "Want to schedule delivery or set a recurring delivery?",
+                            )}
+                        </p>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setDetailsOpen(true)}
+                            className="h-10 w-full shrink-0 rounded-xl px-4 text-sm font-semibold sm:w-auto"
+                        >
+                            {t(
+                                "customBasket.showSchedulingDetails",
+                                "Show scheduling details",
+                            )}
+                        </Button>
+                    </div>
 
-            {choice === "schedule" && (
-                <label className="mt-5 block text-sm font-medium text-custom-secondary">
-                    {t("customBasket.startDate")}
-                    <input
-                        type="date"
-                        min={minDate}
-                        value={startDate}
-                        onChange={(e) => setStartDate(e.target.value)}
-                        dir="ltr"
-                        className="mt-2 h-11 w-full rounded-xl border border-custom-secondary bg-custom-card px-3 text-sm text-text-primary outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/20"
-                    />
-                </label>
+                    <Button
+                        type="button"
+                        variant="primary"
+                        fullWidth
+                        className="h-12 rounded-2xl"
+                        disabled={isPending}
+                        isLoading={isPending}
+                        onClick={onNo}
+                    >
+                        {t("customBasket.confirmOnce")}
+                    </Button>
+                </div>
+            ) : (
+                <>
+                    <div className="mt-4 flex justify-end">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => {
+                                setDetailsOpen(false);
+                                setChoice("once");
+                            }}
+                            className="h-9 rounded-xl px-3 text-xs font-medium"
+                        >
+                            {t(
+                                "customBasket.hideSchedulingDetails",
+                                "Hide scheduling details",
+                            )}
+                        </Button>
+                    </div>
+
+                    <div className="mt-3 grid gap-3">
+                        <ChoiceCard
+                            active={choice === "schedule"}
+                            icon={<HiCalendar className="h-5 w-5" />}
+                            title={t("customBasket.yesSchedule")}
+                            body={t("customBasket.yesScheduleHint")}
+                            onClick={() => setChoice("schedule")}
+                        />
+                        <ChoiceCard
+                            active={choice === "once"}
+                            icon={<HiShoppingBag className="h-5 w-5" />}
+                            title={t("customBasket.noOnce")}
+                            body={t("customBasket.noOnceHint")}
+                            onClick={() => setChoice("once")}
+                        />
+                    </div>
+
+                    {choice === "schedule" && (
+                        <label className="mt-5 block text-sm font-medium text-custom-secondary">
+                            {t("customBasket.startDate")}
+                            <input
+                                type="date"
+                                min={minDate}
+                                value={startDate}
+                                onChange={(e) => setStartDate(e.target.value)}
+                                dir="ltr"
+                                className="mt-2 h-11 w-full rounded-xl border border-custom-secondary bg-custom-card px-3 text-sm text-text-primary outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/20"
+                            />
+                        </label>
+                    )}
+
+                    <Button
+                        type="button"
+                        variant="primary"
+                        fullWidth
+                        className="mt-6 h-12 rounded-2xl"
+                        disabled={isPending || (choice === "schedule" && !startDate)}
+                        isLoading={isPending}
+                        onClick={() => {
+                            if (choice === "schedule") onYes(startDate);
+                            else onNo();
+                        }}
+                    >
+                        {choice === "schedule"
+                            ? t("customBasket.confirmSchedule")
+                            : t("customBasket.confirmOnce")}
+                    </Button>
+                </>
             )}
-
-            <Button
-                type="button"
-                variant="primary"
-                fullWidth
-                className="mt-6 h-12 rounded-2xl"
-                disabled={isPending || (choice === "schedule" && !startDate)}
-                isLoading={isPending}
-                onClick={() => {
-                    if (choice === "schedule") onYes(startDate);
-                    else onNo();
-                }}
-            >
-                {choice === "schedule"
-                    ? t("customBasket.confirmSchedule")
-                    : t("customBasket.confirmOnce")}
-            </Button>
         </BasePopup>
     );
 }

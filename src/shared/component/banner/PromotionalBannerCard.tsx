@@ -10,6 +10,8 @@ type PromotionalBannerCardProps = {
     link?: string;
     onClick?: () => void;
     className?: string;
+    /** Section `background_card_color` when the API provides one. */
+    cardSurfaceColor?: string | null;
 };
 
 /**
@@ -24,6 +26,7 @@ export default function PromotionalBannerCard({
     link,
     onClick,
     className,
+    cardSurfaceColor,
 }: PromotionalBannerCardProps) {
     const navigate = useNavigate();
 
@@ -45,6 +48,11 @@ export default function PromotionalBannerCard({
                     "cursor-pointer transition-shadow duration-200 hover:shadow-xl",
                 className,
             )}
+            style={
+                cardSurfaceColor
+                    ? { background: cardSurfaceColor }
+                    : undefined
+            }
             onClick={interactive ? handleClick : undefined}
             role={interactive ? "button" : undefined}
             tabIndex={interactive ? 0 : undefined}

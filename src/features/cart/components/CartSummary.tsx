@@ -276,24 +276,22 @@ export default function CartSummary({
                     <div className="space-y-4 pt-1">{benefitsContent}</div>
                 )}
 
-                <div className="hidden lg:block">
-                    <Button
-                        type="button"
-                        variant="primary"
-                        size="lg"
-                        fullWidth
-                        onClick={onCheckout}
-                        className="group !bg-[color:var(--color-api-second)] hover:!bg-[color:var(--color-api-second-hover)] text-white font-semibold rounded-xl flex items-center justify-center gap-2"
-                    >
-                        <span>{t("cart.proceedToCheckout")}</span>
-                        <HiArrowRight
-                            className={cn(
-                                "w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5",
-                                isRTL && "rotate-180 group-hover:-translate-x-0.5",
-                            )}
-                        />
-                    </Button>
-                </div>
+                <Button
+                    type="button"
+                    variant="primary"
+                    size="lg"
+                    fullWidth
+                    onClick={onCheckout}
+                    className="group !bg-[color:var(--color-api-second)] hover:!bg-[color:var(--color-api-second-hover)] text-white font-semibold rounded-xl flex items-center justify-center gap-2"
+                >
+                    <span>{t("cart.proceedToCheckout")}</span>
+                    <HiArrowRight
+                        className={cn(
+                            "w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5",
+                            isRTL && "rotate-180 group-hover:-translate-x-0.5",
+                        )}
+                    />
+                </Button>
 
                 <p className="text-center text-xs leading-relaxed text-custom-secondary">
                     {t("cart.checkoutNote")}
@@ -311,7 +309,7 @@ type SummaryShellProps = {
 function SummaryShell({ children, isRTL }: SummaryShellProps) {
     return (
         <div
-            className="lg:sticky lg:top-6 rounded-2xl border border-custom-primary bg-custom-card shadow-[0_8px_24px_-18px_color-mix(in_srgb,var(--color-text-primary)_28%,transparent)]"
+            className="rounded-2xl border border-custom-primary bg-custom-card shadow-[0_8px_24px_-18px_color-mix(in_srgb,var(--color-text-primary)_28%,transparent)]"
             dir={isRTL ? "rtl" : "ltr"}
         >
             {children}
