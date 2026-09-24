@@ -14,6 +14,13 @@ export type ResolvedQuickOrderStep = {
 };
 
 export type ResolvedQuickOrder = {
+    /** Nav header CTA — from `show_header` only. */
+    showHeader: boolean;
+    /** Section master switch — from `show_section` (legacy: `is_enabled`). */
+    showSection: boolean;
+    /**
+     * @deprecated Alias of `showSection`. Do not use for the header button.
+     */
     isEnabled: boolean;
     /** Slugs where the section may render. Defaults to `["home"]`. */
     pageSlugs: string[];
@@ -27,7 +34,7 @@ export type ResolvedQuickOrder = {
     subtitle: string;
     cta: string;
     steps: ResolvedQuickOrderStep[];
-    /** Section visibility for the current CMS / static page slug. */
+    /** Section visibility: `show_section` AND current page in `page_slugs`. */
     isVisibleOnPage: (pageSlug: string) => boolean;
 };
 
@@ -71,9 +78,23 @@ function normalizePageIds(raw: QuickOrderSettings | null | undefined): number[] 
 }
 
 /**
+ * Older backends only sent `is_enabled` for both header + section.
+ * Prefer the new fields when present; otherwise fall back so nothing disappears.
+ */
+function resolveShowHeader(raw: QuickOrderSettings | null | undefined): boolean {
+    if (typeof raw?.show_header === "boolean") return raw.show_header;
+    return raw?.is_enabled !== false;
+}
+
+function resolveShowSection(raw: QuickOrderSettings | null | undefined): boolean {
+    if (typeof raw?.show_section === "boolean") return raw.show_section;
+    return raw?.is_enabled !== false;
+}
+
+/**
  * Reads `settings.quick_order` and resolves localized copy for the active language.
- * - Header CTA: `is_enabled`
- * - Section: `is_enabled` AND current page in `page_slugs` (default `home`)
+ * - Header CTA: `show_header` only
+ * - Section: `show_section` AND current page in `page_slugs` (default `home`)
  * Missing `quick_order` defaults to enabled so older backends keep working.
  */
 export function useQuickOrderSettings(): {
@@ -86,12 +107,15 @@ export function useQuickOrderSettings(): {
     const raw = data?.quick_order;
 
     const quickOrder = useMemo((): ResolvedQuickOrder => {
-        const isEnabled = raw?.is_enabled !== false;
+        const showHeader = resolveShowHeader(raw);
+        const showSection = resolveShowSection(raw);
         const pageSlugs = normalizePageSlugs(raw);
         const pageIds = normalizePageIds(raw);
 
         return {
-            isEnabled,
+            showHeader,
+            showSection,
+            isEnabled: showSection,
             pageSlugs,
             pageIds,
             backgroundImage: raw?.background_image?.trim() || null,
@@ -104,7 +128,7 @@ export function useQuickOrderSettings(): {
             cta: resolveCopy(raw?.cta, language),
             steps: resolveSteps(raw?.steps, language),
             isVisibleOnPage: (pageSlug: string) => {
-                if (!isEnabled) return false;
+                if (!showSection) return false;
                 const slug = pageSlug?.trim().toLowerCase();
                 if (!slug) return false;
                 return pageSlugs.includes(slug);

@@ -226,7 +226,11 @@ export default function Navbar() {
     // (`GET /user/nav-menu`) — nothing about it is hardcoded here anymore.
     const { items: navMenuItems, isLoading: navMenuLoading } = useNavMenu();
     const { quickOrder } = useQuickOrderSettings();
-    const showQuickOrderCta = quickOrder.isEnabled;
+    /** Nav CTA only — `show_header`, never `is_enabled` / `show_section`. */
+    const showQuickOrderCta = quickOrder.showHeader;
+    /** Account entry when either header or section feature is on. */
+    const showQuickOrderAccountLink =
+        quickOrder.showHeader || quickOrder.showSection;
     const navMenuPending = navMenuLoading && navMenuItems.length === 0;
     const showMarketerCta = showBecomeMarketer || isApprovedMarketer;
     /** An empty menu hides the row rather than leaving an empty bar behind. */
@@ -238,7 +242,7 @@ export default function Navbar() {
         { path: paths.account.addresses, label: t("account.menu.addresses") || "Addresses", icon: HiLocationMarker },
         { path: paths.account.paymentMethods, label: t("account.menu.paymentMethods") || "Payment methods", icon: HiCreditCard },
         { path: paths.account.orders, label: t("account.menu.myOrders") || "My orders", icon: HiShoppingBag },
-        ...(showQuickOrderCta
+        ...(showQuickOrderAccountLink
             ? [{ path: paths.client.customOrders, label: t("account.menu.quickOrders") || "Quick orders", icon: HiLightningBolt }]
             : []),
         { path: paths.account.baskets, label: t("account.menu.myBaskets") || "My baskets", icon: HiShoppingCart },

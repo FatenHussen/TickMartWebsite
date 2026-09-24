@@ -31,9 +31,18 @@ export type QuickOrderCardVariant = "horizontal" | "vertical" | "square" | strin
 
 /**
  * `data.quick_order` from `GET /user/settings`.
- * Header CTA follows `is_enabled`; the section follows `page_slugs` / `page_ids`.
+ * Header CTA → `show_header` only. Section → `show_section` + `page_slugs`.
+ * `is_enabled` mirrors `show_section` for older clients — do not gate the header on it.
  */
 export interface QuickOrderSettings {
+    /** Nav / AppBar quick-order button. Independent of the page section. */
+    show_header?: boolean;
+    /** Page-body quick-order section (still needs `page_slugs` match). */
+    show_section?: boolean;
+    /**
+     * Legacy alias of `show_section`. Kept for older backends / clients —
+     * never use this to decide header CTA visibility.
+     */
     is_enabled?: boolean;
     /** CMS page ids allowed to show the section (optional; prefer `page_slugs` on web). */
     page_ids?: number[] | null;

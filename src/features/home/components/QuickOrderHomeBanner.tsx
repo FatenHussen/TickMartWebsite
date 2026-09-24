@@ -33,7 +33,8 @@ export default function QuickOrderHomeBanner({
     const { quickOrder } = useQuickOrderSettings();
     const Arrow = isRTL ? ArrowLeft : ArrowRight;
 
-    // Visibility: `is_enabled` + current slug in `page_slugs` (default `home`).
+    // Visibility: `show_section` + current slug in `page_slugs` (default `home`).
+    // Independent of the Nav header CTA (`show_header`).
     // Do not gate on settings `isLoading` — defaults already allow home, and a
     // stuck loader would permanently hide the section.
     if (!quickOrder.isVisibleOnPage(pageSlug)) return null;

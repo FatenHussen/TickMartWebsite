@@ -66,7 +66,10 @@ export default function MobileAccountMenu({ user }: MobileAccountMenuProps) {
   const { quickOrder } = useQuickOrderSettings();
 
   const baseItems = BASE_MENU_ITEMS.filter(
-    (item) => item.id !== "quickOrders" || quickOrder.isEnabled,
+    (item) =>
+      item.id !== "quickOrders" ||
+      quickOrder.showHeader ||
+      quickOrder.showSection,
   );
 
   const menuItems = isApprovedMarketer

@@ -345,7 +345,13 @@ export default function AccountSidebar({
   const visibleIds = new Set(
     ALL_MENU_ITEMS.filter((item) => {
       if (item.id === "marketerDashboard" && !isApprovedMarketer) return false;
-      if (item.id === "quickOrders" && !quickOrder.isEnabled) return false;
+      if (
+        item.id === "quickOrders" &&
+        !quickOrder.showHeader &&
+        !quickOrder.showSection
+      ) {
+        return false;
+      }
       return true;
     }).map((item) => item.id)
   );
