@@ -8,7 +8,6 @@
   display: flex;
   align-items: center;
   aspect-ratio: 16 / 6;
-  min-height: 180px;
   padding: 36px 32px;
   overflow: hidden;
   border-radius: 24px;
@@ -215,7 +214,6 @@
 
 .promo-banner-slide {
   width: 100%;
-  cursor: pointer;
 }
 
 /* Navigation arrows - circular, inset so a full-bleed banner never clips them */
@@ -293,7 +291,6 @@
 
 @media (min-width: 768px) {
   .promo-banner-frame {
-    min-height: 220px;
     padding: 52px 56px;
   }
   .promo-banner-title {

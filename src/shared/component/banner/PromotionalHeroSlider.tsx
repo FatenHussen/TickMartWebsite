@@ -13,7 +13,7 @@ import "./promotional-banner.css";
 type PromotionalHeroSliderProps = {
     items: SectionItem[];
     /** Optional: link for manual items, or from action */
-    getLink?: (item: SectionItem) => string | undefined;
+    getLink?: (item: SectionItem) => string | null | undefined;
     onItemClick?: (item: SectionItem) => void;
     /** Section `background_card_color` when the API provides one. */
     cardSurfaceColor?: string | null;
@@ -21,7 +21,7 @@ type PromotionalHeroSliderProps = {
 
 function getItemLink(
     item: SectionItem,
-    getLink?: (item: SectionItem) => string | undefined,
+    getLink?: (item: SectionItem) => string | null | undefined,
 ): string {
     if (getLink) return bannerText(getLink(item));
     if ("link" in item) return bannerText(item.link);

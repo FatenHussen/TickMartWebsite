@@ -8,7 +8,7 @@ import "./promotional-banner.css";
 
 type PromotionalBannerCardProps = {
     item: SectionItemBase;
-    link?: string;
+    link?: string | null;
     onClick?: () => void;
     className?: string;
     /** Section `background_card_color` when the API provides one. */
