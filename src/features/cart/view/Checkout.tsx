@@ -251,8 +251,10 @@ export default function Checkout() {
     };
 
     const checkout = preview?.checkout ?? serverCheckout ?? null;
+    const instantOnly = checkout?.instant_only === true;
     const blockedByMinimum = isMinimumOrderBlock(checkout);
     const scheduledTooEarly =
+        !instantOnly &&
         deliveryChoice === "scheduled" &&
         (!scheduledDeliveryAt ||
             isBeforeEarliest(scheduledDeliveryAt, checkout?.earliest_delivery_at));
@@ -282,6 +284,7 @@ export default function Checkout() {
     const handleContinueToReview = () => {
         if (!canContinue || !selectedAddressId || !selectedPaymentMethod) return;
         if (
+            !instantOnly &&
             deliveryChoice === "scheduled" &&
             (!scheduledDeliveryAt ||
                 isBeforeEarliest(scheduledDeliveryAt, checkout?.earliest_delivery_at))
@@ -346,6 +349,7 @@ export default function Checkout() {
                             choice={deliveryChoice}
                             scheduledDeliveryAt={scheduledDeliveryAt}
                             earliestDeliveryAt={checkout?.earliest_delivery_at ?? ""}
+                            instantOnly={instantOnly}
                             onChoiceChange={setDeliveryChoice}
                             onScheduledChange={setScheduledDeliveryAt}
                         />

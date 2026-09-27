@@ -33,10 +33,11 @@ export default function ProductActions({
                     const content = (
                         <>
                             <img
+                                key={src}
                                 src={src}
                                 alt={icon.name}
                                 title={hint}
-                                className="h-10 w-10 object-contain"
+                                className="h-16 w-16 object-contain"
                             />
                             <span className="text-xs font-medium text-custom-primary whitespace-nowrap">
                                 {icon.name}
@@ -45,7 +46,7 @@ export default function ProductActions({
                     );
                     return isClickable ? (
                         <button
-                            key={`${icon.id}:${src}`}
+                            key={src}
                             type="button"
                             title={hint}
                             onClick={() => onIconClick?.(icon)}
@@ -54,7 +55,7 @@ export default function ProductActions({
                             {content}
                         </button>
                     ) : (
-                        <div key={`${icon.id}:${src}`} title={hint} className={sharedClassName}>
+                        <div key={src} title={hint} className={sharedClassName}>
                             {content}
                         </div>
                     );

@@ -683,6 +683,8 @@
     "buyingFromStores": "أنت تشتري من {{count}} متجر. قد يتم تقسيم الطلبات حسب المتجر عند الدفع.",
     "nearestDelivery": "أقرب توصيل",
     "minOrderAmount": "أقل قيمة للطلب",
+    "deliveryPrice": "سعر التوصيل",
+    "deliveryFree": "مجاني",
     "deliveryWindow": "{{min}}–{{max}} ساعة",
     "deliveryWindowSame": "{{hours}} ساعة",
     "moveToWishlist": "نقل إلى قائمة الأمنيات",

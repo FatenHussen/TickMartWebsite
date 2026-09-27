@@ -15,6 +15,8 @@ type DeliveryChoiceSectionProps = {
     choice: DeliveryChoice;
     scheduledDeliveryAt: string | null;
     earliestDeliveryAt: string;
+    /** Restaurant-only: one instant option, no day/time picker. */
+    instantOnly?: boolean;
     onChoiceChange: (choice: DeliveryChoice) => void;
     onScheduledChange: (value: string | null) => void;
 };
@@ -23,6 +25,7 @@ export default function DeliveryChoiceSection({
     choice,
     scheduledDeliveryAt,
     earliestDeliveryAt,
+    instantOnly = false,
     onChoiceChange,
     onScheduledChange,
 }: DeliveryChoiceSectionProps) {
@@ -41,7 +44,12 @@ export default function DeliveryChoiceSection({
     const [rejected, setRejected] = useState(false);
 
     useEffect(() => {
-        if (choice !== "scheduled" || !earliestDeliveryAt) return;
+        if (!instantOnly || choice === "asap") return;
+        onChoiceChange("asap");
+    }, [choice, instantOnly, onChoiceChange]);
+
+    useEffect(() => {
+        if (instantOnly || choice !== "scheduled" || !earliestDeliveryAt) return;
         const stamp = `${dateValue} ${timeValue}`;
         if (!isBeforeEarliest(stamp, earliestDeliveryAt)) {
             setRejected(false);
@@ -49,7 +57,7 @@ export default function DeliveryChoiceSection({
         }
         onScheduledChange(null);
         setRejected(true);
-    }, [choice, dateValue, earliestDeliveryAt, onScheduledChange, timeValue]);
+    }, [choice, dateValue, earliestDeliveryAt, instantOnly, onScheduledChange, timeValue]);
 
     const minDate = earliest ? toDateInputValue(earliest) : undefined;
     const earliestTime = earliest ? toTimeInputValue(earliest) : undefined;
@@ -70,6 +78,19 @@ export default function DeliveryChoiceSection({
         setRejected(false);
         onScheduledChange(stamp);
     };
+
+    if (instantOnly) {
+        return (
+            <section className="rounded-2xl border border-custom-primary bg-custom-card px-4 py-4 sm:px-5">
+                <h2 className="text-base font-bold text-[color:var(--color-text)]">
+                    {t("checkout.deliveryMethod", "Delivery method")}
+                </h2>
+                <p className="mt-2 text-sm font-semibold text-[color:var(--color-text)]">
+                    {t("checkout.instantDelivery", "Instant delivery")}
+                </p>
+            </section>
+        );
+    }
 
     const selectAsap = () => {
         setRejected(false);

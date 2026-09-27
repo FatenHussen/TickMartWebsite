@@ -683,6 +683,8 @@
     "buyingFromStores": "You are buying from {{count}} stores. Orders may be split per store at checkout.",
     "nearestDelivery": "Earliest delivery",
     "minOrderAmount": "Minimum order",
+    "deliveryPrice": "Delivery price",
+    "deliveryFree": "Free",
     "deliveryWindow": "{{min}}–{{max}} hours",
     "deliveryWindowSame": "{{hours}} hours",
     "moveToWishlist": "Move to wishlist",

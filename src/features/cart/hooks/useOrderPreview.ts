@@ -1,3 +1,4 @@
+import { useEffect, useState } from"react";
 import { useQuery } from"@tanstack/react-query";
 import { useCartStore } from"@/store/cart";
 import { useCheckoutStore } from"@/store/checkout";
@@ -5,6 +6,7 @@ import { _OrderApi } from"../api/orderApi";
 import type { OrderPreviewResponse } from"../types";
 import { queryKeys } from"@/utils/queryKeys";
 import { deliveryChoiceToSend } from"../lib/cartCheckout";
+import { useCartCheckout } from"./useCartCheckout";
 
 export interface OrderPreviewBenefits {
  pointCouponExchangeId?: number | null;
@@ -33,7 +35,23 @@ export function useOrderPreview(
  const deliveryChoice = useCheckoutStore((s) => s.deliveryChoice);
  const scheduledDeliveryAt = useCheckoutStore((s) => s.scheduledDeliveryAt);
  const earliestDeliveryAt = useCheckoutStore((s) => s.earliestDeliveryAt);
- const delivery = deliveryChoiceToSend(
+ const setInstantOnly = useCheckoutStore((s) => s.setInstantOnly);
+ const { data: cartCheckout } = useCartCheckout();
+ const itemsKey = previewItems
+ .map((item) => `${item.shop_product_variant_id}:${item.quantity}`)
+ .join("|");
+ const [trackedItems, setTrackedItems] = useState(itemsKey);
+ const [previewInstant, setPreviewInstant] = useState<boolean | null>(null);
+ if (trackedItems !== itemsKey) {
+ setTrackedItems(itemsKey);
+ setPreviewInstant(null);
+ }
+ const forceAsap =
+ (trackedItems === itemsKey ? previewInstant : null) ??
+ cartCheckout?.instant_only === true;
+ const delivery = forceAsap
+ ? { delivery_choice: "asap" as const, is_instant_delivery: true }
+ : deliveryChoiceToSend(
  deliveryChoice,
  scheduledDeliveryAt,
  earliestDeliveryAt,
@@ -103,6 +121,23 @@ export function useOrderPreview(
  staleTime: 1000 * 30,
  refetchOnMount:"always",
  });
+
+ const resolvedInstant = data?.checkout?.instant_only;
+ if (
+ trackedItems === itemsKey &&
+ typeof resolvedInstant === "boolean" &&
+ resolvedInstant !== previewInstant
+ ) {
+ setPreviewInstant(resolvedInstant);
+ }
+
+ useEffect(() => {
+ if (previewInstant != null) {
+ setInstantOnly(previewInstant);
+ return;
+ }
+ if (cartCheckout?.instant_only) setInstantOnly(true);
+ }, [cartCheckout?.instant_only, previewInstant, setInstantOnly]);
 
  return { data: data ?? undefined, isLoading, error: error as Error | null };
 }

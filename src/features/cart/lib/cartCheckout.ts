@@ -15,11 +15,31 @@ function isRecord(value: unknown): value is Record<string, unknown> {
     return typeof value === "object" && value !== null;
 }
 
+function readAmount(value: unknown): number {
+    if (value == null || value === "") return Number.NaN;
+    const amount = Number(value);
+    return Number.isFinite(amount) ? amount : Number.NaN;
+}
+
 function readMoney(value: unknown): ApiFormattedMoney {
     if (!isRecord(value)) return { ...EMPTY_MONEY };
     const formatted = typeof value.formatted === "string" ? value.formatted : "";
+    const amount = readAmount(value.amount);
     return {
-        amount: Number(value.amount ?? 0) || 0,
+        amount: Number.isFinite(amount) ? amount : 0,
+        currency: typeof value.currency === "string" ? value.currency : "",
+        symbol: typeof value.symbol === "string" ? value.symbol : "",
+        formatted,
+    };
+}
+
+/** `null` hides the line. A present object keeps amount `NaN` when the API omitted it. */
+function readOptionalMoney(value: unknown): ApiFormattedMoney | null {
+    if (value == null || value === "") return null;
+    if (!isRecord(value)) return null;
+    const formatted = typeof value.formatted === "string" ? value.formatted : "";
+    return {
+        amount: readAmount(value.amount),
         currency: typeof value.currency === "string" ? value.currency : "",
         symbol: typeof value.symbol === "string" ? value.symbol : "",
         formatted,
@@ -63,6 +83,8 @@ export function normalizeCartCheckout(raw: unknown): CartCheckout | null {
         raw.min_order_amount != null ||
         raw.delivery_min_hours != null ||
         raw.delivery_max_hours != null ||
+        raw.delivery_price != null ||
+        raw.instant_only != null ||
         raw.message != null;
 
     if (!hasSignal) return null;
@@ -81,9 +103,26 @@ export function normalizeCartCheckout(raw: unknown): CartCheckout | null {
         delivery_max_hours: readHours(raw.delivery_max_hours),
         earliest_delivery_at:
             typeof raw.earliest_delivery_at === "string" ? raw.earliest_delivery_at.trim() : "",
+        delivery_price: readOptionalMoney(raw.delivery_price),
+        instant_only: readBool(raw.instant_only, false),
+        fulfillment: readText(raw.fulfillment),
         message: readText(raw.message),
         delivery_error: deliveryError,
     };
+}
+
+/**
+ * Delivery-price line under the cart.
+ * Amount `0` is free. `null` hides the line.
+ */
+export function formatCheckoutDeliveryPrice(
+    price: ApiFormattedMoney | null | undefined,
+    freeLabel: string,
+): string | null {
+    if (price == null) return null;
+    if (price.amount === 0) return freeLabel;
+    const formatted = price.formatted.trim();
+    return formatted || null;
 }
 
 /** Message to show when checkout is blocked. The API string is shown as returned. */

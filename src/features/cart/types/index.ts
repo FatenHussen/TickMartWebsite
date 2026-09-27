@@ -69,6 +69,12 @@ export type CartCheckout = {
  delivery_max_hours: number | null;
  /** `Y-m-d H:i`. Reject any scheduled time before this. */
  earliest_delivery_at: string;
+ /** `null` when the customer has no address — hide the delivery-price line. */
+ delivery_price: ApiFormattedMoney | null;
+ /** Restaurant-only cart: instant delivery, no day/time picker. */
+ instant_only: boolean;
+ /** Informational. `restaurant_or_tikmart` does not offer a driver choice. */
+ fulfillment: string | null;
  message: string | null;
  /** Set by preview when the appointment is earlier than allowed. */
  delivery_error?: string | null;

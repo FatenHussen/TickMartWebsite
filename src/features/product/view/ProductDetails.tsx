@@ -132,6 +132,7 @@ function ProductDetails() {
         data: product,
         isLoading,
         error,
+        isFetchedAfterMount,
     } = useProductDetails({
         productId: productIdNum,
         lat,
@@ -1071,7 +1072,9 @@ function ProductDetails() {
                         </div>
 
                         <ProductActions
-                            icons={product.icons ?? []}
+                            icons={
+                                isFetchedAfterMount ? (product.icons ?? []) : []
+                            }
                             className="border-t border-black/6 pt-4 dark:border-white/8"
                             onIconClick={(icon) => {
                                 setSelectedIcon({

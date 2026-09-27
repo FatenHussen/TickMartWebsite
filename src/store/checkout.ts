@@ -11,6 +11,8 @@ interface CheckoutStore {
  scheduledDeliveryAt: string | null;
  /** From `checkout.earliest_delivery_at`. Times before this are not sent. */
  earliestDeliveryAt: string | null;
+ /** Restaurant-only cart. Forces `delivery_choice: "asap"`. */
+ instantOnly: boolean;
  // Active Benefits
  pointCouponExchangeId: number | null;
  pointFreeDeliveryExchangeId: number | null;
@@ -26,6 +28,7 @@ interface CheckoutStore {
  setDeliveryChoice: (choice: DeliveryChoice) => void;
  setScheduledDeliveryAt: (value: string | null) => void;
  setEarliestDeliveryAt: (value: string | null) => void;
+ setInstantOnly: (value: boolean) => void;
  setPointCouponExchangeId: (id: number | null) => void;
  setPointFreeDeliveryExchangeId: (id: number | null) => void;
  setUseSubscriptionDiscount: (value: boolean) => void;
@@ -42,6 +45,7 @@ const initialState = {
  deliveryChoice: "asap" as DeliveryChoice,
  scheduledDeliveryAt: null as string | null,
  earliestDeliveryAt: null as string | null,
+ instantOnly: false,
  pointCouponExchangeId: null,
  pointFreeDeliveryExchangeId: null,
  useSubscriptionDiscount: false,
@@ -63,6 +67,25 @@ export const useCheckoutStore = create<CheckoutStore>((set) => ({
  ),
  setScheduledDeliveryAt: (value) => set({ scheduledDeliveryAt: value }),
  setEarliestDeliveryAt: (value) => set({ earliestDeliveryAt: value }),
+ setInstantOnly: (value) =>
+ set((state) => {
+ if (value) {
+ if (
+ state.instantOnly &&
+ state.deliveryChoice === "asap" &&
+ state.scheduledDeliveryAt == null
+ ) {
+ return state;
+ }
+ return {
+ instantOnly: true,
+ deliveryChoice: "asap",
+ scheduledDeliveryAt: null,
+ };
+ }
+ if (!state.instantOnly) return state;
+ return { instantOnly: false };
+ }),
  setPointCouponExchangeId: (id) =>
  set(id != null
  ? { pointCouponExchangeId: id, promotionId: null, useSubscriptionDiscount: false }

@@ -158,16 +158,20 @@ export default function ReviewConfirm() {
     ]);
 
     const checkout = preview?.checkout ?? null;
+    const instantOnly = checkout?.instant_only === true;
     const checkoutMessage = checkoutBlockMessage(checkout);
     const scheduledTooEarly =
+        !instantOnly &&
         deliveryChoice === "scheduled" &&
         (!scheduledDeliveryAt ||
             isBeforeEarliest(scheduledDeliveryAt, checkout?.earliest_delivery_at));
     const deliveryLabel =
         preview?.delivery_choice_label?.trim() ||
-        (deliveryChoice === "scheduled"
-            ? scheduledDeliveryAt || t("checkout.deliveryScheduled", "Day and time")
-            : t("checkout.deliveryAsap", "As soon as possible"));
+        (instantOnly
+            ? t("checkout.instantDelivery", "Instant delivery")
+            : deliveryChoice === "scheduled"
+              ? scheduledDeliveryAt || t("checkout.deliveryScheduled", "Day and time")
+              : t("checkout.deliveryAsap", "As soon as possible"));
 
     useEffect(() => {
         setEarliestDeliveryAt(checkout?.earliest_delivery_at || null);
@@ -189,6 +193,7 @@ export default function ReviewConfirm() {
         setIsSubmitting(true);
         try {
             if (
+                !instantOnly &&
                 deliveryChoice === "scheduled" &&
                 (!scheduledDeliveryAt ||
                     isBeforeEarliest(
@@ -202,12 +207,13 @@ export default function ReviewConfirm() {
                 promotionId,
                 preview.available_promotions,
             );
+            const choice = instantOnly ? "asap" : deliveryChoice;
             const payload = {
                 address_id: Number(storedAddressId),
                 cart_type,
-                is_instant_delivery: deliveryChoice === "asap",
-                delivery_choice: deliveryChoice,
-                ...(deliveryChoice === "scheduled" && scheduledDeliveryAt
+                is_instant_delivery: choice === "asap",
+                delivery_choice: choice,
+                ...(choice === "scheduled" && scheduledDeliveryAt
                     ? { scheduled_delivery_at: scheduledDeliveryAt }
                     : {}),
                 items: getPreviewItems(),
