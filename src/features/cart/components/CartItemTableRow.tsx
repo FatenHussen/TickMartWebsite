@@ -2,6 +2,7 @@ import { HiMinus, HiPlus, HiTrash } from"react-icons/hi";
 import { useTranslation } from"react-i18next";
 import { useLanguage } from"@/context/LanguageContext";
 import { cn } from"@/shared/lib/utils";
+import PriceBlock from "@/shared/component/PriceBlock";
 import type { CartItem } from"../types";
 
 type CartItemTableRowProps = {
@@ -84,21 +85,13 @@ export default function CartItemTableRow({
 
  {/* Price */}
  <td className="py-4 px-4">
- <div className={cn(isRTL ?"text-left":"text-right")}>
- {item.originalPrice && (
- <div className="text-sm text-custom-tertiary line-through mb-1">
- {item.originalPrice}
- </div>
- )}
- <div className="font-semibold text-custom-primary text-base">
- {item.price}
- </div>
- {item.savingsText && (
- <div className="text-sm mt-1"style={{ color: 'var(--color-green)' }}>
- {item.savingsText}
- </div>
- )}
- </div>
+ <PriceBlock
+ price={item.price}
+ originalPrice={item.originalPrice}
+ savings={item.savingsText}
+ size="sm"
+ align="end"
+ />
  </td>
 
  {/* Quantity */}

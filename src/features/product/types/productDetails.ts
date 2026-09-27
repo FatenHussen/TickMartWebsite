@@ -232,9 +232,10 @@ export interface ExtraDetail {
 export interface ProductIcon {
  id: number;
  name: string;
- /** Full SVG URL. Same as `image`. */
+ /** Same URL as `image`, including `?v=` when the file was replaced. */
  icon?: string | null;
  image?: string | null;
+ /** Tooltip. Hide when empty. */
  description?: string | null;
 }
 
@@ -329,8 +330,16 @@ export interface ProductDetailsData {
  discount_value?: number | null;
  bought_with: BoughtWithProduct[];
  is_instant_delivery: number;
- rating: number;
- rating_breakdown: number[];
+ /** Average 1–5 with one decimal. `0` means there are no ratings yet. */
+ rating: number | string;
+ /**
+  * Counts per star. API shape is `{ "1": 0, "2": 0, "3": 0, "4": 0, "5": 1 }`.
+  * A 5-item array (index 0 = 1 star) is still accepted.
+  */
+ rating_breakdown?:
+  | number[]
+  | Partial<Record<"1" | "2" | "3" | "4" | "5" | 1 | 2 | 3 | 4 | 5, number | string>>
+  | null;
  /** Single fallback image, used when `images` / variant images are empty. */
  thumbnail?: string | null;
  sold_number?: number;

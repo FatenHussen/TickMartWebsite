@@ -196,6 +196,7 @@ export default function ProductsPage() {
         return {
             id: product.id,
             name: product.name,
+            description: product.description,
             price: listing.price,
             originalPrice: listing.originalPrice,
             rating: product.rating || 0,

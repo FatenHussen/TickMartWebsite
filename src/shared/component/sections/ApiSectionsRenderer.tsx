@@ -20,6 +20,7 @@ import { paths } from "@/app/routes/path/paths";
 import LazyImage from "@/shared/component/LazyImage";
 import FavoriteButton from "@/shared/component/FavoriteButton";
 import Button from "@/shared/ui/Button";
+import PriceBlock from "@/shared/component/PriceBlock";
 import type {
     Section,
     SectionItem,
@@ -773,7 +774,6 @@ function ScheduledBasketCard({
         ? new Date(item.next_delivery_date).toLocaleDateString()
         : null;
     const priceValue = item.final_price ?? item.price_after_discount ?? 0;
-    const originalPrice = item.original_price > 0 ? `${item.original_price}` : null;
     const cta = t("home.openBasket") === "home.openBasket" ? "View Schedule" : t("home.openBasket");
     const itemsLabel = t("baskets.items") === "baskets.items" ? "items" : t("baskets.items");
     const deliveryLabel =
@@ -851,16 +851,24 @@ function ScheduledBasketCard({
                 )}
 
                 <div className="mt-auto flex items-end justify-between gap-2">
-                    <div>
-                        <div className="text-xl font-bold text-custom-primary dark:text-white">
-                            {priceValue}
-                        </div>
-                        {originalPrice && (
-                            <div className="text-sm text-custom-tertiary line-through dark:text-zinc-500">
-                                {originalPrice}
-                            </div>
-                        )}
-                    </div>
+                    <PriceBlock
+                        price={String(priceValue)}
+                        originalPrice={
+                            item.original_price > Number(priceValue)
+                                ? String(item.original_price)
+                                : undefined
+                        }
+                        savings={
+                            item.saving > 0
+                                ? `${
+                                      t("baskets.youSave") === "baskets.youSave"
+                                          ? "You saved"
+                                          : t("baskets.youSave")
+                                  } ${item.saving}`
+                                : undefined
+                        }
+                        size="sm"
+                    />
                     <Button
                         variant="primary"
                         size="sm"

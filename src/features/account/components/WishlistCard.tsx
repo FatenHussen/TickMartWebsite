@@ -1,6 +1,7 @@
 import { useTranslation } from"react-i18next";
 import { HiHeart, HiStar } from"react-icons/hi";
 import type { WishlistItem } from"../types";
+import PriceBlock from "@/shared/component/PriceBlock";
 
 type WishlistCardProps = {
  item: WishlistItem;
@@ -56,26 +57,19 @@ export default function WishlistCard({
  </h3>
  <p className="text-xs text-custom-secondary mb-2">{item.category}</p>
 
- {/* Price */}
- <div className="flex items-center gap-2 mb-1">
- <span className="text-base font-bold text-custom-primary">{item.price}</span>
- </div>
-
- {/* Original Price & Savings */}
- <div className="flex items-center gap-2 mb-2">
- {item.originalPrice && (
- <span className="text-xs text-custom-tertiary line-through">
- {item.originalPrice}
- </span>
- )}
- {item.savings && (
- <span className="text-xs text-primary font-medium">
- {t("wishlist.youSaved")} {item.savings}
- </span>
- )}
- <span className="text-xs text-custom-tertiary ms-auto">
+ <PriceBlock
+ price={item.price}
+ originalPrice={item.originalPrice}
+ savings={
+ item.savings
+ ? `${t("wishlist.youSaved")} ${item.savings}`
+ : undefined
+ }
+ size="sm"
+ className="mb-2"
+ />
+ <div className="mb-2 text-xs text-custom-tertiary">
  {item.soldCount.toLocaleString()} {t("wishlist.sold")}
- </span>
  </div>
 
  {/* Free Delivery Badge */}

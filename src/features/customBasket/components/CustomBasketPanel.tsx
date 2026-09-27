@@ -3,6 +3,7 @@ import { HiTrash } from "react-icons/hi2";
 import BasePopup from "@/shared/component/BasePopup";
 import Button from "@/shared/ui/Button";
 import FormattedPrice from "@/shared/component/FormattedPrice";
+import PriceBlock from "@/shared/component/PriceBlock";
 import { PremiumInlineLoader } from "@/shared/component/loading";
 import QtyStepper from "./QtyStepper";
 import type { CustomBasketState } from "../types";
@@ -135,21 +136,20 @@ export default function CustomBasketPanel({
                                                 })
                                             }
                                         />
-                                        <div className="text-end">
-                                            {item.original_price_formatted && (
-                                                <FormattedPrice
-                                                    value={item.original_price_formatted}
-                                                    className="block text-xs text-custom-secondary"
-                                                />
-                                            )}
-                                            {item.line_total_formatted && (
-                                                <FormattedPrice
-                                                    value={item.line_total_formatted}
-                                                    prominent
-                                                    className="text-base font-bold text-custom-primary dark:text-white"
-                                                />
-                                            )}
-                                        </div>
+                                        {item.line_total_formatted ? (
+                                            <PriceBlock
+                                                price={item.line_total_formatted}
+                                                originalPrice={
+                                                    item.original_price_formatted &&
+                                                    item.original_price_formatted !==
+                                                        item.line_total_formatted
+                                                        ? item.original_price_formatted
+                                                        : undefined
+                                                }
+                                                size="sm"
+                                                align="end"
+                                            />
+                                        ) : null}
                                     </div>
                                 </div>
                             </li>

@@ -23,8 +23,8 @@ export default function Rating({
  lg:"text-base",
  };
 
- const displayValue =
- typeof rating === "number" ? rating.toFixed(1) : rating;
+ const numeric = typeof rating === "number" ? rating : Number(rating);
+ const displayValue = Number.isFinite(numeric) ? numeric.toFixed(1) : String(rating);
 
  return (
  <div className={`flex items-center gap-1 ${className}`}>

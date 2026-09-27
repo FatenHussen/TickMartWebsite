@@ -227,6 +227,7 @@ onSelectCategory={setSelectedCategoryId}
  key={product.id}
  id={product.id}
  name={product.name}
+ description={product.description}
  price={listing.price}
  originalPrice={listing.originalPrice}
  rating={(product as { rating?: number }).rating || 0}

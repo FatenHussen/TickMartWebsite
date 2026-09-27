@@ -3,6 +3,7 @@ import { Trash2, Calendar, Pencil, Pause, Play, ShoppingBag } from "lucide-react
 import Button from "@/shared/ui/Button";
 import type { MyBasketListItem } from "../../../types/myBasket";
 import { cn } from "@/shared/lib/utils";
+import PriceBlock from "@/shared/component/PriceBlock";
 import {
     CARD_BORDER_CLASS,
     PRIMARY_ACTION_BUTTON_CLASS,
@@ -10,8 +11,10 @@ import {
 } from "../constants";
 import {
     formatBasketListDate,
+    formatScheduledDeliveryStamp,
     getBasketCategoryName,
     getBasketCreatedRawDate,
+    getBasketDeliveryTime,
     getBasketNextRunDate,
     getBasketPriceDisplay,
     getBasketScheduleSubtitle,
@@ -69,7 +72,10 @@ export default function MyBasketCard({
         }
 
         if (!isBasketPaused && nextRunDate) {
-            return `${t("baskets.nextDelivery")}: ${formatBasketListDate(nextRunDate)}`;
+            const deliveryStamp = isScheduledBasket
+                ? formatScheduledDeliveryStamp(nextRunDate, getBasketDeliveryTime(basket))
+                : formatBasketListDate(nextRunDate);
+            return `${t("baskets.nextDelivery")}: ${deliveryStamp}`;
         }
 
         return "";
@@ -144,23 +150,17 @@ export default function MyBasketCard({
                     <p>
                         {t("trackOrder.items")}: {basket.num_varieties}
                     </p>
-                    {hasDiscount ? (
-                        <>
-                            <p>
-                                <span className="line-through text-[var(--color-text-tertiary)] dark:text-[var(--color-text-tertiary)]">
-                                    {prices.original}
-                                </span>{" "}
-                                <span className="font-semibold text-custom-primary">
-                                    {prices.final}
-                                </span>
-                            </p>
-                            <p className="text-success dark:text-[var(--color-ui-green-400)] font-medium">
-                                {t("baskets.youSave")} {prices.save}
-                            </p>
-                        </>
-                    ) : (
-                        <p className="font-semibold text-custom-primary">{prices.final}</p>
-                    )}
+                    <PriceBlock
+                        price={prices.final}
+                        originalPrice={hasDiscount ? prices.original : undefined}
+                        savings={
+                            hasDiscount
+                                ? `${t("baskets.youSave")} ${prices.save}`
+                                : undefined
+                        }
+                        size="sm"
+                        align="end"
+                    />
                     {createdDateLabel ? (
                         <p className="text-xs text-[var(--color-text-tertiary)] dark:text-[var(--color-text-tertiary)] pt-0.5">
                             {t("baskets.createdOn")}: {createdDateLabel}

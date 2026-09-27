@@ -42,7 +42,7 @@ import { resolveProductCountry } from "../lib/resolveLocalizedOrString";
 import {
     resolveVariantPriceDisplay,
 } from "../lib/variantPriceDisplay";
-import { formatStorefrontDiscountBadge } from "@/shared/lib/productDiscountDisplay";
+import PriceBlock from "@/shared/component/PriceBlock";
 import {
     isPurchasableVariant,
     firstPurchasableVariant,
@@ -55,6 +55,11 @@ import {
     type ShopVariant,
 } from "../types/productDetails";
 import { gallerySrcsForSelection, mediaSrc } from "../lib/productMedia";
+import {
+    ratingBreakdownTotal,
+    readProductRating,
+    readRatingBreakdown,
+} from "../lib/productRating";
 import { postCartItemsSafe } from "@/features/cart/api/cartApi";
 import { useFavorites, useToggleFavorite } from "@/features/account/hooks/useFavorites";
 import { useCanRate } from "@/features/account/hooks/useRatings";
@@ -183,6 +188,15 @@ function ProductDetails() {
         );
     }, [boughtWithPreview, previewSelectedShopVariantId]);
 
+    const boughtWithListing = useMemo(() => {
+        if (!boughtWithPreview) return null;
+        return resolveListingCardPrices(
+            previewSelectedVariant ?? boughtWithPreview,
+            t("product.youSaved", "You saved"),
+            currency,
+        );
+    }, [boughtWithPreview, previewSelectedVariant, t, currency]);
+
     useEffect(() => {
         if (!boughtWithPreview?.shop_variants?.length) {
             setPreviewSelectedShopVariantId(null);
@@ -207,20 +221,17 @@ function ProductDetails() {
     const { reviews, isLoading: isRatingsLoading } =
         useProductRatings(productIdNum);
 
-    const ratingDistribution = useMemo((): RatingDistribution => {
-        const breakdown = product?.rating_breakdown || [0, 0, 0, 0, 0];
-        return {
-            "1": breakdown[0] ?? 0,
-            "2": breakdown[1] ?? 0,
-            "3": breakdown[2] ?? 0,
-            "4": breakdown[3] ?? 0,
-            "5": breakdown[4] ?? 0,
-        };
-    }, [product?.rating_breakdown]);
+    const productRating = readProductRating(product?.rating);
 
-    const totalReviewsCount = useMemo(() => {
-        return (product?.rating_breakdown || []).reduce((sum, n) => sum + n, 0);
-    }, [product?.rating_breakdown]);
+    const ratingDistribution = useMemo(
+        (): RatingDistribution => readRatingBreakdown(product?.rating_breakdown),
+        [product?.rating_breakdown],
+    );
+
+    const totalReviewsCount = useMemo(
+        () => ratingBreakdownTotal(ratingDistribution),
+        [ratingDistribution],
+    );
 
     const { data: similarProducts = [] } = useSimilarProducts(
         product?.category?.id
@@ -461,7 +472,7 @@ function ProductDetails() {
                 name: item.name,
                 price: listing.price,
                 originalPrice: listing.originalPrice,
-                rating: item.rating ?? 0,
+                rating: readProductRating(item.rating),
                 image: item.image,
                 category: item.category,
                 sold: item.sold_number,
@@ -489,7 +500,7 @@ function ProductDetails() {
                     name: p.name,
                     price: listing.price,
                     originalPrice: listing.originalPrice,
-                    rating: p.rating || 0,
+                    rating: readProductRating(p.rating),
                     image: p.image,
                     category: p.category,
                     sold: p.sold_number,
@@ -521,7 +532,7 @@ function ProductDetails() {
                     name: p.name,
                     price: listing.price,
                     originalPrice: listing.originalPrice,
-                    rating: p.rating || 0,
+                    rating: readProductRating(p.rating),
                     image: p.image,
                     category: p.category,
                     sold: p.sold_number,
@@ -785,12 +796,6 @@ function ProductDetails() {
             ? `${t("product.youSaved", "You saved")} ${variantPriceDisplay.savedLabel}`
             : product.amount_saved_formatted?.trim() || undefined;
 
-    const previewDiscountBadge = formatStorefrontDiscountBadge(
-        previewSelectedVariant,
-        boughtWithPreview,
-        t,
-    );
-
     const deliveryEstimate =
         product.delivery_time?.trim() || product.time_prepare?.trim() || null;
 
@@ -881,7 +886,7 @@ function ProductDetails() {
                             originalPrice={displayListPrice}
                             savings={savings}
                             sold={product.sold_number}
-                            rating={product.rating}
+                            rating={productRating}
                             reviewCount={totalReviewsCount}
                             badges={badges}
                         />
@@ -1199,7 +1204,7 @@ function ProductDetails() {
                         </div>
                     ) : (
                         <ProductReviews
-                            averageRating={product.rating ?? 0}
+                            averageRating={productRating}
                             totalReviews={totalReviewsCount}
                             ratingDistribution={ratingDistribution}
                             reviews={reviews}
@@ -1358,36 +1363,17 @@ function ProductDetails() {
                                         )}
                                     </div>
                                     <Rating
-                                        rating={boughtWithPreview.rating ?? 0}
+                                        rating={readProductRating(boughtWithPreview.rating)}
                                         size="sm"
                                     />
-                                    <div className="flex flex-wrap items-baseline gap-3">
-                                        <p className="text-2xl font-bold tabular-nums text-custom-primary dark:text-[#FFFFFF]">
-                                            {resolveDisplaySalePrice(
-                                                previewSelectedVariant ??
-                                                    boughtWithPreview,
-                                                currency,
-                                            )}
-                                        </p>
-                                        {resolveDisplayListPrice(
-                                            previewSelectedVariant ??
-                                                boughtWithPreview,
-                                            currency,
-                                        ) ? (
-                                            <p className="text-base text-custom-tertiary line-through dark:text-[#71717A]">
-                                                {resolveDisplayListPrice(
-                                                    previewSelectedVariant ??
-                                                        boughtWithPreview,
-                                                    currency,
-                                                )}
-                                            </p>
-                                        ) : null}
-                                        {previewDiscountBadge ? (
-                                            <span className="rounded-full bg-primary-light px-2.5 py-0.5 text-sm font-semibold text-white">
-                                                {previewDiscountBadge}
-                                            </span>
-                                        ) : null}
-                                    </div>
+                                    {boughtWithListing ? (
+                                        <PriceBlock
+                                            price={boughtWithListing.price}
+                                            originalPrice={boughtWithListing.originalPrice}
+                                            savings={boughtWithListing.savings}
+                                            size="lg"
+                                        />
+                                    ) : null}
                                     <div className="rounded-2xl border border-custom-primary/15 bg-gradient-to-br from-custom-secondary/50 to-transparent p-4 dark:border-[rgba(255,255,255,0.06)] dark:from-[rgba(16,17,20,0.75)] dark:to-[rgba(16,17,20,0.55)]">
                                         <ProductDescription
                                             description={

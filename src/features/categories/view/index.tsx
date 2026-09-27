@@ -279,7 +279,7 @@ export default function CategoriesView() {
                     .getProductsByCategory(categoryIdForProducts, page, productFilters)
                     .then((r) => r.data)
                 : _CategoriesApi.getProducts({ ...productFilters, page }).then((r) => r.data),
-        enabled: true,
+        enabled: categoryIdForProducts == null || categoryPage !== null,
     });
 
     const pushTrail = useCallback(
@@ -445,6 +445,23 @@ export default function CategoriesView() {
                   color: categoriesDarkSurface.pageColor,
               }
             : undefined;
+
+    if (categoryIdForProducts != null && categoryPage === null) {
+        return (
+            <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 bg-custom-primary px-4 text-center dark:bg-[#050505]">
+                <p className="text-lg text-custom-primary dark:text-white">
+                    {t("categories.notFound", "Category not found")}
+                </p>
+                <button
+                    type="button"
+                    onClick={() => navigate(paths.client.categories)}
+                    className="text-sm font-semibold text-[color:var(--color-main)] underline"
+                >
+                    {t("categories.categoriesTitle", "Categories")}
+                </button>
+            </div>
+        );
+    }
 
     return (
         <div

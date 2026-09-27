@@ -1,12 +1,12 @@
 import {
     Truck,
     X,
-    ShoppingBag,
     Clock,
     ClipboardList,
     MapPin,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { formatScheduledDeliveryAt } from "../utils/formatScheduledDelivery";
 import { useLanguage } from "@/context/LanguageContext";
 import { cn } from "@/shared/lib/utils";
 import type { OrderStatus } from "../types";
@@ -30,6 +30,7 @@ type OrderCardProps = {
     deliveryAddress?: string;
     total: string;
     paymentMethod: string;
+    scheduledDeliveryAt?: string | null;
     onViewDetails?: () => void;
     onTrackOrder?: () => void;
     onReorder?: () => void;
@@ -118,11 +119,11 @@ export default function OrderCard({
     orderNumber,
     status,
     dateTime,
-    items,
     additionalInfo,
     deliveryAddress,
     total,
     paymentMethod,
+    scheduledDeliveryAt,
     onViewDetails,
     onTrackOrder,
     onReorder,
@@ -130,8 +131,12 @@ export default function OrderCard({
     onCancelOrder,
     refundStatus,
 }: OrderCardProps) {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const { isRTL } = useLanguage();
+    const scheduledLabel = formatScheduledDeliveryAt(
+        scheduledDeliveryAt,
+        i18n.language,
+    );
 
     const statusUI = getStatusUI(status, t);
     const cardBg = getCardBackground(status);
@@ -139,7 +144,6 @@ export default function OrderCard({
     const last4 = extractLast4(paymentMethod);
 
     const canCancel = !!onCancelOrder && (status === "pending" || status === "preparing");
-    const totalItems = items.reduce((acc, item) => acc + (item.quantity || 0), 0);
 
     // Decorative line gradient (top border accent)
     const topLineBg = `linear-gradient(90deg, transparent 0%, color-mix(in srgb, ${fe.accent} 55%, transparent) 35%, color-mix(in srgb, ${fe.accent} 75%, transparent) 50%, color-mix(in srgb, ${fe.accent} 55%, transparent) 65%, transparent 100%)`;
@@ -209,6 +213,12 @@ export default function OrderCard({
                                     <span className="truncate">{dateTime}</span>
                                     <Clock className="h-3.5 w-3.5 shrink-0 opacity-80" />
                                 </div>
+                                {scheduledLabel ? (
+                                    <p className="mt-1 text-xs font-medium text-text-primary">
+                                        {t("orders.scheduledDelivery", "Delivery appointment")}:{" "}
+                                        {scheduledLabel}
+                                    </p>
+                                ) : null}
                             </div>
                         </div>
 
@@ -233,17 +243,9 @@ export default function OrderCard({
                     style={{ borderColor: "color-mix(in srgb, var(--color-text-tertiary) 35%, transparent)" }}
                 />
 
-                {/* Middle: items badge + total */}
-                <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-4">
-                    <div
-                        className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-medium text-text-secondary"
-                        style={{ backgroundColor: "color-mix(in srgb, var(--color-text-tertiary) 10%, transparent)" }}
-                    >
-                        <ShoppingBag className="h-3.5 w-3.5" />
-                        <span>{t("orders.itemsBadge", { count: totalItems })}</span>
-                    </div>
+                <div className="flex items-center justify-end px-4 py-4">
                     <div className={cn("min-w-0", isRTL ? "text-left" : "text-right")}>
-                        <p className="text-xs text-text-secondary">{t("orders.total")}</p>
+                        <p className="text-xs text-text-secondary">{t("checkout.total", "Total")}</p>
                         <p className="text-xl font-bold text-primary">{total}</p>
                     </div>
                 </div>

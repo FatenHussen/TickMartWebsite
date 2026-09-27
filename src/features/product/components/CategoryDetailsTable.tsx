@@ -25,12 +25,16 @@ export default function CategoryDetailsTable({
                 {details.map((detail) => (
                     <div
                         key={detail.id}
-                        className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] items-baseline gap-x-4 gap-y-1 px-4 py-3.5 transition-colors hover:bg-[color-mix(in_srgb,var(--color-api-second)_5%,transparent)] sm:px-5 sm:py-4 dark:hover:bg-white/[0.025]"
+                        className="grid grid-cols-[minmax(0,1fr)_1px_minmax(0,1.15fr)] items-stretch gap-x-4 px-4 py-3.5 transition-colors hover:bg-[color-mix(in_srgb,var(--color-api-second)_5%,transparent)] sm:px-5 sm:py-4 dark:hover:bg-white/[0.025]"
                     >
-                        <dt className="min-w-0 text-sm font-medium text-custom-secondary">
+                        <dt className="min-w-0 self-center text-sm font-medium text-custom-secondary">
                             {detail.name}
                         </dt>
-                        <dd className="min-w-0 text-end text-sm font-semibold tracking-tight text-text-primary sm:text-[0.9375rem]">
+                        <span
+                            aria-hidden
+                            className="w-px self-stretch bg-[color-mix(in_srgb,var(--color-border-primary)_70%,transparent)] dark:bg-white/15"
+                        />
+                        <dd className="min-w-0 self-center text-end text-sm font-semibold tracking-tight text-text-primary sm:text-[0.9375rem]">
                             {detail.value}
                         </dd>
                     </div>

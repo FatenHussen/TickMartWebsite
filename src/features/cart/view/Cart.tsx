@@ -25,11 +25,16 @@ import NonDiscountPromotionBanner from "../components/NonDiscountPromotionBanner
 import { useCurrency } from "@/context/CurrencyContext";
 import type { NonDiscountPromotion } from "../types";
 import { _ScheduledBasketApi } from "@/features/account/api/scheduledBasketApi";
+import { isApiToastHandled } from "@/shared/lib/apiMessage";
 import { queryKeys } from "@/utils/queryKeys";
 import type { OrderSummary, OrderPreviewItemPrice, OrderPreviewOrderItem } from "../types";
 import { toNum } from "../utils";
 import { assignPreviewOrderItemsToCart } from "../utils/enrichCartItems";
 import { mapPreviewToCartSummary } from "../utils/orderSummary";
+import {
+    customerSelectedPromotions,
+    isCustomerSelectedPromotion,
+} from "../utils/automaticPromotions";
 import { ScreenPromotions } from "@/features/promotions";
 
 function parseSubtotal(s: string): number {
@@ -37,7 +42,7 @@ function parseSubtotal(s: string): number {
 }
 
 export default function Cart() {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const { isRTL } = useLanguage();
     const { formatPrice } = useCurrency();
     const navigate = useNavigate();
@@ -78,7 +83,8 @@ export default function Cart() {
             toast.success(t("cart.scheduleSaved", "Schedule saved successfully"));
             navigate(paths.client.checkout);
         },
-        onError: () => {
+        onError: (error) => {
+            if (isApiToastHandled(error)) return;
             toast.error(t("cart.scheduleSaveFailed", "Failed to save schedule"));
         },
     });
@@ -108,7 +114,12 @@ export default function Cart() {
 
     const summary = useMemo<OrderSummary>(() => {
         if (preview) {
-            return mapPreviewToCartSummary(preview, formatPrice);
+            return mapPreviewToCartSummary(preview, formatPrice, {
+                language: i18n.language,
+                discountLabel: t("cart.promotionDiscount"),
+                freeShippingLabel: t("cart.automaticFreeShipping"),
+                freeShippingValue: t("cart.freeDelivery"),
+            });
         }
         if (items.length > 0) {
             return {
@@ -138,7 +149,7 @@ export default function Cart() {
             couponDiscount: formatPrice(0),
             total: subtotal,
         };
-    }, [formatPrice, items, preview]);
+    }, [formatPrice, i18n.language, items, preview, t]);
 
     const previewPricesMap = useMemo(() => {
         const map = new Map<number, { price: number; priceBeforeDiscount?: number }>();
@@ -278,17 +289,8 @@ export default function Cart() {
     };
 
     const handleSaveSchedule = (data: ScheduleDeliveryData) => {
-        const firstItem = items[0];
-        const categoryId = firstItem?.category_id;
-        if (categoryId == null) {
-            toast.error(t("cart.categoryRequired", "Products must have a category"));
-            return;
-        }
         const validItems = items.filter(
-            (i) =>
-                i.productId != null &&
-                i.shop_product_variant_id != null &&
-                i.quantity > 0
+            (i) => i.shop_product_variant_id != null && i.quantity > 0
         );
         if (validItems.length === 0) {
             toast.error(t("cart.noValidItems", "No valid items to schedule"));
@@ -296,12 +298,12 @@ export default function Cart() {
         }
         createScheduledBasketMutation.mutate({
             name: data.name,
-            category_id: categoryId,
             schedule_id: data.schedule_id,
             is_active: true,
             start_date: data.start_date,
+            delivery_time: data.delivery_time,
             items: validItems.map((i) => ({
-                product_id: i.productId!,
+                ...(i.productId != null ? { product_id: i.productId } : {}),
                 shop_product_variant_id: i.shop_product_variant_id!,
                 quantity: i.quantity,
             })),
@@ -313,9 +315,16 @@ export default function Cart() {
         const keys = items.map((item) => item.shopId ?? item.storeId ?? item.store);
         return new Set(keys.filter(Boolean)).size;
     }, [items]);
-    const pointsEarned =
-        preview?.automatic_promotions?.points_expected ??
-        preview?.automatic_promotions?.points_awarded;
+    const selectablePromotions = customerSelectedPromotions(preview?.available_promotions);
+
+    useEffect(() => {
+        if (promotionId == null || !preview?.available_promotions) return;
+        const match = preview.available_promotions.find((promo) => promo.id === promotionId);
+        if (match && !isCustomerSelectedPromotion(match)) {
+            setPromotionId(null);
+        }
+    }, [preview?.available_promotions, promotionId, setPromotionId]);
+
     const benefitsContent = activeBenefitsData?.has_benefits ? (
         <div className="space-y-3">
             <ActiveBenefitsSelector
@@ -326,17 +335,17 @@ export default function Cart() {
                 onSelectCoupon={handleSelectCouponBenefit}
                 onSelectDelivery={handleSelectDeliveryBenefit}
             />
-            {preview?.available_promotions && preview.available_promotions.length > 0 && (
+            {selectablePromotions.length > 0 && (
                 <AvailablePromotionsSelector
-                    promotions={preview.available_promotions}
+                    promotions={selectablePromotions}
                     selectedPromotionId={promotionId}
                     onSelect={handleSelectPromotion}
                 />
             )}
         </div>
-    ) : preview?.available_promotions && preview.available_promotions.length > 0 ? (
+    ) : selectablePromotions.length > 0 ? (
         <AvailablePromotionsSelector
-            promotions={preview.available_promotions}
+            promotions={selectablePromotions}
             selectedPromotionId={promotionId}
             onSelect={handleSelectPromotion}
         />
@@ -395,11 +404,6 @@ export default function Cart() {
                                     <h1 className="text-2xl font-semibold tracking-tight text-custom-primary">
                                         {t("cart.myShoppingCart")}
                                     </h1>
-                                    <p className="mt-1 text-sm text-custom-secondary">
-                                        {t("cart.itemsInCart", "{{count}} items", {
-                                            count: summary.numOfItems || items.reduce((sum, i) => sum + i.quantity, 0),
-                                        })}
-                                    </p>
                                 </div>
                                 <div className="flex items-center gap-4 text-sm">
                                     <Link
@@ -442,10 +446,6 @@ export default function Cart() {
                                               };
                                           })()
                                         : undefined;
-                                    const previewSubtotalFormatted =
-                                        orderItem?.subtotal != null
-                                            ? formatPrice(toNum(orderItem.subtotal))
-                                            : undefined;
                                     const extrasTotal =
                                         orderItem?.extras_total != null &&
                                         toNum(orderItem.extras_total) > 0
@@ -462,7 +462,6 @@ export default function Cart() {
                                             item={item}
                                             previewPrices={previewPricesMap}
                                             previewPrice={previewPriceForItem}
-                                            previewSubtotal={previewSubtotalFormatted}
                                             extrasTotal={extrasTotal}
                                             note={orderItem?.note ?? item.note}
                                             image={orderItem?.product_image || orderItem?.image}
@@ -509,7 +508,6 @@ export default function Cart() {
                             status={summaryStatus}
                             onAddAddress={() => navigate(paths.account.addAddress)}
                             couponDisabled={!!selectedCouponKey}
-                            pointsEarned={typeof pointsEarned === "number" ? pointsEarned : undefined}
                             benefitsContent={benefitsContent}
                         />
                     </div>

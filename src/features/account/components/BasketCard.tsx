@@ -9,6 +9,7 @@ import {
  HiPlay,
 } from"react-icons/hi";
 import Button from"@/shared/ui/Button";
+import PriceBlock from "@/shared/component/PriceBlock";
 import type { Basket } from"../types";
 
 type BasketCardProps = {
@@ -138,21 +139,13 @@ export default function BasketCard({
  <div className="text-sm text-custom-secondary">
  {t("baskets.items")}: {basket.itemsCount}
  </div>
- <div className="flex items-center gap-2 justify-end">
- {basket.originalPrice && (
- <span className="text-sm text-custom-tertiary line-through">
- {basket.originalPrice}
- </span>
- )}
- <span className="font-bold text-lg text-custom-primary">
- {basket.price}
- </span>
- </div>
- {basket.savings && (
- <div className="text-sm text-green-600 font-medium">
- {basket.savings}
- </div>
- )}
+ <PriceBlock
+ price={basket.price}
+ originalPrice={basket.originalPrice}
+ savings={basket.savings}
+ size="sm"
+ align="end"
+ />
  <div className="text-xs text-custom-secondary">
  {t("baskets.createdOn")}: {basket.createdOn}
  </div>

@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { useCurrency } from "@/context/CurrencyContext";
 import { HiPlus } from "react-icons/hi";
-import FormattedPrice from "@/shared/component/FormattedPrice";
+import PriceBlock from "@/shared/component/PriceBlock";
 import { getCategoryInitials } from "@/shared/lib/getCategoryInitials";
 import { cn } from "@/shared/lib/utils";
 import { resolveListingCardPrices } from "@/shared/lib/formatApiPrice";
@@ -23,9 +23,6 @@ export default function ScheduleProductTile({
         t("product.youSaved", "You saved"),
         currency,
     );
-    const price = listing.price;
-    const original = listing.originalPrice ?? null;
-
     return (
         <button
             type="button"
@@ -65,20 +62,13 @@ export default function ScheduleProductTile({
             <h3 className="mt-2.5 line-clamp-2 text-[13px] font-medium leading-snug text-zinc-800 dark:text-white sm:text-sm">
                 {product.name}
             </h3>
-            <div className="mt-1 flex flex-wrap items-baseline gap-x-1.5">
-                <FormattedPrice
-                    value={price}
-                    prominent
-                    className="text-[15px] font-semibold text-zinc-900 dark:text-white"
-                />
-                {original ? (
-                    <FormattedPrice
-                        value={original}
-                        strikethrough
-                        className="text-xs text-zinc-400"
-                    />
-                ) : null}
-            </div>
+            <PriceBlock
+                price={listing.price}
+                originalPrice={listing.originalPrice}
+                savings={listing.savings}
+                size="sm"
+                className="mt-1"
+            />
         </button>
     );
 }

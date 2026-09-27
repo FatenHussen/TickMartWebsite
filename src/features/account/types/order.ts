@@ -1,6 +1,7 @@
 /** API response types for GET user/orders */
 
 import type { ApiDualCurrencies } from "@/shared/lib/formatApiPrice";
+import type { OrderPreviewAutomaticPromotions } from "@/features/cart/types";
 
 export interface OrderListUser {
  id: number;
@@ -22,6 +23,8 @@ export interface OrderListItem {
  status_label?: string | null;
  cart_type?: string;
  is_instant_delivery?: boolean;
+ /** Set by admin. `YYYY-MM-DD HH:mm`, or null when no appointment is saved. */
+ scheduled_delivery_at?: string | null;
  delivery_price?: number | string | null;
  total?: number | string | null;
  subtotal?: number | string | null;
@@ -155,6 +158,8 @@ export interface OrderDetailData {
  status_label?: string | null;
  cart_type: string;
  is_instant_delivery: boolean;
+ /** Set by admin. `YYYY-MM-DD HH:mm`, or null when no appointment is saved. */
+ scheduled_delivery_at?: string | null;
  delivery_price: number;
  total: number;
  subtotal: number;
@@ -163,6 +168,11 @@ export interface OrderDetailData {
  basket_discount: number;
  coupon_discount: number | null;
  promotion_discount?: string | number | null;
+ automatic_promotions?: OrderPreviewAutomaticPromotions | null;
+ discounts?: {
+  promotion_discount?: string | number | null;
+  delivery_price?: string | number | null;
+ } | null;
  subscription_discount?: string | number | null;
  coupon_discount_from_points?: string | number | null;
  free_delivery_from_points?: number;

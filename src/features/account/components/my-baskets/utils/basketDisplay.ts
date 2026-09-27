@@ -1,15 +1,42 @@
 import type { TFunction } from "i18next";
+import { normalizeDeliveryTime } from "@/features/cart/lib/scheduleDeliveryTime";
 import type { MyBasketListItem } from "../../../types/myBasket";
 
-export function formatBasketListDate(iso: string): string {
+function parseBasketDate(iso: string): Date | null {
+    const dateOnly = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso.trim());
+    if (dateOnly) {
+        const parsed = new Date(
+            Number(dateOnly[1]),
+            Number(dateOnly[2]) - 1,
+            Number(dateOnly[3]),
+        );
+        return Number.isNaN(parsed.getTime()) ? null : parsed;
+    }
+
     const parsedDate = new Date(iso);
-    if (Number.isNaN(parsedDate.getTime())) return iso;
+    return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
+}
+
+export function formatBasketListDate(iso: string): string {
+    const parsedDate = parseBasketDate(iso);
+    if (!parsedDate) return iso;
 
     return parsedDate.toLocaleDateString(undefined, {
         day: "numeric",
         month: "short",
         year: "numeric",
     });
+}
+
+/** `21 Oct 2026 · 16:30`, or the date alone when `delivery_time` is null. */
+export function formatScheduledDeliveryStamp(
+    iso: string,
+    deliveryTime?: string | null,
+): string {
+    const dateLabel = formatBasketListDate(iso);
+    const time = normalizeDeliveryTime(deliveryTime);
+    if (!time) return dateLabel;
+    return `${dateLabel} · ${time}`;
 }
 
 export function getBasketPriceDisplay(basket: MyBasketListItem) {
@@ -75,6 +102,11 @@ export function getBasketNextRunDate(basket: MyBasketListItem): string {
     }
 
     return "";
+}
+
+export function getBasketDeliveryTime(basket: MyBasketListItem): string | null {
+    if (basket.basket_type !== "user-schedule") return null;
+    return normalizeDeliveryTime(basket.delivery_time);
 }
 
 export function getBasketCreatedRawDate(basket: MyBasketListItem): string {

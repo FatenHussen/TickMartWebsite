@@ -1,4 +1,5 @@
 import { HiMinus, HiPlus } from"react-icons/hi";
+import PriceBlock from "@/shared/component/PriceBlock";
 
 type CartItemRowProps = {
  item: {
@@ -48,21 +49,14 @@ export default function CartItemRow({
  ) : null}
  </div>
 
- {/* Price */}
- <div className="w-24 text-right shrink-0">
- <div className="font-semibold text-custom-primary leading-5">
- {item.price}
- </div>
- {item.oldPrice ? (
- <div className="text-sm text-custom-tertiary line-through leading-5">
- {item.oldPrice}
- </div>
- ) : null}
- {item.savingsText ? (
- <div className="text-xs text-emerald-600 leading-5 mt-1">
- {item.savingsText}
- </div>
- ) : null}
+ <div className="w-28 shrink-0">
+ <PriceBlock
+ price={item.price}
+ originalPrice={item.oldPrice}
+ savings={item.savingsText}
+ size="xs"
+ align="end"
+ />
  </div>
 
  {/* Quantity controls */}

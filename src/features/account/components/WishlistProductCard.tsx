@@ -7,6 +7,7 @@ import Badge from "@/shared/component/Badge";
 import { paths } from"@/app/routes/path/paths";
 import type { FavoriteItem, FavoriteType } from"../types";
 import { resolveListingCardPrices } from "@/shared/lib/formatApiPrice";
+import PriceBlock from "@/shared/component/PriceBlock";
 
 const badgeColorMap: Record<string, string> = {
  success:"bg-green-500 text-white",
@@ -116,34 +117,19 @@ export default function WishlistProductCard({
  </p>
  )}
 
- {priceDisplay && (
- <p className="text-lg font-bold text-custom-primary mb-1">
- {priceDisplay}
+ <PriceBlock
+ price={priceDisplay}
+ originalPrice={hasDiscount ? originalPrice : undefined}
+ savings={hasDiscount ? savingsText : undefined}
+ size="sm"
+ className="mb-2"
+ />
+
+ {item.orders_count != null && item.orders_count > 0 && (
+ <p className="mb-2 text-sm text-custom-secondary">
+ {item.orders_count.toLocaleString()} {t("wishlist.sold")}
  </p>
  )}
-
- <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mb-2">
- {originalPrice && hasDiscount && (
- <span className="text-sm text-custom-tertiary line-through">
- {originalPrice}
- </span>
- )}
- {listing.discountLabel && (
- <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
- {listing.discountLabel}
- </span>
- )}
- {savingsText && (
- <span className="text-sm font-medium text-green-600 dark:text-green-400">
- {savingsText}
- </span>
- )}
- {item.orders_count != null && item.orders_count > 0 && (
- <span className="text-sm text-custom-secondary ml-auto">
- {item.orders_count.toLocaleString()} {t("wishlist.sold")}
- </span>
- )}
- </div>
 
  {item.has_free_delivery && (
  <button

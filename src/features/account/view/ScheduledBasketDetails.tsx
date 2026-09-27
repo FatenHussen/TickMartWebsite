@@ -7,6 +7,7 @@ import { paths } from"@/app/routes/path/paths";
 import { PremiumInlineLoader } from "@/shared/component/loading";
 import { useSchedules } from"@/features/cart/hooks/useSchedules";
 import type { ScheduleItem } from"@/features/cart/types";
+import PriceBlock from "@/shared/component/PriceBlock";
 import ProductItemsTable, {
  type ProductItemData,
 } from"@/shared/component/table/ProductItemsTable";
@@ -24,6 +25,8 @@ import type {
  ScheduledBasketExtraItem,
  ScheduledBasketSchedule,
 } from"../types/scheduledBasket";
+import { scheduledBasketTimingFields } from"@/features/cart/lib/scheduleDeliveryTime";
+import { formatScheduledDeliveryStamp } from"../components/my-baskets/utils/basketDisplay";
 
 export default function ScheduledBasketDetails() {
  const { t } = useTranslation();
@@ -244,6 +247,7 @@ export default function ScheduledBasketDetails() {
  payload: {
  name: basketName,
  schedule_id: resolvedScheduleId,
+ ...scheduledBasketTimingFields(basket),
  items: [...existingItems, ...newItems],
  },
  },
@@ -362,7 +366,12 @@ export default function ScheduledBasketDetails() {
  {t("baskets.nextDelivery")}:
  </span>
  <span className="text-custom-primary">
- {basket.next_run_date ||"—"}
+ {basket.next_run_date
+ ? formatScheduledDeliveryStamp(
+ basket.next_run_date,
+ basket.delivery_time,
+ )
+ :"—"}
  </span>
  </div>
  <div className="w-full sm:w-72 max-w-full">
@@ -415,43 +424,20 @@ export default function ScheduledBasketDetails() {
 
  {/* Pricing Info */}
  <div className="rounded-3xl border border-[var(--color-border-primary)] bg-custom-card p-4 shadow-sm dark:border-[rgba(255,255,255,0.06)] dark:bg-[rgba(16,17,20,0.72)] dark:shadow-[0_12px_40px_-22px_rgba(0,0,0,0.55)]">
- <div className="mb-2 flex items-center justify-between text-sm">
- <div className="flex items-center gap-4 flex-wrap">
- <div>
- <span className="text-custom-secondary">{t("baskets.subtotal")}:</span>
- <span className="font-bold text-custom-primary ml-2">
- {currencySymbol}
- {subtotalBeforeDiscount.toFixed(2)}
- </span>
- </div>
- {scheduleDiscountAmount > 0 && (
- <div>
- <span className="text-custom-secondary">
- {t("baskets.scheduleDiscount")}:
- </span>
- <span className="font-bold text-[var(--color-error)] ml-2">
- -{currencySymbol}
- {scheduleDiscountAmount.toFixed(2)}
- </span>
- </div>
- )}
- <div>
- <span className="text-custom-secondary">{t("baskets.total")}:</span>
- <span className="ml-2 text-lg font-bold text-[var(--color-api-second)] dark:text-[color-mix(in_srgb,var(--color-api-second)_78%,#FFFFFF)]">
- {currencySymbol}
- {totalAfterDiscount.toFixed(2)}
- </span>
- </div>
- </div>
- </div>
- {scheduleDiscountAmount > 0 && effectiveSchedule && (
- <p className="text-sm text-[var(--color-success)] font-medium">
- {t("baskets.youSave")} {currencySymbol}
- {scheduleDiscountAmount.toFixed(2)} (
- {effectiveSchedule.discount_value}
- {effectiveSchedule.discount_type ==="percentage"?"%":""})
- </p>
- )}
+ <PriceBlock
+ price={`${currencySymbol}${totalAfterDiscount.toFixed(2)}`}
+ originalPrice={
+ scheduleDiscountAmount > 0
+ ? `${currencySymbol}${subtotalBeforeDiscount.toFixed(2)}`
+ : undefined
+ }
+ savings={
+ scheduleDiscountAmount > 0
+ ? `${t("baskets.youSave")} ${currencySymbol}${scheduleDiscountAmount.toFixed(2)}`
+ : undefined
+ }
+ size="lg"
+ />
  </div>
 
  {/* Products Table */}
@@ -485,16 +471,21 @@ export default function ScheduledBasketDetails() {
  </div>
  </div>
  <div className="flex items-center gap-4 flex-wrap">
- <div className={isRTL ?"text-left":"text-right"}>
- <div className="text-sm text-custom-secondary">
- {t("baskets.subtotal")}: {currencySymbol}
- {subtotalBeforeDiscount.toFixed(2)}
- </div>
- <div className="text-lg font-bold text-[var(--color-api-second)] dark:text-[color-mix(in_srgb,var(--color-api-second)_78%,#FFFFFF)]">
- {t("baskets.total")}: {currencySymbol}
- {totalAfterDiscount.toFixed(2)}
- </div>
- </div>
+ <PriceBlock
+ price={`${currencySymbol}${totalAfterDiscount.toFixed(2)}`}
+ originalPrice={
+ scheduleDiscountAmount > 0
+ ? `${currencySymbol}${subtotalBeforeDiscount.toFixed(2)}`
+ : undefined
+ }
+ savings={
+ scheduleDiscountAmount > 0
+ ? `${t("baskets.youSave")} ${currencySymbol}${scheduleDiscountAmount.toFixed(2)}`
+ : undefined
+ }
+ size="sm"
+ align="end"
+ />
  <div className="flex items-center gap-2 flex-wrap">
  {availableExtras.length > 0 && (
  <Button
@@ -612,7 +603,14 @@ export default function ScheduledBasketDetails() {
  <DeleteBasketPopup
  isOpen={deletePopupOpen}
  basketName={basket.name}
- nextRunDate={basket.next_run_date}
+ nextRunDate={
+ basket.next_run_date
+ ? formatScheduledDeliveryStamp(
+ basket.next_run_date,
+ basket.delivery_time,
+ )
+ : undefined
+ }
  isDeleting={deleteMutation.isPending}
  onClose={() => setDeletePopupOpen(false)}
  onConfirm={handleDeleteConfirm}

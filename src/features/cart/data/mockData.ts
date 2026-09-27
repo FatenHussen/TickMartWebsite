@@ -415,18 +415,21 @@ export const mockCheckoutPaymentMethods: PaymentMethodOption[] = [
  name:"Cash on Delivery",
  description:"Pay to courier on arrival",
  type:"cash_on_delivery",
+ enabled: true,
  },
  {
  id:"syriatel_cash",
  name:"Syriatel Cash",
  description:"Pay securely with your card",
  type:"syriatel_cash",
+ enabled: false,
  },
  {
  id:"mtn_cash",
  name:"MTN Cash",
  description:"Pay securely with your card",
  type:"mtn_cash",
+ enabled: false,
  },
 ];
 

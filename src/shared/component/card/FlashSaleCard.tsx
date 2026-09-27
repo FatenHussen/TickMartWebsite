@@ -3,6 +3,7 @@ import { cn } from "../../lib/utils";
 import Rating from "@/shared/component/Rating";
 import FavoriteButton from "@/shared/component/FavoriteButton";
 import LazyImage from "@/shared/component/LazyImage";
+import PriceBlock from "@/shared/component/PriceBlock";
 
 export type FlashSaleCardProps = {
     id: number;
@@ -54,7 +55,6 @@ export default function FlashSaleCard({
 }: FlashSaleCardProps) {
     const primary = mainColor?.trim() || "#ff4d6d";
     const secondary = secondColor?.trim() || "#ffb703";
-    const saveLabel = t?.("flashSale.save") ?? "Save";
     const soldLabel = t?.("product.sold") ?? "Sold";
     const accentGradient = `linear-gradient(135deg, ${primary}, ${secondary})`;
 
@@ -123,13 +123,6 @@ export default function FlashSaleCard({
                         />
                     </div>
 
-                    {/* Savings (bottom-end on image) */}
-                    {savings && (
-                        <div className="absolute bottom-2.5 end-2.5 z-10 inline-flex items-center gap-1 rounded-lg bg-emerald-500/95 px-2 py-0.5 text-[11px] font-bold text-white shadow-md ring-1 ring-white/20 backdrop-blur-[2px]">
-                            {saveLabel} {savings}
-                        </div>
-                    )}
-
                     {/* Rating (bottom-start) */}
                     <div className="absolute bottom-2.5 start-2.5 z-10 rounded-full bg-white/90 px-2.5 py-1 shadow-md ring-1 ring-stone-900/[0.06] backdrop-blur-md dark:bg-[rgba(16,17,20,0.9)] dark:ring-white/10">
                         <Rating
@@ -152,16 +145,12 @@ export default function FlashSaleCard({
                     </p>
                 )}
 
-                {/* Price — sale price emphasized in campaign gradient, original muted */}
-                <div className="mt-3 flex flex-wrap items-baseline gap-x-2 gap-y-1">
-                    <span className="text-[1.6rem] font-extrabold tabular-nums leading-none tracking-[-0.02em] text-custom-primary dark:text-white">
-                        {price}
-                    </span>
-                    {originalPrice && (
-                        <span className="text-[13px] font-medium text-custom-tertiary/80 line-through decoration-custom-tertiary/40 dark:text-zinc-500">
-                            {originalPrice}
-                        </span>
-                    )}
+                <div className="mt-3">
+                    <PriceBlock
+                        price={price}
+                        originalPrice={originalPrice}
+                        savings={savings}
+                    />
                 </div>
 
                 {/* "Selling fast" urgency meter + sold count */}

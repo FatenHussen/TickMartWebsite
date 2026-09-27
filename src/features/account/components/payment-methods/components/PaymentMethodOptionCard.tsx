@@ -1,4 +1,6 @@
+import { useTranslation } from "react-i18next";
 import type { PaymentMethodOption } from "@/features/cart/types";
+import { isPaymentMethodEnabled } from "@/features/cart/utils/paymentMethods";
 import { cn } from "@/shared/lib/utils";
 
 interface PaymentMethodOptionCardProps {
@@ -22,17 +24,27 @@ export function PaymentMethodOptionCard({
     defaultBadgeLabel,
     onSelect,
 }: PaymentMethodOptionCardProps) {
+    const { t } = useTranslation();
+    const enabled = isPaymentMethodEnabled(method);
+
     const handleRowClick = () => {
+        if (!enabled) return;
         onSelect(method.id);
     };
 
     return (
         <div
             className={cn(
-                "cursor-pointer rounded-2xl border p-4 transition-all",
-                isSelected ? selectedRowClassName : unselectedRowClassName,
+                "rounded-2xl border p-4 transition-all",
+                enabled ? "cursor-pointer" : "cursor-not-allowed opacity-55",
+                enabled && isSelected
+                    ? selectedRowClassName
+                    : enabled
+                      ? unselectedRowClassName
+                      : "border-[var(--color-border-primary)] bg-[var(--color-bg-card)]",
             )}
             onClick={handleRowClick}
+            aria-disabled={!enabled}
         >
             <div className="flex items-center gap-4">
                 <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#f6efe4] dark:bg-[color-mix(in_srgb,#ff9f00_18%,#2A2622)]">
@@ -58,7 +70,11 @@ export function PaymentMethodOptionCard({
                     ) : null}
                 </div>
 
-                {showDefaultBadge ? (
+                {!enabled ? (
+                    <span className="flex-shrink-0 rounded-full bg-custom-tertiary px-3 py-1 text-xs font-semibold text-custom-secondary">
+                        {t("checkout.paymentUnavailable", "Unavailable")}
+                    </span>
+                ) : showDefaultBadge ? (
                     <span className="flex-shrink-0 rounded-full bg-cta px-3 py-1 text-xs font-semibold text-white">
                         {defaultBadgeLabel}
                     </span>
@@ -67,13 +83,13 @@ export function PaymentMethodOptionCard({
                 <div
                     className={cn(
                         "flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-all",
-                        isSelected
+                        enabled && isSelected
                             ? "border-[#ff9f00] bg-[#ff9f00]/15"
                             : "border-custom-secondary bg-custom-card",
                     )}
                     aria-hidden
                 >
-                    {isSelected ? (
+                    {enabled && isSelected ? (
                         <div className="h-3 w-3 rounded-full bg-[#ff9f00]" />
                     ) : null}
                 </div>

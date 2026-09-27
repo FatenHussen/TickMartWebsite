@@ -1,5 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { useCurrency } from "@/context/CurrencyContext";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import BasePopup from "@/shared/component/BasePopup";
@@ -18,6 +19,9 @@ import type { ScheduledBasketExtraItem } from "../types/scheduledBasket";
 import type { UpdateScheduledBasketPayload } from "../types/scheduledBasket";
 import type { UseMutationResult } from "@tanstack/react-query";
 import type { ProductItem } from "@/features/home/types";
+import { resolveListingCardPrices } from "@/shared/lib/formatApiPrice";
+import PriceBlock from "@/shared/component/PriceBlock";
+import { scheduledBasketTimingFields } from "@/features/cart/lib/scheduleDeliveryTime";
 
 const DEFAULT_LAT = 33.5138;
 const DEFAULT_LNG = 36.2765;
@@ -50,6 +54,7 @@ export default function AddProductModal({
     updateMutation,
 }: AddProductModalProps) {
     const { t } = useTranslation();
+    const { currency } = useCurrency();
     const [addingProductId, setAddingProductId] = useState<number | null>(null);
     const [detailProductId, setDetailProductId] = useState<number | null>(null);
     const [listProductForDetail, setListProductForDetail] = useState<ProductItem | null>(null);
@@ -205,6 +210,7 @@ export default function AddProductModal({
                 payload: {
                     name: basket.name,
                     schedule_id: scheduleId,
+                    ...scheduledBasketTimingFields(basket),
                     items: [...existingItems, ...newItemsFromExtras, newProductItem],
                 },
             },
@@ -360,6 +366,11 @@ export default function AddProductModal({
                             <div className="space-y-3">
                                 {products.map((product) => {
                                     const alreadyInBasket = existingProductIds.has(product.id);
+                                    const listing = resolveListingCardPrices(
+                                        product,
+                                        t("product.youSaved", "You saved"),
+                                        currency,
+                                    );
                                     return (
                                     <button
                                         key={product.id}
@@ -391,14 +402,13 @@ export default function AddProductModal({
                                                     )}
                                                 </p>
                                             ) : (
-                                                <p className="mt-1 text-sm font-bold text-cyan-600">
-                                                    {product.price_after_discount_formatted ??
-                                                        `${product.currency_symbol ?? ""}${(
-                                                            product.price_after_discount ??
-                                                            product.price ??
-                                                            0
-                                                        ).toFixed(2)}`}
-                                                </p>
+                                                <PriceBlock
+                                                    price={listing.price}
+                                                    originalPrice={listing.originalPrice}
+                                                    savings={listing.savings}
+                                                    size="xs"
+                                                    className="mt-1"
+                                                />
                                             )}
                                         </div>
                                         {!alreadyInBasket && (

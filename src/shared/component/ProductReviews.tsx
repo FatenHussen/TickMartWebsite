@@ -54,6 +54,8 @@ export default function ProductReviews({
     reviewMainColor,
 }: ProductReviewsProps) {
     const { t } = useTranslation();
+    const numericAverage = Number(averageRating);
+    const safeAverage = Number.isFinite(numericAverage) ? numericAverage : 0;
     const [isRatingFilterOpen, setIsRatingFilterOpen] = useState(true);
     const [selectedRatings, setSelectedRatings] = useState<number[]>([]);
     const heading = sectionTitle ?? t("product.productReviews");
@@ -177,7 +179,7 @@ export default function ProductReviews({
                                             2 *
                                             Math.PI *
                                             34 *
-                                            (1 - Math.min(averageRating, 5) / 5)
+                                            (1 - Math.min(safeAverage, 5) / 5)
                                         }
                                         style={{ transition: "stroke-dashoffset 0.8s ease" }}
                                     />
@@ -190,7 +192,7 @@ export default function ProductReviews({
                                 </svg>
                                 <div className="absolute flex flex-col items-center">
                                     <span className="text-2xl font-extrabold leading-none text-text-primary">
-                                        {averageRating.toFixed(1)}
+                                        {safeAverage.toFixed(1)}
                                     </span>
                                     <span className="text-[10px] font-medium text-text-secondary">
                                         / 5
@@ -198,7 +200,7 @@ export default function ProductReviews({
                                 </div>
                             </div>
 
-                            <StarsRow value={averageRating} size="text-lg" />
+                            <StarsRow value={safeAverage} size="text-lg" />
                             <p className="text-xs font-medium text-text-secondary">
                                 {t("product.fromReviews")} {formatCount(totalReviews)}{" "}
                                 {t("product.reviews")}

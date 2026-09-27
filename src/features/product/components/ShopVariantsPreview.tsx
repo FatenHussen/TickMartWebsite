@@ -4,11 +4,8 @@ import { cn } from "@/shared/lib/utils";
 import type { ShopVariant, VariantAttribute } from "../types/productDetails";
 import { isPurchasableVariant } from "../types/productDetails";
 import { gallerySrcsForSelection, mediaSrc, type ProductMediaSource } from "../lib/productMedia";
-import {
-    resolveDisplayListPrice,
-    resolveDisplaySalePrice,
-} from "@/shared/lib/formatApiPrice";
-import { formatStorefrontDiscountBadge } from "@/shared/lib/productDiscountDisplay";
+import { resolveListingCardPrices } from "@/shared/lib/formatApiPrice";
+import PriceBlock from "@/shared/component/PriceBlock";
 import { cssColorForSwatch } from "../lib/attributeValueColor";
 
 export type ShopVariantsPreviewProps = {
@@ -84,9 +81,11 @@ export default function ShopVariantsPreview({
                     const thumb =
                         gallerySrcsForSelection(v, productMedia)[0] ||
                         mediaSrc(v.images?.[0]);
-                    const priceLabel = resolveDisplaySalePrice(v, currency);
-                    const originalLabel = resolveDisplayListPrice(v, currency);
-                    const discountBadge = formatStorefrontDiscountBadge(v, undefined, t);
+                    const listing = resolveListingCardPrices(
+                        v,
+                        t("product.youSaved", "You saved"),
+                        currency,
+                    );
                     // `id`/`shop_id` null = display-only (price shown, not addable).
                     const purchasable = isPurchasableVariant(v);
                     const outOfStock = !purchasable;
@@ -131,20 +130,13 @@ export default function ShopVariantsPreview({
                                         </div>
                                     ))}
                                 </div>
+                                <PriceBlock
+                                    price={listing.price}
+                                    originalPrice={listing.originalPrice}
+                                    savings={listing.savings}
+                                    size="sm"
+                                />
                                 <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-sm">
-                                    <span className="font-bold text-custom-primary">
-                                        {priceLabel}
-                                    </span>
-                                    {originalLabel ? (
-                                        <span className="text-custom-tertiary line-through">
-                                            {originalLabel}
-                                        </span>
-                                    ) : null}
-                                    {discountBadge ? (
-                                        <span className="rounded-full bg-primary-light px-2 py-0.5 text-xs font-semibold text-white">
-                                            {discountBadge}
-                                        </span>
-                                    ) : null}
                                     <span className="text-custom-secondary">
                                         {t("product.quantity", "Quantity")}:{" "}
                                         {v.quantity == null

@@ -433,7 +433,8 @@
     "showAllCategories": "Show all categories",
     "category": "Category",
     "back": "Back",
-    "attributesFilter": "Attributes"
+    "attributesFilter": "Attributes",
+    "notFound": "Category not found"
   },
   "product": {
     "color": "Color",
@@ -490,6 +491,9 @@
     "share": "Share product",
     "toggleFavorite": "Save to wishlist",
     "noImage": "No image",
+    "zoomImage": "Zoom image",
+    "closeZoom": "Close zoom",
+    "notFound": "Product not found",
     "previousImage": "Previous image",
     "nextImage": "Next image",
     "previousThumbnails": "Previous thumbnails",
@@ -594,7 +598,9 @@
     "backToCart": "Back to cart",
     "backToCheckout": "Back to checkout",
     "cart": "Shopping cart",
-    "checkoutTitle": "Checkout",
+    "checkoutTitle": "Place order",
+    "paymentStep": "Payment",
+    "total": "Total",
     "subtitle": "Choose a delivery address and how you'll pay.",
     "reviewTitle": "Review your order",
     "reviewMessage": "Please check all details before confirming your order.",
@@ -606,6 +612,7 @@
     "noAddressTitle": "No saved addresses",
     "noAddressHint": "Add an address so we know where to deliver this order.",
     "noPaymentMethods": "No payment methods are available right now.",
+    "paymentUnavailable": "Unavailable",
     "defaultAddress": "Default",
     "orderItems": "Items in this order",
     "selectAddress": "Select a delivery address to continue.",
@@ -619,6 +626,9 @@
     "storeDiscounts": "Store discounts",
     "couponDiscount": "Coupon discount",
     "estimatedDelivery": "Estimated delivery",
+    "instantDelivery": "Instant delivery",
+    "deliveryInMinutes": "{{count}} min",
+    "deliveryTimeAfterConfirm": "Confirmed after you place the order",
     "estimatedDeliveryWindow": "2:00 PM - 4:00 PM",
     "reviewConfirm": "Review & confirm",
     "progressLabel": "Checkout progress",
@@ -684,6 +694,10 @@
     "scheduleSaveFailed": "Failed to save schedule",
     "categoryRequired": "Products must have a category",
     "noValidItems": "No valid items to schedule",
+    "noScheduleFrequency": "No delivery frequency is available yet",
+    "deliveryDate": "Delivery date",
+    "deliveryTime": "Delivery time",
+    "deliveryTimePast": "Delivery time must be from now onward",
     "saveSchedule": "Save schedule",
     "saving": "Saving...",
     "store": "Store",
@@ -719,6 +733,7 @@
     "availablePromotions": "Available offers",
     "subscriptionDiscount": "Subscription discount",
     "promotionDiscount": "Promotion discount",
+    "automaticFreeShipping": "Free delivery offer",
     "itemsTotal": "Items total"
   },
   "trackOrder": {
@@ -851,7 +866,8 @@
       "totalLabel": "Total:",
       "understandCheckbox": "I understand that a cancellation fee will be applied and the remaining amount will be refunded."
     },
-    "itemsBadge": "{{count}} items"
+    "itemsBadge": "{{count}} items",
+    "scheduledDelivery": "Delivery appointment"
   },
   "successPopup": {
     "title": "Thank you!",

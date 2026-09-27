@@ -10,6 +10,7 @@ import { useCreateRating, useUpdateRating } from "../hooks/useRatings";
 const MAX_IMAGE_SIZE_MB = 2;
 const MAX_IMAGE_BYTES = MAX_IMAGE_SIZE_MB * 1024 * 1024;
 const MAX_COMMENT_LENGTH = 500;
+const RATING_FORM_ID = "rating-form-modal";
 
 export type RatingFormModalMode = "create" | "edit";
 
@@ -58,6 +59,7 @@ export default function RatingFormModal({
     const [selectedRating, setSelectedRating] = useState(initialRating);
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(initialImageUrl ?? null);
+    const [imageError, setImageError] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const createRating = useCreateRating();
@@ -87,12 +89,14 @@ export default function RatingFormModal({
             setValue("comment", initialComment);
             setImagePreview(mode === "edit" ? initialImageUrl ?? null : null);
             setImageFile(null);
+            setImageError(null);
         }
     }, [isOpen, mode, initialRating, initialComment, initialImageUrl, setValue]);
 
     const handleClose = () => {
         setSelectedRating(5);
         setImageFile(null);
+        setImageError(null);
         setImagePreview(initialImageUrl ?? null);
         setValue("rating", 5);
         setValue("comment", "");
@@ -104,8 +108,16 @@ export default function RatingFormModal({
         const file = e.target.files?.[0];
         if (!file) return;
         if (file.size > MAX_IMAGE_BYTES) {
-            return; // TODO: toast error max 2MB
+            setImageError(
+                t(
+                    "account.myReviews.ratingForm.imageTooLarge",
+                    "Image must be 2MB or smaller.",
+                ),
+            );
+            if (fileInputRef.current) fileInputRef.current.value = "";
+            return;
         }
+        setImageError(null);
         setImageFile(file);
         const reader = new FileReader();
         reader.onloadend = () => setImagePreview(reader.result as string);
@@ -114,12 +126,14 @@ export default function RatingFormModal({
 
     const removeImage = () => {
         setImageFile(null);
+        setImageError(null);
         setImagePreview(mode === "edit" ? initialImageUrl ?? null : null);
         if (fileInputRef.current) fileInputRef.current.value = "";
     };
 
     const onSubmit = (data: RatingFormValues) => {
-        const rating = selectedRating;
+        const rating = Math.min(5, Math.max(1, Math.round(Number(selectedRating))));
+        if (!Number.isFinite(rating)) return;
         const commentText = data.comment?.trim() ?? "";
 
         if (mode === "create" && rateableType && rateableId != null) {
@@ -192,6 +206,29 @@ export default function RatingFormModal({
             maxWidth="md"
             className="bg-white dark:bg-[#1a2332]"
             contentClassName="text-start"
+            actions={
+                <div className="flex flex-col gap-3 sm:flex-row">
+                    <Button
+                        type="submit"
+                        form={RATING_FORM_ID}
+                        variant="primary"
+                        fullWidth
+                        isLoading={isPending}
+                        className="rounded-xl border-0 bg-gradient-to-r from-cyan-500 to-blue-500 py-3 font-medium text-white shadow-md hover:from-cyan-600 hover:to-blue-600 dark:from-cyan-600 dark:to-blue-600 dark:hover:from-cyan-500 dark:hover:to-blue-500"
+                    >
+                        {mode === "create"
+                            ? t("account.myReviews.ratingForm.submitReview", "Submit review")
+                            : t("common.save", "Save")}
+                    </Button>
+                    <button
+                        type="button"
+                        onClick={handleClose}
+                        className="shrink-0 text-center text-sm font-medium text-cyan-600 hover:text-cyan-700 dark:text-cyan-400 dark:hover:text-cyan-300"
+                    >
+                        {t("account.myReviews.ratingForm.maybeLater", "Maybe later")}
+                    </button>
+                </div>
+            }
         >
             <div className="text-start space-y-5">
                 {showProductCard && (
@@ -220,7 +257,7 @@ export default function RatingFormModal({
                     </div>
                 )}
 
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+                <form id={RATING_FORM_ID} onSubmit={handleSubmit(onSubmit)} className="space-y-5">
                     {/* Star rating */}
                     <div>
                         <label className="block text-sm font-medium text-custom-primary mb-2">
@@ -322,6 +359,11 @@ export default function RatingFormModal({
                                 </div>
                             )}
                         </div>
+                        {imageError ? (
+                            <p className="mt-2 text-xs text-red-600 dark:text-red-400">
+                                {imageError}
+                            </p>
+                        ) : null}
                     </div>
 
                     {/* Info banner */}
@@ -332,27 +374,6 @@ export default function RatingFormModal({
                         </p>
                     </div>
 
-                    {/* Actions */}
-                    <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                        <Button
-                            type="submit"
-                            variant="primary"
-                            fullWidth
-                            isLoading={isPending}
-                            className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 dark:from-cyan-600 dark:to-blue-600 dark:hover:from-cyan-500 dark:hover:to-blue-500 text-white font-medium py-3 rounded-xl border-0 shadow-md"
-                        >
-                            {mode === "create"
-                                ? t("account.myReviews.ratingForm.submitReview", "Submit review")
-                                : t("common.save", "Save")}
-                        </Button>
-                        <button
-                            type="button"
-                            onClick={handleClose}
-                            className="shrink-0 text-center text-sm text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 font-medium"
-                        >
-                            {t("account.myReviews.ratingForm.maybeLater", "Maybe later")}
-                        </button>
-                    </div>
                 </form>
             </div>
         </BasePopup>

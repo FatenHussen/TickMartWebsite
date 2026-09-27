@@ -1,5 +1,6 @@
 import { useMemo, type CSSProperties } from "react";
 
+import { readProductRating } from "@/features/product/lib/productRating";
 import type { SectionCardVariant } from "@/features/home/types";
 import { cn } from "../../lib/utils";
 import Rating from "@/shared/component/Rating";
@@ -7,9 +8,8 @@ import AnimatedButton, { type AnimatedButtonItem } from "../../ui/AnimatedButton
 import Button from "@/shared/ui/Button";
 import Badge from "@/shared/component/Badge";
 import FavoriteButton from "@/shared/component/FavoriteButton";
-import FormattedPrice from "@/shared/component/FormattedPrice";
 import LazyImage from "@/shared/component/LazyImage";
-import { splitSavingsLabel } from "@/shared/lib/formatApiPrice";
+import PriceBlock from "@/shared/component/PriceBlock";
 
 export type ProductCardBadge = {
     label: string;
@@ -39,7 +39,7 @@ export type ProductCardProps = {
     store?: string;
     price: string;
     originalPrice?: string;
-    rating: number;
+    rating: number | string;
     image: string;
 
     badge?: ProductCardBadge | ProductCardBadge[];
@@ -132,7 +132,8 @@ export default function ProductCard({
         return items;
     }, [bottomBadgeItems, discountLabel]);
 
-    const showRating = Number(rating) > 0;
+    const numericRating = readProductRating(rating);
+    const showRating = numericRating > 0;
     const showSold = sold != null && sold > 0;
 
     return (
@@ -264,7 +265,7 @@ export default function ProductCard({
                     className="absolute -top-5 start-4 z-30 rounded-full bg-white px-3 py-1.5 shadow-[0_8px_20px_-6px_rgba(15,23,42,0.4)] ring-1 ring-stone-900/[0.06] dark:bg-[#2A2622] dark:ring-white/[0.08]"
                 >
                     <Rating
-                        rating={rating}
+                        rating={numericRating}
                         size="sm"
                         className="px-0 py-0 [&_span:last-child]:font-semibold [&_span:last-child]:text-custom-primary dark:[&_span:last-child]:text-white"
                     />
@@ -275,33 +276,19 @@ export default function ProductCard({
                     {name}
                 </h3>
 
-                {(description || category) && (
-                    <p className="mt-1 line-clamp-1 text-[14px] leading-5 text-custom-secondary dark:text-zinc-400">
-                        {description || category}
+                {(description?.trim() || category) && (
+                    <p className="mt-1 line-clamp-2 min-h-10 break-words text-[14px] leading-5 text-custom-secondary dark:text-zinc-400">
+                        {description?.trim() || category}
                     </p>
                 )}
 
-                {/* Price: selected currency — after discount, before discount, % off, saved */}
                 <div className="mt-3 flex items-end justify-between gap-3 border-t border-stone-100/90 pt-3 dark:border-white/[0.06]">
-                    <div className="min-w-0 flex-1">
-                        <FormattedPrice
-                            value={price}
-                            compareValue={originalPrice}
-                            prominent
-                            layout="stack"
-                            className="text-[1.35rem] font-bold tracking-tight text-[color-mix(in_srgb,var(--color-main)_42%,#1c1917)] dark:text-white sm:text-[1.45rem]"
-                        />
-                        {(discountLabel || savings) && (
-                            <div className="mt-2 flex flex-wrap items-center gap-x-2.5 gap-y-1">
-                                {discountLabel ? (
-                                    <span className="inline-flex items-center rounded-full bg-[color-mix(in_srgb,var(--color-main)_12%,transparent)] px-2 py-0.5 text-[13px] font-semibold text-[color-mix(in_srgb,var(--color-main)_78%,#44403c)] dark:text-[color-mix(in_srgb,var(--color-main)_60%,white)]">
-                                        {discountLabel}
-                                    </span>
-                                ) : null}
-                                {savings ? <SavingsChip savings={savings} /> : null}
-                            </div>
-                        )}
-                    </div>
+                    <PriceBlock
+                        price={price}
+                        originalPrice={originalPrice}
+                        savings={savings}
+                        className="min-w-0 flex-1"
+                    />
 
                     {showSold && sold != null ? (
                         <div className="flex shrink-0 items-center gap-2 border-s border-stone-200/70 ps-3 dark:border-white/10">
@@ -386,12 +373,3 @@ export default function ProductCard({
     );
 }
 
-function SavingsChip({ savings }: { savings: string }) {
-    const { label, amount } = splitSavingsLabel(savings);
-    return (
-        <span className="inline-flex max-w-full items-center gap-1 text-[13px] font-medium leading-none text-[color-mix(in_srgb,var(--color-main)_72%,#44403c)] dark:text-[color-mix(in_srgb,var(--color-main)_55%,white)]">
-            {label ? <span>{label}</span> : null}
-            <FormattedPrice value={amount} className="text-[13px] font-semibold" />
-        </span>
-    );
-}

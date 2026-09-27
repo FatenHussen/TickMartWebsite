@@ -15,6 +15,7 @@ import OrderStatusTimeline from "../components/OrderStatusTimeline";
 import OrderItemsTable from "../components/OrderItemsTable";
 import OrderSidebar from "../components/OrderSidebar";
 import { useOrderDetails } from "../hooks/useOrderDetails";
+import { formatScheduledDeliveryAt } from "../utils/formatScheduledDelivery";
 
 type StatusVisuals = {
     label: string;
@@ -69,7 +70,7 @@ const getStatusVisuals = (
 };
 
 export default function OrderDetails() {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const { isRTL } = useLanguage();
     const navigate = useNavigate();
     const { order, isLoading, error, trackOnMap } = useOrderDetails();
@@ -127,6 +128,10 @@ export default function OrderDetails() {
     }
 
     const visuals = getStatusVisuals(order.status, t, order.statusLabel);
+    const scheduledLabel = formatScheduledDeliveryAt(
+        order.delivery.scheduledDeliveryAt,
+        i18n.language,
+    );
     const canTrack =
         order.status !== "delivered" &&
         (order.status as string) !== "cancelled";
@@ -190,15 +195,17 @@ export default function OrderDetails() {
                         )}
 
                         <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-custom-secondary">
-                            <span className="inline-flex items-center gap-1.5">
-                                <HiOutlineClock className="w-4 h-4 text-custom-tertiary" />
-                                <span className="text-custom-tertiary">
-                                    {t("orders.eta", "ETA")}:
+                            {scheduledLabel ? (
+                                <span className="inline-flex items-center gap-1.5">
+                                    <HiOutlineClock className="w-4 h-4 text-custom-tertiary" />
+                                    <span className="text-custom-tertiary">
+                                        {t("orders.scheduledDelivery", "Delivery appointment")}:
+                                    </span>
+                                    <span className="font-medium text-[color:var(--color-text)]">
+                                        {scheduledLabel}
+                                    </span>
                                 </span>
-                                <span className="font-medium text-[color:var(--color-text)]">
-                                    {order.delivery.eta}
-                                </span>
-                            </span>
+                            ) : null}
                             <span className="inline-flex items-center gap-1.5">
                                 <span className="text-custom-tertiary">
                                     {t("orders.total", "Total")}:

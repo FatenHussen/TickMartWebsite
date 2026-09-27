@@ -433,7 +433,8 @@
     "showAllCategories": "عرض جميع الفئات",
     "category": "فئة",
     "back": "رجوع",
-    "attributesFilter": "الخصائص"
+    "attributesFilter": "الخصائص",
+    "notFound": "الفئة غير موجودة"
   },
   "product": {
     "color": "اللون",
@@ -490,6 +491,9 @@
     "share": "مشاركة المنتج",
     "toggleFavorite": "حفظ في المفضلة",
     "noImage": "لا توجد صورة",
+    "zoomImage": "تكبير الصورة",
+    "closeZoom": "إغلاق التكبير",
+    "notFound": "المنتج غير موجود",
     "previousImage": "الصورة السابقة",
     "nextImage": "الصورة التالية",
     "previousThumbnails": "الصور المصغرة السابقة",
@@ -594,7 +598,9 @@
     "backToCart": "العودة إلى السلة",
     "backToCheckout": "العودة إلى الدفع",
     "cart": "سلة التسوق",
-    "checkoutTitle": "الدفع",
+    "checkoutTitle": "إتمام الطلب",
+    "paymentStep": "الدفع",
+    "total": "الإجمالي",
     "subtitle": "اختر عنوان التوصيل وطريقة الدفع.",
     "reviewTitle": "مراجعة طلبك",
     "reviewMessage": "يرجى التحقق من جميع التفاصيل قبل تأكيد طلبك.",
@@ -606,6 +612,7 @@
     "noAddressTitle": "لا توجد عناوين محفوظة",
     "noAddressHint": "أضف عنواناً حتى نتمكن من توصيل طلبك.",
     "noPaymentMethods": "لا توجد طرق دفع متاحة حالياً.",
+    "paymentUnavailable": "غير مفعّلة",
     "defaultAddress": "افتراضي",
     "orderItems": "منتجات هذا الطلب",
     "selectAddress": "اختر عنوان توصيل للمتابعة.",
@@ -619,6 +626,9 @@
     "storeDiscounts": "خصومات المتجر",
     "couponDiscount": "خصم الكوبون",
     "estimatedDelivery": "وقت التوصيل المتوقع",
+    "instantDelivery": "توصيل فوري",
+    "deliveryInMinutes": "{{count}} دقيقة",
+    "deliveryTimeAfterConfirm": "يتحدد بعد تأكيد الطلب",
     "estimatedDeliveryWindow": "2:00 م - 4:00 م",
     "reviewConfirm": "المراجعة والتأكيد",
     "progressLabel": "خطوات إتمام الطلب",
@@ -684,6 +694,10 @@
     "scheduleSaveFailed": "فشل حفظ الجدولة",
     "categoryRequired": "يجب أن يكون للمنتجات تصنيف",
     "noValidItems": "لا توجد عناصر صالحة للجدولة",
+    "noScheduleFrequency": "لا يوجد تكرار توصيل متاح حالياً",
+    "deliveryDate": "تاريخ التوصيل",
+    "deliveryTime": "وقت التوصيل",
+    "deliveryTimePast": "وقت التوصيل لازم يكون من الآن فصاعداً",
     "saveSchedule": "حفظ الجدولة",
     "saving": "جاري الحفظ...",
     "store": "المتجر",
@@ -722,6 +736,7 @@
     "availablePromotions": "العروض المتاحة",
     "subscriptionDiscount": "خصم الاشتراك",
     "promotionDiscount": "خصم العرض",
+    "automaticFreeShipping": "توصيل مجاني من العرض",
     "itemsTotal": "إجمالي العناصر"
   },
   "trackOrder": {
@@ -854,7 +869,8 @@
       "totalLabel": "المجموع:",
       "understandCheckbox": "أفهم أنه سيتم تطبيق رسوم إلغاء وسيتم استرداد المبلغ المتبقي."
     },
-    "itemsBadge": "{{count}} عناصر"
+    "itemsBadge": "{{count}} عناصر",
+    "scheduledDelivery": "موعد التوصيل"
   },
   "successPopup": {
     "title": "!شكراً لك",

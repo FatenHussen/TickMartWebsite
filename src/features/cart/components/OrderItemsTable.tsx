@@ -8,12 +8,14 @@ import {
     GradientTableCell,
 } from "@/shared/component/table";
 import type { CartItem } from "../types";
+import PriceBlock from "@/shared/component/PriceBlock";
 
 type OrderItemsTableProps = {
     items: CartItem[];
     onMoveToWishlist?: (itemId: number | string) => void;
     title?: string;
     showTitle?: boolean;
+    compact?: boolean;
 };
 
 export default function OrderItemsTable({
@@ -21,8 +23,28 @@ export default function OrderItemsTable({
     onMoveToWishlist,
     title,
     showTitle = true,
+    compact = false,
 }: OrderItemsTableProps) {
     const { t } = useTranslation();
+
+    if (compact) {
+        return (
+            <section className="overflow-hidden rounded-2xl border border-custom-primary bg-custom-card">
+                {showTitle && (
+                    <div className="border-b border-custom-primary px-4 py-4 sm:px-5">
+                        <h2 className="text-base font-semibold text-custom-primary">
+                            {title ?? t("checkout.orderItems")}
+                        </h2>
+                    </div>
+                )}
+                <div className="divide-y divide-[color:color-mix(in_srgb,var(--color-border-primary)_85%,transparent)]">
+                    {items.map((item) => (
+                        <CompactOrderItemRow key={item.id} item={item} />
+                    ))}
+                </div>
+            </section>
+        );
+    }
 
     return (
         <GradientTable
@@ -54,6 +76,44 @@ export default function OrderItemsTable({
                 ))}
             </GradientTableBody>
         </GradientTable>
+    );
+}
+
+function CompactOrderItemRow({ item }: { item: CartItem }) {
+    const { t } = useTranslation();
+    const variant = [item.size, item.type].filter(Boolean).join(" · ");
+    const isFree = Boolean((item as { _isFree?: boolean })._isFree);
+
+    return (
+        <article className="flex items-center gap-3 px-4 py-3.5 sm:px-5">
+            <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-custom-muted">
+                {item.image ? (
+                    <img
+                        src={item.image}
+                        alt=""
+                        className="h-full w-full object-cover"
+                    />
+                ) : null}
+            </div>
+            <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-semibold text-custom-primary">
+                    {item.name}
+                    {isFree ? (
+                        <span className="ms-1 font-medium text-[var(--color-success)]">
+                            ({t("cart.free")})
+                        </span>
+                    ) : null}
+                </p>
+                <p className="mt-0.5 text-xs text-custom-secondary">
+                    {t("orders.qty")} {item.quantity}
+                    {item.store ? ` · ${item.store}` : ""}
+                    {variant ? ` · ${variant}` : ""}
+                </p>
+            </div>
+            <span className="shrink-0 text-sm font-semibold tabular-nums text-custom-primary">
+                {isFree ? t("cart.free") : item.price}
+            </span>
+        </article>
     );
 }
 
@@ -144,19 +204,13 @@ function OrderItemRow({
             </GradientTableCell>
 
             <GradientTableCell align="center">
-                <div className="text-sm font-semibold text-custom-primary tabular-nums">
-                    {item.price}
-                </div>
-                {item.originalPrice && (
-                    <div className="text-xs text-custom-secondary line-through tabular-nums">
-                        {item.originalPrice}
-                    </div>
-                )}
-                {item.savingsText && (
-                    <div className="text-xs font-medium text-[var(--color-api-second)]">
-                        {item.savingsText}
-                    </div>
-                )}
+                <PriceBlock
+                    price={item.price}
+                    originalPrice={item.originalPrice}
+                    savings={item.savingsText}
+                    size="xs"
+                    align="center"
+                />
             </GradientTableCell>
 
             <GradientTableCell align="center">

@@ -27,6 +27,7 @@ import {
   getOrderStatusLabel,
   toOrderStepperStatus,
 } from "@/shared/lib/orderStatus";
+import { formatScheduledDeliveryAt } from "@/features/cart/utils/formatScheduledDelivery";
 
 const STAGES: ActiveOrderStatus[] = [...ORDER_STEPPER_STAGES];
 
@@ -103,7 +104,11 @@ interface OrderTrackingCardProps {
 }
 
 export default function OrderTrackingCard({ order }: OrderTrackingCardProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const scheduledLabel = formatScheduledDeliveryAt(
+    order.scheduled_delivery_at,
+    i18n.language,
+  );
   const { isRTL } = useLanguage();
   const { theme } = useTheme();
   const isDarkTheme = theme === "dark";
@@ -331,10 +336,17 @@ export default function OrderTrackingCard({ order }: OrderTrackingCardProps) {
           >
             {statusRowLabel}
           </span>
-          <span className="mx-1.5 opacity-40">·</span>
-          <span>
-            {isDelivered ? t(statusSubtitleKey) : t("home.estimatedDeliveryShort")}
-          </span>
+          {scheduledLabel ? (
+            <>
+              <span className="mx-1.5 opacity-40">·</span>
+              <span>{scheduledLabel}</span>
+            </>
+          ) : isDelivered ? (
+            <>
+              <span className="mx-1.5 opacity-40">·</span>
+              <span>{t(statusSubtitleKey)}</span>
+            </>
+          ) : null}
         </p>
       </div>
 

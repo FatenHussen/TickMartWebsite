@@ -4,6 +4,7 @@ import Rating from "@/shared/component/Rating";
 import Badge from "@/shared/component/Badge";
 import LazyImage from "@/shared/component/LazyImage";
 import FavoriteButton from "@/shared/component/FavoriteButton";
+import PriceBlock from "@/shared/component/PriceBlock";
 import type { Recipe } from "../types";
 import { mapActionPageSlugToRoute } from "@/utils/routeMapper";
 import { useNavigate } from "react-router-dom";
@@ -129,19 +130,27 @@ export default function RecipeCard({
                     </p>
                 )}
 
-                {/* Price Section */}
                 <div className="mt-3">
-                    <div className="flex items-baseline gap-2 flex-wrap">
-                        <span className="text-lg font-bold text-[color:var(--color-text,var(--color-text-primary))]">
-                            {recipe.price_after_discount}
-                        </span>
-                        {hasDiscount && recipe.price && (
-                            <span className="text-sm text-white/80 line-through">
-                                {recipe.price}
-                            </span>
-                        )}
+                    <div className="flex items-end justify-between gap-3">
+                        <PriceBlock
+                            price={String(recipe.price_after_discount)}
+                            originalPrice={
+                                hasDiscount && recipe.price
+                                    ? String(recipe.price)
+                                    : undefined
+                            }
+                            savings={
+                                hasDiscount &&
+                                recipe.price > recipe.price_after_discount
+                                    ? `${t("product.youSaved", "You saved")} ${
+                                          recipe.price - recipe.price_after_discount
+                                      }`
+                                    : undefined
+                            }
+                            size="sm"
+                        />
                         {recipe.sold !== undefined && recipe.sold > 0 && (
-                            <span className="ml-auto text-sm font-medium text-white">
+                            <span className="shrink-0 text-sm font-medium text-white">
                                 {recipe.sold.toLocaleString()} {t("home.sold")}
                             </span>
                         )}

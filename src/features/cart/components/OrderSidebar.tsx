@@ -169,11 +169,13 @@ function DeliveryDetailsCard({ delivery }: DeliveryDetailsCardProps) {
                     value={delivery.address}
                     multiline
                 />
-                <DetailRow
-                    icon={HiOutlineClock}
-                    label={t("orders.eta", "ETA")}
-                    value={delivery.eta}
-                />
+                {delivery.eta ? (
+                    <DetailRow
+                        icon={HiOutlineClock}
+                        label={t("orders.eta", "ETA")}
+                        value={delivery.eta}
+                    />
+                ) : null}
             </div>
 
             {delivery.message && (

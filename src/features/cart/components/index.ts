@@ -18,7 +18,3 @@ export { default as CheckoutAddressSection } from"./CheckoutAddressSection";
 export { default as CheckoutPaymentSection } from"./CheckoutPaymentSection";
 export { default as CheckoutOrderSummary } from"./CheckoutOrderSummary";
 export { default as PeanutButton } from"./PeanutButton";
-export { default as ReviewDeliveryDetailsSidebar } from"./ReviewDeliveryDetailsSidebar";
-export { default as ReviewAddressCard } from"./ReviewAddressCard";
-export { default as ReviewPaymentCard } from"./ReviewPaymentCard";
-// export { default as ReviewPointsSummary } from"./ReviewPointsSummary";

@@ -1,12 +1,13 @@
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { HiShare } from "react-icons/hi2";
+import { HiShare, HiMagnifyingGlassPlus } from "react-icons/hi2";
 import { HiChevronLeft, HiChevronRight } from "react-icons/hi";
 import { cn } from "@/shared/lib/utils";
 import { useLanguage } from "@/context/LanguageContext";
 import Button from "@/shared/ui/Button";
 import LazyImage from "@/shared/component/LazyImage";
 import FavoriteButton from "@/shared/component/FavoriteButton";
+import ProductImageLightbox from "./ProductImageLightbox";
 
 export type ProductImageGalleryProps = {
     images: string[];
@@ -72,10 +73,12 @@ export default function ProductImageGallery({
     const imagesKey = safeImages.join("|");
     const [selectedIndex, setSelectedIndex] = useState(0);
     const [thumbnailStartIndex, setThumbnailStartIndex] = useState(0);
+    const [lightboxOpen, setLightboxOpen] = useState(false);
 
     useEffect(() => {
         setSelectedIndex(0);
         setThumbnailStartIndex(0);
+        setLightboxOpen(false);
     }, [imagesKey]);
 
     useEffect(() => {
@@ -119,7 +122,7 @@ export default function ProductImageGallery({
     );
 
     useEffect(() => {
-        if (safeImages.length < 2) return;
+        if (lightboxOpen || safeImages.length < 2) return;
         const onKey = (event: KeyboardEvent) => {
             const target = event.target as HTMLElement | null;
             if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) {
@@ -130,7 +133,7 @@ export default function ProductImageGallery({
         };
         window.addEventListener("keydown", onKey);
         return () => window.removeEventListener("keydown", onKey);
-    }, [goTo, isRTL, safeImages.length]);
+    }, [goTo, isRTL, lightboxOpen, safeImages.length]);
 
     const actions = (
         <div className="absolute end-3 top-3 z-10 flex gap-2">
@@ -175,16 +178,32 @@ export default function ProductImageGallery({
         <div className={cn("relative z-0 flex flex-col gap-2.5", className)}>
             <div className="relative isolate overflow-hidden rounded-2xl bg-[color-mix(in_srgb,var(--color-api-second)_8%,var(--color-bg-card))] ring-1 ring-black/6 dark:ring-white/8">
                 <div className={MAIN_FRAME_CLASS}>
-                    <img
-                        src={safeImages[selectedIndex]}
-                        alt={t("product.imageAlt", {
-                            current: selectedIndex + 1,
-                            total: safeImages.length,
-                            defaultValue: "Product image {{current}} of {{total}}",
-                        })}
-                        className="max-h-full max-w-full object-contain p-4 sm:p-5"
-                    />
+                    <button
+                        type="button"
+                        onClick={() => setLightboxOpen(true)}
+                        className="grid h-full w-full cursor-zoom-in place-items-center"
+                        aria-label={t("product.zoomImage", "Zoom image")}
+                    >
+                        <img
+                            src={safeImages[selectedIndex]}
+                            alt={t("product.imageAlt", {
+                                current: selectedIndex + 1,
+                                total: safeImages.length,
+                                defaultValue: "Product image {{current}} of {{total}}",
+                            })}
+                            className="max-h-full max-w-full object-contain p-4 sm:p-5"
+                        />
+                    </button>
                 </div>
+
+                <button
+                    type="button"
+                    onClick={() => setLightboxOpen(true)}
+                    className="absolute bottom-3 end-3 z-10 grid h-9 w-9 place-items-center rounded-full bg-white/95 text-text-primary shadow-sm ring-1 ring-black/8 hover:bg-white dark:bg-[#121318]/90 dark:ring-white/10"
+                    aria-label={t("product.zoomImage", "Zoom image")}
+                >
+                    <HiMagnifyingGlassPlus className="h-5 w-5" />
+                </button>
 
                 {actions}
 
@@ -281,6 +300,15 @@ export default function ProductImageGallery({
                         </button>
                     )}
                 </div>
+            )}
+
+            {lightboxOpen && (
+                <ProductImageLightbox
+                    images={safeImages}
+                    index={selectedIndex}
+                    onIndexChange={setSelectedIndex}
+                    onClose={() => setLightboxOpen(false)}
+                />
             )}
         </div>
     );

@@ -15,6 +15,8 @@ export interface ScheduledBasketListItem {
  discount_amount: number;
  final_price: number;
  next_run_date: string;
+ /** Clock time `HH:mm`. Null on schedules saved before a time was collected. */
+ delivery_time?: string | null;
  /** Optional: status for filtering (active, paused, etc.) */
  status?: BasketStatus;
  /** Optional: schedule text e.g."Every Monday 7:00-9:00 PM"or"One-time delivery"*/
@@ -79,6 +81,8 @@ export interface ScheduledBasketDetail {
  is_active: boolean;
  start_date: string;
  next_run_date: string;
+ /** Clock time `HH:mm`. Null on schedules saved before a time was collected. */
+ delivery_time?: string | null;
  schedule: ScheduledBasketSchedule;
  category?: string;
  items: ScheduledBasketDetailItem[];
@@ -113,5 +117,9 @@ export interface UpdateScheduledBasketItemPayload {
 export interface UpdateScheduledBasketPayload {
  name: string;
  schedule_id: number;
+ /** Delivery day `Y-m-d`. */
+ start_date?: string;
+ /** Clock time `HH:mm`. Omit when the schedule has no time. */
+ delivery_time?: string;
  items: UpdateScheduledBasketItemPayload[];
 }

@@ -43,6 +43,8 @@ export interface MyBasketUserSchedule extends MyBasketBase {
     basket_type: "user-schedule";
     start_date?: string;
     next_run_date?: string;
+    /** Clock time `HH:mm`. Null on schedules saved before a time was collected. */
+    delivery_time?: string | null;
     category?: never;
 }
 

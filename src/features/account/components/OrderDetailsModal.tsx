@@ -13,12 +13,15 @@ import {
  HiSparkles,
 } from"react-icons/hi";
 import { cn } from"@/shared/lib/utils";
+import PriceBlock from "@/shared/component/PriceBlock";
 import { PremiumInlineLoader } from "@/shared/component/loading";
 import { useOrderDetail } from"../hooks/useOrderDetail";
 import RatingFormModal from"./RatingFormModal";
 import type { OrderDetailItem, OrderDetailVariantAttribute } from"../types/order";
 import { flattenOrderDetailItems, formatOrderMoney } from"../utils/parseOrdersResponse";
 import { getOrderStatusLabel, normalizeOrderStatus } from"@/shared/lib/orderStatus";
+import { formatScheduledDeliveryAt } from"@/features/cart/utils/formatScheduledDelivery";
+import { buildAutomaticRewardLines } from"@/features/cart/utils/automaticPromotions";
 
 type OrderDetailsModalProps = {
  orderId: number | string | null;
@@ -137,11 +140,35 @@ export default function OrderDetailsModal({
  const { formatPrice, currency } = useCurrency();
  const { data: order, isLoading } = useOrderDetail(orderId);
  const lineItems = flattenOrderDetailItems(order?.items);
+ const scheduledLabel = formatScheduledDeliveryAt(
+ order?.scheduled_delivery_at,
+ i18n.language,
+ );
  const money = (
  amount: unknown,
  formatted?: string | null,
  currencies?: Parameters<typeof formatOrderMoney>[0]["currencies"],
  ) => formatOrderMoney({ amount, formatted, currencies }, currency, formatPrice);
+ const rewardLines = order
+ ? buildAutomaticRewardLines({
+ automatic: order.automatic_promotions,
+ promotionDiscount: Number(
+ order.promotion_discount ?? order.discounts?.promotion_discount ?? 0,
+ ),
+ deliveryPrice: Number(order.delivery_price ?? order.discounts?.delivery_price ?? 0),
+ language: i18n.language,
+ formatAmount: (amount) => money(amount),
+ discountLabel: t("orders.promotionDiscount","Promotion"),
+ freeShippingLabel: t("cart.automaticFreeShipping"),
+ freeShippingValue: t("orders.free","Free"),
+ })
+ : [];
+ const automaticDiscountLines = rewardLines.filter((line) =>
+ line.id.startsWith("automatic-discount"),
+ );
+ const otherRewardLines = rewardLines.filter(
+ (line) => !line.id.startsWith("automatic-discount"),
+ );
  const [isSlideReady, setIsSlideReady] = useState(false);
  const [rateModalOpen, setRateModalOpen] = useState(false);
  const [rateModalState, setRateModalState] = useState<{
@@ -252,6 +279,11 @@ export default function OrderDetailsModal({
  {formatDate(order.created_at)}
  </p>
  )}
+ {scheduledLabel ? (
+ <p className="text-sm text-white/90 mt-0.5">
+ {t("orders.scheduledDelivery", "Delivery appointment")}: {scheduledLabel}
+ </p>
+ ) : null}
  </div>
  </div>
  <button
@@ -383,10 +415,12 @@ export default function OrderDetailsModal({
  </button>
  )}
  </div>
- <div className={cn("shrink-0 rounded-2xl bg-[#F7FBFC] px-3 py-2 text-right", isRTL &&"text-left")}>
- <p className="font-semibold text-custom-primary">
- {money(Number(item.final_price_with_extras ?? item.price) * Number(item.quantity || 0))}
- </p>
+ <div className={cn("shrink-0 rounded-2xl bg-[#F7FBFC] px-3 py-2", isRTL ?"text-left":"text-right")}>
+ <PriceBlock
+ price={money(Number(item.final_price_with_extras ?? item.price) * Number(item.quantity || 0))}
+ size="sm"
+ align={isRTL ?"start":"end"}
+ />
  <p className="text-xs text-custom-secondary">
  {t("orders.priceEach", { price: money(item.final_price_with_extras ?? item.price) })}
  </p>
@@ -428,12 +462,25 @@ export default function OrderDetailsModal({
  <span>-{money(order.coupon_discount)}</span>
  </div>
  )}
- {Number(order.promotion_discount ?? 0) > 0 && (
+ {automaticDiscountLines.length > 0
+ ? automaticDiscountLines.map((line) => (
+ <div key={line.id} className="flex justify-between text-green-600">
+ <span>{line.label}</span>
+ {line.value ? <span>{line.value}</span> : null}
+ </div>
+ ))
+ : Number(order.promotion_discount ?? order.discounts?.promotion_discount ?? 0) > 0 && (
  <div className="flex justify-between text-green-600">
  <span>{t("orders.promotionDiscount","Promotion")}</span>
- <span>-{money(Number(order.promotion_discount))}</span>
+ <span>-{money(Number(order.promotion_discount ?? order.discounts?.promotion_discount))}</span>
  </div>
  )}
+ {otherRewardLines.map((line) => (
+ <div key={line.id} className="flex justify-between text-green-600">
+ <span>{line.label}</span>
+ {line.value ? <span>{line.value}</span> : null}
+ </div>
+ ))}
  {Number(order.subscription_discount ?? 0) > 0 && (
  <div className="flex justify-between text-green-600">
  <span>{t("orders.subscriptionDiscount","Subscription discount")}</span>

@@ -1,4 +1,6 @@
 import type { ScheduleBadge, ScheduleItem } from "@/features/cart/types";
+import i18n from "@/i18n/config";
+import { isLocalizedTextObject } from "@/shared/lib/localizedText";
 import { toStorageUrl } from "@/shared/lib/storageUrl";
 import {
     asNumber,
@@ -7,6 +9,15 @@ import {
     unwrapApiList,
     unwrapApiObject,
 } from "./unwrapApi";
+
+/** Plain string from the API, or `{ ar, en }` — UI language, then Arabic, then English. */
+function localizedText(raw: unknown): string | null {
+    const direct = asString(raw);
+    if (direct) return direct;
+    if (!isLocalizedTextObject(raw)) return null;
+    const language = i18n.language?.toLowerCase().startsWith("ar") ? "ar" : "en";
+    return asString(raw[language]) || asString(raw.ar) || asString(raw.en);
+}
 
 function parseDiscountType(
     raw: unknown,
@@ -56,7 +67,7 @@ export function parseScheduleItem(raw: unknown): ScheduleItem | null {
     const row = asRecord(raw);
     if (!row) return null;
     const id = asNumber(row.id);
-    const name = asString(row.name);
+    const name = localizedText(row.name);
     if (id == null || !name) return null;
 
     const image = toStorageUrl(asString(row.image)) ?? asString(row.image);

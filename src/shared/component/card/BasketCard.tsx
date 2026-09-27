@@ -6,6 +6,7 @@ import FavoriteButton from "@/shared/component/FavoriteButton";
 import Rating from "@/shared/component/Rating";
 import Badge from "@/shared/component/Badge";
 import LazyImage from "@/shared/component/LazyImage";
+import PriceBlock from "@/shared/component/PriceBlock";
 import { cn } from "@/shared/lib/utils";
 import type { SectionCardVariant } from "@/features/home/types";
 import { useTheme } from "@/context/ThemeContext";
@@ -182,7 +183,6 @@ export default function BasketCard({
         return value === key ? fallback : value;
     };
     const ctaLabel = tr("home.openBasket", "Open Basket");
-    /** Savings ticket prefers the rich `savings` copy, falls back to the short `saveAmount`. */
     const savingsLabel = savings || saveAmount;
     /** Bundle ribbon copy: exact item count when known, otherwise a generic "curated" tag. */
     const bundleLabel = itemCount && itemCount > 0
@@ -347,34 +347,16 @@ export default function BasketCard({
                     </div>
                 )}
 
-                {/* Price + savings ticket */}
-                <div className="mt-3 flex items-end justify-between gap-3">
-                    <div className="flex flex-col">
-                        <span className="text-[11px] font-medium uppercase tracking-wide text-custom-tertiary dark:text-zinc-500">
-                            {tr("baskets.bundlePrice", "Bundle price")}
-                        </span>
-                        <div className="flex items-baseline gap-2">
-                            <span className="text-2xl font-bold tabular-nums leading-none tracking-tight text-custom-primary dark:text-white">
-                                {price}
-                            </span>
-                            {originalPrice && (
-                                <span className="text-sm text-custom-tertiary line-through decoration-1 dark:text-zinc-500 dark:decoration-zinc-600">
-                                    {originalPrice}
-                                </span>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Receipt-style savings ticket — perforated edge nods to a basket checkout */}
-                    {savingsLabel && (
-                        <span className="relative inline-flex items-center rounded-md bg-emerald-500/12 px-2.5 py-1 text-xs font-bold text-emerald-700 ring-1 ring-emerald-500/25 dark:bg-emerald-400/10 dark:text-emerald-300 dark:ring-emerald-400/25">
-                            <span
-                                className="absolute -left-1 top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-[var(--color-bg-card)] dark:bg-[var(--color-bg-card-elevated)]"
-                                aria-hidden
-                            />
-                            {savingsLabel}
-                        </span>
-                    )}
+                <div className="mt-3">
+                    <span className="mb-1 block text-[11px] font-medium uppercase tracking-wide text-custom-tertiary dark:text-zinc-500">
+                        {tr("baskets.bundlePrice", "Bundle price")}
+                    </span>
+                    <PriceBlock
+                        price={price}
+                        originalPrice={originalPrice}
+                        savings={savingsLabel}
+                        size="lg"
+                    />
                 </div>
 
                 {/* Offer Ending Date */}

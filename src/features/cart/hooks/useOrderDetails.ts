@@ -65,7 +65,7 @@ function mapApiToOrderDetails(
 
  const deliveryIsFree = raw.delivery_price === 0;
  const status = (toOrderStepperStatus(raw.status) ?? "pending") as OrderStatusStep;
- const eta = raw.driver?.eta ??"—";
+ const eta = raw.driver?.eta?.trim() ?? "";
 
  return {
  id: raw.id,
@@ -92,6 +92,7 @@ function mapApiToOrderDetails(
  phoneNumber: raw.user.phone ?? addr.contact_phone,
  address: addressParts.join(","),
  eta,
+ scheduledDeliveryAt: raw.scheduled_delivery_at ?? null,
  },
  payment: {
  method: normalizePaymentMethod(raw.payment_method?.name),

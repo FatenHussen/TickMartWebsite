@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContext";
 import { useCurrency } from "@/context/CurrencyContext";
 import { cn } from "@/shared/lib/utils";
+import PriceBlock from "@/shared/component/PriceBlock";
 import { toNum } from "../utils";
 import type { CartItem } from "../types";
 
@@ -11,7 +12,6 @@ type CartItemCardProps = {
     item: CartItem;
     previewPrices?: Map<number, { price: number; priceBeforeDiscount?: number }>;
     previewPrice?: { price: number; priceBeforeDiscount?: number };
-    previewSubtotal?: string | null;
     extrasTotal?: string | null;
     note?: string | null;
     image?: string | null;
@@ -30,7 +30,6 @@ export default function CartItemCard({
     item,
     previewPrices,
     previewPrice,
-    previewSubtotal,
     extrasTotal,
     note,
     image,
@@ -194,33 +193,23 @@ export default function CartItemCard({
                         </div>
 
                         <div className="text-end">
-                            <div className="flex items-baseline justify-end gap-2">
-                                {displayOriginalPrice && (
-                                    <span className="text-xs text-custom-tertiary line-through tabular-nums">
-                                        {displayOriginalPrice}
-                                    </span>
-                                )}
-                                <span className="text-base font-bold tabular-nums text-custom-primary">
-                                    {displayPrice}
-                                </span>
-                            </div>
+                            <PriceBlock
+                                price={displayPrice}
+                                originalPrice={displayOriginalPrice}
+                                savings={
+                                    savedAmount > 0
+                                        ? `${t("cart.youSave", "You save")} ${formatPrice(savedAmount)}`
+                                        : undefined
+                                }
+                                size="sm"
+                                align="end"
+                            />
                             <p className="mt-0.5 text-[11px] text-custom-secondary">
                                 {t("cart.each", "each")}
                             </p>
-                            {previewSubtotal != null && previewSubtotal !== "" && (
-                                <p className="mt-1 text-sm font-semibold tabular-nums text-custom-primary">
-                                    {previewSubtotal}
-                                </p>
-                            )}
                             {extrasTotal && (
                                 <p className="text-[11px] text-custom-secondary">
                                     {t("cart.extras", "Extras")}: {extrasTotal}
-                                </p>
-                            )}
-                            {savedAmount > 0 && (
-                                <p className="mt-0.5 text-[11px] font-medium text-[var(--color-success)]">
-                                    {t("cart.youSave", "You save")}{" "}
-                                    {formatPrice(savedAmount)}
                                 </p>
                             )}
                         </div>

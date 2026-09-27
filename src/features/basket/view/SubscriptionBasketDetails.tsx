@@ -7,8 +7,7 @@ import ProductItemsTable, { type ProductItemData } from "@/shared/component/tabl
 import BasePopup from "@/shared/component/BasePopup";
 import { Button, Select } from "@/shared/ui";
 import { HiClock, HiPlus } from "react-icons/hi2";
-import { HiOutlineCheckCircle } from "react-icons/hi2";
-import AnimatedPrice from "@/shared/component/AnimatedPrice";
+import PriceBlock from "@/shared/component/PriceBlock";
 import { useCartStore } from "@/store/cart";
 import { useAuthStore } from "@/store/auth";
 import { paths } from "@/app/routes/path/paths";
@@ -294,48 +293,23 @@ export default function SubscriptionBasketDetails({
 
                 {/* Pricing Info */}
                 <div className={`${BASKET_CARD_ELEVATED} p-4 sm:p-5 mb-5`}>
-                    <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
-                        <div className="flex items-baseline gap-2">
-                            <span className="text-custom-secondary">{t("baskets.subtotal")}:</span>
-                            <AnimatedPrice value={subtotal} prefix="$" className="font-bold text-custom-primary" />
-                        </div>
-                        {discount > 0 && (
-                            <div className="flex items-baseline gap-2">
-                                <span className="text-custom-secondary">{t("baskets.discount")}:</span>
-                                <AnimatedPrice value={discount} prefix="-$" className="font-bold text-[var(--color-error)]" />
-                            </div>
-                        )}
-                        <div className="flex items-baseline gap-2">
-                            <span className="text-custom-secondary">{t("baskets.total")}:</span>
-                            <AnimatedPrice value={total} prefix="$" className="text-lg font-bold text-[var(--color-main)]" />
-                        </div>
-                    </div>
-                    {savings > 0 && (
-                        <div className="mt-3 flex items-start gap-3 rounded-xl border border-[color-mix(in_srgb,var(--color-success)_30%,transparent)] bg-[color-mix(in_srgb,var(--color-success)_8%,var(--color-bg-card))] p-3 sm:p-4">
-                            <span
-                                className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--color-success)_16%,transparent)] text-[var(--color-success)]"
-                                aria-hidden
-                            >
-                                <HiOutlineCheckCircle className="h-5 w-5" />
-                            </span>
-                            <p className="text-sm font-medium leading-relaxed text-custom-primary">
-                                <span className="font-bold text-[var(--color-success)]">
-                                    {t("baskets.youSave")} <AnimatedPrice value={savings} prefix="$" />
-                                </span>
-                                {scheduleDiscount > 0 && selectedSchedule && (
-                                    <>
-                                        {" "}
-                                        ({selectedSchedule.discount_type === "percentage"
-                                            ? `${selectedSchedule.discount_value}%`
-                                            : ""})
-                                        {repeatOption === "automatic" && (
-                                            <> {selectedSchedule.title} {t("baskets.subscriptionDiscountApplied")}</>
-                                        )}
-                                    </>
-                                )}
-                            </p>
-                        </div>
-                    )}
+                    <PriceBlock
+                        price={`$${total.toFixed(2)}`}
+                        originalPrice={
+                            savings > 0 ? `$${subtotal.toFixed(2)}` : undefined
+                        }
+                        savings={
+                            savings > 0
+                                ? `${t("baskets.youSave")} $${savings.toFixed(2)}`
+                                : undefined
+                        }
+                        size="lg"
+                    />
+                    {scheduleDiscount > 0 && selectedSchedule && repeatOption === "automatic" ? (
+                        <p className="mt-2 text-sm text-custom-secondary">
+                            {selectedSchedule.title} {t("baskets.subscriptionDiscountApplied")}
+                        </p>
+                    ) : null}
                 </div>
 
                 {/* Products Table */}
@@ -377,14 +351,19 @@ export default function SubscriptionBasketDetails({
                                 </div>
                             </div>
                             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
-                                <div className={isRTL ? "text-left sm:text-right" : "text-right"}>
-                                    <div className="text-sm text-custom-secondary tabular-nums">
-                                        {t("baskets.subtotal")}: <AnimatedPrice value={subtotal} prefix="$" />
-                                    </div>
-                                    <div className="text-lg font-bold text-[var(--color-main)]">
-                                        {t("baskets.total")}: <AnimatedPrice value={total} prefix="$" />
-                                    </div>
-                                </div>
+                                <PriceBlock
+                                    price={`$${total.toFixed(2)}`}
+                                    originalPrice={
+                                        savings > 0 ? `$${subtotal.toFixed(2)}` : undefined
+                                    }
+                                    savings={
+                                        savings > 0
+                                            ? `${t("baskets.youSave")} $${savings.toFixed(2)}`
+                                            : undefined
+                                    }
+                                    size="sm"
+                                    align="end"
+                                />
                                 {availableExtras.length > 0 && (
                                     <Button
                                         onClick={handleAddMoreItems}

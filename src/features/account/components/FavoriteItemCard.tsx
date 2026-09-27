@@ -6,6 +6,7 @@ import Badge from"@/shared/component/Badge";
 import FavoriteButton from"@/shared/component/FavoriteButton";
 import { paths } from"@/app/routes/path/paths";
 import { resolveListingCardPrices } from "@/shared/lib/formatApiPrice";
+import PriceBlock from "@/shared/component/PriceBlock";
 import type { FavoriteItem, FavoriteType } from"../types";
 
 const badgeColorMap: Record<string, string> = {
@@ -117,18 +118,12 @@ export default function FavoriteItemCard({
  {item.description}
  </p>
  )}
- <div className="flex items-center gap-2">
- {priceDisplay && (
- <span className="text-base font-bold text-custom-primary">
- {priceDisplay}
- </span>
- )}
- {originalPrice && (
- <span className="text-xs text-custom-tertiary line-through">
- {originalPrice}
- </span>
- )}
- </div>
+ <PriceBlock
+ price={priceDisplay}
+ originalPrice={originalPrice}
+ savings={listing.savings}
+ size="sm"
+ />
  </div>
  </div>
  );

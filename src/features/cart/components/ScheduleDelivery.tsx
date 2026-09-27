@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 import { useLanguage } from "@/context/LanguageContext";
 import {
     HiOutlineCalendar,
@@ -13,12 +14,14 @@ import { HiOutlineExclamationTriangle } from "react-icons/hi2";
 import Button from "@/shared/ui/Button";
 import { cn } from "@/shared/lib/utils";
 import { useSchedules } from "../hooks/useSchedules";
+import { normalizeDeliveryTime } from "../lib/scheduleDeliveryTime";
 import type { ScheduleItem } from "../types";
 
 export type ScheduleDeliveryData = {
     name: string;
     schedule_id: number;
     start_date: string; // YYYY-MM-DD
+    delivery_time: string; // HH:mm
 };
 
 type ScheduleDeliveryProps = {
@@ -34,12 +37,44 @@ function formatDateToYYYYMMDD(date: Date): string {
     return `${y}-${m}-${d}`;
 }
 
+function formatTimeHHMM(date: Date): string {
+    return `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+}
+
+function startOfDay(date: Date): Date {
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+function isSameDay(a: Date, b: Date): boolean {
+    return (
+        a.getFullYear() === b.getFullYear() &&
+        a.getMonth() === b.getMonth() &&
+        a.getDate() === b.getDate()
+    );
+}
+
+/** Default delivery time: 10:00, or one hour from now when the day is today. */
+function defaultTimeFor(date: Date, now = new Date()): string {
+    if (!isSameDay(date, now)) return "10:00";
+    const next = new Date(now.getTime() + 60 * 60 * 1000);
+    if (!isSameDay(next, now)) return "23:59";
+    return formatTimeHHMM(next);
+}
+
+function isTimeInPast(date: Date, time: string, now = new Date()): boolean {
+    if (!isSameDay(date, now)) return false;
+    const [h, m] = time.split(":").map(Number);
+    if (!Number.isFinite(h) || !Number.isFinite(m)) return true;
+    const at = new Date(date.getFullYear(), date.getMonth(), date.getDate(), h, m, 0, 0);
+    return at.getTime() < now.getTime();
+}
+
 export default function ScheduleDelivery({
     onSaveSchedule,
     onCancelSchedule,
     isSaving = false,
 }: ScheduleDeliveryProps) {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const { isRTL } = useLanguage();
     const { items: schedules = [], isLoading: isSchedulesLoading } =
         useSchedules();
@@ -53,6 +88,7 @@ export default function ScheduleDelivery({
     );
     const [calendarMonth, setCalendarMonth] = useState<Date>(() => new Date());
     const [selectedDate, setSelectedDate] = useState<Date>(() => new Date());
+    const [selectedTime, setSelectedTime] = useState(() => defaultTimeFor(new Date()));
 
     const activeSchedules = useMemo(
         () => schedules.filter((s: ScheduleItem) => s.is_active !== false),
@@ -81,16 +117,35 @@ export default function ScheduleDelivery({
         : null;
 
     const handleSaveSchedule = () => {
-        if (selectedScheduleId != null && onSaveSchedule) {
-            onSaveSchedule({
-                name: scheduleName,
-                schedule_id: selectedScheduleId,
-                start_date: formatDateToYYYYMMDD(selectedDate),
-            });
+        const scheduleId = selectedScheduleId ?? activeSchedules[0]?.id ?? null;
+        if (scheduleId == null || !onSaveSchedule) {
+            toast.error(
+                t(
+                    "cart.noScheduleFrequency",
+                    "No delivery frequency is available yet",
+                ),
+            );
+            return;
         }
+        const deliveryTime = normalizeDeliveryTime(selectedTime);
+        if (!deliveryTime || isTimeInPast(selectedDate, deliveryTime)) {
+            toast.error(
+                t(
+                    "cart.deliveryTimePast",
+                    "Delivery time must be from now onward",
+                ),
+            );
+            return;
+        }
+        const schedule =
+            activeSchedules.find((s) => s.id === scheduleId) ?? selectedSchedule;
+        onSaveSchedule({
+            name: schedule?.name ?? scheduleName,
+            schedule_id: scheduleId,
+            start_date: formatDateToYYYYMMDD(selectedDate),
+            delivery_time: deliveryTime,
+        });
     };
-
-    const canSave = selectedScheduleId != null;
 
     // Calendar - dynamic month from calendarMonth
     const year = calendarMonth.getFullYear();
@@ -108,8 +163,14 @@ export default function ScheduleDelivery({
     const goNextMonth = () =>
         setCalendarMonth((d) => new Date(d.getFullYear(), d.getMonth() + 1, 1));
 
-    const handleDayClick = (day: number) =>
-        setSelectedDate(new Date(year, month, day));
+    const handleDayClick = (day: number) => {
+        const next = new Date(year, month, day);
+        if (startOfDay(next).getTime() < startOfDay(new Date()).getTime()) return;
+        setSelectedDate(next);
+        setSelectedTime((current) =>
+            isTimeInPast(next, current) ? defaultTimeFor(next) : current,
+        );
+    };
 
     const today = new Date();
     const isToday = (day: number) =>
@@ -117,9 +178,9 @@ export default function ScheduleDelivery({
         today.getMonth() === month &&
         today.getFullYear() === year;
 
-    const weekDays = isRTL
-        ? ["SAT", "FRI", "THU", "WED", "TUE", "MON", "SUN"]
-        : ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+    const weekDays = i18n.language?.toLowerCase().startsWith("ar")
+        ? ["أحد", "إثن", "ثلا", "أرب", "خمي", "جمع", "سبت"]
+        : ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
     if (!detailsOpen) {
         return (
@@ -223,6 +284,13 @@ export default function ScheduleDelivery({
                                     />
                                 ))}
                             </div>
+                        ) : activeSchedules.length === 0 ? (
+                            <p className="text-sm text-custom-secondary">
+                                {t(
+                                    "cart.noScheduleFrequency",
+                                    "No delivery frequency is available yet",
+                                )}
+                            </p>
                         ) : (
                             <div className="flex flex-wrap items-center gap-2">
                                 {activeSchedules.map(
@@ -259,11 +327,9 @@ export default function ScheduleDelivery({
                     {/* Calendar + Schedule Summary */}
                     <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_280px] xl:items-start">
                         <div className="min-w-0">
-                            <h4 className="mb-3 text-sm font-semibold text-[color:var(--color-text)]">
-                                {t("cart.startDate", "Start Date")}
-                            </h4>
                             <div
                                 className="rounded-2xl p-3 sm:p-5 md:p-6 border"
+                                dir="ltr"
                                 style={{
                                     background:
                                         "linear-gradient(180deg, color-mix(in srgb, var(--color-main) 6%, var(--color-bg-card)) 0%, color-mix(in srgb, var(--color-main) 3%, var(--color-bg-card)) 100%)",
@@ -284,11 +350,7 @@ export default function ScheduleDelivery({
                                             color: "var(--color-main)",
                                         }}
                                     >
-                                        {isRTL ? (
-                                            <HiChevronRight className="w-5 h-5" />
-                                        ) : (
-                                            <HiChevronLeft className="w-5 h-5" />
-                                        )}
+                                        <HiChevronLeft className="w-5 h-5" />
                                     </button>
                                     <h5 className="text-sm sm:text-base font-bold text-[color:var(--color-text)] tracking-wide">
                                         {monthLabel}
@@ -302,21 +364,17 @@ export default function ScheduleDelivery({
                                             color: "var(--color-main)",
                                         }}
                                     >
-                                        {isRTL ? (
-                                            <HiChevronLeft className="w-5 h-5" />
-                                        ) : (
-                                            <HiChevronRight className="w-5 h-5" />
-                                        )}
+                                        <HiChevronRight className="w-5 h-5" />
                                     </button>
                                 </div>
 
                                 <div className="mb-3 grid grid-cols-7 gap-1">
-                                    {weekDays.map((day) => (
+                                    {weekDays.map((day, index) => (
                                         <div
-                                            key={day}
-                                            className="py-1 text-center text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.18em] text-custom-tertiary"
+                                            key={`${day}-${index}`}
+                                            className="py-1 text-center text-[10px] sm:text-[11px] font-semibold tracking-[0.04em] text-custom-tertiary"
                                         >
-                                            {day.slice(0, 3)}
+                                            {day}
                                         </div>
                                     ))}
                                 </div>
@@ -335,19 +393,28 @@ export default function ScheduleDelivery({
                                             selectedDate.getDate() === day &&
                                             selectedDate.getMonth() === month &&
                                             selectedDate.getFullYear() === year;
-                                        const today = isToday(day);
+                                        const todayMark = isToday(day);
+                                        const isPast =
+                                            startOfDay(
+                                                new Date(year, month, day),
+                                            ).getTime() <
+                                            startOfDay(today).getTime();
                                         return (
                                             <button
                                                 key={day}
                                                 type="button"
+                                                disabled={isPast}
                                                 onClick={() =>
                                                     handleDayClick(day)
                                                 }
                                                 className={cn(
                                                     "relative flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center justify-self-center rounded-full text-xs sm:text-sm font-semibold leading-none transition-all duration-200",
+                                                    isPast &&
+                                                        "cursor-not-allowed text-[color:var(--color-text)]/25",
                                                     isSelected
                                                         ? "text-white scale-105"
-                                                        : "text-[color:var(--color-text)]/80 hover:bg-custom-card",
+                                                        : !isPast &&
+                                                              "text-[color:var(--color-text)]/80 hover:bg-custom-card",
                                                 )}
                                                 style={
                                                     isSelected
@@ -361,7 +428,7 @@ export default function ScheduleDelivery({
                                                 }
                                             >
                                                 {day}
-                                                {today && !isSelected && (
+                                                {todayMark && !isSelected && (
                                                     <span
                                                         className="absolute bottom-1 h-1 w-1 rounded-full"
                                                         style={{
@@ -374,11 +441,39 @@ export default function ScheduleDelivery({
                                         );
                                     })}
                                 </div>
+
+                                <label
+                                    className="mt-5 flex flex-col gap-2 border-t border-[color:color-mix(in_srgb,var(--color-main)_18%,transparent)] pt-4"
+                                    dir={isRTL ? "rtl" : "ltr"}
+                                >
+                                    <span className="text-sm font-semibold text-[color:var(--color-text)]">
+                                        {t("cart.deliveryTime", "Delivery time")}
+                                    </span>
+                                    <input
+                                        type="time"
+                                        step={60}
+                                        required
+                                        dir="ltr"
+                                        value={selectedTime}
+                                        min={
+                                            isSameDay(selectedDate, today)
+                                                ? formatTimeHHMM(today)
+                                                : undefined
+                                        }
+                                        onChange={(e) => {
+                                            const next = normalizeDeliveryTime(
+                                                e.target.value,
+                                            );
+                                            setSelectedTime(next ?? e.target.value);
+                                        }}
+                                        className="h-11 w-full max-w-[180px] rounded-xl border border-custom-primary bg-custom-card px-3 text-sm font-semibold text-[color:var(--color-text)]"
+                                    />
+                                </label>
                             </div>
                         </div>
 
                         {/* Schedule Summary + Reminder */}
-                        <div className="space-y-3 xl:pt-[34px]">
+                        <div className="space-y-3">
                             <div
                                 className="rounded-2xl p-5 border bg-custom-card"
                                 style={{
@@ -412,8 +507,8 @@ export default function ScheduleDelivery({
                                     />
                                     <SummaryDetail
                                         label={t(
-                                            "cart.startDate",
-                                            "Start date",
+                                            "cart.deliveryDate",
+                                            "Delivery date",
                                         )}
                                         value={selectedDate.toLocaleDateString(
                                             undefined,
@@ -426,18 +521,27 @@ export default function ScheduleDelivery({
                                     />
                                     <SummaryDetail
                                         label={t(
+                                            "cart.deliveryTime",
+                                            "Delivery time",
+                                        )}
+                                        value={selectedTime}
+                                    />
+                                    <SummaryDetail
+                                        label={t(
                                             "cart.nextDelivery",
                                             "Next delivery",
                                         )}
                                         value={
-                                            nextDeliveryDate?.toLocaleDateString(
-                                                undefined,
-                                                {
-                                                    month: "short",
-                                                    day: "numeric",
-                                                    year: "numeric",
-                                                },
-                                            ) ?? "-"
+                                            nextDeliveryDate
+                                                ? `${nextDeliveryDate.toLocaleDateString(
+                                                      undefined,
+                                                      {
+                                                          month: "short",
+                                                          day: "numeric",
+                                                          year: "numeric",
+                                                      },
+                                                  )} · ${selectedTime}`
+                                                : "-"
                                         }
                                         highlight
                                     />
@@ -486,8 +590,9 @@ export default function ScheduleDelivery({
                         }}
                     >
                         <Button
+                            type="button"
                             onClick={handleSaveSchedule}
-                            disabled={!canSave || isSaving}
+                            disabled={isSaving}
                             className={cn(
                                 "h-12 w-full sm:w-auto sm:min-w-[160px] rounded-xl px-6 text-sm font-semibold text-white transition-all duration-200",
                                 "!bg-[color:var(--color-api-second)] hover:!bg-[color:var(--color-api-second-hover)] hover:-translate-y-0.5",
@@ -500,6 +605,7 @@ export default function ScheduleDelivery({
                                 : t("cart.saveSchedule", "Save schedule")}
                         </Button>
                         <Button
+                            type="button"
                             onClick={onCancelSchedule}
                             variant="outline"
                             className={cn(

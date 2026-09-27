@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContext";
 import { cn } from "@/shared/lib/utils";
 import type { PaymentMethodOption } from "../types";
+import { isPaymentMethodEnabled } from "../utils/paymentMethods";
 
 type CheckoutPaymentSectionProps = {
     paymentMethods: PaymentMethodOption[];
@@ -21,7 +22,9 @@ export default function CheckoutPaymentSection({
 
     const defaultMethodId =
         selectedPaymentMethodId ||
-        (allowEmpty ? "" : paymentMethods[0]?.id || "");
+        (allowEmpty
+            ? ""
+            : paymentMethods.find(isPaymentMethodEnabled)?.id || "");
 
     return (
         <section dir={isRTL ? "rtl" : "ltr"}>
@@ -39,22 +42,32 @@ export default function CheckoutPaymentSection({
                     </p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="flex flex-col gap-3">
                     {paymentMethods.map((method) => {
+                        const enabled = isPaymentMethodEnabled(method);
                         const isSelected =
+                            enabled &&
                             method.id ===
-                            (selectedPaymentMethodId || defaultMethodId);
+                                (selectedPaymentMethodId || defaultMethodId);
 
                         return (
                             <button
                                 key={method.id}
                                 type="button"
-                                onClick={() => onPaymentMethodSelect(method.id)}
+                                disabled={!enabled}
+                                onClick={() => {
+                                    if (!enabled) return;
+                                    onPaymentMethodSelect(method.id);
+                                }}
                                 className={cn(
-                                    "flex h-full min-h-[148px] flex-col items-center gap-2.5 rounded-2xl border-2 p-4 text-center",
+                                    "flex w-full items-center gap-4 rounded-2xl border-2 px-4 py-4 text-start sm:px-5",
                                     "transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[color:color-mix(in_srgb,var(--color-main)_25%,transparent)]",
-                                    !isSelected &&
-                                        "border-custom-primary bg-custom-card hover:border-[color:color-mix(in_srgb,var(--color-main)_35%,transparent)]",
+                                    enabled
+                                        ? "bg-custom-card"
+                                        : "cursor-not-allowed bg-custom-card opacity-55",
+                                    enabled &&
+                                        !isSelected &&
+                                        "border-custom-primary hover:border-[color:color-mix(in_srgb,var(--color-main)_35%,transparent)]",
                                 )}
                                 style={
                                     isSelected
@@ -66,7 +79,12 @@ export default function CheckoutPaymentSection({
                                               boxShadow:
                                                   "0 10px 24px -12px color-mix(in srgb, var(--color-main) 35%, transparent)",
                                           }
-                                        : undefined
+                                        : !enabled
+                                          ? {
+                                                borderColor:
+                                                    "color-mix(in srgb, var(--color-text) 10%, transparent)",
+                                            }
+                                          : undefined
                                 }
                             >
                                 <span
@@ -90,7 +108,7 @@ export default function CheckoutPaymentSection({
                                     )}
                                 </span>
 
-                                <div className="flex h-12 w-16 items-center justify-center">
+                                <div className="flex h-12 w-14 shrink-0 items-center justify-center">
                                     {method.icon ? (
                                         <img
                                             src={method.icon}
@@ -108,16 +126,25 @@ export default function CheckoutPaymentSection({
                                     )}
                                 </div>
 
-                                <div className="min-w-0 w-full">
-                                    <p className="text-sm font-semibold leading-tight text-[color:var(--color-text)]">
+                                <div className="min-w-0 flex-1">
+                                    <p className="text-sm font-semibold leading-tight text-[color:var(--color-text)] sm:text-base">
                                         {method.name}
                                     </p>
                                     {method.description ? (
-                                        <p className="mt-1 line-clamp-2 text-xs text-custom-secondary">
+                                        <p className="mt-1 line-clamp-2 text-xs text-custom-secondary sm:text-sm">
                                             {method.description}
                                         </p>
                                     ) : null}
                                 </div>
+
+                                {!enabled ? (
+                                    <span className="shrink-0 rounded-full bg-custom-tertiary px-2.5 py-1 text-[11px] font-semibold text-custom-secondary">
+                                        {t(
+                                            "checkout.paymentUnavailable",
+                                            "Unavailable",
+                                        )}
+                                    </span>
+                                ) : null}
                             </button>
                         );
                     })}

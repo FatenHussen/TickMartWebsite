@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useCurrency } from "@/context/CurrencyContext";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import BasePopup from "@/shared/component/BasePopup";
 import Button from "@/shared/ui/Button";
-import FormattedPrice from "@/shared/component/FormattedPrice";
+import PriceBlock from "@/shared/component/PriceBlock";
 import { PremiumInlineLoader } from "@/shared/component/loading";
 import ShopVariantsPreview from "@/features/product/components/ShopVariantsPreview";
 import { _ProductApi } from "@/features/product/api/productApi";
@@ -17,7 +18,7 @@ import {
     exceedsVariantStock,
 } from "@/features/product/types/productDetails";
 import { gallerySrcsForSelection } from "@/features/product/lib/productMedia";
-import { resolveDisplaySalePrice } from "@/shared/lib/formatApiPrice";
+import { resolveListingCardPrices } from "@/shared/lib/formatApiPrice";
 import type { ProductItem } from "@/features/home/types";
 import type { UseMutationResult } from "@tanstack/react-query";
 import type { CustomBasketState } from "../types";
@@ -45,6 +46,7 @@ export default function AddToCustomBasketPopup({
     addMutation,
 }: AddToCustomBasketPopupProps) {
     const { t } = useTranslation();
+    const { currency } = useCurrency();
     const [selectedVariantId, setSelectedVariantId] = useState<number | null>(
         null,
     );
@@ -98,8 +100,11 @@ export default function AddToCustomBasketPopup({
         details?.max_purchase_quantity,
     );
 
-    const priceLabel =
-        resolveDisplaySalePrice(selectedVariant ?? details ?? product) || null;
+    const listing = resolveListingCardPrices(
+        selectedVariant ?? details ?? product,
+        t("product.youSaved", "You saved"),
+        currency,
+    );
 
     const resolvedVariantId = (): number | null => {
         if (selectedVariantId != null) return selectedVariantId;
@@ -176,14 +181,14 @@ export default function AddToCustomBasketPopup({
                             className="mx-auto h-32 w-32 rounded-3xl object-cover shadow-md ring-1 ring-black/5 dark:ring-white/10"
                         />
                     ) : null}
-                    {priceLabel ? (
-                        <div className="text-center">
-                            <FormattedPrice
-                                value={priceLabel}
-                                prominent
-                                className="text-lg font-bold text-custom-primary dark:text-white"
-                            />
-                        </div>
+                    {listing.price ? (
+                        <PriceBlock
+                            price={listing.price}
+                            originalPrice={listing.originalPrice}
+                            savings={listing.savings}
+                            size="sm"
+                            align="center"
+                        />
                     ) : null}
                     {purchasable.length > 0 && (
                         <ShopVariantsPreview

@@ -10,6 +10,7 @@ import { useCartStore } from "@/store/cart";
 import { useAuthStore } from "@/store/auth";
 import { paths } from "@/app/routes/path/paths";
 import { cn } from "@/shared/lib/utils";
+import PriceBlock from "@/shared/component/PriceBlock";
 import { useBasketRatings } from "../hooks/useBaskets";
 import ProductReviews from "@/shared/component/ProductReviews";
 import { RatingFormModal } from "@/features/account/components";
@@ -171,10 +172,6 @@ export default function CustomBasketDetails({
         }
     };
 
-    const savingsPercentage = basket.original_price > 0
-        ? Math.round(((basket.original_price - basket.final_price) / basket.original_price) * 100)
-        : 0;
-
     const crumbLink =
         "rounded-md px-1.5 py-0.5 text-custom-secondary transition-colors hover:bg-[color-mix(in_srgb,var(--color-main)_8%,var(--color-bg-card))] hover:text-[var(--color-main)] cursor-pointer";
 
@@ -243,23 +240,21 @@ export default function CustomBasketDetails({
                                 )}
                             </div>
 
-                            <div className="flex flex-col items-baseline gap-3">
-                                <span className="text-3xl sm:text-4xl font-bold text-custom-primary tabular-nums">
-                                    ${liveTotal.toFixed(2)}
-                                </span>
-                                <div className="flex flex-row items-baseline gap-3">
-                                {!hasQuantityOrAltOverrides && basket.original_price > basket.final_price && (
-                                    <>
-                                        <span className="text-lg sm:text-xl text-custom-tertiary line-through tabular-nums">
-                                            ${basket.original_price.toFixed(2)}
-                                        </span>
-                                        <span className="text-sm font-medium text-[var(--color-success)]">
-                                            {t("product.youSaved")} ${(basket.saving || 0).toFixed(2)} ({savingsPercentage}%)
-                                        </span>
-                                    </>
-                                )}
-                                </div>
-                            </div>
+                            <PriceBlock
+                                price={`$${liveTotal.toFixed(2)}`}
+                                originalPrice={
+                                    !hasQuantityOrAltOverrides &&
+                                    basket.original_price > basket.final_price
+                                        ? `$${basket.original_price.toFixed(2)}`
+                                        : undefined
+                                }
+                                savings={
+                                    !hasQuantityOrAltOverrides && (basket.saving || 0) > 0
+                                        ? `${t("product.youSaved")} $${(basket.saving || 0).toFixed(2)}`
+                                        : undefined
+                                }
+                                size="xl"
+                            />
                         </div>
                     </div>
                 </div>
@@ -270,9 +265,21 @@ export default function CustomBasketDetails({
                         <p className="text-xs font-medium uppercase tracking-wide text-custom-secondary">
                             {t("baskets.currentTotal")}
                         </p>
-                        <span className="text-xl sm:text-2xl font-bold text-custom-primary tabular-nums">
-                            ${liveTotal.toFixed(2)}
-                        </span>
+                        <PriceBlock
+                            price={`$${liveTotal.toFixed(2)}`}
+                            originalPrice={
+                                !hasQuantityOrAltOverrides &&
+                                basket.original_price > basket.final_price
+                                    ? `$${basket.original_price.toFixed(2)}`
+                                    : undefined
+                            }
+                            savings={
+                                !hasQuantityOrAltOverrides && (basket.saving || 0) > 0
+                                    ? `${t("product.youSaved")} $${(basket.saving || 0).toFixed(2)}`
+                                    : undefined
+                            }
+                            size="lg"
+                        />
                     </div>
                     <Button
                         onClick={handleAddToCart}

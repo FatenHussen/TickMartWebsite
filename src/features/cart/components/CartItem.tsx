@@ -1,4 +1,5 @@
 import type { CartItem as CartItemType } from"../types";
+import PriceBlock from "@/shared/component/PriceBlock";
 
 type CartItemProps = {
  item: CartItemType;
@@ -48,17 +49,13 @@ export default function CartItem({
  </p>
  )}
 
- {/* Price */}
- <div className="flex items-center gap-2 mt-2">
- {item.originalPrice && (
- <span className="text-sm text-custom-tertiary line-through">
- {item.originalPrice}
- </span>
- )}
- <span className="font-semibold text-text-primary text-base">
- {item.price}
- </span>
- </div>
+ <PriceBlock
+ price={item.price}
+ originalPrice={item.originalPrice}
+ savings={item.savingsText}
+ size="sm"
+ className="mt-2"
+ />
 
  {/* Quantity Selector and Remove */}
  <div className="flex items-center justify-between mt-4">

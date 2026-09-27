@@ -7,6 +7,11 @@ import MyBasketsHeader from "../components/my-baskets/components/MyBasketsHeader
 import MyBasketsSortControls from "../components/my-baskets/components/MyBasketsSortControls";
 import MyBasketsTypeFilters from "../components/my-baskets/components/MyBasketsTypeFilters";
 import { useMyBasketsPageState } from "../components/my-baskets/hooks/useMyBasketsPageState";
+import {
+    formatScheduledDeliveryStamp,
+    getBasketDeliveryTime,
+    getBasketNextRunDate,
+} from "../components/my-baskets/utils/basketDisplay";
 
 export default function MyBaskets() {
     const { t } = useTranslation();
@@ -92,11 +97,14 @@ export default function MyBaskets() {
                 <DeleteBasketPopup
                     isOpen={isDeletePopupOpen}
                     basketName={basketPendingDelete.name}
-                    nextRunDate={
-                        "next_run_date" in basketPendingDelete
-                            ? basketPendingDelete.next_run_date
-                            : ""
-                    }
+                    nextRunDate={(() => {
+                        const nextRunDate = getBasketNextRunDate(basketPendingDelete);
+                        if (!nextRunDate) return "";
+                        return formatScheduledDeliveryStamp(
+                            nextRunDate,
+                            getBasketDeliveryTime(basketPendingDelete),
+                        );
+                    })()}
                     isDeleting={isDeletingBasket}
                     onClose={closeDeleteBasketPopup}
                     onConfirm={confirmDeleteBasket}

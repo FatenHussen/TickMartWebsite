@@ -6,6 +6,7 @@ import FavoriteButton from"@/shared/component/FavoriteButton";
 import Badge from"@/shared/component/Badge";
 import type { FavoriteType, WishlistDisplayItem } from"../types";
 import AnimatedButton from"@/shared/ui/AnimatedButton";
+import PriceBlock from "@/shared/component/PriceBlock";
 
 // Match ProductCard / BestSellersCard badge styling: rounded-lg, text-white
 const badgeColorMap: Record<string, string> = {
@@ -100,22 +101,17 @@ export default function WishlistItemCard({
  {item.category}
  </p>
  )}
- <div className="flex items-baseline gap-2">
- <span className="text-lg font-bold text-custom-primary">
- {item.priceDisplay}
- </span>
- {item.originalPrice && (
- <span className="text-sm text-custom-tertiary line-through">
- {item.originalPrice}
- </span>
- )}
- </div>
+ <PriceBlock
+ price={item.priceDisplay}
+ originalPrice={item.originalPrice}
+ savings={
+ item.savingsAmount
+ ? `${t("wishlist.youSaved")} ${item.savingsAmount}`
+ : undefined
+ }
+ size="sm"
+ />
  <div className="flex flex-wrap items-center justify-between gap-2 mt-2">
- {item.savingsAmount && (
- <span className="text-sm font-medium text-green-600 dark:text-green-400">
- {t("wishlist.youSaved")} {item.savingsAmount}
- </span>
- )}
  {item.soldCount != null && item.soldCount > 0 && (
  <span className="text-sm text-custom-secondary">
  {item.soldCount.toLocaleString()} {t("wishlist.sold")}

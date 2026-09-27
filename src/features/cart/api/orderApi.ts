@@ -287,6 +287,15 @@ export const _OrderApi = {
  if (result.promotion_discount == null) {
  result.promotion_discount = toNum(d.promotion_discount);
  }
+ // Automatic offers (first order, signup, spend-x) land on
+ // `discounts.promotion_discount` even when `external.source` is not "promotion".
+ // An earlier branch may have stored 0 in that case — prefer the API amount.
+ if (d.promotion_discount != null && d.promotion_discount !== "") {
+ const flatPromotionDiscount = toNum(d.promotion_discount);
+ if (flatPromotionDiscount > 0) {
+ result.promotion_discount = flatPromotionDiscount;
+ }
+ }
  if (result.free_delivery_from_points == null && typeof d.free_delivery_from_points === "boolean") {
  result.free_delivery_from_points = d.free_delivery_from_points;
  }

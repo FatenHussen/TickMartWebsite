@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import type { PaymentMethodOption } from "@/features/cart/types";
+import {
+    isPaymentMethodEnabled,
+    resolveSelectablePaymentMethodId,
+} from "@/features/cart/utils/paymentMethods";
 import { useCheckoutStore } from "@/store/checkout";
 import { PAYMENT_METHOD_STORAGE_KEY } from "../constants";
 
@@ -32,30 +36,30 @@ export function usePaymentMethodPreference(
         }
 
         const savedId = localStorage.getItem(PAYMENT_METHOD_STORAGE_KEY);
-        const savedIdIsValid =
-            Boolean(savedId) &&
-            methods.some((method) => method.id === savedId);
+        const nextId = resolveSelectablePaymentMethodId(methods, savedId);
 
-        if (savedIdIsValid) {
+        if (!nextId || nextId === savedId) {
             return;
         }
 
-        const fallbackId = methods[0].id;
-        setSelectedMethodId(fallbackId);
-        setPaymentMethodId(fallbackId);
-        localStorage.setItem(PAYMENT_METHOD_STORAGE_KEY, fallbackId);
+        setSelectedMethodId(nextId);
+        setPaymentMethodId(nextId);
+        localStorage.setItem(PAYMENT_METHOD_STORAGE_KEY, nextId);
     }, [methods, setPaymentMethodId]);
 
     const selectMethod = useCallback(
         (methodId: string) => {
+            const method = methods.find((item) => item.id === methodId);
+            if (!method || !isPaymentMethodEnabled(method)) return;
+
             setSelectedMethodId(methodId);
             setPaymentMethodId(methodId);
             localStorage.setItem(PAYMENT_METHOD_STORAGE_KEY, methodId);
         },
-        [setPaymentMethodId],
+        [methods, setPaymentMethodId],
     );
 
-    const defaultMethodId = methods[0]?.id;
+    const defaultMethodId = resolveSelectablePaymentMethodId(methods) || methods[0]?.id;
 
     return {
         selectedMethodId,

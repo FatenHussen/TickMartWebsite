@@ -4,6 +4,7 @@ import Rating from "@/shared/component/Rating";
 import AnimatedButton from "../../ui/AnimatedButton";
 import Badge from "@/shared/component/Badge";
 import LazyImage from "@/shared/component/LazyImage";
+import PriceBlock from "@/shared/component/PriceBlock";
 import {
     type ProductCardBadge,
     resolveProductCardBadgeLabel,
@@ -187,25 +188,13 @@ export default function BestSellersCard({
                     </p>
                 )}
 
-                {/* Price Section */}
                 <div className="mt-3">
-                    <div className="flex items-baseline gap-2">
-                        <span className="text-lg font-bold text-slate-900 dark:text-white">
-                            {price}
-                        </span>
-                        {originalPrice && (
-                            <span className="text-sm text-slate-500 line-through dark:text-zinc-500 dark:decoration-zinc-600">
-                                {originalPrice}
-                            </span>
-                        )}
-                    </div>
-
-                    {/* Savings */}
-                    {savings && (
-                        <p className="mt-1 text-sm font-medium text-green-600 dark:text-emerald-300">
-                            {savings}
-                        </p>
-                    )}
+                    <PriceBlock
+                        price={price}
+                        originalPrice={originalPrice}
+                        savings={savings}
+                        size="sm"
+                    />
                 </div>
 
                 {/* Sold Quantity */}

@@ -112,6 +112,8 @@ export interface TrackOrderApiData {
  status_label?: string | null;
  cart_type: string;
  is_instant_delivery: boolean;
+ /** Set by admin. `YYYY-MM-DD HH:mm`, or null when no appointment is saved. */
+ scheduled_delivery_at?: string | null;
  delivery_price: number;
  subtotal: number;
  total: number;

@@ -26,37 +26,35 @@ export default function ProductActions({
                 {items.map((icon) => {
                     const src = productIconImageUrl(icon);
                     if (!src) return null;
+                    const hint = icon.description?.trim() || undefined;
                     const sharedClassName =
                         "flex flex-col items-center justify-center gap-1.5 rounded-xl bg-transparent px-2 py-2 text-center transition-colors hover:bg-black/[0.03] dark:hover:bg-white/[0.04]";
-                    const isClickable = onIconClick && icon.description;
+                    const isClickable = Boolean(onIconClick && hint);
                     const content = (
                         <>
                             <img
                                 src={src}
                                 alt={icon.name}
+                                title={hint}
                                 className="h-10 w-10 object-contain"
                             />
                             <span className="text-xs font-medium text-custom-primary whitespace-nowrap">
                                 {icon.name}
                             </span>
-                            {!isClickable && icon.description && (
-                                <span className="text-[10px] text-custom-secondary line-clamp-2">
-                                    {icon.description}
-                                </span>
-                            )}
                         </>
                     );
                     return isClickable ? (
                         <button
-                            key={icon.id}
+                            key={`${icon.id}:${src}`}
                             type="button"
-                            onClick={() => onIconClick(icon)}
+                            title={hint}
+                            onClick={() => onIconClick?.(icon)}
                             className={cn(sharedClassName, "cursor-pointer")}
                         >
                             {content}
                         </button>
                     ) : (
-                        <div key={icon.id} className={sharedClassName}>
+                        <div key={`${icon.id}:${src}`} title={hint} className={sharedClassName}>
                             {content}
                         </div>
                     );

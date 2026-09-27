@@ -5,6 +5,7 @@ import {
     normalizeSectionLocalization,
     resolveLocalizableFields,
 } from "@/shared/lib/sectionLocalization";
+import { isNotFoundResult, valueOrNotFound } from "@/shared/lib/apiNotFound";
 import { _CategoriesApi } from "../api/categoriesApi";
 import type { CategoryPageFilters } from "../api/categoriesApi";
 import type { ApiCategory, CategoryChild, CategoryPageData } from "../types";
@@ -48,13 +49,21 @@ export function useCategoryPage(
 
     return useQuery({
         queryKey: queryKeys.categories.page(categoryId, filters),
-        queryFn: () => _CategoriesApi.getCategoryPage(categoryId as number, filters),
-        enabled: categoryId != null,
-        select: (response): CategoryPageData => ({
-            category: normalizeCategory(response.data.category, language),
-            sections: (response.data.sections ?? []).map((section) =>
-                normalizeSectionLocalization(section, language)
+        queryFn: () =>
+            valueOrNotFound(() =>
+                _CategoriesApi.getCategoryPage(categoryId as number, filters),
             ),
-        }),
+        enabled: categoryId != null,
+        staleTime: 0,
+        refetchOnMount: "always",
+        select: (response): CategoryPageData | null => {
+            if (isNotFoundResult(response)) return null;
+            return {
+                category: normalizeCategory(response.data.category, language),
+                sections: (response.data.sections ?? []).map((section) =>
+                    normalizeSectionLocalization(section, language),
+                ),
+            };
+        },
     });
 }

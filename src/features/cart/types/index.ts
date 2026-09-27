@@ -87,12 +87,14 @@ export interface SchedulesResponse {
 /** Create scheduled basket payload for POST user/scheduled-baskets */
 export interface CreateScheduledBasketPayload {
  name: string;
- category_id: number;
  schedule_id: number;
  is_active: boolean;
- start_date: string; // YYYY-MM-DD
+ /** Delivery day `Y-m-d`. Not a range start. */
+ start_date: string;
+ /** Time of day for the delivery, `HH:mm`. Required by the cart UI. */
+ delivery_time: string;
  items: Array<{
- product_id: number;
+ product_id?: number;
  shop_product_variant_id: number;
  quantity: number;
  }>;
@@ -140,6 +142,8 @@ export interface ActiveOrder {
  status_label?: string | null;
  cart_type: string;
  is_instant_delivery: boolean;
+ /** Set by admin. `YYYY-MM-DD HH:mm`, or null when no appointment is saved. */
+ scheduled_delivery_at?: string | null;
  delivery_price: number;
  subtotal: number;
  total: number;
@@ -206,6 +210,8 @@ export interface AvailablePromotion {
  id: number;
  name: string | { ar?: string | null; en?: string | null };
  description?: string;
+ /** Choosable offers are `simple_discount` or `spend_x_discount`. Automatic types apply without `promotion_id`. */
+ type?: string;
  discount_type?: string;
  discount_value?: number;
  min_order_amount?: number;
@@ -258,18 +264,52 @@ export interface OrderPreviewOrderItem {
  note?: string;
 }
 
-/** Root `automatic_promotions` from preview (optional; shape may evolve) */
+export interface AutomaticPromotionDiscount {
+ promotion_id?: number;
+ type?: string;
+ discount?: number;
+ discount_type?: string;
+ discount_value?: string | number;
+ name?: string | { ar?: string | null; en?: string | null };
+}
+
+export interface AutomaticPromotionGift {
+ promotion_id?: number;
+ type?: string;
+ gift_description?: string | { ar?: string | null; en?: string | null };
+ promotion_name?: string | { ar?: string | null; en?: string | null };
+}
+
+/** Root `automatic_promotions` from preview and from the created order. */
 export interface OrderPreviewAutomaticPromotions {
- gifts?: unknown[];
+ discounts?: AutomaticPromotionDiscount[];
+ gifts?: AutomaticPromotionGift[];
  points_expected?: number;
  points_awarded?: number;
  points_awards?: unknown[];
  free_shipping_applies?: boolean;
 }
 
+/** One reward row in the payment summary. Money comes from the API total, not a client recalculation. */
+export interface SummaryRewardLine {
+ id: string;
+ label: string;
+ value?: string;
+}
+
 export interface OrderPreviewResponse {
  // new3/8+ format: nested delivery object
- delivery?: { price: number };
+ delivery?: {
+  price?: number;
+  eta?: string;
+  estimated_time?: string;
+  estimated_delivery?: string;
+  time?: string;
+  minutes?: number;
+ };
+ estimated_delivery?: string;
+ eta?: string;
+ delivery_time?: string;
  // Per-item breakdown - items (legacy) or orderItems (new API)
  items?: OrderPreviewItemPrice[] | Record<string, { items: OrderPreviewItemPrice[] }>;
  orderItems?: OrderPreviewOrderItem[];
@@ -332,6 +372,7 @@ export type OrderSummary = {
  couponDiscount: string;
  subscriptionDiscount?: string;
  promotionDiscount?: string;
+ rewardLines?: SummaryRewardLine[];
  excludedItemsCount?: number;
  total: string;
  couponFeedback?: {
@@ -388,6 +429,8 @@ export type Order = {
  deliveryAddress?: string; // e.g.,"Home, 123 Main Street"
  total: string;
  paymentMethod: string; // e.g.,"Visa ending 1234"
+ /** Admin-set appointment. Omit the line when null. */
+ scheduledDeliveryAt?: string | null;
  refundStatus?: string; // For cancelled orders
  actions: {
  viewDetails?: boolean;
@@ -428,6 +471,8 @@ export type OrderDetails = {
  address: string;
  eta: string;
  message?: string;
+ /** Admin-set appointment. Hidden when null. */
+ scheduledDeliveryAt?: string | null;
  };
  payment: {
  method:"cash_on_delivery"|"credit_card"|"paypal";
@@ -451,6 +496,7 @@ export type PaymentMethodOption = {
  name: string;
  description: string;
  icon?: string;
+ enabled?: boolean;
  type?:
  |"cash_on_delivery"
  |"syriatel_cash"
@@ -469,9 +515,11 @@ export type CheckoutOrderSummary = {
  couponDiscount: string;
  subscriptionDiscount?: string;
  promotionDiscount?: string;
+ rewardLines?: SummaryRewardLine[];
  productDiscount?: string;
  total: string;
  numOfItems?: number;
+ pointsEarned?: number;
 };
 
 export type ReviewOrderSummary = {

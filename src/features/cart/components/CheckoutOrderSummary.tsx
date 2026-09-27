@@ -1,4 +1,5 @@
-import { HiArrowRight } from "react-icons/hi";
+import { HiTruck } from "react-icons/hi";
+import { FaStar } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContext";
@@ -17,23 +18,42 @@ type CheckoutOrderSummaryProps = {
     summary: CheckoutOrderSummary;
     onPlaceOrder?: () => void;
     buttonText?: string;
+    canContinue?: boolean;
+    isLoading?: boolean;
+    /** Review step: the total once, with no breakdown or delivery line. */
+    totalOnly?: boolean;
+    backHref?: string;
+    backLabel?: string;
 };
 
 export default function CheckoutOrderSummary({
     summary,
     onPlaceOrder,
     buttonText,
+    canContinue = true,
+    isLoading = false,
+    totalOnly = false,
+    backHref = "/cart",
+    backLabel,
 }: CheckoutOrderSummaryProps) {
     const { t } = useTranslation();
     const { isRTL } = useLanguage();
-    const totalItems = summary.items.reduce(
-        (sum, item) => sum + item.quantity,
-        0,
-    );
+    const totalItems =
+        summary.numOfItems ??
+        summary.items.reduce((sum, item) => sum + item.quantity, 0);
+    const shippingIsFree =
+        summary.shippingIsFree ||
+        summary.deliveryFees === "Free" ||
+        /free/i.test(String(summary.deliveryFees ?? ""));
+    const showItemsTotal =
+        Boolean(summary.itemsTotal) &&
+        summary.itemsTotal !== summary.subtotal &&
+        !isZeroMoney(summary.itemsTotal);
+    const hasRewardLines = (summary.rewardLines?.length ?? 0) > 0;
 
     return (
         <div
-            className="sticky top-4 rounded-3xl"
+            className="rounded-3xl"
             style={{
                 padding: "1px",
                 background:
@@ -43,358 +63,163 @@ export default function CheckoutOrderSummary({
             }}
             dir={isRTL ? "rtl" : "ltr"}
         >
-            <div className="rounded-[calc(1.5rem-1px)] bg-custom-card overflow-hidden relative">
-                {/* Decorative top wash */}
-                <div
-                    className="pointer-events-none absolute inset-x-0 top-0 h-32 opacity-[0.06]"
-                    style={{
-                        background:
-                            "radial-gradient(120% 80% at 50% 0%, var(--color-main) 0%, transparent 70%)",
-                    }}
-                    aria-hidden
-                />
-
-                {/* Header */}
-                <div
-                    className="relative px-4 sm:px-5 pt-5 pb-3 border-b border-dashed"
-                    style={{
-                        borderColor:
-                            "color-mix(in srgb, var(--color-main) 28%, transparent)",
-                    }}
-                >
-                    <div className="flex items-center justify-center">
-                        <span
-                            className="inline-flex items-center gap-2 px-5 py-2 rounded-full text-sm font-bold text-white"
-                            style={{
-                                background:
-                                    "linear-gradient(135deg, var(--color-main), var(--color-api-second))",
-                                boxShadow:
-                                    "0 8px 18px -8px color-mix(in srgb, var(--color-main) 50%, transparent)",
-                            }}
-                        >
-                            {t("checkout.orderSummary")}
+            <div className="overflow-hidden rounded-[calc(1.5rem-1px)] bg-custom-card">
+                {!totalOnly && (
+                <div className="flex items-baseline justify-between gap-3 px-4 pt-5 sm:px-5">
+                    <h2 className="text-base font-bold text-[color:var(--color-text)]">
+                        {t("checkout.orderSummary")}
+                    </h2>
+                    {totalItems > 0 && (
+                        <span className="text-xs text-custom-secondary tabular-nums">
+                            {t("cart.itemsInCart", "{{count}} items", {
+                                count: totalItems,
+                            })}
                         </span>
-                    </div>
+                    )}
                 </div>
+                )}
 
-                {/* Content area */}
-                <div className="relative bg-custom-card px-4 sm:px-5 pb-5 pt-5">
-                    {/* Products Table */}
-                    <div className="mb-5 overflow-x-auto">
-                        <table className="w-full">
-                            <thead>
-                                <tr
-                                    style={{
-                                        background:
-                                            "color-mix(in srgb, var(--color-main) 10%, var(--color-bg-card))",
-                                    }}
-                                >
-                                    <th
-                                        className={cn(
-                                            isRTL
-                                                ? "rounded-r-2xl text-right"
-                                                : "rounded-l-2xl text-left",
-                                            "px-3 py-3 text-[11px] font-bold uppercase tracking-[0.06em] text-[color:var(--color-text)]/80",
-                                        )}
-                                    >
-                                        {t("checkout.product")}
-                                    </th>
-                                    <th className="px-2 py-3 text-center text-[11px] font-bold uppercase tracking-[0.06em] text-[color:var(--color-text)]/80">
-                                        {t("checkout.price")}
-                                    </th>
-                                    <th className="px-2 py-3 text-center text-[11px] font-bold uppercase tracking-[0.06em] text-[color:var(--color-text)]/80">
-                                        {t("orders.qty")}
-                                    </th>
-                                    <th
-                                        className={cn(
-                                            isRTL
-                                                ? "rounded-l-2xl text-left"
-                                                : "rounded-r-2xl text-right",
-                                            "px-3 py-3 text-[11px] font-bold uppercase tracking-[0.06em] text-[color:var(--color-text)]/80",
-                                        )}
-                                    >
-                                        {t("orders.total")}
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {summary.items.map((item) => (
-                                    <tr
-                                        key={item.id}
-                                        className="border-b border-custom-primary last:border-b-0"
-                                    >
-                                        <td className="py-3 pe-2 align-top">
-                                            <div className="flex items-start gap-3">
-                                                <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-custom-tertiary">
-                                                    {item.image ? (
-                                                        <img
-                                                            src={item.image}
-                                                            alt={item.name}
-                                                            className="h-full w-full object-cover"
-                                                        />
-                                                    ) : null}
-                                                </div>
-                                                <div className="min-w-0 flex-1">
-                                                    <div className="text-xs font-semibold leading-tight text-[color:var(--color-text)]">
-                                                        {item.name}
-                                                        {(
-                                                            item as {
-                                                                _isFree?: boolean;
-                                                            }
-                                                        )._isFree && (
-                                                            <span
-                                                                className="ms-1 font-medium"
-                                                                style={{
-                                                                    color: "var(--color-success)",
-                                                                }}
-                                                            >
-                                                                (
-                                                                {t(
-                                                                    "cart.free",
-                                                                    "FREE",
-                                                                )}
-                                                                )
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                    <div className="text-[11px] leading-tight text-custom-tertiary">
-                                                        {item.store}
-                                                    </div>
-                                                    <div className="text-[11px] leading-tight text-custom-tertiary">
-                                                        {item.size}
-                                                        {item.size && item.type
-                                                            ? ", "
-                                                            : ""}
-                                                        {item.type}
-                                                    </div>
-                                                    {((
-                                                        item as {
-                                                            _freeQuantity?: number;
-                                                        }
-                                                    )._freeQuantity ?? 0) >
-                                                        0 && (
-                                                        <div
-                                                            className="text-[10px] font-medium"
-                                                            style={{
-                                                                color: "var(--color-success)",
-                                                            }}
-                                                        >
-                                                            {t(
-                                                                "cart.free",
-                                                                "FREE",
-                                                            )}{" "}
-                                                            ×{" "}
-                                                            {(
-                                                                item as {
-                                                                    _freeQuantity?: number;
-                                                                }
-                                                            )._freeQuantity ??
-                                                                0}
-                                                        </div>
-                                                    )}
-                                                    {(
-                                                        item as {
-                                                            _isExcludedFromCoupon?: boolean;
-                                                        }
-                                                    )._isExcludedFromCoupon && (
-                                                        <div
-                                                            className="text-[10px]"
-                                                            style={{
-                                                                color: "var(--color-ui-amber-800)",
-                                                            }}
-                                                        >
-                                                            {t(
-                                                                "cart.excludedFromCoupon",
-                                                                "Not eligible for coupon",
-                                                            )}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="py-3 text-center align-top">
-                                            <div className="text-xs font-semibold text-[color:var(--color-text)] tabular-nums">
-                                                {item.price}
-                                            </div>
-                                            {item.originalPrice && (
-                                                <div className="text-[11px] text-custom-tertiary line-through">
-                                                    {item.originalPrice}
-                                                </div>
-                                            )}
-                                            {item.savingsText && (
-                                                <div
-                                                    className="text-[11px] font-medium"
-                                                    style={{
-                                                        color: "var(--color-success)",
-                                                    }}
-                                                >
-                                                    {item.savingsText}
-                                                </div>
-                                            )}
-                                        </td>
-                                        <td className="py-3 text-center align-top">
-                                            <div className="text-xs font-medium text-[color:var(--color-text)] tabular-nums">
-                                                {item.quantity}
-                                            </div>
-                                        </td>
-                                        <td
-                                            className={cn(
-                                                "py-3 align-top",
-                                                isRTL
-                                                    ? "text-left"
-                                                    : "text-right",
-                                            )}
-                                        >
-                                            <div className="text-xs font-semibold text-[color:var(--color-text)] tabular-nums">
-                                                {item.subtotal}
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    {/* Divider */}
-                    <div
-                        className="my-4 border-t border-dashed"
-                        style={{
-                            borderColor:
-                                "color-mix(in srgb, var(--color-main) 28%, transparent)",
-                        }}
-                    />
-
-                    {/* Charges */}
-                    <div className="space-y-3 text-sm">
+                {!totalOnly && (
+                <div className="space-y-2.5 px-4 py-4 text-sm sm:px-5">
+                    {showItemsTotal && (
                         <SummaryRow
-                            label={`${t("cart.itemsTotal", "Items total")} (${totalItems})`}
+                            label={t("cart.itemsTotal")}
                             value={summary.itemsTotal}
                         />
+                    )}
+                    <SummaryRow
+                        label={t("checkout.subtotal")}
+                        value={summary.subtotal}
+                    />
+                    {summary.deliveryFees && summary.deliveryFees !== "-" && (
                         <SummaryRow
-                            label={t("checkout.subtotal")}
-                            value={summary.subtotal}
+                            label={t("checkout.deliveryFees")}
+                            value={
+                                shippingIsFree
+                                    ? t("cart.freeDelivery")
+                                    : summary.deliveryFees
+                            }
+                            accent={shippingIsFree ? "success" : undefined}
                         />
-                        {summary.deliveryFees &&
-                            summary.deliveryFees !== "-" && (
-                                <SummaryRow
-                                    label={t("checkout.deliveryFees")}
-                                    value={
-                                        summary.deliveryFees === "Free"
-                                            ? t("cart.freeDelivery")
-                                            : summary.deliveryFees
-                                    }
-                                    accent={
-                                        summary.deliveryFees === "Free"
-                                            ? "success"
-                                            : undefined
-                                    }
-                                />
-                            )}
-                        {summary.productDiscount &&
-                            !isZeroMoney(summary.productDiscount) && (
-                                <SummaryRow
-                                    label={t("cart.productDiscount")}
-                                    value={summary.productDiscount}
-                                    accent="success"
-                                />
-                            )}
-                        {summary.storeDiscounts &&
-                            !isZeroMoney(summary.storeDiscounts) && (
-                                <SummaryRow
-                                    label={t("cart.discounts", "Discounts")}
-                                    value={summary.storeDiscounts}
-                                    accent="success"
-                                />
-                            )}
-                        {summary.couponDiscount &&
-                            !isZeroMoney(summary.couponDiscount) && (
-                                <SummaryRow
-                                    label={t(
-                                        "checkout.couponDiscount",
-                                        "Coupon discount",
-                                    )}
-                                    value={summary.couponDiscount}
-                                    accent="success"
-                                />
-                            )}
-                        {summary.subscriptionDiscount &&
-                            !isZeroMoney(summary.subscriptionDiscount) && (
-                                <SummaryRow
-                                    label={t(
-                                        "cart.subscriptionDiscount",
-                                        "Subscription discount",
-                                    )}
-                                    value={summary.subscriptionDiscount}
-                                    accent="success"
-                                />
-                            )}
-                        {summary.promotionDiscount &&
-                            !isZeroMoney(summary.promotionDiscount) && (
-                                <SummaryRow
-                                    label={t(
-                                        "cart.promotionDiscount",
-                                        "Promotion discount",
-                                    )}
-                                    value={summary.promotionDiscount}
-                                    accent="success"
-                                />
-                            )}
-                    </div>
+                    )}
+                    {summary.productDiscount &&
+                        !isZeroMoney(summary.productDiscount) && (
+                            <SummaryRow
+                                label={t("cart.productDiscount")}
+                                value={summary.productDiscount}
+                                accent="success"
+                            />
+                        )}
+                    {summary.storeDiscounts &&
+                        !isZeroMoney(summary.storeDiscounts) && (
+                            <SummaryRow
+                                label={t("cart.discounts")}
+                                value={summary.storeDiscounts}
+                                accent="success"
+                            />
+                        )}
+                    {summary.couponDiscount &&
+                        !isZeroMoney(summary.couponDiscount) && (
+                            <SummaryRow
+                                label={t("checkout.couponDiscount")}
+                                value={summary.couponDiscount}
+                                accent="success"
+                            />
+                        )}
+                    {summary.subscriptionDiscount &&
+                        !isZeroMoney(summary.subscriptionDiscount) && (
+                            <SummaryRow
+                                label={t("cart.subscriptionDiscount")}
+                                value={summary.subscriptionDiscount}
+                                accent="success"
+                            />
+                        )}
+                    {summary.promotionDiscount &&
+                        !isZeroMoney(summary.promotionDiscount) && (
+                            <SummaryRow
+                                label={t("cart.promotionDiscount")}
+                                value={summary.promotionDiscount}
+                                accent="success"
+                            />
+                        )}
+                    {summary.rewardLines?.map((line) => (
+                        <SummaryRow
+                            key={line.id}
+                            label={line.label}
+                            value={line.value}
+                            accent="success"
+                        />
+                    ))}
                 </div>
+                )}
 
-                {/* Bottom section */}
-                <div
-                    className="px-4 sm:px-5 pb-6 pt-4 border-t"
-                    style={{
-                        borderColor:
-                            "color-mix(in srgb, var(--color-main) 20%, transparent)",
-                        background:
-                            "linear-gradient(180deg, transparent 0%, color-mix(in srgb, var(--color-main) 4%, transparent) 100%)",
-                    }}
-                >
-                    {/* Total */}
-                    <div className="flex items-baseline justify-between mb-4">
-                        <span className="text-lg font-bold text-[color:var(--color-text)]">
-                            {t("orders.total")}
+                {totalOnly && summary.rewardLines && summary.rewardLines.length > 0 && (
+                    <div className="space-y-2.5 px-4 pt-5 text-sm sm:px-5">
+                        {summary.rewardLines.map((line) => (
+                            <SummaryRow
+                                key={line.id}
+                                label={line.label}
+                                value={line.value}
+                                accent="success"
+                            />
+                        ))}
+                    </div>
+                )}
+
+                <div className={cn("px-4 pb-5 sm:px-5", totalOnly && !hasRewardLines && "pt-5")}>
+                    <div className="mb-4 flex items-baseline justify-between gap-3 border-t border-custom-primary pt-4">
+                        <span className="text-base font-bold text-[color:var(--color-text)]">
+                            {t(totalOnly ? "checkout.total" : "checkout.totalToPay")}
                         </span>
-                        <span className="text-2xl font-extrabold text-[color:var(--color-main)] tabular-nums">
+                        <span className="text-xl font-extrabold text-[color:var(--color-main)] tabular-nums">
                             {summary.total}
                         </span>
                     </div>
 
-                    {/* Action Buttons */}
+                    {!totalOnly && shippingIsFree && (
+                        <div className="mb-4 flex items-center gap-2 rounded-xl bg-[color:color-mix(in_srgb,var(--color-success)_8%,var(--color-bg-card))] px-3 py-2.5 text-sm text-[var(--color-success)]">
+                            <HiTruck className="h-4 w-4 shrink-0" />
+                            <span className="font-medium">
+                                {t("cart.freeDeliveryUnlocked")}
+                            </span>
+                        </div>
+                    )}
+
+                    {!totalOnly && summary.pointsEarned != null && summary.pointsEarned > 0 && (
+                        <div className="mb-4 flex items-center gap-2 text-sm text-[var(--color-success)]">
+                            <FaStar className="h-3.5 w-3.5 shrink-0" />
+                            <span>
+                                {t("cart.willEarnPoints", {
+                                    points: summary.pointsEarned,
+                                })}
+                            </span>
+                        </div>
+                    )}
+
                     <div className="space-y-3">
                         <Button
                             type="button"
                             variant="primary"
                             size="lg"
                             fullWidth
+                            disabled={!canContinue || isLoading}
+                            isLoading={isLoading}
                             onClick={onPlaceOrder}
                             className={cn(
-                                "group min-h-[56px] rounded-2xl py-4 text-base font-bold text-white transition-all duration-200 hover:-translate-y-0.5 flex items-center justify-center gap-2",
+                                "flex min-h-[52px] items-center justify-center gap-2 rounded-2xl text-base font-bold text-white",
                                 "!bg-[color:var(--color-api-second)] hover:!bg-[color:var(--color-api-second-hover)] !border-transparent",
-                                "shadow-[0_10px_24px_-10px_color-mix(in_srgb,var(--color-main)_55%,transparent)]",
+                                "disabled:cursor-not-allowed disabled:opacity-60",
                             )}
                         >
-                            <span>
-                                {buttonText ||
-                                    t(
-                                        "checkout.continueToReview",
-                                        "Continue to review",
-                                    )}
-                            </span>
-                            <HiArrowRight
-                                className={cn(
-                                    "w-5 h-5 transition-transform duration-200 group-hover:translate-x-0.5",
-                                    isRTL && "rotate-180 group-hover:-translate-x-0.5",
-                                )}
-                            />
+                            {isLoading
+                                ? t("checkout.confirming")
+                                : buttonText || t("checkout.confirmOrder")}
                         </Button>
                         <Link
-                            to="/cart"
-                            className="block py-1 text-center text-xs text-custom-secondary hover:text-[color:var(--color-main)] hover:underline transition-colors"
+                            to={backHref}
+                            className="block py-1 text-center text-sm text-custom-secondary hover:text-[color:var(--color-main)] hover:underline"
                         >
-                            {t("checkout.backToCart")}
+                            {backLabel ?? t("checkout.backToCart")}
                         </Link>
                     </div>
                 </div>
@@ -405,7 +230,7 @@ export default function CheckoutOrderSummary({
 
 type SummaryRowProps = {
     label: string;
-    value: string;
+    value?: string;
     accent?: "success" | "danger";
 };
 
@@ -418,13 +243,15 @@ function SummaryRow({ label, value, accent }: SummaryRowProps) {
               : undefined;
     return (
         <div className="flex items-center justify-between gap-3">
-            <span className="text-sm text-custom-secondary">{label}</span>
-            <span
-                className="text-sm font-semibold text-[color:var(--color-text)] tabular-nums"
-                style={colorVar ? { color: colorVar } : undefined}
-            >
-                {value}
-            </span>
+            <span className="text-custom-secondary">{label}</span>
+            {value ? (
+                <span
+                    className="font-semibold text-[color:var(--color-text)] tabular-nums"
+                    style={colorVar ? { color: colorVar } : undefined}
+                >
+                    {value}
+                </span>
+            ) : null}
         </div>
     );
 }

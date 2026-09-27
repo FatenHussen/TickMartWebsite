@@ -20,7 +20,7 @@ export default function CheckoutProgressIndicator({
         },
         {
             id: "checkout",
-            label: t("checkout.checkoutTitle", "Checkout"),
+            label: t("checkout.paymentStep", "Payment"),
         },
         {
             id: "review",
@@ -28,7 +28,6 @@ export default function CheckoutProgressIndicator({
         },
     ];
 
-    // Map step name to index
     const stepIndexMap: Record<string, number> = {
         cart: 0,
         checkout: 1,
