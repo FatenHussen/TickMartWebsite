@@ -3,6 +3,7 @@ import { FaStar } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContext";
+import FormattedPrice from "@/shared/component/FormattedPrice";
 import { cn } from "@/shared/lib/utils";
 import Button from "@/shared/ui/Button";
 import type { CheckoutOrderSummary } from "../types";
@@ -171,9 +172,11 @@ export default function CheckoutOrderSummary({
                         <span className="text-base font-bold text-[color:var(--color-text)]">
                             {t(totalOnly ? "checkout.total" : "checkout.totalToPay")}
                         </span>
-                        <span className="text-xl font-extrabold text-[color:var(--color-main)] tabular-nums">
-                            {summary.total}
-                        </span>
+                        <FormattedPrice
+                            value={summary.total}
+                            layout="inline"
+                            className="text-xl font-extrabold text-[color:var(--color-main)] tabular-nums"
+                        />
                     </div>
 
                     {!totalOnly && shippingIsFree && (
@@ -246,10 +249,19 @@ function SummaryRow({ label, value, accent }: SummaryRowProps) {
             <span className="text-custom-secondary">{label}</span>
             {value ? (
                 <span
-                    className="font-semibold text-[color:var(--color-text)] tabular-nums"
+                    className="font-semibold tabular-nums text-[color:var(--color-text)]"
                     style={colorVar ? { color: colorVar } : undefined}
                 >
-                    {value}
+                    {/[0-9٠-٩۰-۹$€£]/.test(value) ||
+                    /ل\.س|ر\.س|د\.إ|ج\.م/.test(value) ? (
+                        <FormattedPrice
+                            value={value}
+                            layout="inline"
+                            className="font-semibold tabular-nums"
+                        />
+                    ) : (
+                        value
+                    )}
                 </span>
             ) : null}
         </div>

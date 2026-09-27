@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { useCurrency } from "@/context/CurrencyContext";
+import { formatMoneyAmount, presentMoney } from "@/shared/lib/formatApiPrice";
 import type { CustomOrderLinkedOrder } from "../types";
 import { getItemLineTotal, getItemUnitPrice } from "../utils/customOrderHelpers";
 import CustomOrderPriceVarianceAlert from "./CustomOrderPriceVarianceAlert";
@@ -9,7 +10,8 @@ type CustomOrderPricingTableProps = {
 };
 
 function formatDualPrices(
-  item: CustomOrderLinkedOrder["items"][number]
+  item: CustomOrderLinkedOrder["items"][number],
+  language: string,
 ): string | null {
   // Prefer API-formatted dual currencies when present.
   const currencies = (item as { price_currencies?: Record<string, { formatted?: string }> })
@@ -21,12 +23,16 @@ function formatDualPrices(
   }
 
   const parts: string[] = [];
-  if (typeof item.price_syp === "number") parts.push(`${item.price_syp.toLocaleString()} ل.س`);
-  if (typeof item.price_usd === "number") parts.push(`$${item.price_usd.toLocaleString()}`);
+  if (typeof item.price_syp === "number") {
+    parts.push(presentMoney(`${formatMoneyAmount(item.price_syp)} ل.س`, language));
+  }
+  if (typeof item.price_usd === "number") {
+    parts.push(presentMoney(`$${formatMoneyAmount(item.price_usd)}`, language));
+  }
   if (item.prices) {
     for (const [code, value] of Object.entries(item.prices)) {
       if (code.toLowerCase() === "syp" || code.toLowerCase() === "usd") continue;
-      parts.push(`${value.toLocaleString()} ${code}`);
+      parts.push(presentMoney(`${formatMoneyAmount(value)} ${code}`, language));
     }
   }
   if (parts.length === 0) return null;
@@ -34,7 +40,7 @@ function formatDualPrices(
 }
 
 export default function CustomOrderPricingTable({ order }: CustomOrderPricingTableProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { formatPrice } = useCurrency();
 
   return (
@@ -53,7 +59,7 @@ export default function CustomOrderPricingTable({ order }: CustomOrderPricingTab
           </thead>
           <tbody>
             {(order.items ?? []).map((item, index) => {
-              const dual = formatDualPrices(item);
+              const dual = formatDualPrices(item, i18n.language);
               return (
                 <tr
                   key={item.id ?? `${item.product_name}-${index}`}

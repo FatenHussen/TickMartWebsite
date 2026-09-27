@@ -6,7 +6,7 @@ import { CheckoutProgressIndicator } from "@/shared/component";
 import CheckoutAddressSection from "../components/CheckoutAddressSection";
 import CheckoutPaymentSection from "../components/CheckoutPaymentSection";
 import OrderItemsTable from "../components/OrderItemsTable";
-import Button from "@/shared/ui/Button";
+import CheckoutOrderSummary from "../components/CheckoutOrderSummary";
 import NonDiscountPromotionBanner from "../components/NonDiscountPromotionBanner";
 import AvailablePromotionsSelector from "../components/AvailablePromotionsSelector";
 import {
@@ -21,10 +21,12 @@ import AddressForm from "@/features/account/view/AddressForm";
 import { usePaymentMethods } from "../hooks/usePaymentMethods";
 import { paths } from "@/app/routes/path/paths";
 import type {
+    CheckoutOrderSummary as CheckoutOrderSummaryType,
     DeliveryAddress,
     NonDiscountPromotion,
     OrderPreviewOrderItem,
 } from "../types";
+import { mapPreviewToCheckoutSummary } from "../utils/orderSummary";
 import {
     enrichCartItemsWithPreview,
     getFreeOnlyDisplayItems,
@@ -69,7 +71,7 @@ function mapAddressToDeliveryAddress(addr: Address): DeliveryAddress {
 }
 
 export default function Checkout() {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const { isRTL } = useLanguage();
     const navigate = useNavigate();
     const { formatPrice } = useCurrency();
@@ -153,6 +155,25 @@ export default function Checkout() {
         () => [...enrichedItems, ...freeOnlyItems],
         [enrichedItems, freeOnlyItems],
     );
+    const checkoutSummary = useMemo<CheckoutOrderSummaryType>(() => {
+        if (preview) {
+            return mapPreviewToCheckoutSummary(preview, displayItems, formatPrice, {
+                language: i18n.language,
+                discountLabel: t("cart.promotionDiscount"),
+                freeShippingLabel: t("cart.automaticFreeShipping"),
+                freeShippingValue: t("cart.freeDelivery"),
+            });
+        }
+        return {
+            items: displayItems,
+            itemsTotal: formatPrice(0),
+            subtotal: formatPrice(0),
+            deliveryFees: "-",
+            storeDiscounts: formatPrice(0),
+            couponDiscount: formatPrice(0),
+            total: formatPrice(0),
+        };
+    }, [displayItems, formatPrice, i18n.language, preview, t]);
 
     const selectedPaymentMethod =
         paymentMethods.find(
@@ -259,7 +280,8 @@ export default function Checkout() {
                     <CheckoutProgressIndicator currentStep="checkout" />
                 </div>
 
-                <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
+                <div className="mx-auto grid w-full max-w-6xl items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(300px,380px)]">
+                    <div className="flex min-w-0 flex-col gap-6">
                     <h1 className="text-xl font-bold text-[color:var(--color-text)]">
                         {t("checkout.paymentStep", "Payment")}
                     </h1>
@@ -305,25 +327,25 @@ export default function Checkout() {
                             />
                         )}
 
-                    {displayItems.length > 0 && (
-                        <OrderItemsTable
-                            items={displayItems}
-                            compact
-                            showTitle={false}
-                        />
-                    )}
+                    </div>
 
-                    <Button
-                        type="button"
-                        variant="primary"
-                        size="lg"
-                        fullWidth
-                        disabled={!canContinue}
-                        onClick={handleContinueToReview}
-                        className="flex min-h-[52px] items-center justify-center rounded-2xl text-base font-bold text-white !border-transparent !bg-[color:var(--color-api-second)] hover:!bg-[color:var(--color-api-second-hover)] disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                        {t("checkout.continueToReview", "Continue to review")}
-                    </Button>
+                    <div className="flex min-w-0 flex-col gap-4 lg:sticky lg:top-6">
+                        {displayItems.length > 0 && (
+                            <OrderItemsTable
+                                items={displayItems}
+                                title={t("checkout.orderSummary")}
+                                compact
+                            />
+                        )}
+                        <CheckoutOrderSummary
+                            summary={checkoutSummary}
+                            onPlaceOrder={handleContinueToReview}
+                            buttonText={t("checkout.continueToReview", "Continue to review")}
+                            canContinue={canContinue}
+                            backHref={paths.client.cart}
+                            backLabel={t("checkout.backToCart", "Back to cart")}
+                        />
+                    </div>
                 </div>
             </div>
         </div>

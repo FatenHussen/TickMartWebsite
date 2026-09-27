@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContext";
 import Button from "@/shared/ui/Button";
 import Input from "@/shared/ui/Input";
+import FormattedPrice from "@/shared/component/FormattedPrice";
 import { cn } from "@/shared/lib/utils";
 import type { OrderSummary } from "../types";
 
@@ -164,22 +165,51 @@ export default function CartSummary({
                             >
                                 <span className="text-custom-secondary">{line.label}</span>
                                 {line.value ? (
-                                    <span className="font-semibold tabular-nums text-[var(--color-success)]">
-                                        {line.value}
-                                    </span>
+                                    <FormattedPrice
+                                        value={line.value}
+                                        layout="inline"
+                                        className="font-semibold tabular-nums text-[var(--color-success)]"
+                                    />
                                 ) : null}
                             </div>
                         ))}
                     </div>
                 )}
 
+                <div className="space-y-2.5 border-t border-custom-primary pt-4 text-sm">
+                    <InvoiceRow
+                        label={t("cart.invoiceSubtotal")}
+                        value={summary.invoiceSubtotal ?? summary.subtotal}
+                    />
+                    <InvoiceRow
+                        label={t("cart.invoiceDiscount")}
+                        value={summary.discountTotal ?? summary.storeDiscounts}
+                        accent={
+                            (summary.discountTotal ?? summary.storeDiscounts).startsWith("-")
+                                ? "success"
+                                : undefined
+                        }
+                    />
+                    <InvoiceRow
+                        label={t("cart.invoiceDelivery")}
+                        value={
+                            summary.shippingIsFree
+                                ? t("cart.freeDelivery")
+                                : summary.shipping
+                        }
+                        accent={summary.shippingIsFree ? "success" : undefined}
+                    />
+                </div>
+
                 <div className="flex items-baseline justify-between gap-3 border-t border-custom-primary pt-4">
                     <span className="text-base font-bold text-[color:var(--color-text)]">
                         {t("checkout.total", "Total")}
                     </span>
-                    <span className="text-xl font-extrabold tabular-nums text-[color:var(--color-main)]">
-                        {summary.total}
-                    </span>
+                    <FormattedPrice
+                        value={summary.total}
+                        layout="inline"
+                        className="text-xl font-extrabold tabular-nums text-[color:var(--color-main)]"
+                    />
                 </div>
 
                 <Button
@@ -219,6 +249,28 @@ function SummaryShell({ children, isRTL }: SummaryShellProps) {
             dir={isRTL ? "rtl" : "ltr"}
         >
             {children}
+        </div>
+    );
+}
+
+function InvoiceRow({
+    label,
+    value,
+    accent,
+}: {
+    label: string;
+    value?: string;
+    accent?: "success";
+}) {
+    return (
+        <div className="flex items-center justify-between gap-3">
+            <span className="text-custom-secondary">{label}</span>
+            <span
+                className="font-semibold tabular-nums text-[color:var(--color-text)]"
+                style={accent === "success" ? { color: "var(--color-success)" } : undefined}
+            >
+                {value}
+            </span>
         </div>
     );
 }

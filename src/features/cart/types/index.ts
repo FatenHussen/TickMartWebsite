@@ -362,6 +362,10 @@ export type CartStoreGroup = {
 export type OrderSummary = {
  numOfItems: number;
  subtotal: string;
+ /** Item prices before order discounts, shown as the invoice subtotal. */
+ invoiceSubtotal?: string;
+ /** Combined discount for the invoice line. */
+ discountTotal?: string;
  subtotalBeforeDiscount?: string;
  productDiscount?: string;
  shipping: string;

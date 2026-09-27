@@ -246,7 +246,7 @@ export default function OrderCard({
                 <div className="flex items-center justify-end px-4 py-4">
                     <div className={cn("min-w-0", isRTL ? "text-left" : "text-right")}>
                         <p className="text-xs text-text-secondary">{t("checkout.total", "Total")}</p>
-                        <p className="text-xl font-bold text-primary">{total}</p>
+                        <p className="text-xl font-bold text-primary tabular-nums">{total}</p>
                     </div>
                 </div>
 

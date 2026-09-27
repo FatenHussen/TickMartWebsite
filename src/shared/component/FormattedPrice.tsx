@@ -1,11 +1,14 @@
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 
 import { useCurrencyOptional } from "@/context/CurrencyContext";
 import { cn } from "@/shared/lib/utils";
 import {
+    localizeCurrencyText,
     parsePriceParts,
     selectFormattedForCurrency,
     splitDualCurrencies,
+    toLatinNumberText,
 } from "@/shared/lib/formatApiPrice";
 
 type FormattedPriceProps = {
@@ -46,17 +49,24 @@ function PriceGlyph({
     value,
     prominent,
     hideSymbol = false,
+    symbolFirst,
 }: {
     value: string;
     prominent: boolean;
     hideSymbol?: boolean;
+    /** English: currency before the amount. Arabic: amount before the currency. */
+    symbolFirst: boolean;
 }) {
     const parts = parsePriceParts(value);
     if (parts.kind === "raw") {
-        return <span>{parts.value}</span>;
+        return <span dir="ltr">{parts.value}</span>;
     }
     if (hideSymbol) {
-        return <span className="leading-none">{parts.amount}</span>;
+        return (
+            <span dir="ltr" className="leading-none">
+                {parts.amount}
+            </span>
+        );
     }
 
     const symbol = (
@@ -66,15 +76,19 @@ function PriceGlyph({
                 prominent
                     ? "text-[0.58em] font-extrabold leading-none opacity-80"
                     : "text-[0.85em] opacity-90",
-                parts.symbolFirst ? "me-[0.14em]" : "ms-[0.14em]",
+                symbolFirst ? "me-[0.14em]" : "ms-[0.14em]",
             )}
         >
             {parts.symbol}
         </span>
     );
-    const amount = <span className="leading-none">{parts.amount}</span>;
+    const amount = (
+        <span dir="ltr" className="leading-none">
+            {parts.amount}
+        </span>
+    );
 
-    return parts.symbolFirst ? (
+    return symbolFirst ? (
         <>
             {symbol}
             {amount}
@@ -91,22 +105,29 @@ function GlyphLine({
     value,
     prominent,
     hideSymbol = false,
+    symbolFirst,
 }: {
     value: string;
     prominent: boolean;
     hideSymbol?: boolean;
+    symbolFirst: boolean;
 }) {
     return (
         <span className="inline-flex items-baseline tabular-nums leading-none">
-            <PriceGlyph value={value} prominent={prominent} hideSymbol={hideSymbol} />
+            <PriceGlyph
+                value={value}
+                prominent={prominent}
+                hideSymbol={hideSymbol}
+                symbolFirst={symbolFirst}
+            />
         </span>
     );
 }
 
 /**
- * Renders a money string in a stable LTR isolate so `$8.82` never flips to `8.82 $` in RTL.
- * Dual-currency API strings (`$ 8.82 / ل.س 114,660`) stack on sale prices and stay
- * on one nowrap line when compact.
+ * International digits (`1,234.56`) in both languages.
+ * English reads the currency first (`$1,234.56`). Arabic reads the amount first
+ * (`1,234.56 ل.س`). The digits themselves stay left to right.
  */
 export default function FormattedPrice({
     value,
@@ -118,10 +139,22 @@ export default function FormattedPrice({
     compareValue,
     compareClassName,
 }: FormattedPriceProps) {
+    const { i18n } = useTranslation();
     const currencyCode = useCurrencyOptional()?.currency;
-    const displayValue = selectFormattedForCurrency(value, currencyCode);
+    const symbolFirst = !i18n.language.toLowerCase().startsWith("ar");
+    const displayValue = toLatinNumberText(
+        localizeCurrencyText(
+            selectFormattedForCurrency(value, currencyCode),
+            i18n.language,
+        ),
+    );
     const displayCompare = compareValue
-        ? selectFormattedForCurrency(compareValue, currencyCode)
+        ? toLatinNumberText(
+              localizeCurrencyText(
+                  selectFormattedForCurrency(compareValue, currencyCode),
+                  i18n.language,
+              ),
+          )
         : undefined;
     const chunks = splitDualCurrencies(displayValue);
     const dual = chunks.length > 1;
@@ -132,7 +165,7 @@ export default function FormattedPrice({
 
     const shell = (children: ReactNode, extra?: string) => (
         <span
-            dir="ltr"
+            dir={symbolFirst ? "ltr" : "rtl"}
             className={cn(
                 strikethrough && "line-through decoration-from-font",
                 extra,
@@ -164,6 +197,7 @@ export default function FormattedPrice({
                                 value={pair.sale}
                                 prominent={prominent && primary}
                                 hideSymbol={hideSymbol}
+                                symbolFirst={symbolFirst}
                             />
                         </span>
                         {pair.original ? (
@@ -174,7 +208,12 @@ export default function FormattedPrice({
                                     compareClassName,
                                 )}
                             >
-                                <GlyphLine value={pair.original} prominent={false} hideSymbol={hideSymbol} />
+                                <GlyphLine
+                                    value={pair.original}
+                                    prominent={false}
+                                    hideSymbol={hideSymbol}
+                                    symbolFirst={symbolFirst}
+                                />
                             </span>
                         ) : null}
                     </span>
@@ -188,9 +227,20 @@ export default function FormattedPrice({
         const [primary, ...rest] = chunks;
         return shell(
             <>
-                <GlyphLine value={primary} prominent={prominent} hideSymbol={hideSymbol} />
+                <GlyphLine
+                    value={primary}
+                    prominent={prominent}
+                    hideSymbol={hideSymbol}
+                    symbolFirst={symbolFirst}
+                />
                 {rest.map((chunk) => (
-                    <GlyphLine key={chunk} value={chunk} prominent={false} hideSymbol={hideSymbol} />
+                    <GlyphLine
+                        key={chunk}
+                        value={chunk}
+                        prominent={false}
+                        hideSymbol={hideSymbol}
+                        symbolFirst={symbolFirst}
+                    />
                 ))}
             </>,
             cn(
@@ -214,6 +264,7 @@ export default function FormattedPrice({
                     value={chunk}
                     prominent={prominent && i === 0}
                     hideSymbol={hideSymbol}
+                    symbolFirst={symbolFirst}
                 />
             </span>
         )),

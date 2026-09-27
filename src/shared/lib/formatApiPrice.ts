@@ -312,9 +312,112 @@ export function resolveListingCardPrices(
     };
 }
 
+const ARABIC_INDIC_DIGITS = "٠١٢٣٤٥٦٧٨٩";
+const EXTENDED_ARABIC_DIGITS = "۰۱۲۳۴۵۶۷۸۹";
+
+/**
+ * Arabic locales (`ar-SY`) format money as `٥٬٨٥٠` / `٠٫٥٨٥`.
+ * Next to `ل.س` in an RTL page those digits and separators swap,
+ * so `5,850` is shown as `0.585`. Keep display digits Latin.
+ */
+const BIDI_MARKS = /[\u200e\u200f\u202a-\u202e\u2066-\u2069]/g;
+
+export function activeUiLanguage(language?: string | null): string {
+    if (language?.trim()) return language;
+    if (typeof document !== "undefined" && document.documentElement.lang) {
+        return document.documentElement.lang;
+    }
+    return "en";
+}
+
+export function isArabicLanguage(language?: string | null): boolean {
+    return activeUiLanguage(language).toLowerCase().startsWith("ar");
+}
+
+/** Keep a money or number token in logical left-to-right order inside Arabic text. */
+export function isolateLtr(value: string): string {
+    const clean = value.replace(BIDI_MARKS, "");
+    if (!clean) return clean;
+    return `\u2066${clean}\u2069`;
+}
+
+export function toLatinNumberText(value: string): string {
+    return value.replace(BIDI_MARKS, "").replace(/[٠-٩۰-۹٫٬]/g, (ch) => {
+        const arabic = ARABIC_INDIC_DIGITS.indexOf(ch);
+        if (arabic >= 0) return String(arabic);
+        const extended = EXTENDED_ARABIC_DIGITS.indexOf(ch);
+        if (extended >= 0) return String(extended);
+        if (ch === "٫") return ".";
+        if (ch === "٬") return ",";
+        return ch;
+    });
+}
+
+const LATIN_MONEY = new Intl.NumberFormat("en-US", {
+    numberingSystem: "latn",
+    maximumFractionDigits: 2,
+});
+
+/** International digits (`1,234.56`) for both English and Arabic. */
+export function formatMoneyAmount(amount: number): string {
+    if (!Number.isFinite(amount)) return "0";
+    return LATIN_MONEY.format(amount);
+}
+
+/**
+ * International amount, with the currency on the side the language reads from.
+ * English (LTR): `$1,234.56` / `ل.س 1,234.56`
+ * Arabic (RTL): `1,234.56 ل.س` / `1,234.56 $`
+ * Digits stay in an LTR isolate so they never reverse.
+ */
+export function presentMoney(value: string, language?: string | null): string {
+    const clean = toLatinNumberText(value).trim();
+    if (!clean) return clean;
+    if (clean.includes(" / ")) {
+        return clean
+            .split(/\s*\/\s*/)
+            .map((part) => presentMoney(part, language))
+            .join(" / ");
+    }
+    const parts = parsePriceParts(clean);
+    if (parts.kind === "raw") return isolateLtr(parts.value);
+    if (isArabicLanguage(language)) {
+        return `${isolateLtr(parts.amount)} ${parts.symbol}`;
+    }
+    return isolateLtr(`${parts.symbol}${parts.amount}`);
+}
+
 const LATIN_CURRENCY = "\\$|€|£|¥|₹|USD|EUR|GBP";
-const ARABIC_CURRENCY = "ل\\.س|ر\\.س|د\\.إ|ج\\.م|SYP|SAR|AED";
+const ARABIC_CURRENCY = "ل\\.س|ر\\.س|د\\.إ|ج\\.م|SYP|SAR|AED|EGP";
 const ANY_CURRENCY = `${LATIN_CURRENCY}|${ARABIC_CURRENCY}`;
+
+const ARABIC_UNIT_TO_CODE: Array<[RegExp, string]> = [
+    [/ل\.س/g, "SYP"],
+    [/ر\.س/g, "SAR"],
+    [/د\.إ/g, "AED"],
+    [/ج\.م/g, "EGP"],
+];
+
+const CODE_TO_ARABIC_UNIT: Array<[RegExp, string]> = [
+    [/\bSYP\b/gi, "ل.س"],
+    [/\bSAR\b/gi, "ر.س"],
+    [/\bAED\b/gi, "د.إ"],
+    [/\bEGP\b/gi, "ج.م"],
+];
+
+/**
+ * API price strings keep the Arabic unit (`ل.س`) even when the UI is English.
+ * Swap the unit to the Latin code for English, and back for Arabic.
+ */
+export function localizeCurrencyText(
+    value: string,
+    language?: string | null,
+): string {
+    if (!value) return value;
+    const arabic = (language ?? "").toLowerCase().startsWith("ar");
+    const pairs = arabic ? CODE_TO_ARABIC_UNIT : ARABIC_UNIT_TO_CODE;
+    return pairs.reduce((text, [pattern, next]) => text.replace(pattern, next), value);
+}
 const AMOUNT = "[\\d][\\d,]*(?:\\.\\d+)?";
 
 export type ParsedPriceParts =
@@ -322,32 +425,30 @@ export type ParsedPriceParts =
     | { kind: "raw"; value: string };
 
 /**
- * Split a formatted price so the UI can lock LTR order (e.g. `$8.82` not `8.82 $` in RTL).
- * Latin symbols sit before the amount; Arabic units (ل.س …) stay after it.
+ * Split a formatted price so the symbol stays on the left of the amount
+ * (`ل.س 58,500`, `SYP 58,500`, `$8.82`) inside an LTR isolate.
  */
 export function parsePriceParts(value: string): ParsedPriceParts {
-    const s = value.trim();
+    const s = toLatinNumberText(value).trim();
     if (!s || s.includes(" / ")) return { kind: "raw", value: s };
 
     const prefix = s.match(new RegExp(`^(${ANY_CURRENCY})\\s*(${AMOUNT})$`, "i"));
     if (prefix) {
-        const symbol = prefix[1];
         return {
             kind: "parts",
-            symbol,
+            symbol: prefix[1],
             amount: prefix[2],
-            symbolFirst: !new RegExp(`^(?:${ARABIC_CURRENCY})$`, "i").test(symbol),
+            symbolFirst: true,
         };
     }
 
     const suffix = s.match(new RegExp(`^(${AMOUNT})\\s*(${ANY_CURRENCY})$`, "i"));
     if (suffix) {
-        const symbol = suffix[2];
         return {
             kind: "parts",
             amount: suffix[1],
-            symbol,
-            symbolFirst: !new RegExp(`^(?:${ARABIC_CURRENCY})$`, "i").test(symbol),
+            symbol: suffix[2],
+            symbolFirst: false,
         };
     }
 
@@ -356,7 +457,7 @@ export function parsePriceParts(value: string): ParsedPriceParts {
 
 /** `"وفرت 0.18 $"` / `"You saved $0.18"` → label + money token. */
 export function splitSavingsLabel(raw: string): { label: string; amount: string } {
-    const s = raw.trim();
+    const s = toLatinNumberText(raw).trim();
     const end = s.match(
         new RegExp(
             `^(.*?)\\s*((?:${ANY_CURRENCY})\\s*${AMOUNT}|${AMOUNT}\\s*(?:${ANY_CURRENCY}))$`,

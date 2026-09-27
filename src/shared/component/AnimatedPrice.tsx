@@ -90,7 +90,7 @@ export default function AnimatedPrice({
             )}
         >
             {prefix}
-            {display.toFixed(decimals)}
+            <span dir="ltr">{display.toFixed(decimals)}</span>
             {suffix}
         </span>
     );

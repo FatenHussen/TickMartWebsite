@@ -28,6 +28,7 @@ import { useSimilarProducts } from "../hooks/useSimilarProducts";
 import { useProductsFromSameSeller } from "../hooks/useProductsFromSameSeller";
 import {
     pickCurrencyAmount,
+    presentMoney,
     resolveDisplayListPrice,
     resolveDisplaySalePrice,
     resolveListingCardPrices,
@@ -762,7 +763,7 @@ function ProductDetails() {
     const currencySymbol =
         selectedVariant?.currency_symbol ?? product.currency_symbol ?? "";
     const formatPrice = (price: number) =>
-        `${currencySymbol}${Number(price).toFixed(2)}`;
+        presentMoney(`${currencySymbol}${Number(price).toFixed(2)}`, language);
 
     const extraAddon = isFood ? 0 : extraDetailsDisplayAddon;
     const priceSource = selectedVariant ?? product;

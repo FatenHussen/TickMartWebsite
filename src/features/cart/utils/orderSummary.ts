@@ -61,10 +61,22 @@ export function mapPreviewToCartSummary(
   const automaticDiscountShown = rewardLines.some((line) =>
     line.id.startsWith("automatic-discount"),
   );
+  const discountAmount =
+    productDiscount +
+    basketDiscountAmount +
+    couponDiscount +
+    subscriptionDiscount +
+    promotionDiscount;
+  const grossSubtotal =
+    subtotalBeforeDiscount > 0
+      ? subtotalBeforeDiscount
+      : toNum(preview.subtotal);
 
   return {
     numOfItems: toNum(preview.total_quantity),
     subtotal: formatPrice(toNum(preview.subtotal)),
+    invoiceSubtotal: formatPrice(grossSubtotal),
+    discountTotal: formatDiscount(formatPrice, discountAmount),
     ...(productDiscount > 0 && {
       subtotalBeforeDiscount: formatPrice(subtotalBeforeDiscount),
       productDiscount: formatDiscount(formatPrice, productDiscount),

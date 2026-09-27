@@ -1,6 +1,7 @@
 import type { ApiDualCurrencies } from "@/shared/lib/formatApiPrice";
 import {
     pickCurrencyFormatted,
+    presentMoney,
     selectFormattedForCurrency,
 } from "@/shared/lib/formatApiPrice";
 import type {
@@ -190,10 +191,12 @@ export function formatOrderMoney(
     formatPrice: (amount: number) => string,
 ): string {
     const fromMap = pickCurrencyFormatted(source.currencies, currencyCode);
-    if (fromMap) return fromMap;
+    if (fromMap) return presentMoney(fromMap);
 
     const formatted = source.formatted?.trim();
-    if (formatted) return selectFormattedForCurrency(formatted, currencyCode);
+    if (formatted) {
+        return presentMoney(selectFormattedForCurrency(formatted, currencyCode));
+    }
 
     const amount = numericAmount(source.amount);
     if (amount != null) return formatPrice(amount);

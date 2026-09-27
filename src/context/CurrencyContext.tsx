@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from"react";
 import type { ReactNode } from"react";
+import { formatMoneyAmount, presentMoney } from"@/shared/lib/formatApiPrice";
 
 export type Currency = string;
 
@@ -64,10 +65,11 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
  const getCurrencySymbol = () => currencyState.symbol;
 
  const formatPrice = (amount: number) => {
- if (amount == null || typeof amount !== "number"|| Number.isNaN(amount)) {
- return `${currencyState.symbol}0`;
- }
- return `${currencyState.symbol}${amount.toLocaleString()}`;
+ const value =
+ amount == null || typeof amount !== "number" || Number.isNaN(amount)
+ ? 0
+ : amount;
+ return presentMoney(`${currencyState.symbol}${formatMoneyAmount(value)}`);
  };
 
  return (
