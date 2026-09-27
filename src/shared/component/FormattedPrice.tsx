@@ -13,6 +13,8 @@ type FormattedPriceProps = {
     className?: string;
     /** Raised, slightly quieter currency glyph — use on the sale price. */
     prominent?: boolean;
+    /** Amount only. Used on the struck list price and the savings line. */
+    hideSymbol?: boolean;
     strikethrough?: boolean;
     /**
      * Dual-currency layout. `stack` puts USD above SYP (cards).
@@ -43,13 +45,18 @@ function pairPriceChunks(
 function PriceGlyph({
     value,
     prominent,
+    hideSymbol = false,
 }: {
     value: string;
     prominent: boolean;
+    hideSymbol?: boolean;
 }) {
     const parts = parsePriceParts(value);
     if (parts.kind === "raw") {
         return <span>{parts.value}</span>;
+    }
+    if (hideSymbol) {
+        return <span className="leading-none">{parts.amount}</span>;
     }
 
     const symbol = (
@@ -83,13 +90,15 @@ function PriceGlyph({
 function GlyphLine({
     value,
     prominent,
+    hideSymbol = false,
 }: {
     value: string;
     prominent: boolean;
+    hideSymbol?: boolean;
 }) {
     return (
         <span className="inline-flex items-baseline tabular-nums leading-none">
-            <PriceGlyph value={value} prominent={prominent} />
+            <PriceGlyph value={value} prominent={prominent} hideSymbol={hideSymbol} />
         </span>
     );
 }
@@ -103,6 +112,7 @@ export default function FormattedPrice({
     value,
     className,
     prominent = false,
+    hideSymbol = false,
     strikethrough = false,
     layout,
     compareValue,
@@ -150,7 +160,11 @@ export default function FormattedPrice({
                                     : "text-[15px] font-semibold tracking-tight text-custom-secondary dark:text-zinc-300",
                             )}
                         >
-                            <GlyphLine value={pair.sale} prominent={prominent && primary} />
+                            <GlyphLine
+                                value={pair.sale}
+                                prominent={prominent && primary}
+                                hideSymbol={hideSymbol}
+                            />
                         </span>
                         {pair.original ? (
                             <span
@@ -160,7 +174,7 @@ export default function FormattedPrice({
                                     compareClassName,
                                 )}
                             >
-                                <GlyphLine value={pair.original} prominent={false} />
+                                <GlyphLine value={pair.original} prominent={false} hideSymbol={hideSymbol} />
                             </span>
                         ) : null}
                     </span>
@@ -174,9 +188,9 @@ export default function FormattedPrice({
         const [primary, ...rest] = chunks;
         return shell(
             <>
-                <GlyphLine value={primary} prominent={prominent} />
+                <GlyphLine value={primary} prominent={prominent} hideSymbol={hideSymbol} />
                 {rest.map((chunk) => (
-                    <GlyphLine key={chunk} value={chunk} prominent={false} />
+                    <GlyphLine key={chunk} value={chunk} prominent={false} hideSymbol={hideSymbol} />
                 ))}
             </>,
             cn(
@@ -196,7 +210,11 @@ export default function FormattedPrice({
                         ·
                     </span>
                 ) : null}
-                <PriceGlyph value={chunk} prominent={prominent && i === 0} />
+                <PriceGlyph
+                    value={chunk}
+                    prominent={prominent && i === 0}
+                    hideSymbol={hideSymbol}
+                />
             </span>
         )),
         "inline-flex max-w-full items-baseline whitespace-nowrap tabular-nums",

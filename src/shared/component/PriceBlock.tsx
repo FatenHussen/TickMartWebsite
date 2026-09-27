@@ -87,6 +87,7 @@ export default function PriceBlock({
                         <FormattedPrice
                             value={original}
                             strikethrough
+                            hideSymbol
                             className={cn(
                                 "font-medium text-[#9CA3AF] decoration-[#9CA3AF] dark:text-zinc-400 dark:decoration-zinc-500",
                                 metaSize[size],
@@ -114,6 +115,7 @@ export default function PriceBlock({
                             {saved.label ? <span>{saved.label}</span> : null}
                             <FormattedPrice
                                 value={saved.amount}
+                                hideSymbol
                                 className="font-semibold text-[var(--color-success)]"
                             />
                         </span>
