@@ -6,6 +6,7 @@ import { queryKeys } from"@/utils/queryKeys";
 import type { UpdateCurrencyPayload } from"../types";
 import type { CurrencyItem } from"../types";
 import { getApiErrorMessage } from"@/shared/lib/apiMessage";
+import { useAuthStore } from"@/store/auth";
 
 /**
  * Hook to fetch list of available currencies
@@ -23,10 +24,12 @@ export function useCurrencies() {
  * Hook to fetch user's selected currency
  */
 export function useMyCurrency() {
+ const token = useAuthStore((s) => s.token);
  return useQuery({
  queryKey: queryKeys.currencies.myCurrency(),
  queryFn: () => _CurrencyApi.getMyCurrency(),
  select: (response) => response.data,
+ enabled: Boolean(token),
  staleTime: 1000 * 60 * 5, // 5 minutes
  });
 }

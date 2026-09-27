@@ -9,8 +9,10 @@ import type {
  ActiveOrder,
  ActiveOrderResponse,
  OrderPreviewOrderItem,
+ DeliveryChoice,
 } from"../types";
 import { toNum } from"../utils";
+import { normalizeCartCheckout } from"../lib/cartCheckout";
 
 /** Map internal cart_type to API value (basket -> admin_cart) */
 function toApiCartType(cartType: CartType): string {
@@ -49,6 +51,35 @@ function aliasPreviewResponseKeys(r: Record<string, unknown>): void {
  }
  if (r.automatic_promotions == null && r.automaticPromotions != null) {
  r.automatic_promotions = r.automaticPromotions;
+ }
+ if (r.delivery_choice == null && r.deliveryChoice != null) {
+ r.delivery_choice = r.deliveryChoice;
+ }
+ if (r.delivery_choice_label == null && r.deliveryChoiceLabel != null) {
+ r.delivery_choice_label = r.deliveryChoiceLabel;
+ }
+ if (r.scheduled_delivery_at == null && r.scheduledDeliveryAt != null) {
+ r.scheduled_delivery_at = r.scheduledDeliveryAt;
+ }
+ if (r.delivery_error == null && r.deliveryError != null) {
+ r.delivery_error = r.deliveryError;
+ }
+}
+
+function applyDeliveryChoice(
+ body: Record<string, unknown>,
+ payload: {
+ is_instant_delivery: boolean;
+ delivery_choice?: DeliveryChoice;
+ scheduled_delivery_at?: string;
+ }
+) {
+ const choice: DeliveryChoice =
+ payload.delivery_choice ?? (payload.is_instant_delivery ? "asap" : "scheduled");
+ body.delivery_choice = choice;
+ body.is_instant_delivery = choice === "asap";
+ if (choice === "scheduled" && payload.scheduled_delivery_at) {
+ body.scheduled_delivery_at = payload.scheduled_delivery_at;
  }
 }
 
@@ -92,9 +123,9 @@ export const _OrderApi = {
  const body: Record<string, unknown> = {
  cart_type: toApiCartType(payload.cart_type),
  address_id: payload.address_id,
- is_instant_delivery: payload.is_instant_delivery,
  items: payload.items,
  };
+ applyDeliveryChoice(body, payload);
  if (payload.coupon) body.coupon = payload.coupon;
  if (payload.recipe_id != null) body.recipe_id = payload.recipe_id;
  if (payload.admin_basket_id != null)
@@ -317,6 +348,27 @@ export const _OrderApi = {
  });
  }
 
+ const checkout = normalizeCartCheckout(r.checkout);
+ if (checkout) {
+ const rootDeliveryError =
+ typeof r.delivery_error === "string" ? r.delivery_error.trim() : "";
+ if (rootDeliveryError) {
+ checkout.delivery_error = rootDeliveryError;
+ checkout.can_checkout = false;
+ }
+ result.checkout = checkout;
+ result.delivery_error = checkout.delivery_error ?? null;
+ }
+ if (typeof r.delivery_choice === "string") {
+ result.delivery_choice = r.delivery_choice as OrderPreviewResponse["delivery_choice"];
+ }
+ if (typeof r.delivery_choice_label === "string") {
+ result.delivery_choice_label = r.delivery_choice_label;
+ }
+ if (typeof r.scheduled_delivery_at === "string" || r.scheduled_delivery_at === null) {
+ result.scheduled_delivery_at = r.scheduled_delivery_at as string | null;
+ }
+
  return result;
  },
 
@@ -324,9 +376,9 @@ export const _OrderApi = {
  const body: Record<string, unknown> = {
  address_id: payload.address_id,
  cart_type: toApiCartType(payload.cart_type),
- is_instant_delivery: payload.is_instant_delivery,
  items: payload.items,
  };
+ applyDeliveryChoice(body, payload);
  if (payload.coupon) body.coupon = payload.coupon;
  if (payload.recipe_id != null) body.recipe_id = payload.recipe_id;
  if (payload.admin_basket_id != null)

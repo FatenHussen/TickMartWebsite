@@ -21,6 +21,9 @@ type CartSummaryProps = {
     onAddAddress?: () => void;
     benefitsContent?: ReactNode;
     couponDisabled?: boolean;
+    /** `false` disables checkout and shows `checkoutMessage` as returned by the API. */
+    canCheckout?: boolean;
+    checkoutMessage?: string | null;
 };
 
 export default function CartSummary({
@@ -33,6 +36,8 @@ export default function CartSummary({
     onAddAddress,
     benefitsContent,
     couponDisabled = false,
+    canCheckout = true,
+    checkoutMessage = null,
 }: CartSummaryProps) {
     const { t } = useTranslation();
     const { isRTL } = useLanguage();
@@ -212,13 +217,16 @@ export default function CartSummary({
                     />
                 </div>
 
+                {!canCheckout && checkoutMessage && <Alert>{checkoutMessage}</Alert>}
+
                 <Button
                     type="button"
                     variant="primary"
                     size="lg"
                     fullWidth
                     onClick={onCheckout}
-                    className="group !bg-[color:var(--color-api-second)] hover:!bg-[color:var(--color-api-second-hover)] text-white font-semibold rounded-xl flex items-center justify-center gap-2"
+                    disabled={!canCheckout}
+                    className="group !bg-[color:var(--color-api-second)] hover:!bg-[color:var(--color-api-second-hover)] disabled:!opacity-60 disabled:pointer-events-none text-white font-semibold rounded-xl flex items-center justify-center gap-2"
                 >
                     <span>{t("cart.proceedToCheckout")}</span>
                     <HiArrowRight

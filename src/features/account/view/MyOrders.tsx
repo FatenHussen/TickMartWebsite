@@ -120,6 +120,7 @@ function mapOrderToCard(
  deliveryAddress: undefined,
  total,
  paymentMethod: paymentName ? String(paymentName) : "",
+ deliveryChoiceLabel: item.delivery_choice_label ?? null,
  scheduledDeliveryAt: item.scheduled_delivery_at ?? null,
  actions: {
  viewDetails: true,
@@ -392,6 +393,7 @@ export default function MyOrders() {
  deliveryAddress={order.deliveryAddress}
  total={order.total}
  paymentMethod={order.paymentMethod}
+ deliveryChoiceLabel={order.deliveryChoiceLabel}
  scheduledDeliveryAt={order.scheduledDeliveryAt}
  refundStatus={order.refundStatus}
  onViewDetails={() => handleViewDetails(order.id)}

@@ -85,6 +85,8 @@ export interface ProductItem {
  amount_saved_formatted?: string;
  quantity: number | null;
  image: string;
+ /** Same URL as `image` when the product has only a thumbnail. */
+ thumbnail?: string | null;
  discount: string;
  top_badges?: SectionItemBadge[];
  bottom_badges?: SectionItemBadge[];

@@ -37,6 +37,16 @@ export function splitDualCurrencies(value: string): string[] {
         .filter(Boolean);
 }
 
+/** Settings and storage may hold `SYP`, `SYR`, or the Arabic unit. Product maps use `SYP`. */
+export function canonicalCurrencyCode(code?: string | null): string {
+    const raw = (code ?? "").trim();
+    if (!raw) return "";
+    if (raw === "ل.س" || /ليرة/u.test(raw)) return "SYP";
+    const upper = raw.toUpperCase();
+    if (upper === "SYR" || upper === "SP") return "SYP";
+    return upper;
+}
+
 function chunkMatchesCurrency(chunk: string, code: string): boolean {
     const marker = CURRENCY_CHUNK_MARKERS[code];
     if (marker) return marker.test(chunk);
@@ -53,9 +63,19 @@ export function selectFormattedForCurrency(
 ): string {
     const chunks = splitDualCurrencies(value);
     if (chunks.length <= 1) return value.trim();
-    const code = (currencyCode ?? "").trim().toUpperCase();
+    const code = canonicalCurrencyCode(currencyCode);
     if (!code) return chunks[0];
     return chunks.find((chunk) => chunkMatchesCurrency(chunk, code)) ?? chunks[0];
+}
+
+function formatCurrencyEntry(entry?: ApiCurrencyFormatted | null): string {
+    const formatted = entry?.formatted?.trim();
+    if (formatted) return formatted;
+    if (entry?.amount == null) return "";
+    const amount = Number(entry.amount);
+    if (!Number.isFinite(amount)) return "";
+    const symbol = entry.symbol?.trim() ?? "";
+    return `${symbol}${symbol ? " " : ""}${formatMoneyAmount(amount)}`.trim();
 }
 
 /** Pick one API `*_currencies` line for the selected code. */
@@ -64,15 +84,18 @@ export function pickCurrencyFormatted(
     currencyCode?: string | null,
 ): string {
     if (!currencies) return "";
-    const code = (currencyCode ?? "").trim().toUpperCase();
+    const code = canonicalCurrencyCode(currencyCode);
     if (code) {
-        const direct = currencies[code]?.formatted?.trim();
+        const direct = formatCurrencyEntry(currencies[code]);
         if (direct) return direct;
         const matched = Object.entries(currencies).find(
             ([key, value]) =>
-                key.toUpperCase() === code && Boolean(value?.formatted?.trim()),
+                canonicalCurrencyCode(key) === code && Boolean(formatCurrencyEntry(value)),
         );
-        if (matched?.[1]?.formatted) return matched[1].formatted.trim();
+        if (matched) {
+            const formatted = formatCurrencyEntry(matched[1]);
+            if (formatted) return formatted;
+        }
     }
     const preferred = currencies.USD?.formatted ?? currencies.SYP?.formatted;
     if (preferred?.trim()) return preferred.trim();
@@ -91,12 +114,12 @@ export function pickCurrencyAmount(
         const n = Number(entry.amount);
         return Number.isFinite(n) ? n : null;
     };
-    const code = (currencyCode ?? "").trim().toUpperCase();
+    const code = canonicalCurrencyCode(currencyCode);
     if (code) {
         const direct = read(currencies[code]);
         if (direct != null) return direct;
         const matched = Object.entries(currencies).find(
-            ([key]) => key.toUpperCase() === code,
+            ([key]) => canonicalCurrencyCode(key) === code,
         );
         const fromMatch = read(matched?.[1]);
         if (fromMatch != null) return fromMatch;

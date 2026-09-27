@@ -38,6 +38,13 @@ import {
     isPaymentMethodEnabled,
     resolveSelectablePaymentMethodId,
 } from "../utils/paymentMethods";
+import DeliveryChoiceSection from "../components/DeliveryChoiceSection";
+import { useCartCheckout } from "../hooks/useCartCheckout";
+import {
+    checkoutBlockMessage,
+    isBeforeEarliest,
+    isMinimumOrderBlock,
+} from "../lib/cartCheckout";
 
 import circle from "/images/shared/circle.png";
 import circleBottom from "/images/shared/circleBottom.png";
@@ -94,9 +101,14 @@ export default function Checkout() {
         useSubscriptionDiscount,
         useSubscriptionFreeDelivery,
         promotionId,
+        deliveryChoice,
+        scheduledDeliveryAt,
         setAddressId,
         setPaymentMethodId,
         setPromotionId,
+        setDeliveryChoice,
+        setScheduledDeliveryAt,
+        setEarliestDeliveryAt,
     } = useCheckoutStore();
 
     const previewBenefits = useMemo(
@@ -129,6 +141,7 @@ export default function Checkout() {
     );
     const [showAddAddressForm, setShowAddAddressForm] = useState(false);
 
+    const { data: serverCheckout } = useCartCheckout();
     const { data: preview } = useOrderPreview(
         selectedAddressId ? Number(selectedAddressId) : null,
         storedCoupon || undefined,
@@ -237,8 +250,23 @@ export default function Checkout() {
         localStorage.setItem(PAYMENT_STORAGE_KEY, methodId);
     };
 
+    const checkout = preview?.checkout ?? serverCheckout ?? null;
+    const blockedByMinimum = isMinimumOrderBlock(checkout);
+    const scheduledTooEarly =
+        deliveryChoice === "scheduled" &&
+        (!scheduledDeliveryAt ||
+            isBeforeEarliest(scheduledDeliveryAt, checkout?.earliest_delivery_at));
+    const checkoutMessage = checkoutBlockMessage(checkout);
     const canContinue =
-        Boolean(selectedAddressId) && Boolean(selectedPaymentMethod);
+        Boolean(selectedAddressId) &&
+        Boolean(selectedPaymentMethod) &&
+        !blockedByMinimum &&
+        checkout?.can_checkout !== false &&
+        !scheduledTooEarly;
+
+    useEffect(() => {
+        setEarliestDeliveryAt(checkout?.earliest_delivery_at || null);
+    }, [checkout?.earliest_delivery_at, setEarliestDeliveryAt]);
 
     const handleAddNewAddress = () => {
         setShowAddAddressForm(true);
@@ -253,6 +281,13 @@ export default function Checkout() {
 
     const handleContinueToReview = () => {
         if (!canContinue || !selectedAddressId || !selectedPaymentMethod) return;
+        if (
+            deliveryChoice === "scheduled" &&
+            (!scheduledDeliveryAt ||
+                isBeforeEarliest(scheduledDeliveryAt, checkout?.earliest_delivery_at))
+        ) {
+            return;
+        }
         setAddressId(selectedAddressId);
         setPaymentMethodId(selectedPaymentMethod.id);
         navigate(paths.client.review);
@@ -306,6 +341,16 @@ export default function Checkout() {
                         onPaymentMethodSelect={handlePaymentMethodSelect}
                     />
 
+                    {!blockedByMinimum && (
+                        <DeliveryChoiceSection
+                            choice={deliveryChoice}
+                            scheduledDeliveryAt={scheduledDeliveryAt}
+                            earliestDeliveryAt={checkout?.earliest_delivery_at ?? ""}
+                            onChoiceChange={setDeliveryChoice}
+                            onScheduledChange={setScheduledDeliveryAt}
+                        />
+                    )}
+
                     {customerSelectedPromotions(preview?.available_promotions).length > 0 && (
                             <AvailablePromotionsSelector
                                 promotions={customerSelectedPromotions(preview?.available_promotions)}
@@ -336,6 +381,19 @@ export default function Checkout() {
                                 title={t("checkout.orderSummary")}
                                 compact
                             />
+                        )}
+                        {checkoutMessage && (
+                            <p className="rounded-2xl border border-[color:var(--color-ui-amber-200)] bg-[color:var(--color-ui-amber-50)] px-4 py-3 text-sm leading-relaxed text-[color:var(--color-ui-amber-900)]">
+                                {checkoutMessage}
+                            </p>
+                        )}
+                        {scheduledTooEarly && !checkoutMessage && (
+                            <p className="rounded-2xl border border-[color:var(--color-ui-amber-200)] bg-[color:var(--color-ui-amber-50)] px-4 py-3 text-sm leading-relaxed text-[color:var(--color-ui-amber-900)]">
+                                {t("checkout.deliveryTooEarly", {
+                                    time: checkout?.earliest_delivery_at ?? "",
+                                    defaultValue: "Choose a time at or after {{time}}",
+                                })}
+                            </p>
                         )}
                         <CheckoutOrderSummary
                             summary={checkoutSummary}

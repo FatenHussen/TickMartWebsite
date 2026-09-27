@@ -92,6 +92,7 @@ function mapApiToOrderDetails(
  phoneNumber: raw.user.phone ?? addr.contact_phone,
  address: addressParts.join(","),
  eta,
+ deliveryChoiceLabel: raw.delivery_choice_label ?? null,
  scheduledDeliveryAt: raw.scheduled_delivery_at ?? null,
  },
  payment: {

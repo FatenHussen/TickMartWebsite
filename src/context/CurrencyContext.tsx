@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from"react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from"react";
 import type { ReactNode } from"react";
 import { formatMoneyAmount, presentMoney } from"@/shared/lib/formatApiPrice";
 
@@ -12,7 +12,11 @@ interface CurrencyState {
 interface CurrencyContextType {
  currency: Currency;
  currencySymbol: string;
- setCurrency: (currency: Currency, symbol?: string) => void;
+ setCurrency: (
+ currency: Currency,
+ symbol?: string,
+ options?: { fromAccount?: boolean },
+ ) => void;
  getCurrencySymbol: () => string;
  formatPrice: (amount: number) => string;
 }
@@ -56,11 +60,19 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
  localStorage.setItem("currencySymbol", currencyState.symbol);
  }, [currencyState]);
 
- const setCurrency = (newCurrency: Currency, symbol?: string) => {
+ const pinnedByUser = useRef(false);
+
+ const setCurrency = useCallback((
+ newCurrency: Currency,
+ symbol?: string,
+ options?: { fromAccount?: boolean },
+ ) => {
+ if (options?.fromAccount && pinnedByUser.current) return;
+ if (!options?.fromAccount) pinnedByUser.current = true;
  const resolvedSymbol =
  symbol ?? defaultCurrencySymbols[newCurrency] ?? newCurrency;
  setCurrencyState({ code: newCurrency, symbol: resolvedSymbol });
- };
+ }, []);
 
  const getCurrencySymbol = () => currencyState.symbol;
 

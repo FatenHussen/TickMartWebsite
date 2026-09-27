@@ -3,11 +3,10 @@
 import type { ApiDualCurrencies } from "@/shared/lib/formatApiPrice";
 
 export interface ProductImage {
- id?: number;
- /** Full URL on user/product APIs. */
+ /** `null` on the synthetic thumbnail row the API inserts when the gallery is empty. */
+ id?: number | null;
+ /** Full URL (`https://.../storage/...`). Do not prefix `/storage`. Not `url`. */
  path?: string;
- /** Full URL on some admin payloads; treat as `path` on the storefront. */
- url?: string;
 }
 
 export interface ProductCategory {
@@ -268,6 +267,8 @@ export interface BoughtWithProduct {
  amount_saved?: number;
  amount_saved_formatted?: string;
  image: string;
+ /** Present on list-shaped rows. Cards read `image` first. */
+ thumbnail?: string | null;
  currency?: string;
  currency_symbol?: string;
  rating?: number;

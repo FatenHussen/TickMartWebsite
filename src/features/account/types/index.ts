@@ -141,6 +141,7 @@ export interface FavoriteItem {
  description?: string;
  desc?: string;
  image?: string | null;
+ thumbnail?: string | null;
  /** Shop/vendor logo from API */
  logo_url?: string | null;
  rating?: number;

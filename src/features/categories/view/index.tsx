@@ -43,6 +43,7 @@ import {
     mapApiTopBadgesToProductCard,
 } from "@/shared/lib/mapProductBadges";
 import { resolveListingCardPrices } from "@/shared/lib/formatApiPrice";
+import { listingImageSrc } from "@/features/product/lib/productMedia";
 
 // Map UI sortBy value → API `sort_by`
 function mapSortToApi(sortBy: string): {
@@ -599,7 +600,7 @@ export default function CategoriesView() {
                                         price={listing.price}
                                         originalPrice={listing.originalPrice}
                                         rating={product.rating ?? 0}
-                                        image={product.image}
+                                        image={listingImageSrc(product)}
                                         category={product.category}
                                         sold={product.sold_number ?? 0}
                                         isFavorite={

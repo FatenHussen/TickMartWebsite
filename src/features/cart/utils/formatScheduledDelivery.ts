@@ -1,3 +1,17 @@
+/**
+ * Prefer the API `delivery_choice_label` (already localized).
+ * Fall back to a formatted appointment only when the label is missing.
+ */
+export function orderDeliveryChoiceLabel(
+    deliveryChoiceLabel: string | null | undefined,
+    scheduledDeliveryAt: string | null | undefined,
+    locale: string,
+): string | null {
+    const label = deliveryChoiceLabel?.trim();
+    if (label) return label;
+    return formatScheduledDeliveryAt(scheduledDeliveryAt, locale);
+}
+
 /** Admin-set `scheduled_delivery_at` (`YYYY-MM-DD HH:mm`). Empty when missing. */
 export function formatScheduledDeliveryAt(
     value: string | null | undefined,

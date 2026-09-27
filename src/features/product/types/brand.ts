@@ -60,6 +60,7 @@ export interface BrandProduct {
  amount_saved_formatted?: string;
  quantity: number | null;
  image: string;
+ thumbnail?: string | null;
  discount: string;
  budges: SectionItemBadge[]; // Typo from API
  created_at: string;

@@ -33,6 +33,7 @@ import {
     mapApiTopBadgesToProductCard,
 } from "@/shared/lib/mapProductBadges";
 import { resolveListingCardPrices } from "@/shared/lib/formatApiPrice";
+import { listingImageSrc } from "@/features/product/lib/productMedia";
 import { cn } from "@/shared/lib/utils";
 
 const SORT_CHIP_KEYS: Record<string, string> = {
@@ -200,7 +201,7 @@ export default function ProductsPage() {
             price: listing.price,
             originalPrice: listing.originalPrice,
             rating: product.rating || 0,
-            image: product.image,
+            image: listingImageSrc(product),
             badge: topBadges,
             bottomBadges,
             category: product.category,

@@ -27,7 +27,7 @@ import {
   getOrderStatusLabel,
   toOrderStepperStatus,
 } from "@/shared/lib/orderStatus";
-import { formatScheduledDeliveryAt } from "@/features/cart/utils/formatScheduledDelivery";
+import { orderDeliveryChoiceLabel } from "@/features/cart/utils/formatScheduledDelivery";
 
 const STAGES: ActiveOrderStatus[] = [...ORDER_STEPPER_STAGES];
 
@@ -105,7 +105,8 @@ interface OrderTrackingCardProps {
 
 export default function OrderTrackingCard({ order }: OrderTrackingCardProps) {
   const { t, i18n } = useTranslation();
-  const scheduledLabel = formatScheduledDeliveryAt(
+  const scheduledLabel = orderDeliveryChoiceLabel(
+    order.delivery_choice_label,
     order.scheduled_delivery_at,
     i18n.language,
   );

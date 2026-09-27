@@ -2,6 +2,7 @@ import React from "react";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { LanguageProvider } from "@/context/LanguageContext";
 import { CurrencyProvider } from "@/context/CurrencyContext";
+import AccountCurrencySync from "@/context/AccountCurrencySync";
 import { useScrollToTop } from "@/shared/hooks/useScrollToTop";
 import { useThemeFromApi } from "@/shared/hooks/useThemeFromApi";
 import NotificationToast from "@/components/NotificationToast";
@@ -31,6 +32,7 @@ export default function App({ children }: AppProps) {
   return (
     <LanguageProvider>
       <CurrencyProvider>
+        <AccountCurrencySync />
         <ThemeProvider>
           <ThemeFromApiSync />
           <BootGate>

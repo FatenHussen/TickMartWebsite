@@ -20,6 +20,7 @@ import { useInfiniteScroll } from "@/shared/hooks/useInfiniteScroll";
 import type { Product } from "../types";
 import type { BrandProduct } from "../types/brand";
 import { resolveListingCardPrices } from "@/shared/lib/formatApiPrice";
+import { listingImageSrc } from "@/features/product/lib/productMedia";
 
 // Map UI sortBy label → API sortField / sortOrder
 function mapSortToApi(sortBy: string): {
@@ -153,7 +154,7 @@ export default function BrandProducts() {
                 price: listing.price,
                 originalPrice: listing.originalPrice,
                 rating: item.rating || 0,
-                image: item.image,
+                image: listingImageSrc(item),
                 badge: (item as { budges?: { name: string; color: string }[] }).budges?.map((badge) => ({
                     label: badge.name,
                     className: badge.color,

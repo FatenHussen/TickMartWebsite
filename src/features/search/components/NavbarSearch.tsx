@@ -8,6 +8,7 @@ import { paths } from "@/app/routes/path/paths";
 import { useNavbarSearch } from "../hooks/useNavbarSearch";
 import type { SearchResultType, SearchResultWithType } from "../types";
 import { cn } from "@/shared/lib/utils";
+import { listingImageSrc } from "@/features/product/lib/productMedia";
 
 const SEARCH_TYPES: { value: SearchResultType | "all"; labelKey: string }[] = [
     { value: "all", labelKey: "search.allTypes" },
@@ -265,9 +266,9 @@ export default function NavbarSearch({
                                                 className="flex items-center gap-3 px-4 py-2 hover:bg-primary-light/10 transition-colors"
                                             >
                                                 <div className="w-10 h-10 rounded-lg bg-gray-bold shrink-0 overflow-hidden flex items-center justify-center">
-                                                    {item.image ? (
+                                                    {listingImageSrc(item) ? (
                                                         <img
-                                                            src={item.image}
+                                                            src={listingImageSrc(item)}
                                                             alt=""
                                                             className="w-full h-full object-cover"
                                                         />
@@ -294,9 +295,9 @@ export default function NavbarSearch({
                                     className="flex items-center gap-3 px-4 py-2 hover:bg-primary-light/10 transition-colors"
                                 >
                                     <div className="w-10 h-10 rounded-lg bg-gray-bold shrink-0 overflow-hidden flex items-center justify-center">
-                                        {item.image ? (
+                                        {listingImageSrc(item) ? (
                                             <img
-                                                src={item.image}
+                                                src={listingImageSrc(item)}
                                                 alt=""
                                                 className="w-full h-full object-cover"
                                             />

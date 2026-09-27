@@ -24,6 +24,11 @@ import {
     resolveCustomerPromotionId,
 } from "../utils/automaticPromotions";
 import { isPaymentMethodEnabled } from "../utils/paymentMethods";
+import { isApiToastHandled } from "@/shared/lib/apiMessage";
+import {
+    checkoutBlockMessage,
+    isBeforeEarliest,
+} from "../lib/cartCheckout";
 
 import circle from "/images/shared/circle.png";
 import circleBottom from "/images/shared/circleBottom.png";
@@ -58,7 +63,10 @@ export default function ReviewConfirm() {
         useSubscriptionDiscount,
         useSubscriptionFreeDelivery,
         promotionId,
+        deliveryChoice,
+        scheduledDeliveryAt,
         setPromotionId,
+        setEarliestDeliveryAt,
     } = useCheckoutStore();
 
     const previewBenefits = useMemo(
@@ -149,10 +157,28 @@ export default function ReviewConfirm() {
         storedAddressId,
     ]);
 
+    const checkout = preview?.checkout ?? null;
+    const checkoutMessage = checkoutBlockMessage(checkout);
+    const scheduledTooEarly =
+        deliveryChoice === "scheduled" &&
+        (!scheduledDeliveryAt ||
+            isBeforeEarliest(scheduledDeliveryAt, checkout?.earliest_delivery_at));
+    const deliveryLabel =
+        preview?.delivery_choice_label?.trim() ||
+        (deliveryChoice === "scheduled"
+            ? scheduledDeliveryAt || t("checkout.deliveryScheduled", "Day and time")
+            : t("checkout.deliveryAsap", "As soon as possible"));
+
+    useEffect(() => {
+        setEarliestDeliveryAt(checkout?.earliest_delivery_at || null);
+    }, [checkout?.earliest_delivery_at, setEarliestDeliveryAt]);
+
     const canConfirm =
         Boolean(storedAddressId) &&
         Boolean(preview) &&
         Boolean(selectedPaymentMethod) &&
+        checkout?.can_checkout !== false &&
+        !scheduledTooEarly &&
         !isSubmitting;
 
     const handleConfirmOrder = async () => {
@@ -162,7 +188,16 @@ export default function ReviewConfirm() {
 
         setIsSubmitting(true);
         try {
-            const isInstantDelivery = cartItems.some((item) => !!item.is_instant_delivery);
+            if (
+                deliveryChoice === "scheduled" &&
+                (!scheduledDeliveryAt ||
+                    isBeforeEarliest(
+                        scheduledDeliveryAt,
+                        checkout?.earliest_delivery_at,
+                    ))
+            ) {
+                return;
+            }
             const promotionToSend = resolveCustomerPromotionId(
                 promotionId,
                 preview.available_promotions,
@@ -170,7 +205,11 @@ export default function ReviewConfirm() {
             const payload = {
                 address_id: Number(storedAddressId),
                 cart_type,
-                is_instant_delivery: isInstantDelivery,
+                is_instant_delivery: deliveryChoice === "asap",
+                delivery_choice: deliveryChoice,
+                ...(deliveryChoice === "scheduled" && scheduledDeliveryAt
+                    ? { scheduled_delivery_at: scheduledDeliveryAt }
+                    : {}),
                 items: getPreviewItems(),
                 ...(storedCoupon && { coupon: storedCoupon }),
                 ...(recipe_id != null && { recipe_id }),
@@ -201,9 +240,11 @@ export default function ReviewConfirm() {
             clearCart();
         } catch (err) {
             console.error("Order failed:", err);
-            toast.error(
-                t("checkout.orderFailed", "Could not place this order. Please try again."),
-            );
+            if (!isApiToastHandled(err)) {
+                toast.error(
+                    t("checkout.orderFailed", "Could not place this order. Please try again."),
+                );
+            }
         } finally {
             setIsSubmitting(false);
         }
@@ -265,6 +306,25 @@ export default function ReviewConfirm() {
                                 {selectedPaymentMethod.name}
                             </p>
                         </section>
+                    )}
+
+                    <section className="rounded-2xl border border-custom-primary bg-custom-card px-4 py-4 sm:px-5">
+                        <h2 className="text-base font-bold text-[color:var(--color-text)]">
+                            {t("checkout.deliveryMethod", "Delivery method")}
+                        </h2>
+                        <p className="mt-2 text-sm font-semibold text-[color:var(--color-text)]">
+                            {deliveryLabel}
+                        </p>
+                    </section>
+
+                    {(checkoutMessage || scheduledTooEarly) && (
+                        <p className="rounded-2xl border border-[color:var(--color-ui-amber-200)] bg-[color:var(--color-ui-amber-50)] px-4 py-3 text-sm leading-relaxed text-[color:var(--color-ui-amber-900)]">
+                            {checkoutMessage ||
+                                t("checkout.deliveryTooEarly", {
+                                    time: checkout?.earliest_delivery_at ?? "",
+                                    defaultValue: "Choose a time at or after {{time}}",
+                                })}
+                        </p>
                     )}
 
                     {displayItems.length > 0 && (

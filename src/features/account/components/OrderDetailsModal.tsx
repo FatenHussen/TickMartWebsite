@@ -20,7 +20,7 @@ import RatingFormModal from"./RatingFormModal";
 import type { OrderDetailItem, OrderDetailVariantAttribute } from"../types/order";
 import { flattenOrderDetailItems, formatOrderMoney } from"../utils/parseOrdersResponse";
 import { getOrderStatusLabel, normalizeOrderStatus } from"@/shared/lib/orderStatus";
-import { formatScheduledDeliveryAt } from"@/features/cart/utils/formatScheduledDelivery";
+import { orderDeliveryChoiceLabel } from"@/features/cart/utils/formatScheduledDelivery";
 import { buildAutomaticRewardLines } from"@/features/cart/utils/automaticPromotions";
 
 type OrderDetailsModalProps = {
@@ -140,7 +140,8 @@ export default function OrderDetailsModal({
  const { formatPrice, currency } = useCurrency();
  const { data: order, isLoading } = useOrderDetail(orderId);
  const lineItems = flattenOrderDetailItems(order?.items);
- const scheduledLabel = formatScheduledDeliveryAt(
+ const scheduledLabel = orderDeliveryChoiceLabel(
+ order?.delivery_choice_label,
  order?.scheduled_delivery_at,
  i18n.language,
  );

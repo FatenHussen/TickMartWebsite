@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { paths } from "@/app/routes/path/paths";
 import { CartSummary } from "../components";
 import CartItemCard from "../components/CartItemCard";
+import CartCheckoutLines from "../components/CartCheckoutLines";
 import ScheduleDelivery, {
     type ScheduleDeliveryData,
 } from "../components/ScheduleDelivery";
@@ -36,6 +37,8 @@ import {
     isCustomerSelectedPromotion,
 } from "../utils/automaticPromotions";
 import { ScreenPromotions } from "@/features/promotions";
+import { useCartCheckout } from "../hooks/useCartCheckout";
+import { checkoutBlockMessage } from "../lib/cartCheckout";
 
 function parseSubtotal(s: string): number {
     return parseFloat(String(s).replace(/[^0-9.]/g, "")) || 0;
@@ -60,6 +63,7 @@ export default function Cart() {
         setUseSubscriptionDiscount,
         setUseSubscriptionFreeDelivery,
         setPromotionId,
+        setEarliestDeliveryAt,
     } = useCheckoutStore();
     const [selectedCouponKey, setSelectedCouponKey] = useState<string | null>(null);
     const [selectedDeliveryKey, setSelectedDeliveryKey] = useState<string | null>(null);
@@ -102,6 +106,7 @@ export default function Cart() {
         promotionId,
     };
 
+    const { data: serverCheckout } = useCartCheckout();
     const { data: preview, isLoading: isPreviewLoading } = useOrderPreview(
         addressId != null ? addressId : null,
         coupon || undefined,
@@ -283,7 +288,16 @@ export default function Cart() {
         }
     };
 
+    const checkout = preview?.checkout ?? serverCheckout ?? null;
+    const checkoutMessage = checkoutBlockMessage(checkout);
+    const canCheckout = checkout ? checkout.can_checkout : true;
+
+    useEffect(() => {
+        setEarliestDeliveryAt(checkout?.earliest_delivery_at || null);
+    }, [checkout?.earliest_delivery_at, setEarliestDeliveryAt]);
+
     const handleCheckout = () => {
+        if (!canCheckout) return;
         setCheckoutCoupon(coupon);
         navigate("/cart/checkout");
     };
@@ -311,10 +325,6 @@ export default function Cart() {
     };
 
     const isCartEmpty = items.length === 0;
-    const storeCount = useMemo(() => {
-        const keys = items.map((item) => item.shopId ?? item.storeId ?? item.store);
-        return new Set(keys.filter(Boolean)).size;
-    }, [items]);
     const selectablePromotions = customerSelectedPromotions(preview?.available_promotions);
 
     useEffect(() => {
@@ -424,12 +434,6 @@ export default function Cart() {
                                 </div>
                             </div>
 
-                            {storeCount > 1 && (
-                                <p className="-mt-3 text-sm text-custom-secondary">
-                                    {t("cart.buyingFromStores", { count: storeCount })}
-                                </p>
-                            )}
-
                             <div className="overflow-hidden rounded-2xl border border-custom-primary bg-custom-card divide-y divide-[color:color-mix(in_srgb,var(--color-border-primary)_85%,transparent)]">
                                 {items.map((item) => {
                                     const orderItem = previewOrderItemByCartId.get(item.id);
@@ -479,6 +483,8 @@ export default function Cart() {
                                 })}
                             </div>
 
+                            {checkout && <CartCheckoutLines checkout={checkout} />}
+
                             {preview?.non_discount_promotions &&
                                 !Array.isArray(preview.non_discount_promotions) &&
                                 (preview.non_discount_promotions as NonDiscountPromotion).free_items?.length > 0 && (
@@ -509,6 +515,8 @@ export default function Cart() {
                             onAddAddress={() => navigate(paths.account.addAddress)}
                             couponDisabled={!!selectedCouponKey}
                             benefitsContent={benefitsContent}
+                            canCheckout={canCheckout}
+                            checkoutMessage={checkoutMessage}
                         />
                     </div>
                 )}

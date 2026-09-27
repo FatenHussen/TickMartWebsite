@@ -25,6 +25,7 @@ import type { ApiProduct } from"@/features/categories/types";
 import type { ShopVendorService } from"../types/shop";
 import { mapApiTopBadgesToProductCard } from "@/shared/lib/mapProductBadges";
 import { resolveListingCardPrices } from "@/shared/lib/formatApiPrice";
+import { listingImageSrc } from "@/features/product/lib/productMedia";
 
 export default function ShopDetails() {
  const { t } = useTranslation();
@@ -231,7 +232,7 @@ onSelectCategory={setSelectedCategoryId}
  price={listing.price}
  originalPrice={listing.originalPrice}
  rating={(product as { rating?: number }).rating || 0}
- image={product.image}
+ image={listingImageSrc(product)}
  category={product.category}
  savings={listing.savings}
  discountLabel={listing.discountLabel}

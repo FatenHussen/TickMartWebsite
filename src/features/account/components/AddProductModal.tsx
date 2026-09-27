@@ -12,7 +12,7 @@ import { _ProductApi } from "@/features/product/api/productApi";
 import { queryKeys } from "@/utils/queryKeys";
 import ShopVariantsPreview from "@/features/product/components/ShopVariantsPreview";
 import { isPurchasableVariant } from "@/features/product/types/productDetails";
-import { gallerySrcsForSelection } from "@/features/product/lib/productMedia";
+import { gallerySrcsForSelection, listingImageSrc } from "@/features/product/lib/productMedia";
 import { PremiumInlineLoader } from "@/shared/component/loading";
 import type { ScheduledBasketDetail } from "../types/scheduledBasket";
 import type { ScheduledBasketExtraItem } from "../types/scheduledBasket";
@@ -386,7 +386,7 @@ export default function AddProductModal({
                                         }`}
                                     >
                                         <img
-                                            src={product.image}
+                                            src={listingImageSrc(product)}
                                             alt={product.name}
                                             className="h-14 w-14 shrink-0 rounded-lg object-cover"
                                         />

@@ -43,6 +43,7 @@ import {
     type ApiProductBadgeLike,
 } from "@/shared/lib/mapProductBadges";
 import { resolveListingCardPrices } from "@/shared/lib/formatApiPrice";
+import { listingImageSrc } from "@/features/product/lib/productMedia";
 import { formatStorefrontDiscountBadge } from "@/shared/lib/productDiscountDisplay";
 import {
     getSectionCardVariant,
@@ -1187,7 +1188,7 @@ function ProductSection({
                                 id={item.id}
                                 name={item.name}
                                 description={item.description ?? undefined}
-                                image={item.image}
+                                image={listingImageSrc(item)}
                                 price={listing.price}
                                 originalPrice={listing.originalPrice}
                                 savings={listing.savings}
@@ -1241,7 +1242,7 @@ function ProductSection({
                             price={listing.price}
                             originalPrice={listing.originalPrice}
                             rating={item.rating || 0}
-                            image={item.image}
+                            image={listingImageSrc(item)}
                             badge={badge}
                             bottomBadges={mapApiBottomBadgesToProductCard(
                                 item.bottom_badges
@@ -1296,7 +1297,7 @@ function ProductSection({
                         price={listingFb.price}
                         originalPrice={listingFb.originalPrice}
                         rating={data.rating || 0}
-                        image={data.image || ""}
+                        image={listingImageSrc(data)}
                         badge={badgeFb}
                         bottomBadges={mapApiBottomBadgesToProductCard(
                             data.bottom_badges

@@ -6,6 +6,7 @@ import { getCategoryInitials } from "@/shared/lib/getCategoryInitials";
 import { cn } from "@/shared/lib/utils";
 import { resolveListingCardPrices } from "@/shared/lib/formatApiPrice";
 import type { ProductItem } from "@/features/home/types";
+import { listingImageSrc } from "@/features/product/lib/productMedia";
 
 type ScheduleProductTileProps = {
     product: ProductItem;
@@ -36,9 +37,9 @@ export default function ScheduleProductTile({
             )}
         >
             <div className="relative aspect-square overflow-hidden rounded-[1.15rem] bg-[#F3F4F6] dark:bg-zinc-800">
-                {product.image ? (
+                {listingImageSrc(product) ? (
                     <img
-                        src={product.image}
+                        src={listingImageSrc(product)}
                         alt=""
                         className="h-full w-full object-contain p-4"
                     />

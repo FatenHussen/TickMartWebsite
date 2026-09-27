@@ -27,6 +27,7 @@ import { useVariantSelector } from "../hooks/useVariantSelector";
 import { useSimilarProducts } from "../hooks/useSimilarProducts";
 import { useProductsFromSameSeller } from "../hooks/useProductsFromSameSeller";
 import {
+    formatMoneyAmount,
     pickCurrencyAmount,
     presentMoney,
     resolveDisplayListPrice,
@@ -55,7 +56,7 @@ import {
     type ProductImage,
     type ShopVariant,
 } from "../types/productDetails";
-import { gallerySrcsForSelection, mediaSrc } from "../lib/productMedia";
+import { gallerySrcsForSelection, listingImageSrc, mediaSrc } from "../lib/productMedia";
 import {
     ratingBreakdownTotal,
     readProductRating,
@@ -92,7 +93,7 @@ const EMPTY_PRODUCT_IMAGES: ProductImage[] = [];
 
 function ProductDetails() {
     const { t } = useTranslation();
-    const { currency } = useCurrency();
+    const { currency, currencySymbol } = useCurrency();
     const { isRTL, language } = useLanguage();
     const { productId } = useParams<{ productId: string }>();
     const [searchParams] = useSearchParams();
@@ -474,7 +475,7 @@ function ProductDetails() {
                 price: listing.price,
                 originalPrice: listing.originalPrice,
                 rating: readProductRating(item.rating),
-                image: item.image,
+                image: listingImageSrc(item),
                 category: item.category,
                 sold: item.sold_number,
                 savings: listing.savings,
@@ -502,7 +503,7 @@ function ProductDetails() {
                     price: listing.price,
                     originalPrice: listing.originalPrice,
                     rating: readProductRating(p.rating),
-                    image: p.image,
+                    image: listingImageSrc(p),
                     category: p.category,
                     sold: p.sold_number,
                     savings: listing.savings,
@@ -534,7 +535,7 @@ function ProductDetails() {
                     price: listing.price,
                     originalPrice: listing.originalPrice,
                     rating: readProductRating(p.rating),
-                    image: p.image,
+                    image: listingImageSrc(p),
                     category: p.category,
                     sold: p.sold_number,
                     savings: listing.savings,
@@ -760,10 +761,10 @@ function ProductDetails() {
     // Prefer API `*_formatted` / `*_currencies` — never invent FX locally.
     // Extra-detail addons force a numeric compose because formatted fields are
     // for the base variant only; amounts come from `price_currencies` when present.
-    const currencySymbol =
+    const baseCurrencySymbol =
         selectedVariant?.currency_symbol ?? product.currency_symbol ?? "";
-    const formatPrice = (price: number) =>
-        presentMoney(`${currencySymbol}${Number(price).toFixed(2)}`, language);
+    const formatPrice = (price: number, symbol = currencySymbol) =>
+        presentMoney(`${symbol}${formatMoneyAmount(price)}`, language);
 
     const extraAddon = isFood ? 0 : extraDetailsDisplayAddon;
     const priceSource = selectedVariant ?? product;
@@ -784,7 +785,7 @@ function ProductDetails() {
         extraAddon > 0
             ? formatPrice(baseSaleAmount + extraAddon)
             : resolveDisplaySalePrice(priceSource, currency) ||
-              formatPrice(currentPriceAfterDiscount ?? currentPrice);
+              formatPrice(currentPriceAfterDiscount ?? currentPrice ?? 0, baseCurrencySymbol);
     const displayListPrice =
         extraAddon > 0
             ? baseListAmount > baseSaleAmount

@@ -1,8 +1,10 @@
 import { useQuery } from"@tanstack/react-query";
 import { useCartStore } from"@/store/cart";
+import { useCheckoutStore } from"@/store/checkout";
 import { _OrderApi } from"../api/orderApi";
 import type { OrderPreviewResponse } from"../types";
 import { queryKeys } from"@/utils/queryKeys";
+import { deliveryChoiceToSend } from"../lib/cartCheckout";
 
 export interface OrderPreviewBenefits {
  pointCouponExchangeId?: number | null;
@@ -20,7 +22,6 @@ export function useOrderPreview(
  benefits?: OrderPreviewBenefits,
  paymentMethodId?: string
 ): { data?: OrderPreviewResponse; isLoading: boolean; error: Error | null } {
- const items = useCartStore((s) => s.items);
  const cart_type = useCartStore((s) => s.cart_type);
  const recipe_id = useCartStore((s) => s.recipe_id);
  const admin_basket_id = useCartStore((s) => s.admin_basket_id);
@@ -29,7 +30,14 @@ export function useOrderPreview(
  const getPreviewItems = useCartStore((s) => s.getPreviewItems);
 
  const previewItems = getPreviewItems();
- const isInstantDelivery = items.some((i) => !!i.is_instant_delivery);
+ const deliveryChoice = useCheckoutStore((s) => s.deliveryChoice);
+ const scheduledDeliveryAt = useCheckoutStore((s) => s.scheduledDeliveryAt);
+ const earliestDeliveryAt = useCheckoutStore((s) => s.earliestDeliveryAt);
+ const delivery = deliveryChoiceToSend(
+ deliveryChoice,
+ scheduledDeliveryAt,
+ earliestDeliveryAt,
+ );
 
  // Read from localStorage if not passed explicitly
  const resolvedPaymentMethodId =
@@ -43,14 +51,25 @@ export function useOrderPreview(
  recipe_id,
  admin_basket_id,
  coupon,
- { ...benefits, paymentMethodId: resolvedPaymentMethodId, admin_schedule_basket_id, basket_schedule_id }
+ {
+ ...benefits,
+ paymentMethodId: resolvedPaymentMethodId,
+ admin_schedule_basket_id,
+ basket_schedule_id,
+ deliveryChoice: delivery.delivery_choice,
+ scheduledDeliveryAt: delivery.scheduled_delivery_at ?? null,
+ }
  ),
  queryFn: async () => {
  if (addressId == null || previewItems.length === 0) return null;
  const payload = {
  cart_type,
  address_id: addressId,
- is_instant_delivery: isInstantDelivery,
+ is_instant_delivery: delivery.is_instant_delivery,
+ delivery_choice: delivery.delivery_choice,
+ ...(delivery.scheduled_delivery_at
+ ? { scheduled_delivery_at: delivery.scheduled_delivery_at }
+ : {}),
  items: previewItems,
  ...(coupon && { coupon }),
  ...(recipe_id != null && { recipe_id }),

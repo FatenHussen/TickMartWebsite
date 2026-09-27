@@ -54,27 +54,31 @@ export default function Settings() {
     );
 
     useEffect(() => {
-        if (myCurrency) {
-            setCurrency(myCurrency.code, myCurrency.symbol);
-            setLocalCurrencyId(myCurrency.id);
-        }
-    }, [myCurrency, setCurrency]);
-
-    useEffect(() => {
         setLocalLanguage(language);
     }, [language]);
 
     useEffect(() => {
-        if (myCurrency) setLocalCurrencyId(myCurrency.id);
-    }, [myCurrency]);
+        if (myCurrency && localCurrencyId == null) {
+            setLocalCurrencyId(myCurrency.id);
+        }
+    }, [myCurrency, localCurrencyId]);
 
     useEffect(() => {
         setLocalTheme(theme === "light" ? "light" : theme === "dark" ? "dark" : "system");
     }, [theme]);
 
+    const applyCurrency = (currencyId: number | null) => {
+        setLocalCurrencyId(currencyId);
+        const selected = currencies.find((c) => Number(c.id) === currencyId);
+        if (selected) setCurrency(selected.code, selected.symbol);
+    };
+
     const handleCancel = () => {
         setLocalLanguage(language);
-        if (myCurrency) setLocalCurrencyId(myCurrency.id);
+        if (myCurrency) {
+            setLocalCurrencyId(myCurrency.id);
+            setCurrency(myCurrency.code, myCurrency.symbol);
+        }
         setLocalTheme(theme === "light" ? "light" : theme === "dark" ? "dark" : "system");
     };
 
@@ -84,7 +88,7 @@ export default function Settings() {
         if (localCurrencyId !== null && localCurrencyId !== myCurrency?.id) {
             try {
                 await updateCurrencyMutation.mutateAsync({ currency_id: localCurrencyId });
-                const selected = currencies.find((c) => c.id === localCurrencyId);
+                const selected = currencies.find((c) => Number(c.id) === localCurrencyId);
                 if (selected) setCurrency(selected.code, selected.symbol);
             } catch {
                 return;
@@ -171,7 +175,7 @@ export default function Settings() {
                             <div className="relative w-full">
                                 <select
                                     value={localCurrencyId ?? ""}
-                                    onChange={(e) => setLocalCurrencyId(Number(e.target.value) || null)}
+                                    onChange={(e) => applyCurrency(Number(e.target.value) || null)}
                                     disabled={currencySelectDisabled}
                                     onScroll={handleCurrencyScroll}
                                     className={cn(

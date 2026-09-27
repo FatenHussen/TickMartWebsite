@@ -6,7 +6,7 @@ import {
     MapPin,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { formatScheduledDeliveryAt } from "../utils/formatScheduledDelivery";
+import { orderDeliveryChoiceLabel } from "../utils/formatScheduledDelivery";
 import { useLanguage } from "@/context/LanguageContext";
 import { cn } from "@/shared/lib/utils";
 import type { OrderStatus } from "../types";
@@ -30,6 +30,7 @@ type OrderCardProps = {
     deliveryAddress?: string;
     total: string;
     paymentMethod: string;
+    deliveryChoiceLabel?: string | null;
     scheduledDeliveryAt?: string | null;
     onViewDetails?: () => void;
     onTrackOrder?: () => void;
@@ -123,6 +124,7 @@ export default function OrderCard({
     deliveryAddress,
     total,
     paymentMethod,
+    deliveryChoiceLabel,
     scheduledDeliveryAt,
     onViewDetails,
     onTrackOrder,
@@ -133,7 +135,8 @@ export default function OrderCard({
 }: OrderCardProps) {
     const { t, i18n } = useTranslation();
     const { isRTL } = useLanguage();
-    const scheduledLabel = formatScheduledDeliveryAt(
+    const scheduledLabel = orderDeliveryChoiceLabel(
+        deliveryChoiceLabel,
         scheduledDeliveryAt,
         i18n.language,
     );

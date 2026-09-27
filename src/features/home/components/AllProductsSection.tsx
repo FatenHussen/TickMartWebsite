@@ -25,6 +25,7 @@ import {
     mapApiTopBadgesToProductCard,
 } from "@/shared/lib/mapProductBadges";
 import { resolveListingCardPrices } from "@/shared/lib/formatApiPrice";
+import { listingImageSrc } from "@/features/product/lib/productMedia";
 import {
     homeStaticSectionRowSurface,
     pickHomeSectionBySeeMorePageSlug,
@@ -133,7 +134,7 @@ export default function AllProductsSection({
             price: listing.price,
             originalPrice: listing.originalPrice,
             rating: product.rating || 0,
-            image: product.image,
+            image: listingImageSrc(product),
             badge: topBadges,
             bottomBadges,
             category: product.category,

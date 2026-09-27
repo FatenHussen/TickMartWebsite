@@ -4,6 +4,7 @@ export interface SearchResultItem {
     id: number;
     name: string;
     image: string | null;
+    thumbnail?: string | null;
 }
 
 export interface SearchResultWithType extends SearchResultItem {

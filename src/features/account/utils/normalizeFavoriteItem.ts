@@ -1,4 +1,5 @@
 import { paths } from"@/app/routes/path/paths";
+import { listingImageSrc } from "@/features/product/lib/productMedia";
 import type { FavoriteItem, FavoriteType, WishlistDisplayItem } from"../types";
 
 const PLACEHOLDER_IMAGE ="https://via.placeholder.com/400?text=No+Image";
@@ -36,7 +37,10 @@ export function normalizeFavoriteItem(
  type: FavoriteType
 ): WishlistDisplayItem {
  const displayName = item.name ?? item.title ??"";
- const image = item.image ?? (item as { logo_url?: string }).logo_url ?? PLACEHOLDER_IMAGE;
+ const image =
+ listingImageSrc(item) ||
+ (item as { logo_url?: string | null }).logo_url ||
+ PLACEHOLDER_IMAGE;
 
  const priceAfterDiscount =
  item.price_after_discount ??

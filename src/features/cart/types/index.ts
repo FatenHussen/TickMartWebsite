@@ -43,6 +43,37 @@ export type CartItem = {
 
 export type CartType ="default"|"recipe"|"basket"|"schedule_admin_cart";
 
+/** Money already formatted in the customer's currency. Display `formatted`. */
+export type ApiFormattedMoney = {
+ amount: number;
+ currency: string;
+ symbol: string;
+ formatted: string;
+};
+
+/** `asap` = nearest time, no hour. `scheduled` = a day and time. */
+export type DeliveryChoice = "asap" | "scheduled";
+
+/**
+ * Checkout block from `GET /user/cart` and `POST /user/orders/preview`.
+ * `source` is informational. Do not split the cart by it.
+ */
+export type CartCheckout = {
+ source: string;
+ shop_id: number | null;
+ min_order_amount: ApiFormattedMoney;
+ subtotal: ApiFormattedMoney;
+ remaining_amount: ApiFormattedMoney;
+ can_checkout: boolean;
+ delivery_min_hours: number | null;
+ delivery_max_hours: number | null;
+ /** `Y-m-d H:i`. Reject any scheduled time before this. */
+ earliest_delivery_at: string;
+ message: string | null;
+ /** Set by preview when the appointment is earlier than allowed. */
+ delivery_error?: string | null;
+};
+
 /** Badge on a schedule catalog card */
 export interface ScheduleBadge {
  id?: number;
@@ -142,6 +173,10 @@ export interface ActiveOrder {
  status_label?: string | null;
  cart_type: string;
  is_instant_delivery: boolean;
+ /** `asap` or `scheduled`. Prefer this over `is_instant_delivery`. */
+ delivery_choice?: DeliveryChoice | null;
+ /** «أقرب وقت ممكن» or the scheduled `Y-m-d H:i`. Display as returned. */
+ delivery_choice_label?: string | null;
  /** Set by admin. `YYYY-MM-DD HH:mm`, or null when no appointment is saved. */
  scheduled_delivery_at?: string | null;
  delivery_price: number;
@@ -163,6 +198,10 @@ export interface OrderPreviewPayload {
  cart_type: CartType;
  address_id: number;
  is_instant_delivery: boolean;
+ /** Prefer this over inferring delivery from cart lines. */
+ delivery_choice?: DeliveryChoice;
+ /** `Y-m-d H:i`. Sent only when `delivery_choice` is `scheduled`. */
+ scheduled_delivery_at?: string;
  items: OrderPreviewItem[];
  recipe_id?: number;
  admin_basket_id?: number;
@@ -180,6 +219,9 @@ export interface OrderCreatePayload {
  address_id: number;
  cart_type: CartType;
  is_instant_delivery: boolean;
+ delivery_choice?: DeliveryChoice;
+ /** `Y-m-d H:i`. Sent only when `delivery_choice` is `scheduled`. */
+ scheduled_delivery_at?: string;
  items: OrderPreviewItem[];
  coupon?: string;
  recipe_id?: number;
@@ -340,6 +382,11 @@ export interface OrderPreviewResponse {
  subscription_discount?: number;
  promotion_discount?: number;
  free_delivery_from_points?: boolean;
+ checkout?: CartCheckout | null;
+ delivery_choice?: DeliveryChoice | null;
+ delivery_choice_label?: string | null;
+ scheduled_delivery_at?: string | null;
+ delivery_error?: string | null;
 }
 
 export type StoreInfo = {
@@ -433,6 +480,8 @@ export type Order = {
  deliveryAddress?: string; // e.g.,"Home, 123 Main Street"
  total: string;
  paymentMethod: string; // e.g.,"Visa ending 1234"
+ /** API `delivery_choice_label`. Shown as returned. */
+ deliveryChoiceLabel?: string | null;
  /** Admin-set appointment. Omit the line when null. */
  scheduledDeliveryAt?: string | null;
  refundStatus?: string; // For cancelled orders
@@ -475,7 +524,9 @@ export type OrderDetails = {
  address: string;
  eta: string;
  message?: string;
- /** Admin-set appointment. Hidden when null. */
+ /** API `delivery_choice_label`. Shown as returned. */
+ deliveryChoiceLabel?: string | null;
+ /** Admin-set appointment. Hidden when the label is missing. */
  scheduledDeliveryAt?: string | null;
  };
  payment: {

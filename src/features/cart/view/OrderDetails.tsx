@@ -15,7 +15,7 @@ import OrderStatusTimeline from "../components/OrderStatusTimeline";
 import OrderItemsTable from "../components/OrderItemsTable";
 import OrderSidebar from "../components/OrderSidebar";
 import { useOrderDetails } from "../hooks/useOrderDetails";
-import { formatScheduledDeliveryAt } from "../utils/formatScheduledDelivery";
+import { orderDeliveryChoiceLabel } from "../utils/formatScheduledDelivery";
 
 type StatusVisuals = {
     label: string;
@@ -128,7 +128,8 @@ export default function OrderDetails() {
     }
 
     const visuals = getStatusVisuals(order.status, t, order.statusLabel);
-    const scheduledLabel = formatScheduledDeliveryAt(
+    const scheduledLabel = orderDeliveryChoiceLabel(
+        order.delivery.deliveryChoiceLabel,
         order.delivery.scheduledDeliveryAt,
         i18n.language,
     );

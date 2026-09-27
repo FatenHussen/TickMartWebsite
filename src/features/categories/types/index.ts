@@ -89,6 +89,7 @@ category_id?: number;
  amount_saved_formatted: string;
  quantity: number | null;
  image: string;
+ thumbnail?: string | null;
  discount: string;
  created_at: string;
  sold_number: number;
