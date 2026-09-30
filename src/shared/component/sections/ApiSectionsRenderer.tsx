@@ -1379,7 +1379,7 @@ function RecipeSection({
                     );
                     const recipeDiscount =
                         item.discount && parseFloat(item.discount) > 0
-                            ? t("baskets.discountPercentOff", {
+                            ? i18next.t("baskets.discountPercentOff", {
                                   value: Math.round(parseFloat(item.discount)),
                               })
                             : listing.discountLabel;
