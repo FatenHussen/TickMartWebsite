@@ -124,13 +124,6 @@ export default function ProductCard({
             })),
         [bottomBadgesShown, t],
     );
-    const mergedBottomBadgeItems = useMemo((): AnimatedButtonItem[] => {
-        const items: AnimatedButtonItem[] = [...bottomBadgeItems];
-        if (discountLabel) {
-            items.unshift({ label: discountLabel });
-        }
-        return items;
-    }, [bottomBadgeItems, discountLabel]);
 
     const numericRating = readProductRating(rating);
     const showRating = numericRating > 0;
@@ -232,6 +225,16 @@ export default function ProductCard({
                         />
                     </div>
 
+                    {/* Discount chip on the image — app-style bottom corner (physical left in RTL) */}
+                    {discountLabel ? (
+                        <div className="absolute bottom-3 end-3 z-10">
+                            <Badge
+                                label={discountLabel}
+                                className="rounded-lg bg-red-600 px-2.5 py-1 text-xs font-bold text-white shadow-md ring-1 ring-white/20"
+                            />
+                        </div>
+                    ) : null}
+
                 </div>
             </div>
 
@@ -324,7 +327,7 @@ export default function ProductCard({
 
                 {/* Open-details button + bottom badges */}
                 {(onViewDetails ||
-                    mergedBottomBadgeItems.length > 0 ||
+                    bottomBadgeItems.length > 0 ||
                     deliveryInfo) && (
                     <div className="mt-auto flex w-full flex-col items-center gap-2.5 pt-4">
                         {onViewDetails && (
@@ -357,9 +360,9 @@ export default function ProductCard({
                                 </span>
                             </Button>
                         )}
-                        {mergedBottomBadgeItems.length > 0 && (
+                        {bottomBadgeItems.length > 0 && (
                             <AnimatedButton
-                                items={mergedBottomBadgeItems}
+                                items={bottomBadgeItems}
                                 heightClassName="h-6"
                                 type="button"
                                 onClick={(e) => e.stopPropagation()}

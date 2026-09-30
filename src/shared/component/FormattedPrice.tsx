@@ -6,6 +6,7 @@ import { cn } from "@/shared/lib/utils";
 import {
     localizeCurrencyText,
     parsePriceParts,
+    roundFormattedMoneyText,
     selectFormattedForCurrency,
     splitDualCurrencies,
     toLatinNumberText,
@@ -144,14 +145,18 @@ export default function FormattedPrice({
     const symbolFirst = !i18n.language.toLowerCase().startsWith("ar");
     const displayValue = toLatinNumberText(
         localizeCurrencyText(
-            selectFormattedForCurrency(value, currencyCode),
+            roundFormattedMoneyText(
+                selectFormattedForCurrency(value, currencyCode),
+            ),
             i18n.language,
         ),
     );
     const displayCompare = compareValue
         ? toLatinNumberText(
               localizeCurrencyText(
-                  selectFormattedForCurrency(compareValue, currencyCode),
+                  roundFormattedMoneyText(
+                      selectFormattedForCurrency(compareValue, currencyCode),
+                  ),
                   i18n.language,
               ),
           )

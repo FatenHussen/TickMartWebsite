@@ -734,16 +734,9 @@ function ProductDetails() {
         product,
     );
 
-    // Build badges — variant-level discount from API (no local % math)
+    // Build badges — variant-level discount is shown on image + beside price
     const badges: Array<{ label: string; className?: string }> = [];
     const discountBadgeLabel = variantPriceDisplay?.badge ?? null;
-    if (discountBadgeLabel) {
-        badges.push({
-            label: discountBadgeLabel,
-            className:
-                "bg-primary-light text-white dark:bg-[color-mix(in_srgb,var(--color-main)_32%,#242428)] dark:text-white",
-        });
-    }
     if (product.is_most_ordered) {
         badges.push({
             label: t("product.mostOrdered", "Most Ordered"),
@@ -867,6 +860,7 @@ function ProductDetails() {
                             isFavorite={isFavorite}
                             onToggleFavorite={handleToggleFavorite}
                             onShare={handleShare}
+                            discountLabel={discountBadgeLabel}
                         />
                     </div>
 
@@ -895,32 +889,32 @@ function ProductDetails() {
                         />
 
                         {(deliveryEstimate || warrantyName) && (
-                            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                            <div className="flex flex-wrap gap-2.5">
                                 {deliveryEstimate && (
-                                    <div className="flex items-start gap-2.5 rounded-xl bg-[color-mix(in_srgb,var(--color-api-second)_7%,var(--color-bg-card))] px-3.5 py-3 dark:bg-white/[0.03]">
-                                        <HiClock className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                                    <div className="inline-flex max-w-full items-center gap-3 rounded-xl border border-[color-mix(in_srgb,var(--color-api-second)_14%,var(--color-border-primary))] bg-[color-mix(in_srgb,var(--color-api-second)_6%,var(--color-bg-card))] px-4 py-3 dark:border-white/[0.08] dark:bg-white/[0.03]">
+                                        <HiClock className="h-5 w-5 shrink-0 text-primary" aria-hidden />
                                         <div className="min-w-0">
-                                            <p className="text-xs text-custom-secondary">
+                                            <p className="text-sm leading-tight text-custom-secondary">
                                                 {t("product.deliveryTime", "Delivery")}
                                             </p>
-                                            <p className="text-sm font-medium text-text-primary">
+                                            <p className="mt-0.5 text-lg font-semibold leading-snug text-text-primary">
                                                 {deliveryEstimate}
                                             </p>
                                         </div>
                                     </div>
                                 )}
                                 {warrantyName && (
-                                    <div className="flex items-start gap-2.5 rounded-xl bg-[color-mix(in_srgb,var(--color-api-second)_7%,var(--color-bg-card))] px-3.5 py-3 dark:bg-white/[0.03]">
-                                        <HiShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                                    <div className="inline-flex max-w-full items-center gap-3 rounded-xl border border-[color-mix(in_srgb,var(--color-api-second)_14%,var(--color-border-primary))] bg-[color-mix(in_srgb,var(--color-api-second)_6%,var(--color-bg-card))] px-4 py-3 dark:border-white/[0.08] dark:bg-white/[0.03]">
+                                        <HiShieldCheck className="h-5 w-5 shrink-0 text-primary" aria-hidden />
                                         <div className="min-w-0">
-                                            <p className="text-xs text-custom-secondary">
+                                            <p className="text-sm leading-tight text-custom-secondary">
                                                 {t("product.warranty", "Warranty")}
                                             </p>
-                                            <p className="text-sm font-medium text-text-primary">
+                                            <p className="mt-0.5 text-lg font-semibold leading-snug text-text-primary">
                                                 {warrantyName}
                                             </p>
                                             {warrantyDescription ? (
-                                                <p className="mt-1 whitespace-pre-wrap text-xs leading-relaxed text-custom-secondary">
+                                                <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-custom-secondary">
                                                     {warrantyDescription}
                                                 </p>
                                             ) : null}

@@ -2,8 +2,10 @@
  * Prefer API-formatted prices — never invent FX locally.
  *
  * Spec: display `*_formatted` or `*_currencies` from the API.
+ * Amounts are shown as whole numbers (first-decimal rounding).
  */
 
+import i18next from "i18next";
 import { formatStorefrontDiscountBadge } from "@/shared/lib/productDiscountDisplay";
 
 export type ApiCurrencyFormatted = {
@@ -70,7 +72,7 @@ export function selectFormattedForCurrency(
 
 function formatCurrencyEntry(entry?: ApiCurrencyFormatted | null): string {
     const formatted = entry?.formatted?.trim();
-    if (formatted) return formatted;
+    if (formatted) return roundFormattedMoneyText(formatted);
     if (entry?.amount == null) return "";
     const amount = Number(entry.amount);
     if (!Number.isFinite(amount)) return "";
@@ -143,7 +145,10 @@ export function formatDualCurrencies(
     const rest = Object.entries(currencies)
         .filter(([code]) => code !== "USD" && code !== "SYP")
         .map(([, v]) => v?.formatted);
-    return [...preferred, ...rest].filter(Boolean).join(" / ");
+    return [...preferred, ...rest]
+        .filter(Boolean)
+        .map((v) => roundFormattedMoneyText(String(v)))
+        .join(" / ");
 }
 
 export type FormattedPriceSource = {
@@ -174,7 +179,7 @@ function pickCurrenciesThenFormatted(
         formatted?.trim() ?? "",
         currencyCode,
     );
-    return fromFormatted || "";
+    return fromFormatted ? roundFormattedMoneyText(fromFormatted) : "";
 }
 
 function numericDiscount(source: FormattedPriceSource): boolean {
@@ -225,7 +230,11 @@ function resolveDiscountLabel(
     const disc = source.discount;
     if (typeof disc === "string" && disc.trim()) {
         const n = Number(disc);
-        if (Number.isFinite(n) && n > 0) return `-${n}%`;
+        if (Number.isFinite(n) && n > 0) {
+            return i18next.t("baskets.discountPercentOff", {
+                value: roundMoneyToWhole(n),
+            });
+        }
     }
     return undefined;
 }
@@ -255,7 +264,7 @@ export function resolveDisplaySalePrice(
 
     const amount = source.price_after_discount ?? source.price;
     if (amount == null || !Number.isFinite(amount)) return "";
-    return `${source.currency_symbol ?? ""}${amount}`;
+    return `${source.currency_symbol ?? ""}${formatMoneyAmount(amount)}`;
 }
 
 /** Struck-through original when there is a discount. */
@@ -281,7 +290,8 @@ export function resolveDisplayListPrice(
         (afterFmt && listFmt && afterFmt !== listFmt)
     ) {
         if (listFmt) return listFmt;
-        if (listNum != null) return `${source.currency_symbol ?? ""}${listNum}`;
+        if (listNum != null)
+            return `${source.currency_symbol ?? ""}${formatMoneyAmount(listNum)}`;
     }
     return undefined;
 }
@@ -304,7 +314,9 @@ function resolveSavingsAmount(
     if (fromMap) return fromMap;
     const formatted = source.amount_saved_formatted?.trim();
     if (!formatted) return undefined;
-    return selectFormattedForCurrency(formatted, currencyCode) || formatted;
+    const selected =
+        selectFormattedForCurrency(formatted, currencyCode) || formatted;
+    return roundFormattedMoneyText(selected);
 }
 
 /**
@@ -378,23 +390,50 @@ export function toLatinNumberText(value: string): string {
 
 const LATIN_MONEY = new Intl.NumberFormat("en-US", {
     numberingSystem: "latn",
-    maximumFractionDigits: 2,
+    maximumFractionDigits: 0,
 });
 
-/** International digits (`1,234.56`) for both English and Arabic. */
+/**
+ * Storefront whole-number rounding: look at the first digit after the decimal.
+ * Below 5 → drop the fraction. 5 or above → round up, then drop the fraction.
+ * Examples: 198.90 → 199, 35.10 → 35.
+ */
+export function roundMoneyToWhole(amount: number): number {
+    if (!Number.isFinite(amount)) return 0;
+    const sign = amount < 0 ? -1 : 1;
+    const abs = Math.abs(amount);
+    const intPart = Math.trunc(abs);
+    const firstDecimal = Math.floor((abs - intPart) * 10 + 1e-8);
+    return sign * (firstDecimal >= 5 ? intPart + 1 : intPart);
+}
+
+/**
+ * Round every decimal money amount inside a formatted price string.
+ * Leaves non-decimal tokens and currency symbols untouched.
+ */
+export function roundFormattedMoneyText(value: string): string {
+    if (!value) return value;
+    return value.replace(/\d[\d,]*(?:\.\d+)/g, (token) => {
+        const n = Number(token.replace(/,/g, ""));
+        if (!Number.isFinite(n)) return token;
+        return LATIN_MONEY.format(roundMoneyToWhole(n));
+    });
+}
+
+/** International digits (`1,234`) for both English and Arabic — whole numbers only. */
 export function formatMoneyAmount(amount: number): string {
     if (!Number.isFinite(amount)) return "0";
-    return LATIN_MONEY.format(amount);
+    return LATIN_MONEY.format(roundMoneyToWhole(amount));
 }
 
 /**
  * International amount, with the currency on the side the language reads from.
- * English (LTR): `$1,234.56` / `ل.س 1,234.56`
- * Arabic (RTL): `1,234.56 ل.س` / `1,234.56 $`
+ * English (LTR): `$1,234` / `ل.س 1,234`
+ * Arabic (RTL): `1,234 ل.س` / `1,234 $`
  * Digits stay in an LTR isolate so they never reverse.
  */
 export function presentMoney(value: string, language?: string | null): string {
-    const clean = toLatinNumberText(value).trim();
+    const clean = roundFormattedMoneyText(toLatinNumberText(value)).trim();
     if (!clean) return clean;
     if (clean.includes(" / ")) {
         return clean

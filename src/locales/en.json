@@ -370,6 +370,8 @@
     "color": "Color",
     "selectColor": "Select color",
     "colorsSelected": "{{count}} colors",
+    "selectAttribute": "Select option",
+    "attributesSelected": "{{count}} selected",
     "rating": "Rating",
     "rating4Up": "4 stars & up",
     "rating3Up": "3 stars & up",

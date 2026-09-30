@@ -57,9 +57,22 @@ export function hasStorefrontDiscount(
 }
 
 /**
- * Listing card + PDP badge.
- * percentage → `-10.5%`
- * fixed → localized `خصم 150.75` / `150.75 OFF` (fractions and values > 100 stay as-is)
+ * First decimal digit rule: < 5 truncates, ≥ 5 rounds up.
+ * Matches storefront price display (whole numbers only).
+ */
+function roundDiscountDisplayValue(value: number): number {
+    if (!Number.isFinite(value)) return 0;
+    const sign = value < 0 ? -1 : 1;
+    const abs = Math.abs(value);
+    const intPart = Math.trunc(abs);
+    const firstDecimal = Math.floor((abs - intPart) * 10 + 1e-8);
+    return sign * (firstDecimal >= 5 ? intPart + 1 : intPart);
+}
+
+/**
+ * Listing card + PDP badge — same copy as the app.
+ * percentage → `خصم 15%` / `15% OFF`
+ * fixed → `خصم 151` / `151 OFF`
  */
 export function formatStorefrontDiscountBadge(
     selected?: DiscountFieldSource | null,
@@ -68,7 +81,11 @@ export function formatStorefrontDiscountBadge(
 ): string | null {
     const { type, value } = resolveDiscountFields(selected, product);
     if (type === "none" || !(value > 0)) return null;
-    if (type === "percentage") return `-${value}%`;
-    if (t) return t("baskets.discountAmountOff", { value });
-    return i18next.t("baskets.discountAmountOff", { value });
+    const displayValue = roundDiscountDisplayValue(value);
+    if (type === "percentage") {
+        if (t) return t("baskets.discountPercentOff", { value: displayValue });
+        return i18next.t("baskets.discountPercentOff", { value: displayValue });
+    }
+    if (t) return t("baskets.discountAmountOff", { value: displayValue });
+    return i18next.t("baskets.discountAmountOff", { value: displayValue });
 }

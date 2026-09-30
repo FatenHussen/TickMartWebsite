@@ -113,15 +113,36 @@ export default function Slider({
      * a state write here feeds straight back into another `progress`. Returning
      * the previous state when the edges did not move keeps that from becoming
      * an endless render loop (which pegged the CPU and spun the mouse cursor).
+     *
+     * Compute outside the updater: `minTranslate`/`maxTranslate` throw while
+     * snapGrid is still undefined (first paint / before layout).
      */
-    const syncNav = (swiper: SwiperClass) =>
-        setNav((prev) => {
-            const canPrev = !swiper.isBeginning;
-            const canNext = !swiper.isEnd;
-            return prev.canPrev === canPrev && prev.canNext === canNext
+    const syncNav = (swiper: SwiperClass) => {
+        let canPrev = false;
+        let canNext = false;
+        try {
+            // snapGrid is filled after the first layout pass.
+            if (!swiper.snapGrid?.length) {
+                canPrev = !swiper.isBeginning;
+                canNext = !swiper.isEnd;
+            } else {
+                const min = swiper.minTranslate();
+                const max = swiper.maxTranslate();
+                const current = swiper.translate ?? 0;
+                const overflows = Math.abs(max - min) > 2;
+                canPrev = overflows && Math.abs(current - min) > 2;
+                canNext = overflows && Math.abs(current - max) > 2;
+            }
+        } catch {
+            canPrev = !swiper.isBeginning;
+            canNext = !swiper.isEnd;
+        }
+        setNav((prev) =>
+            prev.canPrev === canPrev && prev.canNext === canNext
                 ? prev
-                : { canPrev, canNext };
-        });
+                : { canPrev, canNext },
+        );
+    };
 
     const defaultBreakpoints = breakpoints || FALLBACK_BREAKPOINTS;
 
@@ -267,9 +288,10 @@ export default function Slider({
                 className={cn(
                     // Logical inset so RTL flips the pair automatically, matching
                     // Swiper's own RTL translate.
-                    "absolute top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-stone-200/70 bg-white/90 text-custom-primary shadow-[0_6px_20px_-8px_rgba(0,0,0,0.35)] backdrop-blur-md transition-all duration-200 hover:border-primary-light/45 hover:bg-white hover:text-primary-light hover:shadow-[0_10px_26px_-8px_rgba(0,0,0,0.45)] active:scale-95 disabled:pointer-events-none disabled:opacity-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 sm:flex",
+                    "absolute top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-stone-200/70 bg-white/90 text-custom-primary shadow-[0_6px_20px_-8px_rgba(0,0,0,0.35)] backdrop-blur-md transition-all duration-200 hover:border-primary-light/45 hover:bg-white hover:text-primary-light hover:shadow-[0_10px_26px_-8px_rgba(0,0,0,0.45)] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
                     "dark:border-white/10 dark:bg-[#2A2622] dark:text-[#C9C2B6] dark:shadow-[0_8px_18px_-12px_rgba(0,0,0,0.55)] dark:hover:border-white/16 dark:hover:bg-[#322E29] dark:hover:text-[#F3EFE8] dark:hover:shadow-none",
-                    direction === "prev" ? "start-0 -ms-3" : "end-0 -me-3",
+                    !enabled && "cursor-default opacity-40",
+                    direction === "prev" ? "start-2" : "end-2",
                 )}
             >
                 {/*
@@ -308,10 +330,23 @@ export default function Slider({
             breakpoints={defaultBreakpoints}
             freeMode={true}
             className="shared-swiper"
-            onSwiper={showNavigation ? (s) => { setSwiperInstance(s); syncNav(s); } : undefined}
+            onSwiper={
+                showNavigation
+                    ? (s) => {
+                          setSwiperInstance(s);
+                          syncNav(s);
+                          requestAnimationFrame(() => {
+                              s.update();
+                              syncNav(s);
+                          });
+                      }
+                    : undefined
+            }
             onProgress={showNavigation ? syncNav : undefined}
+            onUpdate={showNavigation ? syncNav : undefined}
             onResize={showNavigation ? syncNav : undefined}
             onSlidesLengthChange={showNavigation ? syncNav : undefined}
+            onSlideChange={showNavigation ? syncNav : undefined}
         >
             {children.map((child, index) => (
                 <SwiperSlide key={index} className={slideClassName}>

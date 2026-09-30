@@ -2,7 +2,7 @@ import FormattedPrice from "@/shared/component/FormattedPrice";
 import { splitSavingsLabel } from "@/shared/lib/formatApiPrice";
 import { cn } from "@/shared/lib/utils";
 
-export type PriceBlockSize = "xs" | "sm" | "md" | "lg" | "xl";
+export type PriceBlockSize = "xs" | "sm" | "md" | "lg" | "xl" | "2xl";
 
 type PriceBlockProps = {
     /** Final price after discount. */
@@ -22,6 +22,7 @@ const saleSize: Record<PriceBlockSize, string> = {
     md: "text-[1.35rem] tracking-tight sm:text-[1.45rem]",
     lg: "text-[1.85rem] leading-none sm:text-[2rem]",
     xl: "text-3xl leading-none sm:text-4xl",
+    "2xl": "text-[2.35rem] leading-none tracking-tight sm:text-[2.75rem]",
 };
 
 const metaSize: Record<PriceBlockSize, string> = {
@@ -30,6 +31,7 @@ const metaSize: Record<PriceBlockSize, string> = {
     md: "text-[13px]",
     lg: "text-sm",
     xl: "text-base sm:text-lg",
+    "2xl": "text-[15px] sm:text-lg",
 };
 
 const alignClass = {

@@ -82,6 +82,15 @@ export default function WishlistProductCard({
  </div>
  )}
 
+ {listing.discountLabel ? (
+ <div className="absolute bottom-3 right-3 z-10">
+ <Badge
+ label={listing.discountLabel}
+ className="rounded-lg bg-red-600 px-2.5 py-1 text-xs font-bold text-white shadow-md ring-1 ring-white/20"
+ />
+ </div>
+ ) : null}
+
  <div className="absolute right-3 top-3 z-10">
  <FavoriteButton
  isFavorite={false}

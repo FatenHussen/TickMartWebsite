@@ -7,6 +7,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import Button from "@/shared/ui/Button";
 import LazyImage from "@/shared/component/LazyImage";
 import FavoriteButton from "@/shared/component/FavoriteButton";
+import Badge from "@/shared/component/Badge";
 import ProductImageLightbox from "./ProductImageLightbox";
 
 export type ProductImageGalleryProps = {
@@ -14,6 +15,8 @@ export type ProductImageGalleryProps = {
     isFavorite?: boolean;
     onToggleFavorite?: () => void;
     onShare?: () => void;
+    /** Discount chip on the main image (e.g. "15% خصم"). */
+    discountLabel?: string | null;
     className?: string;
 };
 
@@ -65,6 +68,7 @@ export default function ProductImageGallery({
     isFavorite = false,
     onToggleFavorite,
     onShare,
+    discountLabel,
     className,
 }: ProductImageGalleryProps) {
     const { t } = useTranslation();
@@ -161,6 +165,15 @@ export default function ProductImageGallery({
         </div>
     );
 
+    const discountBadge = discountLabel?.trim() ? (
+        <div className="absolute start-3 top-3 z-10">
+            <Badge
+                label={discountLabel.trim()}
+                className="rounded-lg bg-red-600 px-3 py-1.5 text-sm font-bold text-white shadow-md ring-1 ring-white/25"
+            />
+        </div>
+    ) : null;
+
     if (safeImages.length === 0) {
         return (
             <div className={cn("flex flex-col gap-2.5", className)}>
@@ -168,6 +181,7 @@ export default function ProductImageGallery({
                     <div className={cn(MAIN_FRAME_CLASS, "text-sm text-custom-secondary")}>
                         {t("product.noImage", "No image")}
                     </div>
+                    {discountBadge}
                     {actions}
                 </div>
             </div>
@@ -205,6 +219,7 @@ export default function ProductImageGallery({
                     <HiMagnifyingGlassPlus className="h-5 w-5" />
                 </button>
 
+                {discountBadge}
                 {actions}
 
                 {safeImages.length > 1 && (

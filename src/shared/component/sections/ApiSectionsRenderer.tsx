@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import i18next from "i18next";
 import { useAuthStore } from "@/store/auth";
 import { useFavorites, useToggleFavorite } from "@/features/account/hooks/useFavorites";
 import SliderSection from "../slider/core/SliderSection";
@@ -127,7 +128,11 @@ function getDiscountBadgeLabel(
         item.discount
     ) {
         const n = Number(item.discount);
-        if (Number.isFinite(n) && n > 0) return `-${n}%`;
+        if (Number.isFinite(n) && n > 0) {
+            return i18next.t("baskets.discountPercentOff", {
+                value: Math.round(n),
+            });
+        }
     }
     const sectionDiscount = section.discount;
     if (sectionDiscount != null && Number(sectionDiscount) > 0) {
@@ -135,7 +140,14 @@ function getDiscountBadgeLabel(
         const isPercent =
             section.discount_type === "percent" ||
             section.discount_type === "percentage";
-        return isPercent ? `-${value}%` : `-${value}`;
+        if (isPercent) {
+            return i18next.t("baskets.discountPercentOff", {
+                value: Math.round(value),
+            });
+        }
+        return i18next.t("baskets.discountAmountOff", {
+            value: Math.round(value),
+        });
     }
     return null;
 }
@@ -431,6 +443,11 @@ export default function ApiSectionsRenderer({
                 section.see_more.params
             );
             navigate(route);
+            return;
+        }
+        // Brand strips still need "view all" when the dashboard left `see_more` empty.
+        if (getSectionKind(section) === "brand") {
+            navigate(paths.client.brands);
         }
     };
 
@@ -449,6 +466,14 @@ export default function ApiSectionsRenderer({
                 itemData.id
             );
             navigate(route);
+            return;
+        }
+        // Brand rows still open the brand page when the dashboard left `action` empty.
+        if (getSectionKind(section) === "brand") {
+            const id = getItemData(item).id;
+            if (id != null && String(id).trim() !== "") {
+                navigate(paths.client.brandDetails(id));
+            }
         }
     };
 
@@ -581,10 +606,6 @@ function SectionByDisplayType({
     // subcategories row to draw), not something the visitor needs told.
     if (!apiSection.items?.length) return null;
 
-    // `see_more` alone decides the "view all" button. Gating it on
-    // `type === "api"` swallowed the button on manual sections, which the
-    // dashboard is free to attach a `see_more` target to as well.
-    const showViewAll = Boolean(apiSection.see_more?.page_slug);
     // Not a plain `display_type_id` switch: `content_type` is the field the API
     // sets on every section, while `manual_model` is null on `type: "api"` rows
     // and an unseeded host can still send a `null` display type. Cards
@@ -592,6 +613,10 @@ function SectionByDisplayType({
     // with the id its kind implies.
     const kind = getSectionKind(apiSection);
     const section = withResolvedDisplayType(apiSection, kind);
+    // `see_more` decides "view all" for every kind. Brand rows still show it
+    // when that field is empty, and the click falls back to `/brands`.
+    const showViewAll =
+        Boolean(apiSection.see_more?.page_slug) || kind === "brand";
 
     switch (kind) {
         case "category":
@@ -1207,24 +1232,12 @@ function ProductSection({
                         );
                     }
 
-                    const discountBadges: ProductCardBadge[] = discountLabel
-                        ? [
-                              {
-                                  label: discountLabel,
-                                  className: "bg-red-500 text-white",
-                                  rawLabel: true,
-                                  align: "left",
-                              },
-                          ]
-                        : [];
-
                     const fromApi =
                         mapApiTopBadgesToProductCard(
                             item.top_badges?.length ? item.top_badges : item.budges
                         ) ?? [];
 
-                    const topMerged = [...discountBadges, ...fromApi];
-                    const badge = topMerged.length ? topMerged : undefined;
+                    const badge = fromApi.length ? fromApi : undefined;
 
                     const listing = resolveListingCardPrices(
                         item,
@@ -1269,23 +1282,12 @@ function ProductSection({
                     t("product.youSaved"),
                     currency,
                 );
-                const discountBadgesFb: ProductCardBadge[] = listingFb.discountLabel
-                    ? [
-                          {
-                              label: listingFb.discountLabel,
-                              className: "bg-red-500 text-white",
-                              rawLabel: true,
-                              align: "left",
-                          },
-                      ]
-                    : [];
 
                 const fromApiFb =
                     mapApiTopBadgesToProductCard(
                         data.top_badges?.length ? data.top_badges : data.budges
                     ) ?? [];
-                const topMergedFb = [...discountBadgesFb, ...fromApiFb];
-                const badgeFb = topMergedFb.length ? topMergedFb : undefined;
+                const badgeFb = fromApiFb.length ? fromApiFb : undefined;
 
                 return (
                     <ProductCard
@@ -1369,32 +1371,23 @@ function RecipeSection({
             {...getSectionRowProps(section, cardVariant)}
             renderItem={(item) => {
                 if (isRecipeItem(item)) {
-                    const hasDiscount = item.discount && parseFloat(item.discount) > 0;
                     const isFav = isFavoriteFor(item.id, item.is_favorite);
-
-                    const discountBadges: ProductCardBadge[] = hasDiscount
-                        ? [
-                              {
-                                  label: `-${item.discount}%`,
-                                  className: "bg-red-500 text-white",
-                                  rawLabel: true,
-                                  align: "left",
-                              },
-                          ]
-                        : [];
-
-                    const fromApi =
-                        mapApiTopBadgesToProductCard(
-                            item.top_badges?.length ? item.top_badges : item.budges
-                        ) ?? [];
-
                     const listing = resolveListingCardPrices(
                         item,
                         t("product.youSaved"),
                         currency,
                     );
-                    const topMerged = [...discountBadges, ...fromApi];
-                    const badge = topMerged.length ? topMerged.slice(0, 1) : undefined;
+                    const recipeDiscount =
+                        item.discount && parseFloat(item.discount) > 0
+                            ? t("baskets.discountPercentOff", {
+                                  value: Math.round(parseFloat(item.discount)),
+                              })
+                            : listing.discountLabel;
+
+                    const badge =
+                        mapApiTopBadgesToProductCard(
+                            item.top_badges?.length ? item.top_badges : item.budges
+                        ) ?? undefined;
 
                     return (
                         <ProductCard
@@ -1416,7 +1409,7 @@ function RecipeSection({
                                     : undefined
                             }
                             savings={listing.savings}
-                            discountLabel={listing.discountLabel}
+                            discountLabel={recipeDiscount ?? undefined}
                             layout={cardVariant}
                             surfaceColor={surfaceColor}
                             surfaceGradient={surfaceGradient}
@@ -1435,23 +1428,11 @@ function RecipeSection({
                     t("product.youSaved"),
                     currency,
                 );
-                const discountBadgesFb: ProductCardBadge[] = listingFb.discountLabel
-                    ? [
-                          {
-                              label: listingFb.discountLabel,
-                              className: "bg-red-500 text-white",
-                              rawLabel: true,
-                              align: "left",
-                          },
-                      ]
-                    : [];
 
-                const fromApiFb =
+                const badgeFb =
                     mapApiTopBadgesToProductCard(
                         data.top_badges?.length ? data.top_badges : data.budges
-                    ) ?? [];
-                const topMergedFb = [...discountBadgesFb, ...fromApiFb];
-                const badgeFb = topMergedFb.length ? topMergedFb.slice(0, 1) : undefined;
+                    ) ?? undefined;
 
                 return (
                     <ProductCard
@@ -1763,6 +1744,8 @@ function BrandSection({
             className={sectionClassName}
             removeVerticalSpacing={removeSectionVerticalSpacing}
             {...getSectionRowProps(section, cardVariant)}
+            layout="slider"
+            showNavigation
             renderItem={(item) => {
                 if (isBrandItem(item)) {
                     return (

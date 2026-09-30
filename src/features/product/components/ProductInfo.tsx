@@ -59,7 +59,7 @@ export default function ProductInfo({
     ].filter(Boolean) as Array<{ label: string; value: string; ltr: boolean }>;
 
     return (
-        <div className={cn("flex flex-col gap-4", className)}>
+        <div className={cn("flex flex-col gap-3.5", className)}>
             {(category || brand || topRightSlot) && (
                 <div className="flex items-start justify-between gap-4">
                     <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-sm text-custom-secondary">
@@ -77,22 +77,6 @@ export default function ProductInfo({
                     </div>
                     {topRightSlot && <div className="shrink-0">{topRightSlot}</div>}
                 </div>
-            )}
-
-            {metaItems.length > 0 && (
-                <dl className="flex flex-col gap-1 text-sm">
-                    {metaItems.map((item) => (
-                        <div key={item.label} className="flex min-w-0 items-baseline gap-2">
-                            <dt className="shrink-0 text-custom-secondary">{item.label}</dt>
-                            <dd
-                                dir={item.ltr ? "ltr" : undefined}
-                                className="truncate font-medium text-text-primary"
-                            >
-                                {item.value}
-                            </dd>
-                        </div>
-                    ))}
-                </dl>
             )}
 
             <h1 className="text-[1.65rem] font-semibold leading-snug tracking-tight text-text-primary sm:text-[1.85rem] lg:text-[2rem]">
@@ -131,6 +115,30 @@ export default function ProductInfo({
                 </div>
             )}
 
+            {metaItems.length > 0 && (
+                <dl className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-custom-secondary">
+                    {metaItems.map((item, index) => (
+                        <div
+                            key={item.label}
+                            className="inline-flex min-w-0 max-w-full items-baseline gap-1.5"
+                        >
+                            <dt className="shrink-0">{item.label}</dt>
+                            <dd
+                                dir={item.ltr ? "ltr" : undefined}
+                                className="truncate font-medium text-text-primary/85"
+                            >
+                                {item.value}
+                            </dd>
+                            {index < metaItems.length - 1 ? (
+                                <span className="ms-0.5 text-custom-tertiary" aria-hidden>
+                                    ·
+                                </span>
+                            ) : null}
+                        </div>
+                    ))}
+                </dl>
+            )}
+
             {badges.length > 0 && (
                 <div className="flex flex-wrap items-center gap-2">
                     {badges.map((badge, idx) => (
@@ -149,14 +157,13 @@ export default function ProductInfo({
                 </div>
             )}
 
-            <div className="rounded-2xl border border-[color-mix(in_srgb,var(--color-api-second)_18%,var(--color-border-primary))] bg-[color-mix(in_srgb,var(--color-api-second)_5%,var(--color-bg-card))] px-4 py-4 dark:border-white/[0.08] dark:bg-white/[0.03]">
-                <PriceBlock
-                    price={price}
-                    originalPrice={originalPrice}
-                    savings={savings}
-                    size="lg"
-                />
-            </div>
+            <PriceBlock
+                price={price}
+                originalPrice={originalPrice}
+                savings={savings}
+                size="2xl"
+                className="w-fit"
+            />
         </div>
     );
 }

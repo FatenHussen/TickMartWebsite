@@ -370,6 +370,8 @@
     "color": "اللون",
     "selectColor": "اختر اللون",
     "colorsSelected": "{{count}} ألوان",
+    "selectAttribute": "اختر خياراً",
+    "attributesSelected": "{{count}} محدد",
     "rating": "التقييم",
     "rating4Up": "4 نجوم فأكثر",
     "rating3Up": "3 نجوم فأكثر",
@@ -1804,7 +1806,7 @@
     "startDate": "تاريخ البدء",
     "intervalDays": "عدد الأيام",
     "savedSuccessfully": "تم حفظ السلة بنجاح",
-    "discountPercentOff": "خصم {{value}}%",
+    "discountPercentOff": "{{value}}% خصم",
     "discountAmountOff": "خصم {{value}}"
   },
   "customBasket": {

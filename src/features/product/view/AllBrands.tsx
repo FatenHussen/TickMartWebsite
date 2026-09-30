@@ -3,18 +3,16 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { HiSearch } from "react-icons/hi";
 import { useLanguage } from "@/context/LanguageContext";
-import { _BrandApi } from "../api/brandApi";
+import { useBrands } from "../hooks/useBrands";
 import { useSectionsByPosition } from "@/features/home/hooks/useSections";
 import ApiSectionsRenderer from "@/shared/component/sections/ApiSectionsRenderer";
 import FullBleedSection from "@/shared/component/FullBleedSection";
 import BrandCard from "@/shared/component/card/BrandCard";
 import BrandCardSkeleton from "@/shared/component/skeleton/BrandCardSkeleton";
+import Pagination from "@/shared/component/Pagination";
 import { useTheme } from "@/context/ThemeContext";
 import { getDarkCardSurfaceGradient } from "@/shared/component/sections/sectionCardVariant";
 import Input from "@/shared/ui/Input";
-import { useInfiniteList } from "@/shared/hooks/useInfiniteList";
-import { queryKeys } from "@/utils/queryKeys";
-import type { BrandListItem } from "../types/brand";
 
 type BrandFilterType = "new" | "top_rated" | "most_popular" | undefined;
 
@@ -32,6 +30,7 @@ export default function AllBrands() {
     const isDarkTheme = theme === "dark";
     const [searchInput, setSearchInput] = useState("");
     const [filterType, setFilterType] = useState<BrandFilterType>(undefined);
+    const [currentPage, setCurrentPage] = useState(1);
 
     const [debouncedSearch, setDebouncedSearch] = useState("");
 
@@ -43,26 +42,29 @@ export default function AllBrands() {
         return () => window.clearTimeout(timeoutId);
     }, [searchInput]);
 
+    // New search / filter → always start from page 1
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [debouncedSearch, filterType]);
+
     const filters = useMemo(
         () => ({
             ...(debouncedSearch ? { search: debouncedSearch } : {}),
             ...(filterType ? { type: filterType } : {}),
+            page: currentPage,
         }),
-        [debouncedSearch, filterType]
+        [debouncedSearch, filterType, currentPage]
     );
-    const hasFilters = Object.keys(filters).length > 0;
 
     const {
-        items: allBrands,
-        observerTarget,
+        data: brandsData,
         isLoading,
-        isFetchingNextPage,
+        isFetching,
         error: brandsError,
-    } = useInfiniteList<BrandListItem>({
-        queryKey: queryKeys.brands.listInfinite(hasFilters ? filters : undefined),
-        fetchFn: (page) =>
-            _BrandApi.getBrands({ ...filters, page }).then((r) => r.data),
-    });
+    } = useBrands(filters);
+
+    const allBrands = brandsData?.items ?? [];
+    const pagination = brandsData?.pagination;
 
     const { beforeSections, afterSections } = useSectionsByPosition("brands");
 
@@ -73,6 +75,11 @@ export default function AllBrands() {
 
     const handleBrandClick = (brandId: number) => {
         navigate(`/brand/${brandId}/products`);
+    };
+
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+        window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
     return (
@@ -175,7 +182,7 @@ export default function AllBrands() {
                                 />
                             ))}
 
-                            {(isLoading || isFetchingNextPage) &&
+                            {isLoading &&
                                 Array.from({
                                     length: 10,
                                 }).map((_, index) => (
@@ -191,7 +198,17 @@ export default function AllBrands() {
                             </div>
                         )}
 
-                        <div ref={observerTarget} className="h-10" />
+                        {pagination && pagination.last_page > 1 && (
+                            <div className="mt-8">
+                                <Pagination
+                                    pagination={pagination}
+                                    onPageChange={handlePageChange}
+                                    mode="numbered"
+                                    showTotalItems
+                                    disabled={isLoading || isFetching}
+                                />
+                            </div>
+                        )}
                     </div>
                 )}
             </div>
