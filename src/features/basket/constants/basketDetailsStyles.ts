@@ -13,10 +13,10 @@ export const BASKET_CARD_ELEVATED =
     "rounded-2xl border border-custom-primary/10 bg-custom-card shadow-[var(--shadow-card-neutral)]";
 
 export const BASKET_PRIMARY_CTA =
-    "cta-honey rounded-xl font-semibold shadow-none transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ff9f00]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg-card)] disabled:opacity-50 disabled:cursor-not-allowed";
+    "cta-honey rounded-xl font-semibold shadow-none transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-cta/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg-card)] disabled:opacity-50 disabled:cursor-not-allowed";
 
 export const BASKET_GHOST_ICON_BTN =
-    "cta-honey rounded-full shadow-none transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ff9f00]/40";
+    "cta-honey rounded-full shadow-none transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-cta/40";
 
 export const BASKET_CHIP_MAIN =
     "inline-flex items-center rounded-full px-4 py-2 text-sm font-semibold bg-[color-mix(in_srgb,var(--color-main)_12%,var(--color-bg-card))] text-custom-primary";

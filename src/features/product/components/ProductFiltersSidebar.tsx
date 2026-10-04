@@ -162,13 +162,13 @@ export default function ProductFiltersSidebar({
         "w-full rounded-lg border border-stone-200 bg-white px-3 py-2.5 text-sm text-stone-800",
         "dark:border-white/10 dark:bg-white/5 dark:text-[#E8E4DC]",
         "placeholder:text-stone-400 outline-none transition-colors",
-        "focus:border-[#ff9f00] focus:ring-2 focus:ring-[#ff9f00]/20"
+        "focus:border-cta focus:ring-2 focus:ring-cta/20"
     );
 
     const selectCls = cn(inputCls, "cursor-pointer");
 
     const checkboxCls =
-        "mt-0.5 h-4 w-4 shrink-0 rounded border-stone-300 text-[#ff9f00] focus:ring-[#ff9f00]/30 dark:border-white/20";
+        "mt-0.5 h-4 w-4 shrink-0 rounded border-stone-300 text-cta focus:ring-cta/30 dark:border-white/20";
 
     const row = "flex cursor-pointer items-start gap-3 text-sm text-stone-800 dark:text-[#E8E4DC]";
 
@@ -287,7 +287,7 @@ export default function ProductFiltersSidebar({
                 <button
                     type="button"
                     onClick={() => setShowMore((open) => !open)}
-                    className="text-start text-sm font-semibold text-[#ff9f00]"
+                    className="text-start text-sm font-semibold text-cta"
                 >
                     {showMore
                         ? t("productsListing.fewerFilters")

@@ -115,7 +115,7 @@ export default function QuickOrderHomeBanner({
                                 isVerticalCards
                                     ? "grid-cols-1 sm:grid-cols-3"
                                     : isSquareCards
-                                      ? "grid-cols-2 sm:grid-cols-3"
+                                      ? "grid-cols-1 min-[480px]:grid-cols-2 sm:grid-cols-3"
                                       : "grid-cols-1 sm:grid-cols-3",
                             )}
                         >

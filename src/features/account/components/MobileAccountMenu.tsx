@@ -115,7 +115,7 @@ export default function MobileAccountMenu({ user }: MobileAccountMenuProps) {
               className={cn(
                 "w-12 h-12 rounded-full overflow-hidden",
                 isDark
-                  ? "ring-2 ring-[#ff9f00]"
+                  ? "ring-2 ring-cta"
                   : isOpen
                     ? "border-2 border-custom-primary/30"
                     : "border-2 border-primary/20"
@@ -207,7 +207,7 @@ export default function MobileAccountMenu({ user }: MobileAccountMenuProps) {
                 <div
                   className={cn(
                     "w-12 h-12 rounded-full overflow-hidden",
-                    isDark ? "ring-2 ring-[#ff9f00]" : "border-2 border-custom-primary/30",
+                    isDark ? "ring-2 ring-cta" : "border-2 border-custom-primary/30",
                   )}
                 >
                   {currentUser.avatar ? (

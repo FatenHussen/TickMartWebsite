@@ -27,6 +27,6 @@ export const historySectionShellClass = cn(
 export const redeemApiSecondButtonClass = cn(
     "cta-honey",
     "shadow-none transition-colors",
-    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff9f00]/40",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cta/40",
     "focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg-card)]",
 );

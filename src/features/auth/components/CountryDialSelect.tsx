@@ -104,7 +104,7 @@ export function CountryDialSelect({
                 onBlur={onBlur}
                 className={cn(
                     "flex h-full min-h-[2.75rem] w-full min-w-[7.5rem] items-center justify-between gap-1 rounded-s-[0.7rem] border-e border-stone-200 bg-stone-50 px-3 py-2.5 text-sm text-stone-800",
-                    "focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ff9f00]/35",
+                    "focus:outline-none focus-visible:ring-2 focus-visible:ring-cta/35",
                     "dark:border-white/10 dark:bg-[#2A2622] dark:text-[#F3EFE8]",
                     disabled && "cursor-not-allowed opacity-60",
                 )}

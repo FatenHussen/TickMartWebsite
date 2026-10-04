@@ -116,8 +116,10 @@ export default function ExtraDetailsTable({
                 <thead>
                     <tr className="border-b-2 border-primary/20 bg-[color-mix(in_srgb,var(--color-primary)_9%,var(--color-bg-card))]">
                         {selectable && onToggle && (
-                            <th className="px-3 py-3 text-start text-xs font-semibold text-primary w-12">
-                                {t("product.check", "Check")}
+                            <th className="w-10 px-2 py-3" aria-hidden>
+                                <span className="sr-only">
+                                    {t("product.check", "Select")}
+                                </span>
                             </th>
                         )}
                         <th className="px-4 py-3 text-start text-xs font-semibold text-primary">
@@ -174,12 +176,16 @@ export default function ExtraDetailsTable({
                                 )}
                             >
                                 {selectable && onToggle && (
-                                    <td className="px-3 py-3 align-middle">
+                                    <td className="w-10 px-2 py-3 align-middle">
                                         <input
                                             type="checkbox"
                                             checked={isSelected}
                                             onChange={() => onToggle(detail.id)}
                                             onClick={(e) => e.stopPropagation()}
+                                            aria-label={resolveLocalizedOrString(
+                                                detail.key,
+                                                i18n.language,
+                                            )}
                                             className={cn(
                                                 "h-4 w-4 cursor-pointer rounded border-2",
                                                 "border-[color-mix(in_srgb,var(--color-api-second)_45%,var(--color-border-secondary))]",

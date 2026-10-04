@@ -115,7 +115,7 @@ export function getSectionGridClassName(variant: SectionCardVariant): string {
         case "horizontal":
             return "grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 lg:gap-6";
         case "vertical":
-            return "grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 md:gap-4 lg:grid-cols-5";
+            return "grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 md:gap-4 lg:grid-cols-4";
         case "square":
         default:
             return "grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 md:gap-4";
@@ -152,9 +152,9 @@ function sliderPresetForCardVariant(v: SectionCardVariant): SectionSliderPreset 
                 slidesPerView: 1.6,
                 breakpoints: {
                     480: { slidesPerView: 2.15 },
-                    640: { slidesPerView: 3 },
-                    768: { slidesPerView: 4 },
-                    1024: { slidesPerView: 5 },
+                    640: { slidesPerView: 2.5 },
+                    768: { slidesPerView: 3 },
+                    1024: { slidesPerView: 4 },
                 },
             };
         case "square":
@@ -163,8 +163,8 @@ function sliderPresetForCardVariant(v: SectionCardVariant): SectionSliderPreset 
                 slidesPerView: 1.6,
                 breakpoints: {
                     480: { slidesPerView: 2.15 },
-                    640: { slidesPerView: 3 },
-                    768: { slidesPerView: 4 },
+                    640: { slidesPerView: 2.5 },
+                    768: { slidesPerView: 3 },
                     1024: { slidesPerView: 4 },
                 },
             };

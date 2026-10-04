@@ -23,7 +23,7 @@ export function CalmCardSurface({ children, className, imageSrc }: CalmCardSurfa
             >
                 <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgb(255_255_255/0.18),transparent_40%)] sm:bg-[linear-gradient(to_left,transparent_20%,rgb(255_255_255/0.12))] sm:rtl:bg-[linear-gradient(to_right,transparent_20%,rgb(255_255_255/0.12))] dark:bg-[linear-gradient(to_bottom,rgb(0_0_0/0.2),transparent_45%)]" />
             </div>
-            <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-[#ff9f00]" aria-hidden />
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-cta" aria-hidden />
         </div>
     );
 }

@@ -46,13 +46,13 @@ export function ProfileFormFields({
                     </label>
                     <div className="relative">
                         <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
-                            <User className="w-5 h-5 text-[#ff9f00]" />
+                            <User className="w-5 h-5 text-cta" />
                         </span>
                         <input
                             {...register("name", { required: requiredMessage })}
                             readOnly={!isEditing}
                             placeholder={t("account.profile.enterFullName")}
-                            className="w-full pl-11 pr-4 py-3 rounded-xl border border-[var(--color-border-primary)] bg-[var(--color-bg-input)] text-custom-primary placeholder:text-text-tertiary focus:outline-none focus:ring-2 focus:ring-[#ff9f00]/40 focus:border-[#ff9f00] transition-all read-only:cursor-default dark:border-white/16"
+                            className="w-full pl-11 pr-4 py-3 rounded-xl border border-[var(--color-border-primary)] bg-[var(--color-bg-input)] text-custom-primary placeholder:text-text-tertiary focus:outline-none focus:ring-2 focus:ring-cta/40 focus:border-cta transition-all read-only:cursor-default dark:border-white/16"
                         />
                     </div>
                     {errors.name && (
@@ -68,7 +68,7 @@ export function ProfileFormFields({
                     </label>
                     <div className="relative">
                         <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
-                            <Phone className="w-5 h-5 text-[#ff9f00]" />
+                            <Phone className="w-5 h-5 text-cta" />
                         </span>
                         <input
                             readOnly
@@ -85,7 +85,7 @@ export function ProfileFormFields({
                 </label>
                 <div className="relative">
                     <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
-                        <Mail className="w-5 h-5 text-[#ff9f00]" />
+                        <Mail className="w-5 h-5 text-cta" />
                     </span>
                     <input
                         readOnly
@@ -107,7 +107,7 @@ export function ProfileFormFields({
                                 required: requiredMessage,
                             })}
                             onScroll={onGovernorateSelectScroll}
-                            className="w-full px-4 py-3 rounded-xl border border-[var(--color-border-primary)] bg-[var(--color-bg-input)] text-custom-primary focus:outline-none focus:ring-2 focus:ring-[#ff9f00]/40 dark:border-white/16"
+                            className="w-full px-4 py-3 rounded-xl border border-[var(--color-border-primary)] bg-[var(--color-bg-input)] text-custom-primary focus:outline-none focus:ring-2 focus:ring-cta/40 dark:border-white/16"
                         >
                             <option value="" className="bg-white text-[#1c1917]">
                                 {t("auth.selectGovernorate", "اختر المحافظة")}
@@ -142,7 +142,7 @@ export function ProfileFormFields({
                             {...register("city_id", { required: requiredMessage })}
                             disabled={!selectedGovernorateId}
                             onScroll={onCitySelectScroll}
-                            className="w-full px-4 py-3 rounded-xl border border-[var(--color-border-primary)] bg-[var(--color-bg-input)] text-custom-primary focus:outline-none focus:ring-2 focus:ring-[#ff9f00]/40 disabled:opacity-50 disabled:cursor-not-allowed dark:border-white/16"
+                            className="w-full px-4 py-3 rounded-xl border border-[var(--color-border-primary)] bg-[var(--color-bg-input)] text-custom-primary focus:outline-none focus:ring-2 focus:ring-cta/40 disabled:opacity-50 disabled:cursor-not-allowed dark:border-white/16"
                         >
                             <option value="" className="bg-white text-[#1c1917]">
                                 {t("auth.selectCity", "اختر المدينة")}

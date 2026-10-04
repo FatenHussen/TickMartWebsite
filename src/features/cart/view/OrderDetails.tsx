@@ -254,7 +254,7 @@ export default function OrderDetails() {
                     }
                     sidebarPosition="right"
                     gapClassName="gap-6"
-                    columnTemplate="1fr 362px"
+                    columnTemplate="1fr minmax(280px, 362px)"
                 >
                     <div className="space-y-6">
                         <OrderStatusTimeline currentStatus={order.status} />
@@ -278,7 +278,7 @@ function OrderDetailsSkeleton() {
                 <div className="h-8 w-64 bg-custom-muted rounded" />
                 <div className="h-4 w-48 bg-custom-muted rounded" />
             </div>
-            <div className="grid grid-cols-1 lg:grid-cols-[1fr_362px] gap-6">
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_minmax(280px,362px)]">
                 <div className="space-y-6">
                     <div className="h-32 bg-custom-card border border-custom-primary rounded-2xl" />
                     <div className="h-64 bg-custom-card border border-custom-primary rounded-2xl" />

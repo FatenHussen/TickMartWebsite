@@ -31,7 +31,7 @@ export function FaqCategoryTabList({
                             HELP_FOCUS_RING,
                             isSelected
                                 ? "bg-cta text-white"
-                                : "border border-[var(--color-border-primary)] bg-[var(--color-bg-primary)] text-custom-primary hover:border-[#ff9f00]/50"
+                                : "border border-[var(--color-border-primary)] bg-[var(--color-bg-primary)] text-custom-primary hover:border-cta/50"
                         )}
                     >
                         {t(localeKey)}

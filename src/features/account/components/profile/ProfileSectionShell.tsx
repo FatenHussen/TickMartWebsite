@@ -30,7 +30,7 @@ export function ProfileSectionShell({
                 className={
                     isDanger
                         ? "h-1 w-full bg-[#c45c4a]"
-                        : "h-1 w-full bg-[#ff9f00]"
+                        : "h-1 w-full bg-cta"
                 }
                 aria-hidden
             />

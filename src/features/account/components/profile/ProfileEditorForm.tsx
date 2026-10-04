@@ -49,7 +49,7 @@ export function ProfileEditorForm({ editor }: ProfileEditorFormProps) {
                     profileTitleLabel={t("account.profile.title")}
                 />
 
-                <div className="h-px bg-gradient-to-r from-[#ff9f00]/45 via-[#ff9f00]/20 to-transparent mb-8 rounded-full" />
+                <div className="h-px bg-gradient-to-r from-cta/45 via-cta/20 to-transparent mb-8 rounded-full" />
 
                 <ProfileFormFields
                     register={register}

@@ -24,9 +24,9 @@ export function NotificationsListSection({
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-16">
         <div className="relative flex items-center gap-2">
-          <span className="h-2.5 w-2.5 animate-bounce rounded-full bg-[#ff9f00] [animation-delay:-0.2s]" />
-          <span className="h-2.5 w-2.5 animate-bounce rounded-full bg-[#ff9f00] [animation-delay:-0.1s]" />
-          <span className="h-2.5 w-2.5 animate-bounce rounded-full bg-[#ff9f00]" />
+          <span className="h-2.5 w-2.5 animate-bounce rounded-full bg-cta [animation-delay:-0.2s]" />
+          <span className="h-2.5 w-2.5 animate-bounce rounded-full bg-cta [animation-delay:-0.1s]" />
+          <span className="h-2.5 w-2.5 animate-bounce rounded-full bg-cta" />
         </div>
         <p className="text-sm font-medium text-custom-tertiary">{t("common.loading", "Loading...")}</p>
       </div>
@@ -36,7 +36,7 @@ export function NotificationsListSection({
   if (notifications.length === 0) {
     return (
       <div className="rounded-2xl border border-[var(--color-border-primary)] bg-[var(--color-bg-card)] px-6 py-16 text-center">
-        <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-xl bg-[#ff9f00]">
+        <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-xl bg-cta">
           <Bell className="h-7 w-7 text-white" aria-hidden />
         </div>
         <h3 className="mb-1 text-lg font-semibold text-custom-primary">

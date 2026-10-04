@@ -2,7 +2,7 @@ import { useTranslation } from"react-i18next";
 import { useTheme } from"@/context/ThemeContext";
 import { cn } from"@/shared/lib/utils";
 
-/** Left panel with App Everything branding and logo. */
+/** Left panel with Deema Fashion branding and logo. */
 export default function AuthPromoPanel() {
  const { t } = useTranslation();
  const { theme } = useTheme();
@@ -12,8 +12,8 @@ export default function AuthPromoPanel() {
  className={cn(
  "hidden lg:flex flex-col overflow-auto border-e",
  theme ==="dark"
- ?"border-[rgba(255,255,255,0.06)] bg-[#0B0B0C]"
- :"border-stone-200/80 bg-[#F6F3EE]"
+     ?"border-[rgba(255,255,255,0.06)] bg-[#0B0B0C]"
+     :"border-transparent bg-gradient-to-b from-[var(--color-bg-light)] via-[var(--color-bg-primary)] to-[var(--color-bg-secondary)]"
  )}
  >
  <div className="pt-10 pb-6 px-8 md:px-12">
@@ -46,9 +46,9 @@ export default function AuthPromoPanel() {
  )}
  >
  <img
- src="/images/shared/logo.png"
- alt="Logo"
- className="w-full h-auto max-h-64 object-contain"
+ src="/images/shared/favicon.png"
+ alt="Deema Fashion"
+ className="w-full h-auto max-h-48 object-contain rounded-2xl"
  />
  </div>
  </div>

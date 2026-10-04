@@ -40,7 +40,7 @@ export function NotificationFilterTabs({
                 ? tab.value === "unread"
                   ? "bg-[#c45c4a] text-white shadow-sm"
                   : "bg-cta text-white shadow-sm"
-                : "text-custom-primary hover:bg-[color-mix(in_srgb,#ff9f00_10%,transparent)]",
+                : "text-custom-primary hover:bg-[color-mix(in_srgb,var(--color-cta)_10%,transparent)]",
             )}
           >
             {tab.label}
@@ -54,7 +54,7 @@ export function NotificationFilterTabs({
                       : "bg-[#c45c4a] text-white"
                     : isActive
                       ? "bg-white/25 text-white"
-                      : "bg-[color-mix(in_srgb,#ff9f00_12%,transparent)] text-[#ff9f00]",
+                      : "bg-[color-mix(in_srgb,var(--color-cta)_12%,transparent)] text-cta",
                 )}
               >
                 {tab.count}

@@ -310,7 +310,7 @@ export default function OrderCard({
                                 <button
                                     type="button"
                                     onClick={(e) => { e.stopPropagation(); onCancelOrder?.(); }}
-                                    className="inline-flex w-[32%] max-w-[140px] shrink-0 items-center justify-center gap-1.5 rounded-xl border border-error bg-error/5 px-2 py-2.5 text-sm font-medium text-error transition-colors hover:bg-error/10"
+                                    className="inline-flex min-w-0 flex-1 shrink items-center justify-center gap-1.5 rounded-xl border border-error bg-error/5 px-2 py-2.5 text-sm font-medium text-error transition-colors hover:bg-error/10 sm:max-w-[140px] sm:flex-none"
                                 >
                                     <span className="flex h-5 w-5 items-center justify-center rounded-full border border-error">
                                         <X className="h-3 w-3" strokeWidth={2.5} />

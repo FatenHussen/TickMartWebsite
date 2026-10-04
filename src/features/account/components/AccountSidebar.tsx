@@ -437,7 +437,7 @@ export default function AccountSidebar({
             className={cn(
               "overflow-hidden rounded-full bg-[var(--color-bg-card)] ring-2 ring-[var(--color-bg-card)] transition-all duration-300 ease-in-out dark:bg-[#1C1916] dark:ring-[#1C1916]",
               isDark
-                ? "shadow-[0_0_0_2px_#ff9f00]"
+                ? "shadow-[0_0_0_2px_var(--color-cta)]"
                 : "shadow-[0_0_0_2px_rgba(255,255,255,0.75),0_6px_16px_-8px_rgba(15,23,42,0.45)]",
               isCollapsed ? "h-10 w-10" : "h-16 w-16",
             )}

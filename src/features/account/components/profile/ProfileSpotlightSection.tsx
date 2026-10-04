@@ -37,7 +37,7 @@ export function ProfileSpotlightSection({
                 <div className="space-y-4">
                     <div className="inline-flex items-center gap-2 rounded-full border border-custom-primary/60 bg-custom-primary/40 px-3 py-1 dark:border-white/12 dark:bg-[#2A2622]">
                         <Sparkles
-                            className="h-4 w-4 shrink-0 text-[var(--color-main)] dark:text-[#ff9f00]"
+                            className="h-4 w-4 shrink-0 text-[var(--color-main)] dark:text-cta"
                             aria-hidden
                         />
                         <span className="text-xs font-semibold uppercase tracking-[0.18em] text-custom-secondary dark:text-[#C9C2B6]">
@@ -59,7 +59,7 @@ export function ProfileSpotlightSection({
                             <span className="font-normal text-custom-secondary dark:text-[#C9C2B6]">
                                 {t("account.profile.spotlightGreetingPrefix")}
                             </span>
-                            <span className="rounded-lg bg-[#ff9f00]/15 px-2 py-0.5 font-semibold text-custom-primary dark:text-[#F3EFE8]">
+                            <span className="rounded-lg bg-cta/15 px-2 py-0.5 font-semibold text-custom-primary dark:text-[#F3EFE8]">
                                 {firstName}
                             </span>
                             <span className="text-custom-secondary text-sm font-normal">

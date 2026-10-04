@@ -29,7 +29,7 @@ export function NotificationListItem({
         "group relative w-full overflow-hidden rounded-2xl text-start transition-all duration-200",
         "bg-custom-card shadow-sm",
         "hover:shadow-md",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff9f00]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg-card)]",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cta/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg-card)]",
         isRTL && "text-right",
         isUnread
           ? "border border-[#c45c4a]/35"
@@ -50,7 +50,7 @@ export function NotificationListItem({
             "relative flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-lg transition-colors",
             isUnread
               ? "bg-[#c45c4a] text-white"
-              : "bg-[color-mix(in_srgb,#ff9f00_12%,var(--color-bg-primary))] text-[#ff9f00]",
+              : "bg-[color-mix(in_srgb,var(--color-cta)_12%,var(--color-bg-primary))] text-cta",
           )}
         >
           <Icon className="h-5 w-5" strokeWidth={2} aria-hidden />

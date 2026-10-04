@@ -61,9 +61,9 @@ export function useNavbarSearch() {
     const closeDropdown = useCallback(() => setIsOpen(false), []);
 
     useEffect(() => {
-        if (hasQuery) openDropdown();
+        if (query.trim()) openDropdown();
         else closeDropdown();
-    }, [hasQuery, openDropdown, closeDropdown]);
+    }, [query, openDropdown, closeDropdown]);
     const clearQuery = useCallback(() => {
         setQuery("");
         setResults([]);

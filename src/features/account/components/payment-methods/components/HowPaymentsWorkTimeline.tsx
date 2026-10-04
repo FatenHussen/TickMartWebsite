@@ -6,7 +6,7 @@ export function HowPaymentsWorkTimeline({ steps }: HowPaymentsWorkTimelineProps)
     return (
         <div className="relative ms-0">
             <div
-                className="absolute start-[15px] top-3 bottom-3 w-px bg-[#ff9f00]/35 sm:start-[17px]"
+                className="absolute start-[15px] top-3 bottom-3 w-px bg-cta/35 sm:start-[17px]"
                 aria-hidden
             />
             <ul className="space-y-5">

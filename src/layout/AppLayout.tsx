@@ -7,7 +7,7 @@ export default function AppLayout() {
         <div className="app-layout-canvas flex min-h-screen flex-col">
             <div className="app-layout-canvas-stack">
                 <Navbar />
-                <main className="flex min-h-0 flex-1 flex-col">
+                <main className="flex min-h-0 min-w-0 flex-1 flex-col overflow-x-clip">
                     <Outlet />
                 </main>
                 <Footer />

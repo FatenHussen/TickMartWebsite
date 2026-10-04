@@ -1,12 +1,13 @@
 import { useRef, useEffect, useState, useLayoutEffect } from "react";
 import { createPortal } from "react-dom";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/context/LanguageContext";
 import { HiSearch, HiFilter } from "react-icons/hi";
 import { paths } from "@/app/routes/path/paths";
 import { useNavbarSearch } from "../hooks/useNavbarSearch";
 import type { SearchResultType, SearchResultWithType } from "../types";
+import { resolveLocalizedText } from "@/shared/lib/localizedText";
 import { cn } from "@/shared/lib/utils";
 import { listingImageSrc } from "@/features/product/lib/productMedia";
 
@@ -52,16 +53,20 @@ interface NavbarSearchProps {
     className?: string;
     inputClassName?: string;
     onResultSelect?: () => void;
+    autoFocus?: boolean;
 }
 
 export default function NavbarSearch({
     className,
     inputClassName,
     onResultSelect,
+    autoFocus = false,
 }: NavbarSearchProps) {
     const { t } = useTranslation();
-    const { isRTL } = useLanguage();
+    const { isRTL, language } = useLanguage();
+    const navigate = useNavigate();
     const containerRef = useRef<HTMLDivElement>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
 
     const {
         query,
@@ -87,6 +92,24 @@ export default function NavbarSearch({
 
     const resultsOpen = isOpen && hasQuery;
     const panelOpen = resultsOpen || showTypePicker;
+
+    useEffect(() => {
+        if (!autoFocus) return;
+        const id = requestAnimationFrame(() => inputRef.current?.focus());
+        return () => cancelAnimationFrame(id);
+    }, [autoFocus]);
+
+    const resultLabel = (item: SearchResultWithType) =>
+        resolveLocalizedText(item.name, language);
+
+    const handleSubmitSearch = () => {
+        const trimmed = query.trim();
+        if (!trimmed) return;
+        clearQuery();
+        setShowTypePicker(false);
+        onResultSelect?.();
+        navigate(`${paths.client.products}?search=${encodeURIComponent(trimmed)}`);
+    };
 
     useEffect(() => {
         if (!isOpen && !showTypePicker) return;
@@ -147,41 +170,49 @@ export default function NavbarSearch({
             className={cn("relative w-full", className)}
             dir={isRTL ? "rtl" : "ltr"}
         >
-            <div className="group relative">
-                <HiSearch
-                    className={cn(
-                        "navbar-search-icon pointer-events-none absolute top-1/2 h-5 w-5 -translate-y-1/2 text-[#ff9f00] transition-colors duration-200",
-                        isRTL ? "right-4" : "left-4"
-                    )}
-                />
-                <input
-                    type="text"
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    onFocus={() => hasQuery && openDropdown()}
-                    placeholder={
-                        t("home.searchProducts") ||
-                        "Type anything you want to search for"
-                    }
-                    className={cn(
-                        "navbar-search-input h-12 w-full rounded-2xl border border-stone-300 bg-white text-[15px] leading-none text-custom-primary transition-[border-color,box-shadow] duration-200 ease-out placeholder:text-stone-500 hover:border-[#ff9f00]/55 focus:border-[#ff9f00] focus:outline-none focus:ring-2 focus:ring-[#ff9f00]/25 dark:border-white/20 dark:placeholder:text-[#B8B0A4] dark:focus:ring-[#ff9f00]/30",
-                        isRTL ? "pr-12 pl-14" : "pl-12 pr-14",
-                        inputClassName
-                    )}
-                />
+            <div
+                className="group flex h-11 w-full items-center gap-2 rounded-full border border-primary/35 bg-white px-3.5 transition-[border-color,box-shadow] duration-200 ease-out hover:border-primary/50 focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/10 dark:border-white/[0.08] dark:bg-custom-card"
+            >
                 <button
                     type="button"
+                    onMouseDown={(e) => e.preventDefault()}
                     onClick={() => setShowTypePicker((p) => !p)}
                     className={cn(
-                        "navbar-search-filter absolute top-1/2 flex h-8 -translate-y-1/2 items-center justify-center rounded-xl px-2.5 text-[#ff9f00] transition-[background-color,color,transform] duration-200 ease-out hover:bg-[#ff9f00]/10 active:scale-95",
-                        showTypePicker && "bg-primary/10 dark:bg-white/[0.08]",
-                        isRTL ? "left-2" : "right-2"
+                        "flex shrink-0 items-center justify-center text-primary transition-opacity duration-200 hover:opacity-80",
+                        showTypePicker && "opacity-100"
                     )}
                     aria-label={t("common.filter") || "Filter"}
                     aria-pressed={showTypePicker}
                 >
-                    <HiFilter className="h-[18px] w-[18px]" />
+                    <HiFilter className="h-5 w-5" />
                 </button>
+                <input
+                    ref={inputRef}
+                    type="search"
+                    enterKeyHint="search"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    onFocus={() => hasQuery && openDropdown()}
+                    onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                            e.preventDefault();
+                            handleSubmitSearch();
+                        }
+                    }}
+                    placeholder={
+                        t("home.searchProducts") ||
+                        "Search products and stores..."
+                    }
+                    dir={isRTL ? "rtl" : "ltr"}
+                    className={cn(
+                        "min-w-0 flex-1 border-0 bg-transparent text-[15px] leading-none text-custom-primary outline-none placeholder:text-text-tertiary",
+                        inputClassName
+                    )}
+                />
+                <HiSearch
+                    className="pointer-events-none h-5 w-5 shrink-0 text-primary"
+                    aria-hidden
+                />
             </div>
 
             {showTypePicker && anchorRect &&
@@ -230,7 +261,9 @@ export default function NavbarSearch({
                     style={{
                         position: "fixed",
                         top: anchorRect.top + 8,
-                        left: anchorRect.left,
+                        ...(isRTL
+                            ? { right: anchorRect.right, left: "auto" }
+                            : { left: anchorRect.left, right: "auto" }),
                         width: anchorRect.width,
                     }}
                     className="bg-custom-card rounded-2xl shadow-[0_16px_50px_-12px_rgba(15,23,42,0.25)] border border-black/[0.06] z-[9999] max-h-80 overflow-y-auto dark:border-white/[0.06]"
@@ -277,7 +310,7 @@ export default function NavbarSearch({
                                                     )}
                                                 </div>
                                                 <span className="text-sm font-medium text-custom-primary truncate flex-1">
-                                                    {item.name}
+                                                    {resultLabel(item)}
                                                 </span>
                                             </Link>
                                         ))}
@@ -306,7 +339,7 @@ export default function NavbarSearch({
                                         )}
                                     </div>
                                     <span className="text-sm font-medium text-custom-primary truncate flex-1">
-                                        {item.name}
+                                        {resultLabel(item)}
                                     </span>
                                     <span className="text-xs text-gray-light shrink-0">
                                         {t(

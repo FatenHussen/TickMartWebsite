@@ -125,9 +125,9 @@ export function PremiumAppLoader({
           >
             {!logoError ? (
               <img
-                src="/images/shared/logo.png"
-                alt="TickMart"
-                className="h-12 w-12 object-contain"
+                src="/images/shared/favicon.png"
+                alt="Deema Fashion"
+                className="h-12 w-12 rounded-xl object-contain"
                 onError={() => setLogoError(true)}
               />
             ) : (
@@ -135,7 +135,7 @@ export function PremiumAppLoader({
                 className="bg-gradient-to-br from-[var(--color-primary-light)] to-[var(--color-main)] bg-clip-text text-3xl font-bold text-transparent"
                 aria-hidden
               >
-                T
+                D
               </span>
             )}
           </motion.div>

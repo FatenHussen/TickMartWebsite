@@ -371,7 +371,7 @@ export default function ProductsPage() {
                                 <button
                                     type="button"
                                     onClick={clearFilters}
-                                    className="text-[12px] font-semibold text-[#ff9f00]"
+                                    className="text-[12px] font-semibold text-cta"
                                 >
                                     {t("productsListing.clearAll")}
                                 </button>

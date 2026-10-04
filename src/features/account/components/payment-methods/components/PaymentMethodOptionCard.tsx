@@ -12,10 +12,10 @@ interface PaymentMethodOptionCardProps {
 }
 
 const selectedRowClassName =
-    "border-[#ff9f00] bg-[color-mix(in_srgb,#ff9f00_10%,var(--color-bg-card))]";
+    "border-cta bg-[color-mix(in_srgb,var(--color-cta)_10%,var(--color-bg-card))]";
 
 const unselectedRowClassName =
-    "border-[var(--color-border-primary)] bg-[var(--color-bg-card)] hover:border-[#ff9f00]/40";
+    "border-[var(--color-border-primary)] bg-[var(--color-bg-card)] hover:border-cta/40";
 
 export function PaymentMethodOptionCard({
     method,
@@ -47,7 +47,7 @@ export function PaymentMethodOptionCard({
             aria-disabled={!enabled}
         >
             <div className="flex items-center gap-4">
-                <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#f6efe4] dark:bg-[color-mix(in_srgb,#ff9f00_18%,#2A2622)]">
+                <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#f6efe4] dark:bg-[color-mix(in_srgb,var(--color-cta)_18%,#2A2622)]">
                     {method.icon ? (
                         <img
                             src={method.icon}
@@ -84,13 +84,13 @@ export function PaymentMethodOptionCard({
                     className={cn(
                         "flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-all",
                         enabled && isSelected
-                            ? "border-[#ff9f00] bg-[#ff9f00]/15"
+                            ? "border-cta bg-cta/15"
                             : "border-custom-secondary bg-custom-card",
                     )}
                     aria-hidden
                 >
                     {enabled && isSelected ? (
-                        <div className="h-3 w-3 rounded-full bg-[#ff9f00]" />
+                        <div className="h-3 w-3 rounded-full bg-cta" />
                     ) : null}
                 </div>
             </div>

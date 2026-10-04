@@ -53,7 +53,7 @@ export default function StoreSchedule({
       : schedule;
 
   return (
-    <div className="rounded-2xl border border-sky-100 bg-white/70 p-4 shadow-sm backdrop-blur-sm md:min-w-[290px]">
+    <div className="w-full rounded-2xl border border-sky-100 bg-white/70 p-4 shadow-sm backdrop-blur-sm lg:min-w-[260px]">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="space-y-1">
           <div className="flex items-center gap-2 text-sky-600">

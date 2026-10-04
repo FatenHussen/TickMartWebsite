@@ -24,7 +24,7 @@ export function ContactChannelsGrid({ contact }: ContactChannelsGridProps) {
 
     const channelCardClass = cn(
         "flex min-h-[112px] flex-col items-center justify-center gap-3 rounded-xl border border-[var(--color-border-primary)] bg-[var(--color-bg-primary)] p-5",
-        "text-custom-primary transition-colors hover:border-[#ff9f00]/50",
+        "text-custom-primary transition-colors hover:border-cta/50",
         HELP_FOCUS_RING
     );
 

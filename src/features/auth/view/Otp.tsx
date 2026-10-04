@@ -109,16 +109,16 @@ export default function Otp() {
         >
             <div
                 className={cn(
-                    "w-full max-w-[340px] rounded-3xl border p-10",
+                    "w-full max-w-[340px] rounded-3xl border p-6 sm:p-10",
                     theme === "dark"
                         ? "border-[rgba(255,255,255,0.06)] bg-[rgba(16,17,20,0.55)] shadow-[0_24px_56px_-28px_rgba(0,0,0,0.6)] backdrop-blur-lg"
                         : "rounded-[18px] border-custom-primary bg-custom-card shadow-[0_20px_45px_-8px_var(--color-shadow)]",
                 )}
             >
                 <img
-                    src="/images/shared/logo.png"
-                    alt="Logo"
-                    className="mx-auto h-auto w-full max-w-[220px] object-contain"
+                    src="/images/shared/favicon.png"
+                    alt="Deema Fashion"
+                    className="mx-auto h-auto w-full max-w-[180px] rounded-2xl object-contain"
                 />
             </div>
         </div>
@@ -171,7 +171,7 @@ export default function Otp() {
                     </span>
                 </p>
 
-                <div className="flex items-center justify-between gap-10 pt-1 text-sm">
+                <div className="flex flex-col items-stretch justify-between gap-3 pt-1 text-sm sm:flex-row sm:items-center sm:gap-6">
                     <Link
                         to={paths.auth.jwt.signUp}
                         className="text-primary font-medium hover:underline"

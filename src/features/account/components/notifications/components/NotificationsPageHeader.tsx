@@ -26,12 +26,12 @@ export function NotificationsPageHeader({
       <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex min-w-0 items-start gap-3.5 sm:items-center">
           <div
-            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#ff9f00] shadow-sm"
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-cta shadow-sm"
           >
             <Bell className="h-6 w-6 text-white" aria-hidden />
           </div>
           <div className="min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#ff9f00]">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-cta">
               {t("account.menu.notifications")}
             </p>
             <h1 className="mt-0.5 text-xl font-bold leading-tight text-custom-primary sm:text-2xl">

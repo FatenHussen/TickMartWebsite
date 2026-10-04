@@ -36,7 +36,7 @@ export function HowToEarnCard({ t, expiry, earningRules }: HowToEarnCardProps) {
                     {t("account.pointsRewards.howToEarn.title")}
                 </h2>
                 <span
-                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#ff9f00]"
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-cta"
                     aria-hidden
                 >
                     <Gift className="h-5 w-5 text-white" strokeWidth={2} />
@@ -45,7 +45,7 @@ export function HowToEarnCard({ t, expiry, earningRules }: HowToEarnCardProps) {
 
             {expiry ? (
                 <p
-                    className="mt-4 rounded-lg bg-[color-mix(in_srgb,#ff9f00_10%,transparent)] px-3 py-2.5 text-sm text-custom-primary"
+                    className="mt-4 rounded-lg bg-[color-mix(in_srgb,var(--color-cta)_10%,transparent)] px-3 py-2.5 text-sm text-custom-primary"
                     role="status"
                 >
                     <span className="font-medium">
@@ -59,7 +59,7 @@ export function HowToEarnCard({ t, expiry, earningRules }: HowToEarnCardProps) {
                 {rules.map((rule, idx) => (
                     <li key={idx} className="flex gap-3 text-sm leading-relaxed text-custom-primary">
                         <span
-                            className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#ff9f00]"
+                            className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-cta"
                             aria-hidden
                         />
                         <span>{rule}</span>

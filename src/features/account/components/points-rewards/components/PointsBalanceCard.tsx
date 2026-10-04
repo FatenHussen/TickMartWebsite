@@ -37,7 +37,7 @@ export function PointsBalanceCard({
                     {t("account.pointsRewards.yourPoints.title")}
                 </h2>
                 <span
-                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#ff9f00]"
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-cta"
                     aria-hidden
                 >
                     <Coins className="h-5 w-5 text-white" strokeWidth={2} />
@@ -54,12 +54,12 @@ export function PointsBalanceCard({
                         <span className="text-4xl font-bold tabular-nums tracking-tight text-custom-primary sm:text-[2.75rem]">
                             {points.toLocaleString()}
                         </span>
-                        <span className="pb-1 text-base font-medium text-[#ff9f00]">
+                        <span className="pb-1 text-base font-medium text-cta">
                             {t("account.pointsRewards.points")}
                         </span>
                     </div>
 
-                    <dl className="mt-5 space-y-2.5 border-t border-[color-mix(in_srgb,#ff9f00_18%,transparent)] pt-4 text-sm">
+                    <dl className="mt-5 space-y-2.5 border-t border-[color-mix(in_srgb,var(--color-cta)_18%,transparent)] pt-4 text-sm">
                         <div className="flex items-baseline justify-between gap-3">
                             <dt className="text-custom-secondary">{t("account.pointsRewards.pointValue")}</dt>
                             <dd className="font-medium text-custom-primary">
@@ -83,9 +83,9 @@ export function PointsBalanceCard({
 
                     {nextRewardThreshold != null && (
                         <div className="mt-5 space-y-2">
-                            <div className="h-2 w-full overflow-hidden rounded-full bg-[color-mix(in_srgb,#ff9f00_16%,transparent)]">
+                            <div className="h-2 w-full overflow-hidden rounded-full bg-[color-mix(in_srgb,var(--color-cta)_16%,transparent)]">
                                 <div
-                                    className="h-full rounded-full bg-[#ff9f00] transition-[width] duration-500 ease-out"
+                                    className="h-full rounded-full bg-cta transition-[width] duration-500 ease-out"
                                     style={{ width: `${Math.min(progressPercentage, 100)}%` }}
                                 />
                             </div>

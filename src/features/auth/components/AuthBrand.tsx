@@ -18,9 +18,9 @@ export default function AuthBrand({ className, size = "md" }: AuthBrandProps) {
     return (
         <div className={cn("flex items-center justify-center", className)}>
             <img
-                src="/images/shared/logo.png"
-                alt="Logo"
-                className={cn(dim, "w-auto object-contain")}
+                src="/images/shared/favicon.png"
+                alt="Deema Fashion"
+                className={cn(dim, "aspect-square w-auto rounded-lg object-contain")}
             />
         </div>
     );

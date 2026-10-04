@@ -60,21 +60,37 @@ export default function Footer() {
         ],
     };
     const footerColumns = [
-        { title: t("footer.explore"), links: footerLinks.explore.slice(0, 5) },
-        { title: t("footer.shopping"), links: footerLinks.shopping },
-        { title: t("footer.legal"), links: [...footerLinks.legal, ...footerLinks.partners] },
+        { title: t("footer.explore"), links: footerLinks.explore.slice(0, 5), accent: "bg-primary/60" },
+        { title: t("footer.shopping"), links: footerLinks.shopping, accent: "bg-[#C5A572]/70" },
+        { title: t("footer.legal"), links: [...footerLinks.legal, ...footerLinks.partners], accent: "bg-indigo-400/60" },
     ];
 
     const trustBadges = [
-        { icon: HiTruck, label: t("footer.trustFastDelivery") },
-        { icon: HiShieldCheck, label: t("footer.trustSecurePayments") },
-        { icon: HiRefresh, label: t("footer.trustEasyReturns") },
-        { icon: HiBadgeCheck, label: t("footer.trustQuality") },
+        {
+            icon: HiTruck,
+            label: t("footer.trustFastDelivery"),
+            iconClass: "bg-primary/10 text-primary",
+        },
+        {
+            icon: HiShieldCheck,
+            label: t("footer.trustSecurePayments"),
+            iconClass: "bg-[#C5A572]/12 text-[#9A7B4F] dark:bg-[#C5A572]/15 dark:text-[#D4B896]",
+        },
+        {
+            icon: HiRefresh,
+            label: t("footer.trustEasyReturns"),
+            iconClass: "bg-emerald-500/10 text-emerald-600 dark:bg-emerald-400/12 dark:text-emerald-400",
+        },
+        {
+            icon: HiBadgeCheck,
+            label: t("footer.trustQuality"),
+            iconClass: "bg-indigo-500/10 text-indigo-600 dark:bg-indigo-400/12 dark:text-indigo-400",
+        },
     ];
 
     return (
         <footer
-            className="app-footer-premium relative mt-auto overflow-hidden border-t border-black/[0.06] bg-[#fbfbfc] text-custom-primary dark:border-white/[0.06]"
+            className="app-footer-premium relative mt-auto overflow-hidden border-t border-black/[0.06] text-custom-primary dark:border-white/[0.06]"
             dir={isRTL ? "rtl" : "ltr"}
         >
             <div className="page-container py-14 lg:py-16">
@@ -82,12 +98,15 @@ export default function Footer() {
                 <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-[1.5fr_repeat(3,1fr)]">
                     {/* Brand hero */}
                     <div className="space-y-5">
-                        <Link to={paths.client.home} className="inline-flex items-center">
+                        <Link to={paths.client.home} className="inline-flex items-center gap-3">
                             <img
-                                src="/images/shared/logo.png"
-                                alt="TickMart"
-                                className="h-14 w-auto object-contain sm:h-[3.75rem]"
+                                src="/images/shared/favicon.png"
+                                alt="Deema Fashion"
+                                className="h-12 w-12 rounded-xl object-contain sm:h-14 sm:w-14"
                             />
+                            <span className="bg-gradient-to-b from-[#a020f0] to-[#ff1493] bg-clip-text text-xl font-bold tracking-tight text-transparent">
+                                Deema Fashion
+                            </span>
                         </Link>
                         <p className="max-w-xs text-sm leading-relaxed text-custom-secondary">
                             {t("footer.tagline")}
@@ -128,7 +147,7 @@ export default function Footer() {
                             <h3 className="text-xs font-bold uppercase tracking-[0.12em] text-custom-primary">
                                 {column.title}
                             </h3>
-                            <span className="mb-4 mt-2.5 block h-0.5 w-7 rounded-full bg-primary/50" aria-hidden />
+                            <span className={`mb-4 mt-2.5 block h-0.5 w-7 rounded-full ${column.accent}`} aria-hidden />
                             <ul className="space-y-2.5">
                                 {column.links.map((link) => (
                                     <li key={`${link.path}-${link.label}`}>
@@ -147,7 +166,7 @@ export default function Footer() {
                 </div>
 
                 {/* ─── Trust badges ──────────────────────────────────────── */}
-                <div className="mt-14 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+                <div className="mt-14 grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-4">
                     {trustBadges.map((badge) => {
                         const Icon = badge.icon;
                         return (
@@ -155,7 +174,9 @@ export default function Footer() {
                                 key={badge.label}
                                 className="flex items-center gap-2.5 rounded-2xl border border-black/[0.06] bg-white px-3.5 py-3 transition-[transform,box-shadow] duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[0_10px_24px_-14px_rgba(15,23,42,0.28)] dark:border-white/[0.08] dark:bg-white/[0.03]"
                             >
-                                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                                <span
+                                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${badge.iconClass}`}
+                                >
                                     <Icon className="h-5 w-5" />
                                 </span>
                                 <span className="text-sm font-semibold text-custom-primary">

@@ -75,6 +75,7 @@ export default function Navbar() {
     const [isScrolled, setIsScrolled] = useState(false);
     const [showLogoutPopup, setShowLogoutPopup] = useState(false);
     const logoutMutation = useLogout();
+    const [showMobileSearch, setShowMobileSearch] = useState(false);
 
     // Soft elevation cue once the page starts scrolling (transform/shadow only — no layout shift)
     useEffect(() => {
@@ -151,6 +152,7 @@ export default function Navbar() {
     // Close mobile menu when route changes
     useEffect(() => {
         setIsMobileMenuOpen(false);
+        setShowMobileSearch(false);
     }, [location.pathname]);
 
     // Close account dropdown when clicking outside
@@ -210,8 +212,8 @@ export default function Navbar() {
             "navbar-premium-nav-link inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-medium whitespace-nowrap shrink-0 transition-[color,background-color,transform] duration-200 ease-out active:scale-[0.97]",
             active && "navbar-premium-nav-link--active",
             active
-                ? "bg-primary/10 text-primary dark:bg-white/[0.08] dark:text-[#F3EFE8]"
-                : "text-text-secondary hover:bg-primary/[0.06] hover:text-primary dark:text-[#C9C2B6] dark:hover:bg-white/[0.06] dark:hover:text-[#F3EFE8]",
+                ? "bg-primary/10 text-primary ring-1 ring-primary/15 dark:bg-white/[0.08] dark:text-[#F3EFE8] dark:ring-white/10"
+                : "text-text-secondary hover:bg-[color-mix(in_srgb,var(--color-bg-secondary)_80%,var(--color-primary)_20%)] hover:text-primary dark:text-[#C9C2B6] dark:hover:bg-white/[0.06] dark:hover:text-[#F3EFE8]",
         );
 
     const mobileNavLinkClass = (active: boolean) =>
@@ -278,25 +280,28 @@ export default function Navbar() {
             >
                 <div className="navbar-surface-top w-full">
                 <div className={`${HEADER_MAX} overflow-x-hidden`}>
-                    <div className="navbar-top-row flex min-h-[60px] min-w-0 items-center gap-3 py-3 sm:min-h-[64px] sm:gap-4 md:min-h-[72px] lg:gap-6 xl:gap-8 2xl:gap-10">
+                    <div className="navbar-top-row flex min-h-[60px] min-w-0 items-center gap-2 py-3 sm:min-h-[64px] sm:gap-3 md:min-h-[72px] lg:gap-6 xl:gap-8 2xl:gap-10">
                         <div className="flex min-w-0 shrink-0 items-center gap-5 lg:gap-6 xl:gap-8">
                             <Link
                                 to={paths.client.home}
-                                className="flex shrink-0 items-center gap-2"
-                                aria-label="TickMart Home"
+                                className="flex shrink-0 items-center gap-2.5 sm:gap-3"
+                                aria-label="Deema Fashion Home"
                             >
                                 {!logoError ? (
                                     <img
-                                        src="/images/shared/logo.png"
-                                        alt="TickMart"
-                                        className="h-16 w-auto max-w-[min(480px,56vw)] object-contain sm:h-[4.5rem] md:h-24 lg:h-18 xl:h-22 md:max-w-[min(500px,92vw)]"
+                                        src="/images/shared/favicon.png"
+                                        alt="Deema Fashion"
+                                        className="h-11 w-11 shrink-0 rounded-xl object-contain sm:h-12 sm:w-12 md:h-14 md:w-14"
                                         onError={() => setLogoError(true)}
                                     />
                                 ) : (
-                                    <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-primary-light sm:h-[4.5rem] md:h-24">
-                                        <span className="text-xl font-bold text-white">∞</span>
+                                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary sm:h-12 sm:w-12 md:h-14 md:w-14">
+                                        <span className="text-lg font-bold text-white md:text-xl">D</span>
                                     </div>
                                 )}
+                                <span className="hidden bg-gradient-to-b from-[#a020f0] to-[#ff1493] bg-clip-text text-lg font-bold tracking-tight text-transparent sm:inline md:text-xl">
+                                    Deema Fashion
+                                </span>
                             </Link>
 
                         {/* Delivery Address - Hidden on mobile, shown on lg+ */}
@@ -390,7 +395,7 @@ export default function Navbar() {
                         </div>
                         </div>
 
-                        <div className="hidden min-w-0 flex-1 items-center justify-center px-2 lg:flex xl:px-5 2xl:px-8">
+                        <div className="hidden min-w-0 flex-1 items-center justify-center px-2 md:flex xl:px-5 2xl:px-8">
                             <div className="relative min-w-0 w-full max-w-[min(820px,100%)]">
                                 <NavbarSearch className="w-full" />
                             </div>
@@ -398,14 +403,14 @@ export default function Navbar() {
 
                         <button
                             type="button"
-                            className={cn(ICON_CIRCLE, "lg:hidden shrink-0")}
+                            className={cn(ICON_CIRCLE, "md:hidden shrink-0")}
                             aria-label={t("home.searchProducts") || "Search"}
-                            onClick={() => setIsMobileMenuOpen(true)}
+                            onClick={() => setShowMobileSearch(true)}
                         >
                             <HiSearch className="h-6 w-6" />
                         </button>
 
-                        <div className="flex shrink-0 items-center gap-3 sm:gap-3 lg:gap-3">
+                        <div className="flex min-w-0 shrink-0 items-center gap-2 sm:gap-3 lg:gap-3">
                             {showQuickOrderCta && (
                             <Link
                                 to={paths.client.customOrderCreate}
@@ -415,7 +420,7 @@ export default function Navbar() {
                                 <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/15 text-white ring-1 ring-white/25">
                                     <HiLightningBolt className="h-[18px] w-[18px] transition-transform duration-200 group-hover:scale-110 group-hover:rotate-6" />
                                 </span>
-                                <span className="flex min-w-0 flex-col items-start pe-0.5 leading-tight">
+                                <span className="hidden min-w-0 flex-col items-start pe-0.5 leading-tight sm:flex">
                                     <span className="text-[10px] font-semibold tracking-wide text-white/90">
                                         {t("navbar.quickOrderBadge")}
                                     </span>
@@ -464,7 +469,7 @@ export default function Navbar() {
                             >
                                 <HiShoppingCart className="h-6 w-6" />
                                 {cartCount > 0 && (
-                                    <span className="absolute -top-0.5 -right-0.5 flex min-w-[18px] items-center justify-center rounded-full bg-amber-400 px-1 text-xs font-bold text-custom-primary">
+                                    <span className="absolute -top-0.5 -right-0.5 flex min-w-[18px] items-center justify-center rounded-full bg-primary px-1 text-xs font-bold text-white">
                                         {cartCount > 99 ? "99+" : cartCount}
                                     </span>
                                 )}
@@ -737,6 +742,39 @@ export default function Navbar() {
                     aria-hidden
                 />
             </header>
+
+            {/* Mobile search overlay */}
+            {showMobileSearch && (
+                <>
+                    <div
+                        className="fixed inset-0 z-[60] bg-black/50 md:hidden"
+                        onClick={() => setShowMobileSearch(false)}
+                        aria-hidden="true"
+                    />
+                    <div
+                        className="fixed inset-x-0 top-0 z-[70] border-b border-black/[0.06] bg-custom-card px-4 pb-4 pt-3 shadow-[0_12px_40px_-16px_rgba(15,23,42,0.35)] md:hidden dark:border-white/[0.06]"
+                        dir={isRTL ? "rtl" : "ltr"}
+                    >
+                        <div className="page-container flex items-center gap-3">
+                            <div className="min-w-0 flex-1">
+                                <NavbarSearch
+                                    autoFocus
+                                    className="w-full"
+                                    onResultSelect={() => setShowMobileSearch(false)}
+                                />
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setShowMobileSearch(false)}
+                                className={cn(ICON_CIRCLE, "shrink-0")}
+                                aria-label={t("common.close") || "Close"}
+                            >
+                                <HiX className="h-6 w-6" />
+                            </button>
+                        </div>
+                    </div>
+                </>
+            )}
 
             {/* Mobile Menu */}
             {isMobileMenuOpen && (

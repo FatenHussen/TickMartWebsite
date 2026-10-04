@@ -27,7 +27,7 @@ export function ProfileAvatarBanner({
     return (
         <div className="relative mb-8 flex flex-col gap-5 rounded-2xl border border-[var(--color-border-primary)] bg-[var(--color-bg-input)] p-4 sm:flex-row sm:items-center sm:p-5">
             <div className="relative shrink-0 mx-auto sm:mx-0">
-                <div className="relative rounded-full p-[3px] bg-[#ff9f00]">
+                <div className="relative rounded-full p-[3px] bg-cta">
                     <div className="w-[76px] h-[76px] rounded-full overflow-hidden border-2 border-custom-card bg-custom-card">
                         {avatarSrc ? (
                             <img

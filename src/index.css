@@ -51,18 +51,21 @@ html.dark #root {
   /* App-matching Arabic/Latin UI font (same geometric sans as the mobile app) */
   --font-sans: "Cairo", ui-sans-serif, system-ui, sans-serif;
 
-  /* Brand Colors - From Design Palette */
-  --color-primary: #00aed1;
-  --color-primary-light: #4cdaf6;
-  --color-secondary: #ffd700;
-  /* Tickmart logo orange — sampled from /images/shared/logo.png */
-  --color-cta: #ff9f00;
-  --color-cta-hover: #e89000;
-  --color-cta-ink: #1c1917;
-  --color-blue-off: #e4f0fb;
-  --color-blue-light: #77beff;
-  --color-blue-very-light: #e5f3ff;
-  --color-blue-border: #eff6ff;
+  /* Brand Colors — Deema Fashion (logo magenta preserved; complementary accents added) */
+  --color-primary: #c720a4;
+  --color-primary-light: #ff1493;
+  --color-secondary: #c5a572;
+  --color-accent-gold: #c5a572;
+  --color-accent-plum: #6b2d5c;
+  --color-accent-slate: #64748b;
+  /* CTA tokens (cta-honey) map to Deema magenta, not TickMart orange */
+  --color-cta: #c720a4;
+  --color-cta-hover: #a8188a;
+  --color-cta-ink: #ffffff;
+  --color-blue-off: #f5f3f7;
+  --color-blue-light: #e878c0;
+  --color-blue-very-light: #fafafa;
+  --color-blue-border: #e8eaed;
   --color-white: #ffffff;
   --color-green: #16a34a;
   --color-gray-light: #8b8b8b;
@@ -70,48 +73,48 @@ html.dark #root {
   --color-gray-bold: #ebebeb;
   --color-red: #EF4444;
 
-  /* Background Colors */
+  /* Background Colors — neutral professional canvas; brand reserved for CTAs */
   --color-bg-primary: #ffffff;
-  --color-bg-secondary: #e4f0fb;
-  --color-bg-tertiary: #f3f4f6;
-  --color-bg-hover: #e4f0fb;
-  --color-bg-active: #e0f7fa;
-  --color-bg-light: #f8fafc;
+  --color-bg-secondary: #f4f6f9;
+  --color-bg-tertiary: #eef1f5;
+  --color-bg-hover: #e8ecf1;
+  --color-bg-active: #dfe4ea;
+  --color-bg-light: #fafbfc;
   --color-bg-card: #ffffff;
   /** Sits above section canvas in dark mode so product/shop cards read as distinct panels */
   --color-bg-card-elevated: var(--color-bg-card);
   /* Cart column gradient (light); dark overrides in `@variant dark` */
-  --color-bg-light-1: #e4f0fb;
-  --color-bg-light-2: #e5f3ff;
+  --color-bg-light-1: #f4f6f9;
+  --color-bg-light-2: #fafbfc;
 
   /* Text Colors */
-  --color-text-primary: #2a2a2a;
-  --color-text-secondary: #6b7280;
-  --color-text-tertiary: #9ca3af;
+  --color-text-primary: #1a1a2e;
+  --color-text-secondary: #64748b;
+  --color-text-tertiary: #94a3b8;
   --color-text-inverse: #ffffff;
   /** Alias used by cart/checkout; matches primary until settings overwrite in JS */
   --color-text: var(--color-text-primary);
 
   /* Border Colors */
-  --color-border-primary: #e4f0fb;
+  --color-border-primary: #e5e7eb;
   --color-border-secondary: #d1d5db;
 
-  /* Accent Colors */
-  --color-accent-primary: #00aed1;
-  --color-accent-primary-hover: #0099b8;
-  --color-accent-light: #4cdaf6;
-  --color-accent-light-bg: #e0f7fa;
+  /* Accent Colors — brand for actions; gold for premium highlights */
+  --color-accent-primary: #c720a4;
+  --color-accent-primary-hover: #a8188a;
+  --color-accent-light: #ff1493;
+  --color-accent-light-bg: #fdf2f8;
 
   /* API palette mirrors (overwritten when settings load) */
   --color-main: var(--color-primary);
   --color-api-second: var(--color-primary-light);
 
   /* Brand gradient + accents (API `main_color` overrides via themeColors; static fallbacks) */
-  --color-gradient-from: var(--color-primary-light);
-  --color-gradient-to: var(--color-primary);
-  --color-shadow-accent: color-mix(in srgb, var(--color-primary) 15%, transparent);
-  --color-shadow-strong: color-mix(in srgb, var(--color-primary) 22%, transparent);
-  --color-border-accent-light: color-mix(in srgb, var(--color-primary) 35%, transparent);
+  --color-gradient-from: #a020f0;
+  --color-gradient-to: #ff1493;
+  --color-shadow-accent: color-mix(in srgb, var(--color-primary) 12%, transparent);
+  --color-shadow-strong: color-mix(in srgb, var(--color-primary) 18%, transparent);
+  --color-border-accent-light: color-mix(in srgb, var(--color-primary) 22%, #e5e7eb);
 
   /* Status Colors */
   --color-trust: #0F766E;
@@ -152,22 +155,22 @@ html.dark #root {
   :root,
   :host {
     @variant dark {
-      /* Brand Colors - From Design Palette */
-      --color-primary: #4cdaf6;
-      --color-primary-light: #00aed1;
-      --color-secondary: #ffd700;
-      --color-blue-off: #1a2332;
+      /* Brand Colors — Deema Fashion (dark mode) */
+      --color-primary: #ff1493;
+      --color-primary-light: #c720a4;
+      --color-secondary: #c5a572;
+      --color-blue-off: #2a1528;
       --color-white: #ffffff;
       --color-gray: #bbbbbb;
 
       /* Background Colors */
-      --color-bg-primary: #1e293b;
-      --color-bg-secondary: #1a2332;
-      --color-bg-tertiary: #0f172a;
-      --color-bg-hover: #334155;
-      --color-bg-active: #1e3a5f;
-      --color-bg-light: #334155;
-      --color-bg-card: #1e293b;
+      --color-bg-primary: #1a0f1e;
+      --color-bg-secondary: #221428;
+      --color-bg-tertiary: #120a14;
+      --color-bg-hover: #3a2040;
+      --color-bg-active: #4a2850;
+      --color-bg-light: #3a2040;
+      --color-bg-card: #1e1224;
       /* Lifted surface vs `--app-canvas-*` (cards must not melt into the page) */
       --color-bg-card-elevated: #24201c;
       /* Cart / legacy “light strip” tokens — must not stay paper-blue in dark */
@@ -190,20 +193,20 @@ html.dark #root {
       --color-text: var(--color-text-primary);
 
       /* Border Colors */
-      --color-border-primary: #334155;
-      --color-border-secondary: #475569;
+      --color-border-primary: #4a2850;
+      --color-border-secondary: #5a3060;
 
       /* Accent Colors */
-      --color-accent-primary: #4cdaf6;
-      --color-accent-primary-hover: #00aed1;
-      --color-accent-light: #00aed1;
-      --color-accent-light-bg: #1e3a5f;
+      --color-accent-primary: #ff1493;
+      --color-accent-primary-hover: #c720a4;
+      --color-accent-light: #c720a4;
+      --color-accent-light-bg: #3a1850;
 
       --color-main: var(--color-primary);
       --color-api-second: var(--color-primary-light);
 
-      --color-gradient-from: var(--color-primary-light);
-      --color-gradient-to: var(--color-primary);
+      --color-gradient-from: #ff1493;
+      --color-gradient-to: #8b008b;
       --color-shadow-accent: color-mix(in srgb, var(--color-primary) 22%, transparent);
       --color-shadow-strong: color-mix(in srgb, var(--color-primary) 30%, transparent);
       --color-border-accent-light: color-mix(in srgb, var(--color-primary) 40%, transparent);
@@ -416,6 +419,7 @@ html.dark #root {
    */
   .app-layout-canvas {
     background-color: var(--color-bg-primary);
+    overflow-x: clip;
   }
 
   /** Stacks navbar / main / footer above the canvas pseudo-layers (z-0). */
@@ -674,19 +678,14 @@ html.dark #root {
   html:not(.dark) .brands-page-canvas {
     background-image: linear-gradient(
       180deg,
+      var(--color-bg-primary) 0%,
       color-mix(
           in srgb,
-          var(--color-main, var(--color-primary)) 5%,
-          var(--color-bg-primary)
+          var(--color-main, var(--color-primary)) 2%,
+          var(--color-bg-secondary)
         )
-        0%,
-      var(--color-bg-primary) 48%,
-      color-mix(
-          in srgb,
-          var(--color-api-second, var(--color-primary-light)) 4%,
-          var(--color-bg-primary)
-        )
-        100%
+        48%,
+      var(--color-bg-primary) 100%
     );
   }
 
@@ -724,24 +723,30 @@ html.dark #root {
   }
 
   /**
-   * Navbar: main + secondary brand colours.
-   * Light: warm main gradient → pale cream; sub-row is off-white with a hint of main.
-   * Dark: deep bar with main/second glow; sub-row slightly lifted for link contrast.
+   * Navbar: clean neutral shell with brand + gold ambient accents.
+   * Light: white base; sub-row is cool gray with a hint of brand.
+   * Dark: deep bar with main/second/gold glow; sub-row slightly lifted for link contrast.
    */
   .navbar-surface-top {
     --navbar-main: var(--color-main, var(--color-primary));
     --navbar-second: var(--color-api-second, var(--color-primary-light));
+    --navbar-gold: var(--color-accent-gold, #c5a572);
     background-color: #ffffff;
     background-image:
       radial-gradient(
         ellipse 90% 130% at 8% -40%,
-        color-mix(in srgb, var(--navbar-second) 6%, transparent) 0%,
+        color-mix(in srgb, var(--navbar-gold) 8%, transparent) 0%,
         transparent 55%
       ),
       radial-gradient(
         ellipse 80% 110% at 92% -20%,
-        color-mix(in srgb, var(--navbar-main) 5%, transparent) 0%,
+        color-mix(in srgb, var(--navbar-main) 7%, transparent) 0%,
         transparent 52%
+      ),
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--navbar-main) 3%, transparent) 0%,
+        transparent 60%
       );
     box-shadow: 0 1px 2px -1px rgba(15, 23, 42, 0.05);
   }
@@ -752,19 +757,31 @@ html.dark #root {
   .dark .navbar-surface-top {
     --navbar-main: var(--color-main, var(--color-primary));
     --navbar-second: var(--color-api-second, var(--color-primary-light));
+    --navbar-gold: var(--color-accent-gold, #c5a572);
     position: relative;
     isolation: isolate;
     background-color: #1c1916;
     background-image:
       radial-gradient(
         ellipse 95% 120% at 12% -30%,
-        color-mix(in srgb, var(--navbar-second) 5%, transparent) 0%,
+        color-mix(in srgb, var(--navbar-gold) 10%, transparent) 0%,
         transparent 52%
       ),
       radial-gradient(
         ellipse 85% 100% at 88% -15%,
-        color-mix(in srgb, var(--navbar-main) 4%, transparent) 0%,
+        color-mix(in srgb, var(--navbar-main) 12%, transparent) 0%,
         transparent 50%
+      ),
+      radial-gradient(
+        ellipse 70% 80% at 50% 120%,
+        color-mix(in srgb, var(--navbar-second) 8%, transparent) 0%,
+        transparent 55%
+      ),
+      linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.045) 0%,
+        transparent 42%,
+        rgba(0, 0, 0, 0.22) 100%
       );
     box-shadow:
       0 1px 0 0 rgba(255, 255, 255, 0.05),
@@ -818,7 +835,7 @@ html.dark #root {
   .navbar-surface-sub {
     --navbar-main: var(--color-main, var(--color-primary));
     --navbar-second: var(--color-api-second, var(--color-primary-light));
-    background-color: #ffffff;
+    background-color: var(--color-bg-secondary);
     background-image: linear-gradient(
       180deg,
       color-mix(in srgb, var(--navbar-main) 3%, transparent) 0%,
@@ -884,21 +901,17 @@ html.dark #root {
   }
 
   /**
-   * App footer (light): API main colour as a soft, creative gradient wash —
-   * low-opacity tint over near-white so text stays readable.
+   * App footer (light): neutral base with brand + gold ambient glows —
+   * low-opacity tints so text stays readable and surfaces feel varied.
    */
   footer.app-footer-premium {
-    background-color: color-mix(
-      in srgb,
-      var(--color-main, var(--color-primary)) 4%,
-      #fbfbfc
-    );
+    background-color: #f8f9fb;
     background-image:
       radial-gradient(
         ellipse 120% 90% at 50% 0%,
         color-mix(
             in srgb,
-            var(--color-main, var(--color-primary)) 9%,
+            var(--color-main, var(--color-primary)) 5%,
             transparent
           )
           0%,
@@ -908,7 +921,7 @@ html.dark #root {
         ellipse 70% 60% at 100% 100%,
         color-mix(
             in srgb,
-            var(--color-api-second, var(--color-primary-light)) 7%,
+            var(--color-accent-gold, #c5a572) 6%,
             transparent
           )
           0%,
@@ -918,7 +931,7 @@ html.dark #root {
         ellipse 65% 55% at 0% 100%,
         color-mix(
             in srgb,
-            var(--color-main, var(--color-primary)) 6%,
+            var(--color-api-second, var(--color-primary-light)) 4%,
             transparent
           )
           0%,
