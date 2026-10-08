@@ -53,9 +53,12 @@ function FilterSection({
     className?: string;
 }) {
     return (
-        <section className={cn("space-y-2.5 py-4 first:pt-0 last:pb-0", className)}>
+        <section className={cn("space-y-1 py-2 first:pt-0 last:pb-0", className)}>
             {title ? (
-                <p className="text-xs font-semibold text-custom-secondary" style={titleStyle}>
+                <p
+                    className="text-[11px] font-semibold uppercase tracking-wide text-custom-secondary"
+                    style={titleStyle}
+                >
                     {title}
                 </p>
             ) : null}
@@ -94,6 +97,9 @@ export default function CategoryFilters({
     const [localMaxPrice, setLocalMaxPrice] = useState<string>(maxPrice?.toString() ?? "");
     const [localSearch, setLocalSearch] = useState<string>(search ?? "");
     const [localCountry, setLocalCountry] = useState<string>(country ?? "");
+    /** Mobile: keep advanced filters collapsed so products appear sooner. */
+    const [mobileOpen, setMobileOpen] = useState(false);
+    const didAutoOpenRef = useRef(false);
 
     useEffect(() => {
         setLocalType(typeFilter ?? undefined);
@@ -217,8 +223,26 @@ export default function CategoryFilters({
         onSaleOnly ||
         inStockOnly;
 
+    /** Advanced only — type/search stay visible on mobile without expanding. */
+    const advancedActiveCount = [
+        localMinPrice.trim() !== "" || localMaxPrice.trim() !== "",
+        localCountry.trim() !== "",
+        freeDeliveryOnly,
+        instantDeliveryOnly,
+        onSaleOnly,
+        inStockOnly,
+        (attributeValues?.length ?? 0) > 0,
+    ].filter(Boolean).length;
+
+    useEffect(() => {
+        if (advancedActiveCount > 0 && !didAutoOpenRef.current) {
+            setMobileOpen(true);
+            didAutoOpenRef.current = true;
+        }
+    }, [advancedActiveCount]);
+
     const inputCls = cn(
-        "h-10 w-full rounded-lg border px-3 text-sm outline-none transition-colors duration-200 focus:ring-2",
+        "h-8 w-full rounded-md border px-2.5 text-[13px] outline-none transition-colors duration-200 focus:ring-2",
         !apiSurface &&
             "border-slate-200 bg-white text-custom-primary placeholder:text-slate-400 focus:border-primary-light/60 focus:ring-primary-light/15 dark:border-white/10 dark:bg-[#2A2622] dark:text-[#E8E4DC] dark:placeholder:text-[#9A948A] dark:focus:border-white/16 dark:focus:ring-white/10",
     );
@@ -234,18 +258,117 @@ export default function CategoryFilters({
     const divideCls = !apiSurface ? "divide-y divide-slate-200/80" : "divide-y";
     const divideStyle = apiSurface ? { borderColor: apiSurface.cardBorder } : undefined;
     const labelColor = apiSurface ? { color: apiSurface.pageColor } : undefined;
-    const mutedColor = apiSurface ? { color: apiSurface.mutedColor } : undefined;
 
     const checkboxRow = cn(
-        "flex cursor-pointer items-center gap-2.5 text-sm",
+        "flex cursor-pointer items-center gap-2 text-[13px] leading-tight",
         !apiSurface && "text-custom-primary",
+    );
+
+    const advancedFilters = (
+        <>
+            <FilterSection title={t("categories.priceRange", "Price range")}>
+                <div className="grid grid-cols-2 gap-1.5">
+                    <input
+                        type="number"
+                        min={0}
+                        value={localMinPrice}
+                        onChange={(e) => handleMinPriceChange(e.target.value)}
+                        placeholder={t("baskets.min", "Min")}
+                        aria-label={t("baskets.min", "Min")}
+                        className={inputCls}
+                        style={inputStyle}
+                    />
+                    <input
+                        type="number"
+                        min={0}
+                        value={localMaxPrice}
+                        onChange={(e) => handleMaxPriceChange(e.target.value)}
+                        placeholder={t("baskets.max", "Max")}
+                        aria-label={t("baskets.max", "Max")}
+                        className={inputCls}
+                        style={inputStyle}
+                    />
+                </div>
+            </FilterSection>
+
+            <FilterSection title={t("productsListing.countryLabel", "Country")}>
+                <select
+                    value={localCountry}
+                    onChange={(e) => handleCountryChange(e.target.value)}
+                    className={cn(inputCls, "cursor-pointer")}
+                    style={inputStyle}
+                >
+                    <option value="">{t("productsListing.allCountries", "All countries")}</option>
+                    {countries.map((c) => (
+                        <option key={c.id} value={c.name}>
+                            {c.name}
+                        </option>
+                    ))}
+                </select>
+            </FilterSection>
+
+            <FilterSection title={t("productsListing.flags", "Options")}>
+                <div className="grid grid-cols-2 gap-x-2 gap-y-1.5" style={labelColor}>
+                    <label className={checkboxRow} style={labelColor}>
+                        <input
+                            type="checkbox"
+                            checked={freeDeliveryOnly}
+                            onChange={(e) => onFreeDeliveryToggle?.(e.target.checked)}
+                            className="h-3.5 w-3.5 shrink-0 rounded border-slate-300 accent-primary-light"
+                        />
+                        <span className="min-w-0">{t("product.filters.freeDeliveryOnly", "Free delivery")}</span>
+                    </label>
+                    <label className={checkboxRow} style={labelColor}>
+                        <input
+                            type="checkbox"
+                            checked={instantDeliveryOnly}
+                            onChange={(e) => onInstantDeliveryToggle?.(e.target.checked)}
+                            className="h-3.5 w-3.5 shrink-0 rounded border-slate-300 accent-primary-light"
+                        />
+                        <span className="min-w-0">{t("productsListing.instantDelivery", "Instant delivery")}</span>
+                    </label>
+                    <label className={checkboxRow} style={labelColor}>
+                        <input
+                            type="checkbox"
+                            checked={onSaleOnly}
+                            onChange={(e) => onOnSaleToggle?.(e.target.checked)}
+                            className="h-3.5 w-3.5 shrink-0 rounded border-slate-300 accent-primary-light"
+                        />
+                        <span className="min-w-0">{t("productsListing.onSale", "On sale")}</span>
+                    </label>
+                    <label className={checkboxRow} style={labelColor}>
+                        <input
+                            type="checkbox"
+                            checked={inStockOnly}
+                            onChange={(e) => onInStockToggle?.(e.target.checked)}
+                            className="h-3.5 w-3.5 shrink-0 rounded border-slate-300 accent-primary-light"
+                        />
+                        <span className="min-w-0">{t("product.filters.inStockOnly", "In stock")}</span>
+                    </label>
+                </div>
+            </FilterSection>
+
+            {showAttributes && (
+                <FilterSection>
+                    <CategoryAttributeFilters
+                        attributes={attributes}
+                        selectedIds={attributeValues ?? []}
+                        onToggleValue={handleToggleAttributeValue}
+                        isLoading={attributesLoading}
+                        error={attributesError}
+                        hideEmptyMessage
+                        embedded
+                    />
+                </FilterSection>
+            )}
+        </>
     );
 
     return (
         <div className="flex flex-col" style={apiSurface ? { color: apiSurface.mutedColor } : undefined}>
-            <div className="mb-1 flex items-center justify-between gap-3">
+            <div className="mb-0.5 flex items-center justify-between gap-3">
                 <h3
-                    className={cn("text-[15px] font-bold tracking-tight", !apiSurface && "text-custom-primary")}
+                    className={cn("text-sm font-bold tracking-tight", !apiSurface && "text-custom-primary")}
                     style={apiSurface ? { color: apiSurface.pageColor } : undefined}
                 >
                     {t("categories.filters", "Filters")}
@@ -275,7 +398,7 @@ export default function CategoryFilters({
                             strokeWidth="2"
                             strokeLinecap="round"
                             strokeLinejoin="round"
-                            className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 opacity-40"
+                            className="pointer-events-none absolute start-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 opacity-40"
                             aria-hidden
                         >
                             <circle cx="11" cy="11" r="7" />
@@ -288,14 +411,14 @@ export default function CategoryFilters({
                             maxLength={255}
                             placeholder={t("productsListing.searchLabel", "Search")}
                             aria-label={t("productsListing.searchLabel", "Search")}
-                            className={cn(inputCls, "ps-10")}
+                            className={cn(inputCls, "ps-8")}
                             style={inputStyle}
                         />
                     </div>
                 </FilterSection>
 
                 <FilterSection title={t("categories.typeFilter", "Category Type")}>
-                    <div className="flex flex-wrap gap-1.5">
+                    <div className="flex flex-wrap gap-1">
                         {TYPE_OPTIONS.map((opt) => {
                             const active = localType === opt.value;
                             return (
@@ -304,7 +427,7 @@ export default function CategoryFilters({
                                     type="button"
                                     onClick={() => handleTypeChange(opt.value)}
                                     className={cn(
-                                        "inline-flex min-h-8 items-center rounded-full border px-3 text-[13px] font-medium transition-colors",
+                                        "inline-flex min-h-7 items-center rounded-full border px-2.5 text-xs font-medium transition-colors",
                                         !apiSurface &&
                                             (active
                                                 ? "border-primary-light/50 bg-primary-light/10 text-custom-primary dark:border-white/16 dark:bg-white/[0.08] dark:text-[#F3EFE8]"
@@ -338,109 +461,44 @@ export default function CategoryFilters({
                     </div>
                 </FilterSection>
 
-                <FilterSection title={t("categories.priceRange", "Price range")}>
-                    <div className="grid grid-cols-2 gap-2">
-                        <label className="min-w-0">
-                            <span className="mb-1 block text-[11px] text-custom-secondary" style={mutedColor}>
-                                {t("baskets.min", "Min")}
-                            </span>
-                            <input
-                                type="number"
-                                min={0}
-                                value={localMinPrice}
-                                onChange={(e) => handleMinPriceChange(e.target.value)}
-                                placeholder="0"
-                                className={inputCls}
-                                style={inputStyle}
-                            />
-                        </label>
-                        <label className="min-w-0">
-                            <span className="mb-1 block text-[11px] text-custom-secondary" style={mutedColor}>
-                                {t("baskets.max", "Max")}
-                            </span>
-                            <input
-                                type="number"
-                                min={0}
-                                value={localMaxPrice}
-                                onChange={(e) => handleMaxPriceChange(e.target.value)}
-                                placeholder="0"
-                                className={inputCls}
-                                style={inputStyle}
-                            />
-                        </label>
-                    </div>
-                </FilterSection>
+                {/* Desktop: always show advanced filters */}
+                <div className="hidden lg:contents">{advancedFilters}</div>
 
-                <FilterSection title={t("productsListing.countryLabel", "Country")}>
-                    <select
-                        value={localCountry}
-                        onChange={(e) => handleCountryChange(e.target.value)}
-                        className={cn(inputCls, "cursor-pointer")}
-                        style={inputStyle}
+                {/* Mobile: collapse advanced filters so products appear sooner */}
+                <div className="lg:hidden">
+                    <button
+                        type="button"
+                        onClick={() => setMobileOpen((open) => !open)}
+                        className={cn(
+                            "flex w-full items-center justify-between gap-2 py-2 text-start text-[13px] font-semibold",
+                            !apiSurface && "text-primary-light",
+                        )}
+                        style={apiSurface ? { color: apiSurface.pageColor } : undefined}
+                        aria-expanded={mobileOpen}
                     >
-                        <option value="">{t("productsListing.allCountries", "All countries")}</option>
-                        {countries.map((c) => (
-                            <option key={c.id} value={c.name}>
-                                {c.name}
-                            </option>
-                        ))}
-                    </select>
-                </FilterSection>
-
-                <FilterSection title={t("productsListing.flags", "Options")}>
-                    <div className="space-y-2.5" style={labelColor}>
-                        <label className={checkboxRow} style={labelColor}>
-                            <input
-                                type="checkbox"
-                                checked={freeDeliveryOnly}
-                                onChange={(e) => onFreeDeliveryToggle?.(e.target.checked)}
-                                className="h-4 w-4 rounded border-slate-300 accent-primary-light"
+                        <span>
+                            {mobileOpen
+                                ? t("productsListing.fewerFilters")
+                                : t("productsListing.moreFilters")}
+                            {!mobileOpen && advancedActiveCount > 0
+                                ? ` (${advancedActiveCount})`
+                                : ""}
+                        </span>
+                        <svg
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                            className={cn("h-4 w-4 shrink-0 transition-transform", mobileOpen && "rotate-180")}
+                            aria-hidden
+                        >
+                            <path
+                                fillRule="evenodd"
+                                d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.17l3.71-3.94a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z"
+                                clipRule="evenodd"
                             />
-                            <span>{t("product.filters.freeDeliveryOnly", "Free delivery")}</span>
-                        </label>
-                        <label className={checkboxRow} style={labelColor}>
-                            <input
-                                type="checkbox"
-                                checked={instantDeliveryOnly}
-                                onChange={(e) => onInstantDeliveryToggle?.(e.target.checked)}
-                                className="h-4 w-4 rounded border-slate-300 accent-primary-light"
-                            />
-                            <span>{t("productsListing.instantDelivery", "Instant delivery")}</span>
-                        </label>
-                        <label className={checkboxRow} style={labelColor}>
-                            <input
-                                type="checkbox"
-                                checked={onSaleOnly}
-                                onChange={(e) => onOnSaleToggle?.(e.target.checked)}
-                                className="h-4 w-4 rounded border-slate-300 accent-primary-light"
-                            />
-                            <span>{t("productsListing.onSale", "On sale")}</span>
-                        </label>
-                        <label className={checkboxRow} style={labelColor}>
-                            <input
-                                type="checkbox"
-                                checked={inStockOnly}
-                                onChange={(e) => onInStockToggle?.(e.target.checked)}
-                                className="h-4 w-4 rounded border-slate-300 accent-primary-light"
-                            />
-                            <span>{t("product.filters.inStockOnly", "In stock")}</span>
-                        </label>
-                    </div>
-                </FilterSection>
-
-                {showAttributes && (
-                    <FilterSection>
-                        <CategoryAttributeFilters
-                            attributes={attributes}
-                            selectedIds={attributeValues ?? []}
-                            onToggleValue={handleToggleAttributeValue}
-                            isLoading={attributesLoading}
-                            error={attributesError}
-                            hideEmptyMessage
-                            embedded
-                        />
-                    </FilterSection>
-                )}
+                        </svg>
+                    </button>
+                    {mobileOpen ? <div className={divideCls} style={divideStyle}>{advancedFilters}</div> : null}
+                </div>
             </div>
         </div>
     );

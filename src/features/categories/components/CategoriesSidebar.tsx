@@ -57,7 +57,7 @@ export default function CategoriesSidebar({
     onInStockToggle,
 }: CategoriesSidebarProps) {
     const cardShell = cn(
-        "rounded-[20px] border p-4 sm:p-5 shadow-[0_1px_3px_rgba(15,23,42,0.04),0_14px_36px_-22px_rgba(15,23,42,0.24)]",
+        "rounded-[20px] border p-3 sm:p-4 lg:p-5 shadow-[0_1px_3px_rgba(15,23,42,0.04),0_14px_36px_-22px_rgba(15,23,42,0.24)]",
         apiSurface ? "border-solid" : "border-slate-200/70 bg-custom-card",
     );
 
