@@ -921,10 +921,9 @@ function BannerSection({
     skipInnerPageContainer,
 }: SectionProps) {
     const innerMax = skipInnerPageContainer ? "w-full" : "page-container";
-    // A banner row is artwork, so `variant` has nothing to say about it — but
-    // `layout` still does: `slider` is the hero carousel these rows have always
-    // been, `list` and `grid` show every banner at once instead of one at a time.
-    const layout = getSectionLayout(section);
+    // Promo banners with 2+ items always use the hero carousel (side arrows +
+    // dots), even if the CMS sent layout list/grid — stacking full-bleed heroes
+    // under each other is almost never the intended look.
     const cardSurfaceColor = getSectionCardSurfaceColor(section);
     const sectionBackgroundColor = section.background_color || undefined;
     const viewAllButtonClass =
@@ -973,7 +972,7 @@ function BannerSection({
         );
     }
 
-    // Multiple items - use hero-style slider (like HeroSlider)
+    // Multiple items — always the hero carousel with side arrows
     return (
         <div
             className={innerMax}
@@ -997,36 +996,12 @@ function BannerSection({
                     </button>
                 </div>
             )}
-            {layout === "slider" ? (
-                <PromotionalHeroSlider
-                    items={section.items}
-                    getLink={(item) => (isManualItem(item) ? item.link : undefined)}
-                    onItemClick={onItemClick}
-                    cardSurfaceColor={cardSurfaceColor}
-                />
-            ) : (
-                <div
-                    className={
-                        layout === "list"
-                            ? "flex flex-col gap-4 md:gap-5"
-                            : "grid grid-cols-1 gap-4 md:grid-cols-2 lg:gap-6"
-                    }
-                >
-                    {section.items.map((item, index) => {
-                        const itemData = getItemData(item) as SectionItemBase;
-                        return (
-                            <PromotionalBannerCard
-                                key={String(itemData.id ?? index)}
-                                item={itemData}
-                                link={isManualItem(item) ? item.link : undefined}
-                                onClick={() => onItemClick(item)}
-                                className="w-full"
-                                cardSurfaceColor={cardSurfaceColor}
-                            />
-                        );
-                    })}
-                </div>
-            )}
+            <PromotionalHeroSlider
+                items={section.items}
+                getLink={(item) => (isManualItem(item) ? item.link : undefined)}
+                onItemClick={onItemClick}
+                cardSurfaceColor={cardSurfaceColor}
+            />
         </div>
     );
 }

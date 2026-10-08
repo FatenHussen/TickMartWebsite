@@ -5,9 +5,7 @@ import InfoCards from "../components/InfoCards";
 import QuickOrderHomeBanner from "../components/QuickOrderHomeBanner";
 import AllProductsSection from "../components/AllProductsSection";
 import ApiSectionsRenderer from "@/shared/component/sections/ApiSectionsRenderer";
-import { getSectionKind } from "@/shared/component/sections/sectionKind";
 import { useSectionsByPosition } from "../hooks/useSections";
-import type { Section } from "../types";
 import { useAuthStore } from "@/store/auth";
 import { usePackages } from "@/features/account/hooks/usePackages";
 import AffiliatePackagesPopup from "@/components/AffiliatePackagesPopup";
@@ -17,11 +15,6 @@ import { homeStaticSectionRowSurface } from "../lib/homeStaticSectionSurface";
 import { ScreenPromotions } from "@/features/promotions";
 
 const HAS_SEEN_POPUP_KEY = "hasSeenAffiliatePopup";
-
-/** Page-builder promo header: `manual_model` / display type banner with items. */
-function isBannerSection(section: Section): boolean {
-    return getSectionKind(section) === "banner" && section.items.length > 0;
-}
 
 export default function Home() {
     const { isRTL } = useLanguage();
@@ -33,26 +26,6 @@ export default function Home() {
         authenticated
     );
     const [showPackagesPopup, setShowPackagesPopup] = useState(false);
-
-    /**
-     * Banner first under Nav, then track-order (InfoCards). Pull banners out of
-     * before/after so a `position: "after"` banner never sits under the tracker.
-     */
-    const { bannerSections, otherBeforeSections, otherAfterSections } =
-        useMemo(() => {
-            const banners = [...beforeSections, ...afterSections]
-                .filter(isBannerSection)
-                .sort((a, b) => a.order - b.order);
-            return {
-                bannerSections: banners,
-                otherBeforeSections: beforeSections.filter(
-                    (s) => !isBannerSection(s)
-                ),
-                otherAfterSections: afterSections.filter(
-                    (s) => !isBannerSection(s)
-                ),
-            };
-        }, [beforeSections, afterSections]);
 
     useEffect(() => {
         if (!authenticated) return;
@@ -83,15 +56,15 @@ export default function Home() {
             <div className="page-container flex flex-col gap-0 pb-12 pt-4  sm:pt-6">
                 <ScreenPromotions pageSlug="home" placement="top" />
 
-                {/* 1) Page-builder banner header */}
-                {bannerSections.length > 0 && (
+                {/* CMS `position: before` rows — banners stay in their `order` among other sections */}
+                {beforeSections.length > 0 && (
                     <section
                         className={homeSectionBandSurface.className}
                         style={homeSectionBandSurface.style}
                     >
                         <div className="page-container min-w-0">
                             <ApiSectionsRenderer
-                                sections={bannerSections}
+                                sections={beforeSections}
                                 edgeToEdgeSectionBackgrounds={false}
                                 skipInnerPageContainer
                                 sectionClassName="!mt-0"
@@ -101,27 +74,9 @@ export default function Home() {
                     </section>
                 )}
 
-                {/* 2) Active-order tracker (and points) — only after banner */}
                 <InfoCards />
 
                 <QuickOrderHomeBanner pageSlug="home" />
-
-                {otherBeforeSections.length > 0 && (
-                    <section
-                        className={homeSectionBandSurface.className}
-                        style={homeSectionBandSurface.style}
-                    >
-                        <div className="page-container min-w-0">
-                            <ApiSectionsRenderer
-                                sections={otherBeforeSections}
-                                edgeToEdgeSectionBackgrounds={false}
-                                skipInnerPageContainer
-                                sectionClassName="!mt-0"
-                                removeSectionVerticalSpacing
-                            />
-                        </div>
-                    </section>
-                )}
 
                 <div className="min-w-0">
                     <Categories sectionPaddingClass="pt-4 pb-6 sm:pt-5 sm:pb-8" />
@@ -129,14 +84,15 @@ export default function Home() {
 
                 <ScreenPromotions pageSlug="home" placement="bottom" />
 
-                {otherAfterSections.length > 0 && (
+                {/* CMS `position: after` rows — a banner here stays below the blocks above */}
+                {afterSections.length > 0 && (
                     <section
                         className={`${homeSectionBandSurface.className} !pt-0`}
                         style={homeSectionBandSurface.style}
                     >
                         <div className="page-container min-w-0">
                             <ApiSectionsRenderer
-                                sections={otherAfterSections}
+                                sections={afterSections}
                                 edgeToEdgeSectionBackgrounds={false}
                                 skipInnerPageContainer
                                 sectionClassName="!mt-0"

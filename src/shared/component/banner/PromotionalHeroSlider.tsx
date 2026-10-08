@@ -65,6 +65,8 @@ export default function PromotionalHeroSlider({
 
     if (!items.length) return null;
 
+    const navReady = Boolean(prevEl && nextEl);
+
     return (
         <div className="promo-banner-wrap">
             <button
@@ -84,60 +86,77 @@ export default function PromotionalHeroSlider({
                 <HiChevronRight className="promo-banner-nav-icon" />
             </button>
 
-            <Swiper
-                modules={[Autoplay, Pagination, Navigation]}
-                slidesPerView={1}
-                loop={items.length > 1}
-                autoplay={{
-                    delay: 5000,
-                    disableOnInteraction: false,
-                }}
-                pagination={{
-                    clickable: true,
-                    bulletClass: "promo-banner-bullet",
-                    bulletActiveClass: "promo-banner-bullet-active",
-                }}
-                navigation={{ prevEl, nextEl }}
-                className="promo-banner-swiper"
-            >
-                {items.map((item) => {
-                    const data = getItemData(item) as SectionItemBase;
-                    const href = getItemLink(item, getLink);
-                    return (
-                        <SwiperSlide key={data.id}>
-                            <div
-                                className={
-                                    href
-                                        ? "promo-banner-slide promo-banner-frame cursor-pointer"
-                                        : "promo-banner-slide promo-banner-frame"
-                                }
-                                style={
-                                    cardSurfaceColor
-                                        ? { background: cardSurfaceColor }
-                                        : undefined
-                                }
-                                onClick={
-                                    href ? () => handleSlideClick(item) : undefined
-                                }
-                                role={href ? "button" : undefined}
-                                tabIndex={href ? 0 : undefined}
-                                onKeyDown={
-                                    href
-                                        ? (e) => {
-                                              if (e.key === "Enter" || e.key === " ") {
-                                                  e.preventDefault();
-                                                  handleSlideClick(item);
+            {/* Wait for arrow nodes before mounting Swiper so Navigation can bind them. */}
+            {navReady ? (
+                <Swiper
+                    modules={[Autoplay, Pagination, Navigation]}
+                    slidesPerView={1}
+                    spaceBetween={0}
+                    loop={items.length > 1}
+                    autoplay={
+                        items.length > 1
+                            ? {
+                                  delay: 5000,
+                                  disableOnInteraction: false,
+                              }
+                            : false
+                    }
+                    pagination={
+                        items.length > 1
+                            ? {
+                                  clickable: true,
+                                  bulletClass: "promo-banner-bullet",
+                                  bulletActiveClass: "promo-banner-bullet-active",
+                              }
+                            : false
+                    }
+                    navigation={{ prevEl, nextEl }}
+                    className="promo-banner-swiper"
+                >
+                    {items.map((item, index) => {
+                        const data = getItemData(item) as SectionItemBase;
+                        const href = getItemLink(item, getLink);
+                        return (
+                            <SwiperSlide key={String(data.id ?? index)}>
+                                <div
+                                    className={
+                                        href
+                                            ? "promo-banner-slide promo-banner-frame cursor-pointer"
+                                            : "promo-banner-slide promo-banner-frame"
+                                    }
+                                    style={
+                                        cardSurfaceColor
+                                            ? { background: cardSurfaceColor }
+                                            : undefined
+                                    }
+                                    onClick={
+                                        href
+                                            ? () => handleSlideClick(item)
+                                            : undefined
+                                    }
+                                    role={href ? "button" : undefined}
+                                    tabIndex={href ? 0 : undefined}
+                                    onKeyDown={
+                                        href
+                                            ? (e) => {
+                                                  if (
+                                                      e.key === "Enter" ||
+                                                      e.key === " "
+                                                  ) {
+                                                      e.preventDefault();
+                                                      handleSlideClick(item);
+                                                  }
                                               }
-                                          }
-                                        : undefined
-                                }
-                            >
-                                <BannerHero item={data} />
-                            </div>
-                        </SwiperSlide>
-                    );
-                })}
-            </Swiper>
+                                            : undefined
+                                    }
+                                >
+                                    <BannerHero item={data} />
+                                </div>
+                            </SwiperSlide>
+                        );
+                    })}
+                </Swiper>
+            ) : null}
         </div>
     );
 }

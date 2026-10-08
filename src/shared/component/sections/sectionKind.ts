@@ -179,3 +179,4 @@ export function withResolvedDisplayType(
     if (displayTypeId == null) return section;
     return { ...section, display_type_id: displayTypeId };
 }
+

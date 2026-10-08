@@ -201,12 +201,14 @@
 .promo-banner-wrap {
   position: relative;
   width: 100%;
-  overflow: hidden;
+  /* Keep overflow visible so side arrows are never clipped; the swiper clips slides. */
+  overflow: visible;
 }
 
 .promo-banner-swiper {
   border-radius: 24px;
   overflow: hidden;
+  width: 100%;
 }
 
 .promo-banner-swiper .swiper-slide {
