@@ -48,7 +48,6 @@ import { listingImageSrc } from "@/features/product/lib/productMedia";
 import { formatStorefrontDiscountBadge } from "@/shared/lib/productDiscountDisplay";
 import {
     getSectionCardVariant,
-    getSectionLayout,
     getSectionRowProps,
     getSliderPresetForSection,
     CATEGORY_GRID_CLASS_NAME,

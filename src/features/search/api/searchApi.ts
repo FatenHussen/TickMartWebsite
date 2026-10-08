@@ -1,6 +1,10 @@
 import _axios from "@/app/middleware/interceptor";
 import { apiRoutes } from "@/utils/apiRoutes";
-import type { SearchApiResponse, SearchResultType } from "../types";
+import type {
+    SearchApiResponse,
+    SearchResultType,
+    SearchResultWithType,
+} from "../types";
 
 export const searchApi = {
     /**
@@ -20,9 +24,7 @@ export const searchApi = {
     /**
      * Search all types in parallel, returns merged results with type labels
      */
-    searchAll: async (
-        search: string
-    ): Promise<Array<{ id: number; name: string; image: string | null; type: SearchResultType }>> => {
+    searchAll: async (search: string): Promise<SearchResultWithType[]> => {
         const types: SearchResultType[] = ["product", "brand", "shop", "recipe"];
         const results = await Promise.all(
             types.map(async (type) => {
