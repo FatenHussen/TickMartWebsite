@@ -41,6 +41,16 @@ const TYPE_OPTIONS: { value: CategoryTypeFilter; labelKey: string }[] = [
     { value: "top_rated", labelKey: "categories.typeTopRated" },
 ];
 
+function typeOptionLabel(
+    t: (key: string, fallback: string) => string,
+    value: CategoryTypeFilter,
+): string {
+    if (value === undefined) return t("categories.typeAll", "All");
+    if (value === "new") return t("categories.typeNew", "New");
+    if (value === "most_popular") return t("categories.typeMostPopular", "Most popular");
+    return t("categories.typeTopRated", "Top rated");
+}
+
 function FilterSection({
     title,
     children,
@@ -53,7 +63,7 @@ function FilterSection({
     className?: string;
 }) {
     return (
-        <section className={cn("space-y-1 py-2 first:pt-0 last:pb-0", className)}>
+        <section className={cn("space-y-1 py-1.5 first:pt-0 last:pb-0 lg:py-2", className)}>
             {title ? (
                 <p
                     className="text-[11px] font-semibold uppercase tracking-wide text-custom-secondary"
@@ -97,9 +107,8 @@ export default function CategoryFilters({
     const [localMaxPrice, setLocalMaxPrice] = useState<string>(maxPrice?.toString() ?? "");
     const [localSearch, setLocalSearch] = useState<string>(search ?? "");
     const [localCountry, setLocalCountry] = useState<string>(country ?? "");
-    /** Mobile: keep advanced filters collapsed so products appear sooner. */
+    /** Mobile: whole filter panel stays collapsed until the user opens it. */
     const [mobileOpen, setMobileOpen] = useState(false);
-    const didAutoOpenRef = useRef(false);
 
     useEffect(() => {
         setLocalType(typeFilter ?? undefined);
@@ -223,23 +232,17 @@ export default function CategoryFilters({
         onSaleOnly ||
         inStockOnly;
 
-    /** Advanced only — type/search stay visible on mobile without expanding. */
-    const advancedActiveCount = [
+    const activeFilterCount = [
+        localType != null,
         localMinPrice.trim() !== "" || localMaxPrice.trim() !== "",
         localCountry.trim() !== "",
+        localSearch.trim() !== "",
         freeDeliveryOnly,
         instantDeliveryOnly,
         onSaleOnly,
         inStockOnly,
         (attributeValues?.length ?? 0) > 0,
     ].filter(Boolean).length;
-
-    useEffect(() => {
-        if (advancedActiveCount > 0 && !didAutoOpenRef.current) {
-            setMobileOpen(true);
-            didAutoOpenRef.current = true;
-        }
-    }, [advancedActiveCount]);
 
     const inputCls = cn(
         "h-8 w-full rounded-md border px-2.5 text-[13px] outline-none transition-colors duration-200 focus:ring-2",
@@ -364,130 +367,163 @@ export default function CategoryFilters({
         </>
     );
 
+    const searchField = (
+        <FilterSection>
+            <div className="relative">
+                <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="pointer-events-none absolute start-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 opacity-40"
+                    aria-hidden
+                >
+                    <circle cx="11" cy="11" r="7" />
+                    <path d="m20 20-3-3" />
+                </svg>
+                <input
+                    type="search"
+                    value={localSearch}
+                    onChange={(e) => handleSearchChange(e.target.value)}
+                    maxLength={255}
+                    placeholder={t("productsListing.searchLabel", "Search")}
+                    aria-label={t("productsListing.searchLabel", "Search")}
+                    className={cn(inputCls, "ps-8")}
+                    style={inputStyle}
+                />
+            </div>
+        </FilterSection>
+    );
+
+    const typeChips = (
+        <FilterSection title={t("categories.typeFilter", "Category Type")}>
+            <div className="flex flex-wrap gap-1">
+                {TYPE_OPTIONS.map((opt) => {
+                    const active = localType === opt.value;
+                    return (
+                        <button
+                            key={opt.value ?? "all"}
+                            type="button"
+                            onClick={() => handleTypeChange(opt.value)}
+                            className={cn(
+                                "inline-flex min-h-7 items-center rounded-full border px-2.5 text-xs font-medium transition-colors",
+                                !apiSurface &&
+                                    (active
+                                        ? "border-primary-light/50 bg-primary-light/10 text-custom-primary dark:border-white/16 dark:bg-white/[0.08] dark:text-[#F3EFE8]"
+                                        : "border-slate-200 bg-white text-custom-secondary hover:border-primary-light/35 hover:bg-slate-50 dark:border-white/10 dark:bg-[#2A2622] dark:text-[#C9C2B6] dark:hover:border-white/16 dark:hover:bg-[#322E29] dark:hover:text-[#F3EFE8]"),
+                            )}
+                            style={
+                                apiSurface
+                                    ? {
+                                          borderColor: apiSurface.cardBorder,
+                                          backgroundColor: active
+                                              ? `color-mix(in srgb, ${apiSurface.cardBackground} 40%, #020617)`
+                                              : `color-mix(in srgb, ${apiSurface.cardBackground} 70%, #020617)`,
+                                          color: apiSurface.pageColor,
+                                      }
+                                    : undefined
+                            }
+                        >
+                            {typeOptionLabel(t, opt.value)}
+                        </button>
+                    );
+                })}
+            </div>
+        </FilterSection>
+    );
+
+    const typeSelect = (
+        <FilterSection title={t("categories.typeFilter", "Category Type")}>
+            <select
+                value={localType ?? ""}
+                onChange={(e) => {
+                    const raw = e.target.value;
+                    handleTypeChange(
+                        raw === "" ? undefined : (raw as Exclude<CategoryTypeFilter, undefined>),
+                    );
+                }}
+                className={cn(inputCls, "cursor-pointer")}
+                style={inputStyle}
+                aria-label={t("categories.typeFilter", "Category Type")}
+            >
+                {TYPE_OPTIONS.map((opt) => (
+                    <option key={opt.value ?? "all"} value={opt.value ?? ""}>
+                        {typeOptionLabel(t, opt.value)}
+                    </option>
+                ))}
+            </select>
+        </FilterSection>
+    );
+
+    const resetButton = hasActive ? (
+        <button
+            type="button"
+            onClick={handleReset}
+            className={cn(
+                "shrink-0 text-xs font-semibold transition-opacity hover:opacity-80",
+                !apiSurface && "text-primary-light",
+            )}
+            style={apiSurface ? { color: apiSurface.pageColor } : undefined}
+        >
+            {t("categories.reset", "Reset")}
+        </button>
+    ) : null;
+
     return (
         <div className="flex flex-col" style={apiSurface ? { color: apiSurface.mutedColor } : undefined}>
-            <div className="mb-0.5 flex items-center justify-between gap-3">
-                <h3
-                    className={cn("text-sm font-bold tracking-tight", !apiSurface && "text-custom-primary")}
-                    style={apiSurface ? { color: apiSurface.pageColor } : undefined}
-                >
-                    {t("categories.filters", "Filters")}
-                </h3>
-                {hasActive && (
+            {/* Mobile: one compact row — expand only when the user wants filters */}
+            <div className="lg:hidden">
+                <div className="flex items-center gap-2">
                     <button
                         type="button"
-                        onClick={handleReset}
+                        onClick={() => setMobileOpen((open) => !open)}
                         className={cn(
-                            "shrink-0 text-xs font-semibold transition-opacity hover:opacity-80",
-                            !apiSurface && "text-primary-light",
+                            "flex min-h-9 flex-1 items-center justify-between gap-2 rounded-lg border px-3 text-start text-[13px] font-semibold",
+                            !apiSurface &&
+                                "border-slate-200 bg-white text-custom-primary dark:border-white/10 dark:bg-[#2A2622] dark:text-[#F3EFE8]",
                         )}
-                        style={apiSurface ? { color: apiSurface.pageColor } : undefined}
+                        style={
+                            apiSurface
+                                ? {
+                                      borderColor: apiSurface.cardBorder,
+                                      backgroundColor: `color-mix(in srgb, ${apiSurface.cardBackground} 55%, #020617)`,
+                                      color: apiSurface.pageColor,
+                                  }
+                                : undefined
+                        }
+                        aria-expanded={mobileOpen}
                     >
-                        {t("categories.reset", "Reset")}
-                    </button>
-                )}
-            </div>
-
-            <div className={divideCls} style={divideStyle}>
-                <FilterSection>
-                    <div className="relative">
-                        <svg
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className="pointer-events-none absolute start-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 opacity-40"
-                            aria-hidden
-                        >
-                            <circle cx="11" cy="11" r="7" />
-                            <path d="m20 20-3-3" />
-                        </svg>
-                        <input
-                            type="search"
-                            value={localSearch}
-                            onChange={(e) => handleSearchChange(e.target.value)}
-                            maxLength={255}
-                            placeholder={t("productsListing.searchLabel", "Search")}
-                            aria-label={t("productsListing.searchLabel", "Search")}
-                            className={cn(inputCls, "ps-8")}
-                            style={inputStyle}
-                        />
-                    </div>
-                </FilterSection>
-
-                <FilterSection title={t("categories.typeFilter", "Category Type")}>
-                    <div className="flex flex-wrap gap-1">
-                        {TYPE_OPTIONS.map((opt) => {
-                            const active = localType === opt.value;
-                            return (
-                                <button
-                                    key={opt.value ?? "all"}
-                                    type="button"
-                                    onClick={() => handleTypeChange(opt.value)}
+                        <span className="inline-flex min-w-0 items-center gap-1.5">
+                            <span>{t("categories.filters", "Filters")}</span>
+                            {activeFilterCount > 0 ? (
+                                <span
                                     className={cn(
-                                        "inline-flex min-h-7 items-center rounded-full border px-2.5 text-xs font-medium transition-colors",
+                                        "inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[11px] font-bold",
                                         !apiSurface &&
-                                            (active
-                                                ? "border-primary-light/50 bg-primary-light/10 text-custom-primary dark:border-white/16 dark:bg-white/[0.08] dark:text-[#F3EFE8]"
-                                                : "border-slate-200 bg-white text-custom-secondary hover:border-primary-light/35 hover:bg-slate-50 dark:border-white/10 dark:bg-[#2A2622] dark:text-[#C9C2B6] dark:hover:border-white/16 dark:hover:bg-[#322E29] dark:hover:text-[#F3EFE8]"),
+                                            "bg-primary-light/15 text-primary-light dark:bg-white/12 dark:text-[#F3EFE8]",
                                     )}
                                     style={
                                         apiSurface
                                             ? {
-                                                  borderColor: apiSurface.cardBorder,
-                                                  backgroundColor: active
-                                                      ? `color-mix(in srgb, ${apiSurface.cardBackground} 40%, #020617)`
-                                                      : `color-mix(in srgb, ${apiSurface.cardBackground} 70%, #020617)`,
+                                                  backgroundColor: `color-mix(in srgb, ${apiSurface.pageColor} 18%, transparent)`,
                                                   color: apiSurface.pageColor,
                                               }
                                             : undefined
                                     }
                                 >
-                                    {t(
-                                        opt.labelKey,
-                                        opt.value === undefined
-                                            ? "All"
-                                            : opt.value === "new"
-                                              ? "New"
-                                              : opt.value === "most_popular"
-                                                ? "Most popular"
-                                                : "Top rated",
-                                    )}
-                                </button>
-                            );
-                        })}
-                    </div>
-                </FilterSection>
-
-                {/* Desktop: always show advanced filters */}
-                <div className="hidden lg:contents">{advancedFilters}</div>
-
-                {/* Mobile: collapse advanced filters so products appear sooner */}
-                <div className="lg:hidden">
-                    <button
-                        type="button"
-                        onClick={() => setMobileOpen((open) => !open)}
-                        className={cn(
-                            "flex w-full items-center justify-between gap-2 py-2 text-start text-[13px] font-semibold",
-                            !apiSurface && "text-primary-light",
-                        )}
-                        style={apiSurface ? { color: apiSurface.pageColor } : undefined}
-                        aria-expanded={mobileOpen}
-                    >
-                        <span>
-                            {mobileOpen
-                                ? t("productsListing.fewerFilters")
-                                : t("productsListing.moreFilters")}
-                            {!mobileOpen && advancedActiveCount > 0
-                                ? ` (${advancedActiveCount})`
-                                : ""}
+                                    {activeFilterCount}
+                                </span>
+                            ) : null}
                         </span>
                         <svg
                             viewBox="0 0 20 20"
                             fill="currentColor"
-                            className={cn("h-4 w-4 shrink-0 transition-transform", mobileOpen && "rotate-180")}
+                            className={cn(
+                                "h-4 w-4 shrink-0 opacity-70 transition-transform",
+                                mobileOpen && "rotate-180",
+                            )}
                             aria-hidden
                         >
                             <path
@@ -497,7 +533,43 @@ export default function CategoryFilters({
                             />
                         </svg>
                     </button>
-                    {mobileOpen ? <div className={divideCls} style={divideStyle}>{advancedFilters}</div> : null}
+                    {resetButton}
+                </div>
+
+                {mobileOpen ? (
+                    <div
+                        className={cn(
+                            "mt-2 max-h-[min(48vh,360px)] overflow-y-auto overscroll-contain",
+                            divideCls,
+                        )}
+                        style={divideStyle}
+                    >
+                        {searchField}
+                        {typeSelect}
+                        {advancedFilters}
+                    </div>
+                ) : null}
+            </div>
+
+            {/* Desktop: full filter panel */}
+            <div className="hidden lg:block">
+                <div className="mb-0.5 flex items-center justify-between gap-3">
+                    <h3
+                        className={cn(
+                            "text-sm font-bold tracking-tight",
+                            !apiSurface && "text-custom-primary",
+                        )}
+                        style={apiSurface ? { color: apiSurface.pageColor } : undefined}
+                    >
+                        {t("categories.filters", "Filters")}
+                    </h3>
+                    {resetButton}
+                </div>
+
+                <div className={divideCls} style={divideStyle}>
+                    {searchField}
+                    {typeChips}
+                    {advancedFilters}
                 </div>
             </div>
         </div>
