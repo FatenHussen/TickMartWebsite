@@ -82,7 +82,9 @@ function pickSavedLabel(
     currencies: ApiDualCurrencies | null | undefined,
     currencyCode?: string | null,
 ): string | null {
-    const formatted = pickCurrencyFormatted(currencies, currencyCode);
+    const formatted = pickCurrencyFormatted(currencies, currencyCode, {
+        roundWhole: false,
+    });
     return formatted.trim() || null;
 }
 

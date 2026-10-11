@@ -21,6 +21,11 @@ type FormattedPriceProps = {
     hideSymbol?: boolean;
     strikethrough?: boolean;
     /**
+     * Keep API decimals as-is (savings). Default rounds sale/list prices
+     * to whole numbers with the first-decimal storefront rule.
+     */
+    exact?: boolean;
+    /**
      * Dual-currency layout. `stack` puts USD above SYP (cards).
      * `inline` keeps one nowrap line. Default: stack when prominent + dual.
      */
@@ -136,6 +141,7 @@ export default function FormattedPrice({
     prominent = false,
     hideSymbol = false,
     strikethrough = false,
+    exact = false,
     layout,
     compareValue,
     compareClassName,
@@ -143,24 +149,17 @@ export default function FormattedPrice({
     const { i18n } = useTranslation();
     const currencyCode = useCurrencyOptional()?.currency;
     const symbolFirst = !i18n.language.toLowerCase().startsWith("ar");
-    const displayValue = toLatinNumberText(
-        localizeCurrencyText(
-            roundFormattedMoneyText(
-                selectFormattedForCurrency(value, currencyCode),
+    const prepareMoney = (raw: string) => {
+        const selected = selectFormattedForCurrency(raw, currencyCode);
+        return toLatinNumberText(
+            localizeCurrencyText(
+                exact ? selected : roundFormattedMoneyText(selected),
+                i18n.language,
             ),
-            i18n.language,
-        ),
-    );
-    const displayCompare = compareValue
-        ? toLatinNumberText(
-              localizeCurrencyText(
-                  roundFormattedMoneyText(
-                      selectFormattedForCurrency(compareValue, currencyCode),
-                  ),
-                  i18n.language,
-              ),
-          )
-        : undefined;
+        );
+    };
+    const displayValue = prepareMoney(value);
+    const displayCompare = compareValue ? prepareMoney(compareValue) : undefined;
     const chunks = splitDualCurrencies(displayValue);
     const dual = chunks.length > 1;
     const stacked = layout === "stack" || (layout !== "inline" && prominent && dual);

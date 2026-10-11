@@ -117,6 +117,7 @@ export default function PriceBlock({
                             {saved.label ? <span>{saved.label}</span> : null}
                             <FormattedPrice
                                 value={saved.amount}
+                                exact
                                 hideSymbol
                                 className="font-semibold text-[var(--color-success)]"
                             />

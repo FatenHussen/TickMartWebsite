@@ -1071,9 +1071,14 @@ function ProductDetails() {
                             }
                             className="border-t border-black/6 pt-4 dark:border-white/8"
                             onIconClick={(icon) => {
+                                const full =
+                                    icon.full_description?.trim() ||
+                                    icon.description?.trim() ||
+                                    icon.name?.trim() ||
+                                    "";
                                 setSelectedIcon({
                                     name: icon.name,
-                                    description: icon.description || "",
+                                    description: full,
                                 });
                                 setIconPopupOpen(true);
                             }}

@@ -234,8 +234,13 @@ export interface ProductIcon {
  /** Same URL as `image`, including `?v=` when the file was replaced. */
  icon?: string | null;
  image?: string | null;
- /** Tooltip. Hide when empty. */
+ /**
+  * Description text. Brief values are used as the hover tooltip;
+  * longer values are shown in the click popup (full description).
+  */
  description?: string | null;
+ /** Optional full description for the click popup when provided by the API. */
+ full_description?: string | null;
 }
 
 export interface ProductApiBadge {

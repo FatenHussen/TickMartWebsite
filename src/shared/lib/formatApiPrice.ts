@@ -2,7 +2,8 @@
  * Prefer API-formatted prices — never invent FX locally.
  *
  * Spec: display `*_formatted` or `*_currencies` from the API.
- * Amounts are shown as whole numbers (first-decimal rounding).
+ * Sale / list prices use whole-number rounding (first-decimal rule).
+ * Savings ("you saved") stay exact — do not force them to whole numbers.
  */
 
 import i18next from "i18next";
@@ -70,39 +71,56 @@ export function selectFormattedForCurrency(
     return chunks.find((chunk) => chunkMatchesCurrency(chunk, code)) ?? chunks[0];
 }
 
-function formatCurrencyEntry(entry?: ApiCurrencyFormatted | null): string {
+function formatCurrencyEntry(
+    entry?: ApiCurrencyFormatted | null,
+    roundWhole = true,
+): string {
     const formatted = entry?.formatted?.trim();
-    if (formatted) return roundFormattedMoneyText(formatted);
+    if (formatted) {
+        return roundWhole ? roundFormattedMoneyText(formatted) : formatted;
+    }
     if (entry?.amount == null) return "";
     const amount = Number(entry.amount);
     if (!Number.isFinite(amount)) return "";
     const symbol = entry.symbol?.trim() ?? "";
-    return `${symbol}${symbol ? " " : ""}${formatMoneyAmount(amount)}`.trim();
+    const amountText = roundWhole
+        ? formatMoneyAmount(amount)
+        : formatExactMoneyAmount(amount);
+    return `${symbol}${symbol ? " " : ""}${amountText}`.trim();
 }
 
 /** Pick one API `*_currencies` line for the selected code. */
 export function pickCurrencyFormatted(
     currencies: ApiDualCurrencies | null | undefined,
     currencyCode?: string | null,
+    options?: { roundWhole?: boolean },
 ): string {
     if (!currencies) return "";
+    const roundWhole = options?.roundWhole !== false;
     const code = canonicalCurrencyCode(currencyCode);
     if (code) {
-        const direct = formatCurrencyEntry(currencies[code]);
+        const direct = formatCurrencyEntry(currencies[code], roundWhole);
         if (direct) return direct;
         const matched = Object.entries(currencies).find(
             ([key, value]) =>
-                canonicalCurrencyCode(key) === code && Boolean(formatCurrencyEntry(value)),
+                canonicalCurrencyCode(key) === code &&
+                Boolean(formatCurrencyEntry(value, roundWhole)),
         );
         if (matched) {
-            const formatted = formatCurrencyEntry(matched[1]);
+            const formatted = formatCurrencyEntry(matched[1], roundWhole);
             if (formatted) return formatted;
         }
     }
     const preferred = currencies.USD?.formatted ?? currencies.SYP?.formatted;
-    if (preferred?.trim()) return preferred.trim();
+    if (preferred?.trim()) {
+        return roundWhole
+            ? roundFormattedMoneyText(preferred.trim())
+            : preferred.trim();
+    }
     const first = Object.values(currencies).find((v) => v?.formatted?.trim());
-    return first?.formatted?.trim() ?? "";
+    const fallback = first?.formatted?.trim() ?? "";
+    if (!fallback) return "";
+    return roundWhole ? roundFormattedMoneyText(fallback) : fallback;
 }
 
 /** Numeric `amount` from `*_currencies` for the selected code — never convert FX. */
@@ -308,15 +326,24 @@ function resolveSavingsAmount(
     source: FormattedPriceSource,
     currencyCode?: string | null,
 ): string | undefined {
+    const exact = { roundWhole: false as const };
     const fromMap =
-        pickCurrencyFormatted(source.amount_saved_currencies, currencyCode) ||
-        pickCurrencyFormatted(source.discount_currencies, currencyCode);
+        pickCurrencyFormatted(
+            source.amount_saved_currencies,
+            currencyCode,
+            exact,
+        ) ||
+        pickCurrencyFormatted(source.discount_currencies, currencyCode, exact);
     if (fromMap) return fromMap;
     const formatted = source.amount_saved_formatted?.trim();
-    if (!formatted) return undefined;
-    const selected =
-        selectFormattedForCurrency(formatted, currencyCode) || formatted;
-    return roundFormattedMoneyText(selected);
+    if (!formatted) {
+        if (source.amount_saved != null && Number(source.amount_saved) > 0) {
+            const symbol = source.currency_symbol?.trim() ?? "";
+            return `${symbol}${symbol ? " " : ""}${formatExactMoneyAmount(Number(source.amount_saved))}`.trim();
+        }
+        return undefined;
+    }
+    return selectFormattedForCurrency(formatted, currencyCode) || formatted;
 }
 
 /**
@@ -393,10 +420,17 @@ const LATIN_MONEY = new Intl.NumberFormat("en-US", {
     maximumFractionDigits: 0,
 });
 
+const LATIN_MONEY_EXACT = new Intl.NumberFormat("en-US", {
+    numberingSystem: "latn",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+});
+
 /**
  * Storefront whole-number rounding: look at the first digit after the decimal.
  * Below 5 → drop the fraction. 5 or above → round up, then drop the fraction.
  * Examples: 198.90 → 199, 35.10 → 35.
+ * Use for sale / list prices only — not savings.
  */
 export function roundMoneyToWhole(amount: number): number {
     if (!Number.isFinite(amount)) return 0;
@@ -424,6 +458,12 @@ export function roundFormattedMoneyText(value: string): string {
 export function formatMoneyAmount(amount: number): string {
     if (!Number.isFinite(amount)) return "0";
     return LATIN_MONEY.format(roundMoneyToWhole(amount));
+}
+
+/** Exact savings amount — keep API decimals (up to 2). */
+export function formatExactMoneyAmount(amount: number): string {
+    if (!Number.isFinite(amount)) return "0";
+    return LATIN_MONEY_EXACT.format(amount);
 }
 
 /**
