@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { cn } from "@/shared/lib/utils";
 import type { CategoriesApiDarkSurface } from "../lib/categoriesApiDarkSurface";
 import CategoryFilters from "./CategoryFilters";
@@ -57,21 +58,29 @@ export default function CategoriesSidebar({
     onInStockToggle,
 }: CategoriesSidebarProps) {
     const cardShell = cn(
-        "rounded-[16px] border p-2.5 sm:rounded-[20px] sm:p-4 lg:p-5 shadow-[0_1px_3px_rgba(15,23,42,0.04),0_14px_36px_-22px_rgba(15,23,42,0.24)]",
-        apiSurface ? "border-solid" : "border-slate-200/70 bg-custom-card",
+        // Mobile: bare — CategoryFilters owns the trigger + bottom sheet.
+        "border-0 bg-transparent p-0 shadow-none",
+        // Desktop: elevated filter card.
+        "lg:rounded-[20px] lg:border lg:p-5 lg:shadow-[0_1px_3px_rgba(15,23,42,0.04),0_14px_36px_-22px_rgba(15,23,42,0.24)]",
+        apiSurface
+            ? "lg:border-solid lg:[background-color:var(--cat-filter-card-bg)] lg:[border-color:var(--cat-filter-card-border)]"
+            : "lg:border-slate-200/70 lg:bg-custom-card",
     );
-
-    const cardStyle = apiSurface
-        ? {
-              backgroundColor: apiSurface.cardBackground,
-              borderColor: apiSurface.cardBorder,
-              color: apiSurface.mutedColor,
-          }
-        : undefined;
 
     return (
         <div className="lg:sticky lg:top-24">
-            <div className={cardShell} style={cardStyle}>
+            <div
+                className={cardShell}
+                style={
+                    apiSurface
+                        ? ({
+                              ["--cat-filter-card-bg"]: apiSurface.cardBackground,
+                              ["--cat-filter-card-border"]: apiSurface.cardBorder,
+                              color: apiSurface.mutedColor,
+                          } as CSSProperties)
+                        : undefined
+                }
+            >
                 <CategoryFilters
                     typeFilter={categoryTypeFilter}
                     onTypeFilterChange={onCategoryTypeFilterChange}

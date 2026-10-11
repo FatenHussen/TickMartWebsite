@@ -423,6 +423,7 @@
     "showingProductsIn": "Showing products in",
     "filters": "Filters",
     "applyFilters": "Apply filters",
+    "activeFiltersCount": "{{count}} active",
     "reset": "Reset",
     "typeFilter": "Category Type",
     "typeAll": "All",

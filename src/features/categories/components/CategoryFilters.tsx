@@ -1,6 +1,14 @@
-import { useState, useEffect, useRef, type CSSProperties, type ReactNode } from "react";
+import {
+    useState,
+    useEffect,
+    useRef,
+    type CSSProperties,
+    type ReactNode,
+} from "react";
+import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
+import { SlidersHorizontal, X } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import { useCategoryAttributes } from "@/features/home/hooks/useCategoryAttributes";
 import CategoryAttributeFilters from "@/features/product/components/CategoryAttributeFilters";
@@ -63,10 +71,10 @@ function FilterSection({
     className?: string;
 }) {
     return (
-        <section className={cn("space-y-1 py-1.5 first:pt-0 last:pb-0 lg:py-2", className)}>
+        <section className={cn("space-y-2 py-3 first:pt-0 last:pb-0", className)}>
             {title ? (
                 <p
-                    className="text-[11px] font-semibold uppercase tracking-wide text-custom-secondary"
+                    className="text-[11px] font-semibold uppercase tracking-[0.06em] text-custom-secondary"
                     style={titleStyle}
                 >
                     {title}
@@ -107,8 +115,8 @@ export default function CategoryFilters({
     const [localMaxPrice, setLocalMaxPrice] = useState<string>(maxPrice?.toString() ?? "");
     const [localSearch, setLocalSearch] = useState<string>(search ?? "");
     const [localCountry, setLocalCountry] = useState<string>(country ?? "");
-    /** Mobile: whole filter panel stays collapsed until the user opens it. */
     const [mobileOpen, setMobileOpen] = useState(false);
+    const sheetRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         setLocalType(typeFilter ?? undefined);
@@ -125,6 +133,27 @@ export default function CategoryFilters({
     useEffect(() => {
         setLocalCountry(country ?? "");
     }, [country]);
+
+    useEffect(() => {
+        if (!mobileOpen) return;
+        const prevBody = document.body.style.overflow;
+        const prevHtml = document.documentElement.style.overflow;
+        document.body.style.overflow = "hidden";
+        document.documentElement.style.overflow = "hidden";
+        return () => {
+            document.body.style.overflow = prevBody;
+            document.documentElement.style.overflow = prevHtml;
+        };
+    }, [mobileOpen]);
+
+    useEffect(() => {
+        if (!mobileOpen) return;
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key === "Escape") setMobileOpen(false);
+        };
+        document.addEventListener("keydown", onKey);
+        return () => document.removeEventListener("keydown", onKey);
+    }, [mobileOpen]);
 
     const {
         data: attributes = [],
@@ -245,9 +274,9 @@ export default function CategoryFilters({
     ].filter(Boolean).length;
 
     const inputCls = cn(
-        "h-8 w-full rounded-md border px-2.5 text-[13px] outline-none transition-colors duration-200 focus:ring-2",
+        "h-10 w-full rounded-xl border px-3 text-sm outline-none transition-colors duration-200 focus:ring-2",
         !apiSurface &&
-            "border-slate-200 bg-white text-custom-primary placeholder:text-slate-400 focus:border-primary-light/60 focus:ring-primary-light/15 dark:border-white/10 dark:bg-[#2A2622] dark:text-[#E8E4DC] dark:placeholder:text-[#9A948A] dark:focus:border-white/16 dark:focus:ring-white/10",
+            "border-slate-200/90 bg-white text-custom-primary placeholder:text-slate-400 focus:border-primary-light/55 focus:ring-primary-light/12 dark:border-white/10 dark:bg-[#2A2622] dark:text-[#E8E4DC] dark:placeholder:text-[#9A948A] dark:focus:border-white/16 dark:focus:ring-white/10",
     );
 
     const inputStyle = apiSurface
@@ -258,19 +287,129 @@ export default function CategoryFilters({
           }
         : undefined;
 
-    const divideCls = !apiSurface ? "divide-y divide-slate-200/80" : "divide-y";
+    const divideCls = !apiSurface ? "divide-y divide-slate-200/70" : "divide-y";
     const divideStyle = apiSurface ? { borderColor: apiSurface.cardBorder } : undefined;
     const labelColor = apiSurface ? { color: apiSurface.pageColor } : undefined;
 
-    const checkboxRow = cn(
-        "flex cursor-pointer items-center gap-2 text-[13px] leading-tight",
-        !apiSurface && "text-custom-primary",
+    const chipCls = (active: boolean) =>
+        cn(
+            "inline-flex min-h-9 shrink-0 items-center justify-center rounded-full border px-3.5 text-xs font-semibold transition-colors",
+            !apiSurface &&
+                (active
+                    ? "border-transparent text-white shadow-sm"
+                    : "border-slate-200 bg-white text-custom-secondary hover:border-slate-300 hover:bg-slate-50 dark:border-white/10 dark:bg-[#2A2622] dark:text-[#C9C2B6] dark:hover:border-white/16 dark:hover:bg-[#322E29] dark:hover:text-[#F3EFE8]"),
+        );
+
+    const chipActiveStyle = apiSurface
+        ? {
+              borderColor: "transparent",
+              background: `linear-gradient(135deg, ${apiSurface.pageColor}, color-mix(in srgb, ${apiSurface.pageColor} 70%, #020617))`,
+              color: "#0b1220",
+          }
+        : {
+              background:
+                  "linear-gradient(135deg, var(--color-gradient-from, var(--color-main)), var(--color-gradient-to, var(--color-api-second, var(--color-main))))",
+          };
+
+    const optionChips: {
+        key: string;
+        checked: boolean;
+        onToggle: (next: boolean) => void;
+        label: string;
+    }[] = [
+        {
+            key: "free",
+            checked: freeDeliveryOnly,
+            onToggle: (v) => onFreeDeliveryToggle?.(v),
+            label: t("product.filters.freeDeliveryOnly", "Free delivery"),
+        },
+        {
+            key: "instant",
+            checked: instantDeliveryOnly,
+            onToggle: (v) => onInstantDeliveryToggle?.(v),
+            label: t("productsListing.instantDelivery", "Instant delivery"),
+        },
+        {
+            key: "sale",
+            checked: onSaleOnly,
+            onToggle: (v) => onOnSaleToggle?.(v),
+            label: t("productsListing.onSale", "On sale"),
+        },
+        {
+            key: "stock",
+            checked: inStockOnly,
+            onToggle: (v) => onInStockToggle?.(v),
+            label: t("product.filters.inStockOnly", "In stock"),
+        },
+    ];
+
+    const typeChips = (
+        <div className="flex gap-1.5 overflow-x-auto pb-0.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {TYPE_OPTIONS.map((opt) => {
+                const active = localType === opt.value;
+                return (
+                    <button
+                        key={opt.value ?? "all"}
+                        type="button"
+                        onClick={() => handleTypeChange(opt.value)}
+                        className={chipCls(active)}
+                        style={
+                            active
+                                ? chipActiveStyle
+                                : apiSurface
+                                  ? {
+                                        borderColor: apiSurface.cardBorder,
+                                        backgroundColor: `color-mix(in srgb, ${apiSurface.cardBackground} 70%, #020617)`,
+                                        color: apiSurface.pageColor,
+                                    }
+                                  : undefined
+                        }
+                    >
+                        {typeOptionLabel(t, opt.value)}
+                    </button>
+                );
+            })}
+        </div>
     );
 
-    const advancedFilters = (
-        <>
+    const searchField = (
+        <div className="relative">
+            <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 opacity-40"
+                aria-hidden
+            >
+                <circle cx="11" cy="11" r="7" />
+                <path d="m20 20-3-3" />
+            </svg>
+            <input
+                type="search"
+                value={localSearch}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                maxLength={255}
+                placeholder={t("productsListing.searchLabel", "Search")}
+                aria-label={t("productsListing.searchLabel", "Search")}
+                className={cn(inputCls, "ps-10")}
+                style={inputStyle}
+            />
+        </div>
+    );
+
+    const filterBody = (
+        <div className={divideCls} style={divideStyle}>
+            <FilterSection>{searchField}</FilterSection>
+
+            <FilterSection title={t("categories.typeFilter", "Category Type")}>
+                {typeChips}
+            </FilterSection>
+
             <FilterSection title={t("categories.priceRange", "Price range")}>
-                <div className="grid grid-cols-2 gap-1.5">
+                <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
                     <input
                         type="number"
                         min={0}
@@ -281,6 +420,9 @@ export default function CategoryFilters({
                         className={inputCls}
                         style={inputStyle}
                     />
+                    <span className="text-sm text-custom-tertiary" aria-hidden>
+                        –
+                    </span>
                     <input
                         type="number"
                         min={0}
@@ -311,47 +453,33 @@ export default function CategoryFilters({
             </FilterSection>
 
             <FilterSection title={t("productsListing.flags", "Options")}>
-                <div className="grid grid-cols-2 gap-x-2 gap-y-1.5" style={labelColor}>
-                    <label className={checkboxRow} style={labelColor}>
-                        <input
-                            type="checkbox"
-                            checked={freeDeliveryOnly}
-                            onChange={(e) => onFreeDeliveryToggle?.(e.target.checked)}
-                            className="h-3.5 w-3.5 shrink-0 rounded border-slate-300 accent-primary-light"
-                        />
-                        <span className="min-w-0">{t("product.filters.freeDeliveryOnly", "Free delivery")}</span>
-                    </label>
-                    <label className={checkboxRow} style={labelColor}>
-                        <input
-                            type="checkbox"
-                            checked={instantDeliveryOnly}
-                            onChange={(e) => onInstantDeliveryToggle?.(e.target.checked)}
-                            className="h-3.5 w-3.5 shrink-0 rounded border-slate-300 accent-primary-light"
-                        />
-                        <span className="min-w-0">{t("productsListing.instantDelivery", "Instant delivery")}</span>
-                    </label>
-                    <label className={checkboxRow} style={labelColor}>
-                        <input
-                            type="checkbox"
-                            checked={onSaleOnly}
-                            onChange={(e) => onOnSaleToggle?.(e.target.checked)}
-                            className="h-3.5 w-3.5 shrink-0 rounded border-slate-300 accent-primary-light"
-                        />
-                        <span className="min-w-0">{t("productsListing.onSale", "On sale")}</span>
-                    </label>
-                    <label className={checkboxRow} style={labelColor}>
-                        <input
-                            type="checkbox"
-                            checked={inStockOnly}
-                            onChange={(e) => onInStockToggle?.(e.target.checked)}
-                            className="h-3.5 w-3.5 shrink-0 rounded border-slate-300 accent-primary-light"
-                        />
-                        <span className="min-w-0">{t("product.filters.inStockOnly", "In stock")}</span>
-                    </label>
+                <div className="flex flex-wrap gap-1.5" style={labelColor}>
+                    {optionChips.map((opt) => (
+                        <button
+                            key={opt.key}
+                            type="button"
+                            aria-pressed={opt.checked}
+                            onClick={() => opt.onToggle(!opt.checked)}
+                            className={chipCls(opt.checked)}
+                            style={
+                                opt.checked
+                                    ? chipActiveStyle
+                                    : apiSurface
+                                      ? {
+                                            borderColor: apiSurface.cardBorder,
+                                            backgroundColor: `color-mix(in srgb, ${apiSurface.cardBackground} 70%, #020617)`,
+                                            color: apiSurface.pageColor,
+                                        }
+                                      : undefined
+                            }
+                        >
+                            {opt.label}
+                        </button>
+                    ))}
                 </div>
             </FilterSection>
 
-            {showAttributes && (
+            {showAttributes ? (
                 <FilterSection>
                     <CategoryAttributeFilters
                         attributes={attributes}
@@ -363,214 +491,314 @@ export default function CategoryFilters({
                         embedded
                     />
                 </FilterSection>
-            )}
-        </>
+            ) : null}
+        </div>
     );
 
-    const searchField = (
-        <FilterSection>
-            <div className="relative">
-                <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="pointer-events-none absolute start-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 opacity-40"
-                    aria-hidden
-                >
-                    <circle cx="11" cy="11" r="7" />
-                    <path d="m20 20-3-3" />
-                </svg>
-                <input
-                    type="search"
-                    value={localSearch}
-                    onChange={(e) => handleSearchChange(e.target.value)}
-                    maxLength={255}
-                    placeholder={t("productsListing.searchLabel", "Search")}
-                    aria-label={t("productsListing.searchLabel", "Search")}
-                    className={cn(inputCls, "ps-8")}
-                    style={inputStyle}
-                />
-            </div>
-        </FilterSection>
+    const headerIcon = (
+        <span
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-white shadow-sm"
+            style={{
+                background: apiSurface
+                    ? `linear-gradient(135deg, ${apiSurface.pageColor}, color-mix(in srgb, ${apiSurface.pageColor} 65%, #020617))`
+                    : "linear-gradient(135deg, var(--color-gradient-from, var(--color-main)), var(--color-gradient-to, var(--color-api-second, var(--color-main))))",
+                color: apiSurface ? "#0b1220" : undefined,
+            }}
+        >
+            <SlidersHorizontal className="h-4 w-4" strokeWidth={2.2} aria-hidden />
+        </span>
     );
 
-    const typeChips = (
-        <FilterSection title={t("categories.typeFilter", "Category Type")}>
-            <div className="flex flex-wrap gap-1">
-                {TYPE_OPTIONS.map((opt) => {
-                    const active = localType === opt.value;
-                    return (
-                        <button
-                            key={opt.value ?? "all"}
-                            type="button"
-                            onClick={() => handleTypeChange(opt.value)}
-                            className={cn(
-                                "inline-flex min-h-7 items-center rounded-full border px-2.5 text-xs font-medium transition-colors",
-                                !apiSurface &&
-                                    (active
-                                        ? "border-primary-light/50 bg-primary-light/10 text-custom-primary dark:border-white/16 dark:bg-white/[0.08] dark:text-[#F3EFE8]"
-                                        : "border-slate-200 bg-white text-custom-secondary hover:border-primary-light/35 hover:bg-slate-50 dark:border-white/10 dark:bg-[#2A2622] dark:text-[#C9C2B6] dark:hover:border-white/16 dark:hover:bg-[#322E29] dark:hover:text-[#F3EFE8]"),
-                            )}
-                            style={
-                                apiSurface
-                                    ? {
-                                          borderColor: apiSurface.cardBorder,
-                                          backgroundColor: active
-                                              ? `color-mix(in srgb, ${apiSurface.cardBackground} 40%, #020617)`
-                                              : `color-mix(in srgb, ${apiSurface.cardBackground} 70%, #020617)`,
-                                          color: apiSurface.pageColor,
-                                      }
-                                    : undefined
-                            }
-                        >
-                            {typeOptionLabel(t, opt.value)}
-                        </button>
-                    );
-                })}
-            </div>
-        </FilterSection>
-    );
-
-    const typeSelect = (
-        <FilterSection title={t("categories.typeFilter", "Category Type")}>
-            <select
-                value={localType ?? ""}
-                onChange={(e) => {
-                    const raw = e.target.value;
-                    handleTypeChange(
-                        raw === "" ? undefined : (raw as Exclude<CategoryTypeFilter, undefined>),
-                    );
-                }}
-                className={cn(inputCls, "cursor-pointer")}
-                style={inputStyle}
-                aria-label={t("categories.typeFilter", "Category Type")}
-            >
-                {TYPE_OPTIONS.map((opt) => (
-                    <option key={opt.value ?? "all"} value={opt.value ?? ""}>
-                        {typeOptionLabel(t, opt.value)}
-                    </option>
-                ))}
-            </select>
-        </FilterSection>
-    );
-
-    const resetButton = hasActive ? (
+    const clearButton = hasActive ? (
         <button
             type="button"
             onClick={handleReset}
             className={cn(
-                "shrink-0 text-xs font-semibold transition-opacity hover:opacity-80",
-                !apiSurface && "text-primary-light",
+                "inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1.5 text-xs font-semibold transition-colors",
+                !apiSurface &&
+                    "text-custom-secondary hover:bg-slate-100 hover:text-custom-primary dark:text-[#A1A1AA] dark:hover:bg-white/[0.06] dark:hover:text-white",
             )}
             style={apiSurface ? { color: apiSurface.pageColor } : undefined}
         >
-            {t("categories.reset", "Reset")}
+            <X className="h-3.5 w-3.5" strokeWidth={2.4} aria-hidden />
+            {t("common.clear", "Clear")}
         </button>
     ) : null;
 
+    const mobileSheet =
+        mobileOpen && typeof document !== "undefined"
+            ? createPortal(
+                  <div className="fixed inset-0 z-[99980] lg:hidden" role="presentation">
+                      <button
+                          type="button"
+                          aria-label={t("common.close", "Close")}
+                          className="absolute inset-0 bg-black/45 backdrop-blur-[2px]"
+                          onClick={() => setMobileOpen(false)}
+                      />
+                      <div
+                          ref={sheetRef}
+                          role="dialog"
+                          aria-modal="true"
+                          aria-label={t("categories.filters", "Filters")}
+                          className={cn(
+                              "animate-slide-up absolute inset-x-0 bottom-0 flex max-h-[88vh] flex-col rounded-t-[22px] border border-b-0 shadow-[0_-18px_50px_-24px_rgba(0,0,0,0.45)]",
+                              !apiSurface &&
+                                  "border-slate-200/80 bg-custom-card dark:border-white/10 dark:bg-[#1C1916]",
+                          )}
+                          style={
+                              apiSurface
+                                  ? {
+                                        backgroundColor: apiSurface.cardBackground,
+                                        borderColor: apiSurface.cardBorder,
+                                        color: apiSurface.pageColor,
+                                    }
+                                  : undefined
+                          }
+                      >
+                          <div className="flex flex-col items-center px-4 pt-2.5">
+                              <span
+                                  className={cn(
+                                      "mb-3 h-1 w-10 rounded-full",
+                                      !apiSurface && "bg-slate-300 dark:bg-white/20",
+                                  )}
+                                  style={
+                                      apiSurface
+                                          ? {
+                                                backgroundColor: `color-mix(in srgb, ${apiSurface.pageColor} 35%, transparent)`,
+                                            }
+                                          : undefined
+                                  }
+                                  aria-hidden
+                              />
+                              <div className="mb-1 flex w-full items-center justify-between gap-3">
+                                  <div className="flex min-w-0 items-center gap-2.5">
+                                      {headerIcon}
+                                      <div className="min-w-0 leading-tight">
+                                          <p
+                                              className={cn(
+                                                  "truncate text-sm font-bold",
+                                                  !apiSurface && "text-custom-primary dark:text-white",
+                                              )}
+                                              style={
+                                                  apiSurface
+                                                      ? { color: apiSurface.pageColor }
+                                                      : undefined
+                                              }
+                                          >
+                                              {t("categories.filters", "Filters")}
+                                          </p>
+                                          <p
+                                              className={cn(
+                                                  "truncate text-xs",
+                                                  !apiSurface && "text-custom-tertiary",
+                                              )}
+                                              style={
+                                                  apiSurface
+                                                      ? {
+                                                            color: `color-mix(in srgb, ${apiSurface.pageColor} 72%, transparent)`,
+                                                        }
+                                                      : undefined
+                                              }
+                                          >
+                                              {activeFilterCount > 0
+                                                  ? t(
+                                                        "categories.activeFiltersCount",
+                                                        "{{count}} active",
+                                                    ).replace(
+                                                        "{{count}}",
+                                                        String(activeFilterCount),
+                                                    )
+                                                  : t(
+                                                        "home.refineResults",
+                                                        "Refine results",
+                                                    )}
+                                          </p>
+                                      </div>
+                                  </div>
+                                  <div className="flex shrink-0 items-center gap-1">
+                                      {clearButton}
+                                      <button
+                                          type="button"
+                                          onClick={() => setMobileOpen(false)}
+                                          className={cn(
+                                              "inline-flex h-9 w-9 items-center justify-center rounded-xl transition-colors",
+                                              !apiSurface &&
+                                                  "text-custom-secondary hover:bg-slate-100 hover:text-custom-primary dark:text-[#A1A1AA] dark:hover:bg-white/[0.06] dark:hover:text-white",
+                                          )}
+                                          style={
+                                              apiSurface
+                                                  ? { color: apiSurface.pageColor }
+                                                  : undefined
+                                          }
+                                          aria-label={t("common.close", "Close")}
+                                      >
+                                          <X className="h-4 w-4" strokeWidth={2.2} />
+                                      </button>
+                                  </div>
+                              </div>
+                          </div>
+
+                          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-3 pt-2">
+                              {filterBody}
+                          </div>
+
+                          <div
+                              className={cn(
+                                  "shrink-0 border-t px-4 pb-[max(0.85rem,env(safe-area-inset-bottom))] pt-3",
+                                  !apiSurface && "border-slate-200/80 dark:border-white/10",
+                              )}
+                              style={
+                                  apiSurface
+                                      ? { borderColor: apiSurface.cardBorder }
+                                      : undefined
+                              }
+                          >
+                              <button
+                                  type="button"
+                                  onClick={() => setMobileOpen(false)}
+                                  className="flex h-11 w-full items-center justify-center rounded-xl text-sm font-bold text-white shadow-sm transition-opacity hover:opacity-95"
+                                  style={{
+                                      background: apiSurface
+                                          ? `linear-gradient(135deg, ${apiSurface.pageColor}, color-mix(in srgb, ${apiSurface.pageColor} 65%, #020617))`
+                                          : "linear-gradient(135deg, var(--color-gradient-from, var(--color-main)), var(--color-gradient-to, var(--color-api-second, var(--color-main))))",
+                                      color: apiSurface ? "#0b1220" : undefined,
+                                  }}
+                              >
+                                  {t("categories.applyFilters", "Apply filters")}
+                                  {activeFilterCount > 0 ? ` · ${activeFilterCount}` : ""}
+                              </button>
+                          </div>
+                      </div>
+                  </div>,
+                  document.body,
+              )
+            : null;
+
     return (
         <div className="flex flex-col" style={apiSurface ? { color: apiSurface.mutedColor } : undefined}>
-            {/* Mobile: one compact row — expand only when the user wants filters */}
+            {/* Mobile trigger */}
             <div className="lg:hidden">
-                <div className="flex items-center gap-2">
-                    <button
-                        type="button"
-                        onClick={() => setMobileOpen((open) => !open)}
-                        className={cn(
-                            "flex min-h-9 flex-1 items-center justify-between gap-2 rounded-lg border px-3 text-start text-[13px] font-semibold",
-                            !apiSurface &&
-                                "border-slate-200 bg-white text-custom-primary dark:border-white/10 dark:bg-[#2A2622] dark:text-[#F3EFE8]",
-                        )}
-                        style={
-                            apiSurface
-                                ? {
-                                      borderColor: apiSurface.cardBorder,
-                                      backgroundColor: `color-mix(in srgb, ${apiSurface.cardBackground} 55%, #020617)`,
-                                      color: apiSurface.pageColor,
-                                  }
-                                : undefined
-                        }
-                        aria-expanded={mobileOpen}
-                    >
-                        <span className="inline-flex min-w-0 items-center gap-1.5">
-                            <span>{t("categories.filters", "Filters")}</span>
-                            {activeFilterCount > 0 ? (
-                                <span
-                                    className={cn(
-                                        "inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[11px] font-bold",
-                                        !apiSurface &&
-                                            "bg-primary-light/15 text-primary-light dark:bg-white/12 dark:text-[#F3EFE8]",
-                                    )}
-                                    style={
-                                        apiSurface
-                                            ? {
-                                                  backgroundColor: `color-mix(in srgb, ${apiSurface.pageColor} 18%, transparent)`,
-                                                  color: apiSurface.pageColor,
-                                              }
-                                            : undefined
-                                    }
-                                >
-                                    {activeFilterCount}
-                                </span>
-                            ) : null}
-                        </span>
-                        <svg
-                            viewBox="0 0 20 20"
-                            fill="currentColor"
+                <button
+                    type="button"
+                    onClick={() => setMobileOpen(true)}
+                    className={cn(
+                        "flex w-full items-center gap-3 rounded-2xl border px-3.5 py-3 text-start shadow-sm transition-colors",
+                        !apiSurface &&
+                            "border-slate-200/80 bg-white hover:bg-slate-50/80 dark:border-white/10 dark:bg-[#24201C] dark:hover:bg-[#2A2622]",
+                    )}
+                    style={
+                        apiSurface
+                            ? {
+                                  borderColor: apiSurface.cardBorder,
+                                  backgroundColor: apiSurface.cardBackground,
+                                  color: apiSurface.pageColor,
+                              }
+                            : undefined
+                    }
+                    aria-haspopup="dialog"
+                    aria-expanded={mobileOpen}
+                >
+                    {headerIcon}
+                    <span className="min-w-0 flex-1 leading-tight">
+                        <span
                             className={cn(
-                                "h-4 w-4 shrink-0 opacity-70 transition-transform",
-                                mobileOpen && "rotate-180",
+                                "block text-sm font-bold",
+                                !apiSurface && "text-custom-primary dark:text-white",
                             )}
-                            aria-hidden
+                            style={apiSurface ? { color: apiSurface.pageColor } : undefined}
                         >
-                            <path
-                                fillRule="evenodd"
-                                d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.17l3.71-3.94a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z"
-                                clipRule="evenodd"
-                            />
-                        </svg>
-                    </button>
-                    {resetButton}
-                </div>
-
-                {mobileOpen ? (
-                    <div
-                        className={cn(
-                            "mt-2 max-h-[min(48vh,360px)] overflow-y-auto overscroll-contain",
-                            divideCls,
-                        )}
-                        style={divideStyle}
+                            {t("categories.filters", "Filters")}
+                        </span>
+                        <span
+                            className={cn(
+                                "mt-0.5 block truncate text-xs",
+                                !apiSurface && "text-custom-tertiary",
+                            )}
+                            style={
+                                apiSurface
+                                    ? {
+                                          color: `color-mix(in srgb, ${apiSurface.pageColor} 72%, transparent)`,
+                                      }
+                                    : undefined
+                            }
+                        >
+                            {activeFilterCount > 0
+                                ? t("categories.activeFiltersCount", "{{count}} active").replace(
+                                      "{{count}}",
+                                      String(activeFilterCount),
+                                  )
+                                : t("home.refineResults", "Refine results")}
+                        </span>
+                    </span>
+                    {activeFilterCount > 0 ? (
+                        <span
+                            className="inline-flex h-6 min-w-6 items-center justify-center rounded-full px-1.5 text-[11px] font-bold text-white tabular-nums"
+                            style={{
+                                background: apiSurface
+                                    ? `linear-gradient(135deg, ${apiSurface.pageColor}, color-mix(in srgb, ${apiSurface.pageColor} 65%, #020617))`
+                                    : "linear-gradient(135deg, var(--color-gradient-from, var(--color-main)), var(--color-gradient-to, var(--color-api-second, var(--color-main))))",
+                                color: apiSurface ? "#0b1220" : undefined,
+                            }}
+                        >
+                            {activeFilterCount}
+                        </span>
+                    ) : null}
+                    <svg
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                        className="h-4 w-4 shrink-0 opacity-50 rtl:rotate-180"
+                        aria-hidden
                     >
-                        {searchField}
-                        {typeSelect}
-                        {advancedFilters}
-                    </div>
-                ) : null}
+                        <path
+                            fillRule="evenodd"
+                            d="M7.21 14.77a.75.75 0 0 1 .02-1.06L11.17 10 7.23 6.29a.75.75 0 1 1 1.04-1.08l4.5 4.25a.75.75 0 0 1 0 1.08l-4.5 4.25a.75.75 0 0 1-1.06-.02Z"
+                            clipRule="evenodd"
+                        />
+                    </svg>
+                </button>
+                {mobileSheet}
             </div>
 
-            {/* Desktop: full filter panel */}
+            {/* Desktop panel */}
             <div className="hidden lg:block">
-                <div className="mb-0.5 flex items-center justify-between gap-3">
-                    <h3
-                        className={cn(
-                            "text-sm font-bold tracking-tight",
-                            !apiSurface && "text-custom-primary",
-                        )}
-                        style={apiSurface ? { color: apiSurface.pageColor } : undefined}
-                    >
-                        {t("categories.filters", "Filters")}
-                    </h3>
-                    {resetButton}
+                <div className="mb-4 flex items-center justify-between gap-3">
+                    <div className="flex min-w-0 items-center gap-2.5">
+                        {headerIcon}
+                        <div className="min-w-0 leading-tight">
+                            <h3
+                                className={cn(
+                                    "truncate text-sm font-bold tracking-tight",
+                                    !apiSurface && "text-custom-primary dark:text-white",
+                                )}
+                                style={apiSurface ? { color: apiSurface.pageColor } : undefined}
+                            >
+                                {t("categories.filters", "Filters")}
+                            </h3>
+                            <p
+                                className={cn(
+                                    "truncate text-xs",
+                                    !apiSurface && "text-custom-tertiary",
+                                )}
+                                style={
+                                    apiSurface
+                                        ? {
+                                              color: `color-mix(in srgb, ${apiSurface.pageColor} 72%, transparent)`,
+                                          }
+                                        : undefined
+                                }
+                            >
+                                {activeFilterCount > 0
+                                    ? t(
+                                          "categories.activeFiltersCount",
+                                          "{{count}} active",
+                                      ).replace("{{count}}", String(activeFilterCount))
+                                    : t("home.refineResults", "Refine results")}
+                            </p>
+                        </div>
+                    </div>
+                    {clearButton}
                 </div>
-
-                <div className={divideCls} style={divideStyle}>
-                    {searchField}
-                    {typeChips}
-                    {advancedFilters}
-                </div>
+                {filterBody}
             </div>
         </div>
     );
