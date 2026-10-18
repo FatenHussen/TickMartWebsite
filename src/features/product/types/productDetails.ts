@@ -327,9 +327,9 @@ export interface ProductDetailsData {
  model?: string | null;
  barcode?: string | null;
  /** Legacy field — prefer `delivery_time` when present. */
- time_prepare: string;
+ time_prepare: string | { ar?: string | null; en?: string | null };
  /** Product-level delivery estimate (not per variant). */
- delivery_time?: string | null;
+ delivery_time?: string | { ar?: string | null; en?: string | null } | null;
  /** Product-level discount metadata — do not mix with variant discount. */
  discount_type?: VariantDiscountType | string | null;
  /** Decimal. Fixed amounts may exceed 100. */

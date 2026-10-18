@@ -2,7 +2,9 @@
  * Prefer API-formatted prices — never invent FX locally.
  *
  * Spec: display `*_formatted` or `*_currencies` from the API.
- * Sale / list prices use whole-number rounding (first-decimal rule).
+ * Sale / list prices use whole-number rounding (first-decimal rule),
+ * except amounts under 1 (e.g. $0.45) which keep up to 2 decimals so
+ * they never display as $0.
  * Savings ("you saved") stay exact — do not force them to whole numbers.
  */
 
@@ -111,7 +113,7 @@ export function pickCurrencyFormatted(
             if (formatted) return formatted;
         }
     }
-    const preferred = currencies.USD?.formatted ?? currencies.SYP?.formatted;
+    const preferred = currencies.SYP?.formatted ?? currencies.USD?.formatted;
     if (preferred?.trim()) {
         return roundWhole
             ? roundFormattedMoneyText(preferred.trim())
@@ -145,8 +147,8 @@ export function pickCurrencyAmount(
         if (fromMatch != null) return fromMatch;
     }
     return (
-        read(currencies.USD) ??
         read(currencies.SYP) ??
+        read(currencies.USD) ??
         Object.values(currencies).reduce<number | null>((found, entry) => {
             if (found != null) return found;
             return read(entry);
@@ -430,34 +432,48 @@ const LATIN_MONEY_EXACT = new Intl.NumberFormat("en-US", {
  * Storefront whole-number rounding: look at the first digit after the decimal.
  * Below 5 → drop the fraction. 5 or above → round up, then drop the fraction.
  * Examples: 198.90 → 199, 35.10 → 35.
+ * Amounts with absolute value under 1 are left unchanged (caller formats them
+ * with decimals) so cheap USD prices never collapse to 0.
  * Use for sale / list prices only — not savings.
  */
 export function roundMoneyToWhole(amount: number): number {
     if (!Number.isFinite(amount)) return 0;
     const sign = amount < 0 ? -1 : 1;
     const abs = Math.abs(amount);
+    // Keep sub-unit prices ($0.45) — whole rounding would show $0.
+    if (abs > 0 && abs < 1) return amount;
     const intPart = Math.trunc(abs);
     const firstDecimal = Math.floor((abs - intPart) * 10 + 1e-8);
     return sign * (firstDecimal >= 5 ? intPart + 1 : intPart);
 }
 
+function formatStorefrontMoneyAmount(amount: number): string {
+    if (!Number.isFinite(amount)) return "0";
+    const abs = Math.abs(amount);
+    if (abs > 0 && abs < 1) return LATIN_MONEY_EXACT.format(amount);
+    return LATIN_MONEY.format(roundMoneyToWhole(amount));
+}
+
 /**
  * Round every decimal money amount inside a formatted price string.
  * Leaves non-decimal tokens and currency symbols untouched.
+ * Sub-unit amounts keep up to 2 decimals.
  */
 export function roundFormattedMoneyText(value: string): string {
     if (!value) return value;
     return value.replace(/\d[\d,]*(?:\.\d+)/g, (token) => {
         const n = Number(token.replace(/,/g, ""));
         if (!Number.isFinite(n)) return token;
-        return LATIN_MONEY.format(roundMoneyToWhole(n));
+        return formatStorefrontMoneyAmount(n);
     });
 }
 
-/** International digits (`1,234`) for both English and Arabic — whole numbers only. */
+/**
+ * International digits for sale / list prices.
+ * Whole numbers for amounts ≥ 1; up to 2 decimals when under 1.
+ */
 export function formatMoneyAmount(amount: number): string {
-    if (!Number.isFinite(amount)) return "0";
-    return LATIN_MONEY.format(roundMoneyToWhole(amount));
+    return formatStorefrontMoneyAmount(amount);
 }
 
 /** Exact savings amount — keep API decimals (up to 2). */

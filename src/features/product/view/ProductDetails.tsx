@@ -41,6 +41,7 @@ import type { CartItem, CartExtraLine } from "@/features/cart/types";
 import { extrasLineKeyFromExtras } from "@/features/cart/utils/cartExtras";
 import { paths } from "@/app/routes/path/paths";
 import { resolveProductCountry } from "../lib/resolveLocalizedOrString";
+import { formatDeliveryEstimateLabel } from "../lib/formatDeliveryEstimate";
 import {
     resolveVariantPriceDisplay,
 } from "../lib/variantPriceDisplay";
@@ -793,7 +794,11 @@ function ProductDetails() {
             : product.amount_saved_formatted?.trim() || undefined;
 
     const deliveryEstimate =
-        product.delivery_time?.trim() || product.time_prepare?.trim() || null;
+        formatDeliveryEstimateLabel(
+            product.delivery_time ?? product.time_prepare,
+            language,
+            t,
+        );
 
     /** API returns `country` as either a string or `{ name: { ar, en } }`. */
     const countryName = resolveProductCountry(product.country, language);
