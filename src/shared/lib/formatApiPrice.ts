@@ -69,8 +69,13 @@ export function selectFormattedForCurrency(
     const chunks = splitDualCurrencies(value);
     if (chunks.length <= 1) return value.trim();
     const code = canonicalCurrencyCode(currencyCode);
-    if (!code) return chunks[0];
-    return chunks.find((chunk) => chunkMatchesCurrency(chunk, code)) ?? chunks[0];
+    if (code) {
+        const matched = chunks.find((chunk) => chunkMatchesCurrency(chunk, code));
+        if (matched) return matched;
+    }
+    return (
+        chunks.find((chunk) => chunkMatchesCurrency(chunk, "SYP")) ?? chunks[0]
+    );
 }
 
 function formatCurrencyEntry(

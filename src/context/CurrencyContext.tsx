@@ -42,14 +42,15 @@ const DEFAULT_CURRENCY: CurrencyState = {
 };
 
 /** Bump when the guest default changes so old USD localStorage is replaced once. */
-const CURRENCY_DEFAULTS_VERSION = "syp-default-v1";
+const CURRENCY_DEFAULTS_VERSION = "syp-default-v2";
 const CURRENCY_DEFAULTS_VERSION_KEY = "currencyDefaultsVersion";
 
 function getStoredCurrency(): CurrencyState {
+ if (typeof window === "undefined") return DEFAULT_CURRENCY;
+ try {
  const version = localStorage.getItem(CURRENCY_DEFAULTS_VERSION_KEY);
  if (version !== CURRENCY_DEFAULTS_VERSION) {
  localStorage.setItem(CURRENCY_DEFAULTS_VERSION_KEY, CURRENCY_DEFAULTS_VERSION);
- // Logged-in preference is restored by AccountCurrencySync.
  return DEFAULT_CURRENCY;
  }
  const storedCode = localStorage.getItem("currency");
@@ -64,6 +65,9 @@ function getStoredCurrency(): CurrencyState {
  };
  }
  return DEFAULT_CURRENCY;
+ } catch {
+ return DEFAULT_CURRENCY;
+ }
 }
 
 export function CurrencyProvider({ children }: { children: ReactNode }) {
