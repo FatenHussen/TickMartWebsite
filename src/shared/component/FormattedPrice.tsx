@@ -21,8 +21,8 @@ type FormattedPriceProps = {
     hideSymbol?: boolean;
     strikethrough?: boolean;
     /**
-     * Keep API decimals as-is (savings). Default rounds sale/list prices
-     * to whole numbers with the first-decimal storefront rule.
+     * Keep API decimals as-is (savings). Default rounds only SYP sale/list
+     * prices to whole numbers with the first-decimal storefront rule.
      */
     exact?: boolean;
     /**
@@ -153,7 +153,7 @@ export default function FormattedPrice({
         const selected = selectFormattedForCurrency(raw, currencyCode);
         return toLatinNumberText(
             localizeCurrencyText(
-                exact ? selected : roundFormattedMoneyText(selected),
+                exact ? selected : roundFormattedMoneyText(selected, currencyCode),
                 i18n.language,
             ),
         );

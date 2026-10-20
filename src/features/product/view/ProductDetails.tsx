@@ -759,7 +759,7 @@ function ProductDetails() {
     const baseCurrencySymbol =
         selectedVariant?.currency_symbol ?? product.currency_symbol ?? "";
     const formatPrice = (price: number, symbol = currencySymbol) =>
-        presentMoney(`${symbol}${formatMoneyAmount(price)}`, language);
+        presentMoney(`${symbol}${formatMoneyAmount(price, symbol)}`, language);
 
     const extraAddon = isFood ? 0 : extraDetailsDisplayAddon;
     const priceSource = selectedVariant ?? product;

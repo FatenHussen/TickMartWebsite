@@ -101,7 +101,7 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
  amount == null || typeof amount !== "number" || Number.isNaN(amount)
  ? 0
  : amount;
- return presentMoney(`${currencyState.symbol}${formatMoneyAmount(value)}`);
+ return presentMoney(`${currencyState.symbol}${formatMoneyAmount(value, currencyState.code)}`);
  };
 
  return (

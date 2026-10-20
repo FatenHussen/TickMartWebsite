@@ -24,15 +24,15 @@ function formatDualPrices(
 
   const parts: string[] = [];
   if (typeof item.price_syp === "number") {
-    parts.push(presentMoney(`${formatMoneyAmount(item.price_syp)} ل.س`, language));
+    parts.push(presentMoney(`${formatMoneyAmount(item.price_syp, "SYP")} ل.س`, language));
   }
   if (typeof item.price_usd === "number") {
-    parts.push(presentMoney(`$${formatMoneyAmount(item.price_usd)}`, language));
+    parts.push(presentMoney(`$${formatMoneyAmount(item.price_usd, "USD")}`, language));
   }
   if (item.prices) {
     for (const [code, value] of Object.entries(item.prices)) {
       if (code.toLowerCase() === "syp" || code.toLowerCase() === "usd") continue;
-      parts.push(presentMoney(`${formatMoneyAmount(value)} ${code}`, language));
+      parts.push(presentMoney(`${formatMoneyAmount(value, code)} ${code}`, language));
     }
   }
   if (parts.length === 0) return null;
