@@ -213,14 +213,14 @@ test("savings remain exact while Syrian sale and list prices are rounded", () =>
 for (const language of ["ar", "en"]) {
     test(`FormattedPrice renders USD cents unchanged in a Syrian context (${language})`, () => {
         const actual = renderInSyrianCurrency(createElement(FormattedPrice, { value: "$11.70" }), language);
-        assert.equal(actual, language === "ar" ? "11.70$" : "$11.70");
+        assert.equal(actual, "$11.70");
     });
 
     test(`FormattedPrice rounds Syrian amounts and preserves exact savings (${language})`, () => {
         const rounded = renderInSyrianCurrency(createElement(FormattedPrice, { value: "ل.س ١٩٨٫٩٠" }), language);
-        assert.equal(rounded, language === "ar" ? "199ل.س" : "SYP199");
+        assert.equal(rounded, language === "ar" ? "199 ل.س" : "199 SYP");
         const exact = renderInSyrianCurrency(createElement(FormattedPrice, { value: "ل.س 198.90", exact: true }), language);
-        assert.equal(exact, language === "ar" ? "198.90ل.س" : "SYP198.90");
+        assert.equal(exact, language === "ar" ? "198.90 ل.س" : "198.90 SYP");
     });
 }
 
