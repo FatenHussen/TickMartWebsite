@@ -7,47 +7,49 @@ export function isColorAttributeType(type: string | null | undefined): boolean {
 
 /**
  * A color attribute may stay stored as `type: "square"`.
- * Swatches still apply when the label is exactly `Color` or `اللون`.
+ * Swatches still apply when the label is `Color`, `Colour`, `اللون`, or `لون`.
+ * The stored `type` is never rewritten.
  */
-const COLOR_ATTRIBUTE_NAMES = new Set(["color", "اللون"]);
+const COLOR_ATTRIBUTE_NAMES = new Set(["color", "colour", "اللون", "لون"]);
 
-/** Swatch row: `type: "color"`, or the label `Color` / `اللون` with `type` left unchanged. */
+function colorNameCandidates(name: unknown): string[] {
+    if (typeof name === "string") return [name];
+    if (name && typeof name === "object" && !Array.isArray(name)) {
+        const localized = name as { ar?: unknown; en?: unknown };
+        return [localized.ar, localized.en].filter(
+            (part): part is string => typeof part === "string",
+        );
+    }
+    return [];
+}
+
+/** Swatch row: `type: "color"`, or a color label, with `type` left unchanged. */
 export function isColorPickerAttribute(input: {
     type?: string | null;
-    attribute?: string | null;
+    attribute?: unknown;
 }): boolean {
     if (isColorAttributeType(input.type)) return true;
-    const name = String(input.attribute ?? "").trim().toLowerCase();
-    return COLOR_ATTRIBUTE_NAMES.has(name);
+    return colorNameCandidates(input.attribute).some((part) =>
+        COLOR_ATTRIBUTE_NAMES.has(part.trim().toLowerCase()),
+    );
 }
 
 /**
  * `#RGB` / `#RRGGBB` → opaque `rgb(r g b)`.
- * An alpha digit (`#RGBA`, `#RRGGBBAA`) is dropped so the fill stays opaque.
- * Anything else — including a color name — is not a swatch color.
+ * A name, an empty value, or any other length is not a swatch color.
  */
 export function opaqueRgbFromHex(hex: string | null | undefined): string | null {
     if (hex == null) return null;
     let s = hex.trim();
     if (!s) return null;
     if (s.startsWith("#")) s = s.slice(1);
-    if (!/^[0-9a-fA-F]+$/.test(s)) return null;
-
-    let r: number;
-    let g: number;
-    let b: number;
-    if (s.length === 3 || s.length === 4) {
-        r = parseInt(s[0] + s[0], 16);
-        g = parseInt(s[1] + s[1], 16);
-        b = parseInt(s[2] + s[2], 16);
-    } else if (s.length === 6 || s.length === 8) {
-        r = parseInt(s.slice(0, 2), 16);
-        g = parseInt(s.slice(2, 4), 16);
-        b = parseInt(s.slice(4, 6), 16);
-    } else {
-        return null;
-    }
-    if ([r, g, b].some((n) => Number.isNaN(n))) return null;
+    if (s.length === 3) s = s.split("").map((c) => `${c}${c}`).join("");
+    if (s.length !== 6 || !/^[0-9a-fA-F]{6}$/.test(s)) return null;
+    const value = Number.parseInt(s, 16);
+    if (!Number.isFinite(value)) return null;
+    const r = (value >> 16) & 255;
+    const g = (value >> 8) & 255;
+    const b = value & 255;
     return `rgb(${r} ${g} ${b})`;
 }
 

@@ -5,6 +5,7 @@ import { cn } from "@/shared/lib/utils";
 import { resolveLocalizedText } from "@/shared/lib/localizedText";
 import {
     cssColorForSwatch,
+    isColorPickerAttribute,
     isLightSwatchFill,
 } from "@/features/product/lib/attributeValueColor";
 import type {
@@ -88,7 +89,15 @@ export default function CategoryAttributeFilters({
             )}
         >
             {attributes.map((attr, index) => {
-                const type = normalizeType(String(attr.type));
+                const storedType = normalizeType(String(attr.type));
+                // `type` stays as the API sent it. A `square` row named Color / اللون
+                // still paints circles from `values[].hex`.
+                const type: CategoryAttributeUiType = isColorPickerAttribute({
+                    type: attr.type,
+                    attribute: attr.name,
+                })
+                    ? "color"
+                    : storedType;
                 // Filter key = `values[].id`. Label = latest GET `values[].name`.
                 const values = attr.values.map((v) => ({
                     id: v.id,

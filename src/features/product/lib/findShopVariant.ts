@@ -162,6 +162,9 @@ export function resolveAttributeOptions(
         return fromVariants;
     }
 
+    // `values` are legacy names: no id and no hex. Color circles come from `options[]` only.
+    if (isColorPickerAttribute(attr)) return [];
+
     return (attr.values ?? []).map((name, index) => ({
         id: -(index + 1),
         name,
@@ -183,7 +186,7 @@ export function variantHasOption(
 /**
  * Swatch fill keyed by option id.
  * `options[].hex` first, then `shop_variants[].attributes[].hex`.
- * Applies to `type: "color"` and to a label of `Color` / `اللون` even when `type` stays `square`.
+ * Applies to `type: "color"` and to a label of Color / Colour / اللون / لون even when `type` stays `square`.
  */
 export function optionHexById(
     attributesMap: AttributeMapItem[],

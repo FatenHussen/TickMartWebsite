@@ -24,6 +24,8 @@ const COLOR_DROPDOWN_THRESHOLD = 24;
 
 function optionsOf(attribute: AttributeOption): AttributePickerOption[] {
     if (attribute.options?.length) return attribute.options;
+    // Color circles need `options[]` (id + hex). Bare `values` names stay unlabeled chips only.
+    if (isColorPickerAttribute(attribute)) return [];
     return (attribute.values ?? []).map((name, index) => ({
         id: -(index + 1),
         name,
