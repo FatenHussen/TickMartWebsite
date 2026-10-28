@@ -1,3 +1,4 @@
+import { isColorPickerAttribute } from "./attributeValueColor";
 import type {
     AttributeMapItem,
     AttributeMapOption,
@@ -84,8 +85,11 @@ export function findShopVariantWithValue(
  * Size (and other non-color attrs) stay constrained to the current color so
  * Blue+L / Black+S do not look like real options when those rows are missing.
  */
-export function isIndependentPickerAttribute(type: string | undefined): boolean {
-    return String(type ?? "").toLowerCase() === "color";
+export function isIndependentPickerAttribute(attr: {
+    type?: string | null;
+    attribute?: string | null;
+}): boolean {
+    return isColorPickerAttribute(attr);
 }
 
 /** Options that actually appear on at least one shop variant for this attribute. */
@@ -176,13 +180,18 @@ export function variantHasOption(
     });
 }
 
-/** Swatch fill: `options[].hex` first, then `shop_variants[].attributes[].hex`. */
+/**
+ * Swatch fill keyed by option id.
+ * `options[].hex` first, then `shop_variants[].attributes[].hex`.
+ * Applies to `type: "color"` and to a label of `Color` / `اللون` even when `type` stays `square`.
+ */
 export function optionHexById(
     attributesMap: AttributeMapItem[],
     variants: ShopVariant[],
 ): Record<number, string> {
     const map: Record<number, string> = {};
     for (const attr of attributesMap) {
+        if (!isColorPickerAttribute(attr)) continue;
         for (const option of attr.options ?? []) {
             const hex = option.hex?.trim();
             if (hex && option.id > 0) map[option.id] = hex;
@@ -190,6 +199,7 @@ export function optionHexById(
     }
     for (const variant of variants) {
         for (const attr of attrs(variant)) {
+            if (!isColorPickerAttribute(attr)) continue;
             const hex = attr.hex?.trim();
             if (hex && attr.id != null && attr.id > 0 && !map[attr.id]) {
                 map[attr.id] = hex;

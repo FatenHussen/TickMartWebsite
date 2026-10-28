@@ -1,7 +1,12 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/shared/lib/utils";
-import { cssColorForSwatch, isLightSwatchFill } from "../lib/attributeValueColor";
+import {
+    cssColorForSwatch,
+    isColorPickerAttribute,
+    isLightSwatchFill,
+    MISSING_SWATCH_FILL,
+} from "../lib/attributeValueColor";
 import type { AttributeOption, AttributePickerOption } from "../types";
 
 export type { AttributeOption };
@@ -14,8 +19,8 @@ export interface AttributeSelectorProps {
     className?: string;
 }
 
-/** Above this, color picks use a compact dropdown instead of a swatch row. */
-const COLOR_DROPDOWN_THRESHOLD = 6;
+/** A full shade list stays as circles, like the app. Dropdown is only for a huge palette. */
+const COLOR_DROPDOWN_THRESHOLD = 24;
 
 function optionsOf(attribute: AttributeOption): AttributePickerOption[] {
     if (attribute.options?.length) return attribute.options;
@@ -60,7 +65,7 @@ export default function AttributeSelector({
     className,
 }: AttributeSelectorProps) {
     const { t } = useTranslation();
-    const isColorType = attribute.type === "color";
+    const isColorType = isColorPickerAttribute(attribute);
     const disabledIds = new Set(attribute.disabledIds ?? []);
     const allOptions = optionsOf(attribute);
     // Product page: only offer shades that exist for this item.
@@ -77,12 +82,10 @@ export default function AttributeSelector({
             <label className="text-sm text-custom-secondary">
                 {attribute.attribute}
                 {selectedName ? (
-                    <>
-                        {": "}
-                        <span className="font-semibold text-text-primary">
-                            {selectedName}
-                        </span>
-                    </>
+                    <span className="font-semibold text-primary">
+                        {" · "}
+                        {selectedName}
+                    </span>
                 ) : null}
             </label>
 
@@ -100,32 +103,47 @@ export default function AttributeSelector({
                     placeholder={t("product.selectColor", "Select color")}
                 />
             ) : (
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="flex flex-wrap items-center gap-3">
                     {options.map((option) => {
                         const isSelected = selectedId === option.id;
 
                         if (isColorType) {
                             const fill = cssColorForSwatch({
                                 hex: option.hex ?? attribute.valueHex?.[option.id],
-                                id: option.id,
-                                label: option.name,
                             });
+                            const light =
+                                isLightSwatchFill(fill) || fill === MISSING_SWATCH_FILL;
                             return (
                                 <button
                                     key={option.id}
                                     type="button"
                                     onClick={() => onValueChange?.(option.id)}
                                     className={cn(
-                                        "h-9 w-9 rounded-full transition-all",
-                                        "border-2",
+                                        "grid h-10 w-10 place-items-center rounded-full border-2 transition-all",
                                         isSelected
-                                            ? "border-text-primary ring-2 ring-primary/35 ring-offset-2 ring-offset-[var(--color-bg-primary)]"
-                                            : "border-black/10 hover:border-black/25 dark:border-white/20",
+                                            ? "border-primary ring-2 ring-primary/35 ring-offset-2 ring-offset-[var(--color-bg-primary)]"
+                                            : "border-black/10 hover:border-black/25 dark:border-white/25",
                                     )}
                                     style={{ backgroundColor: fill }}
                                     aria-label={`Select color ${option.name}`}
                                     title={option.name}
-                                />
+                                >
+                                    {isSelected ? (
+                                        <svg
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth="3"
+                                            className={cn(
+                                                "h-4 w-4",
+                                                light ? "text-slate-900" : "text-white",
+                                            )}
+                                            aria-hidden
+                                        >
+                                            <path d="M5 12.5 9.5 17 19 7.5" />
+                                        </svg>
+                                    ) : null}
+                                </button>
                             );
                         }
 
@@ -176,8 +194,6 @@ function ColorDropdown({
     const selectedFill = selected
         ? cssColorForSwatch({
               hex: selected.hex ?? valueHex?.[selected.id],
-              id: selected.id,
-              label: selected.name,
           })
         : null;
 
@@ -252,8 +268,6 @@ function ColorDropdown({
                         const isSelected = selectedId === option.id;
                         const fill = cssColorForSwatch({
                             hex: option.hex ?? valueHex?.[option.id],
-                            id: option.id,
-                            label: option.name,
                         });
                         return (
                             <li key={option.id} role="option" aria-selected={isSelected}>

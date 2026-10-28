@@ -344,11 +344,7 @@ function ColorValues({
                     {selectedValues.length > 0 ? (
                         <span className="flex shrink-0 items-center -space-x-1.5 rtl:space-x-reverse">
                             {selectedValues.slice(0, 4).map((v) => {
-                                const fill = cssColorForSwatch({
-                                    hex: v.hex,
-                                    id: v.id,
-                                    label: v.name,
-                                });
+                                const fill = cssColorForSwatch({ hex: v.hex });
                                 const light = isLightSwatchFill(fill);
                                 return (
                                     <span
@@ -408,11 +404,7 @@ function ColorValues({
                 >
                     {values.map((v) => {
                         const active = selected.has(v.id);
-                        const fill = cssColorForSwatch({
-                            hex: v.hex,
-                            id: v.id,
-                            label: v.name,
-                        });
+                        const fill = cssColorForSwatch({ hex: v.hex });
                         const light = isLightSwatchFill(fill);
                         return (
                             <li key={v.id} role="option" aria-selected={active}>
