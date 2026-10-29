@@ -1,10 +1,11 @@
-import { useMemo } from"react";
+import { useMemo } from "react";
 import {
- useInfiniteQuery,
- type QueryKey,
-} from"@tanstack/react-query";
-import { useInfiniteScroll } from"./useInfiniteScroll";
-import type { PaginatedData } from"./useInfiniteSelect";
+    useInfiniteQuery,
+    type QueryKey,
+} from "@tanstack/react-query";
+import { useInfiniteScroll } from "./useInfiniteScroll";
+import { useRevealShoppingAnchor } from "./useRevealShoppingAnchor";
+import type { PaginatedData } from "./useInfiniteSelect";
 
 export interface UseInfiniteListOptions<T> {
  queryKey: QueryKey;
@@ -15,6 +16,8 @@ export interface UseInfiniteListOptions<T> {
  threshold?: number;
  /** IntersectionObserver root (e.g. scrollable container). Defaults to viewport. */
  root?: Element | null;
+ /** Load further pages until the product from "continue shopping" is in the list. */
+ anchorRestore?: boolean;
 }
 
 export function useInfiniteList<T>({
@@ -25,6 +28,7 @@ export function useInfiniteList<T>({
  gcTime,
  threshold = 300,
  root = null,
+ anchorRestore = false,
 }: UseInfiniteListOptions<T>) {
  const {
  data,
@@ -54,6 +58,27 @@ export function useInfiniteList<T>({
  );
 
  const totalCount = data?.pages[0]?.pagination?.total ?? items.length;
+
+ const anchorItems = useMemo(
+ () =>
+ items.flatMap((item) => {
+ if (item && typeof item === "object" && "id" in item && typeof item.id === "number") {
+ return [{ id: item.id }];
+ }
+ return [];
+ }),
+ [items],
+ );
+
+ useRevealShoppingAnchor({
+ enabled: anchorRestore,
+ items: anchorItems,
+ hasMore: !!hasNextPage,
+ isLoading: isLoading || isFetchingNextPage,
+ onLoadMore: () => {
+ void fetchNextPage();
+ },
+ });
 
  const observerTarget = useInfiniteScroll({
  onLoadMore: fetchNextPage,

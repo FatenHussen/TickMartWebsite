@@ -7,6 +7,7 @@ import {
     cssColorForSwatch,
     isColorPickerAttribute,
     isLightSwatchFill,
+    MISSING_SWATCH_FILL,
 } from "@/features/product/lib/attributeValueColor";
 import type {
     CategoryAttribute,
@@ -90,8 +91,8 @@ export default function CategoryAttributeFilters({
         >
             {attributes.map((attr, index) => {
                 const storedType = normalizeType(String(attr.type));
-                // `type` stays as the API sent it. A `square` row named Color / اللون
-                // still paints circles from `values[].hex`.
+                // `type` stays as the API sent it. A `square` row whose name is a color
+                // label (Color, اللون, الألوان, …) still paints circles from `values[].hex`.
                 const type: CategoryAttributeUiType = isColorPickerAttribute({
                     type: attr.type,
                     attribute: attr.name,
@@ -354,7 +355,9 @@ function ColorValues({
                         <span className="flex shrink-0 items-center -space-x-1.5 rtl:space-x-reverse">
                             {selectedValues.slice(0, 4).map((v) => {
                                 const fill = cssColorForSwatch({ hex: v.hex });
-                                const light = isLightSwatchFill(fill);
+                                const light =
+                                    isLightSwatchFill(fill) ||
+                                    fill === MISSING_SWATCH_FILL;
                                 return (
                                     <span
                                         key={v.id}
@@ -414,7 +417,8 @@ function ColorValues({
                     {values.map((v) => {
                         const active = selected.has(v.id);
                         const fill = cssColorForSwatch({ hex: v.hex });
-                        const light = isLightSwatchFill(fill);
+                        const light =
+                            isLightSwatchFill(fill) || fill === MISSING_SWATCH_FILL;
                         return (
                             <li key={v.id} role="option" aria-selected={active}>
                                 <button

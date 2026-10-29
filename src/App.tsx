@@ -3,6 +3,7 @@ import { ThemeProvider } from "@/context/ThemeContext";
 import { LanguageProvider } from "@/context/LanguageContext";
 import { CurrencyProvider } from "@/context/CurrencyContext";
 import { useScrollToTop } from "@/shared/hooks/useScrollToTop";
+import { useTrackShoppingPlace } from "@/shared/hooks/useTrackShoppingPlace";
 import { useThemeFromApi } from "@/shared/hooks/useThemeFromApi";
 import NotificationToast from "@/components/NotificationToast";
 import useFirebaseNotifications from "@/hooks/useFirebaseNotifications";
@@ -22,6 +23,7 @@ function ThemeFromApiSync() {
 
 export default function App({ children }: AppProps) {
   useScrollToTop();
+  useTrackShoppingPlace();
   const {
     notification,
     dismissNotification,

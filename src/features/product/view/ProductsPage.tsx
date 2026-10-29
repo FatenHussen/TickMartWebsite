@@ -145,6 +145,7 @@ export default function ProductsPage() {
         fetchFn: (page) =>
             _ProductsApi.getProducts({ ...applied, page }).then((r) => r.data),
         threshold: 500,
+        anchorRestore: true,
     });
 
     const toggleFavorite = useToggleFavorite();

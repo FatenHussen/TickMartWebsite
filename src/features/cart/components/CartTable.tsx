@@ -1,4 +1,6 @@
 import { Link } from"react-router-dom";
+import { paths } from"@/app/routes/path/paths";
+import { continueShoppingPath } from"@/shared/lib/shoppingResume";
 import { HiArrowLeft } from"react-icons/hi";
 import { useTranslation } from"react-i18next";
 import { useLanguage } from"@/context/LanguageContext";
@@ -64,7 +66,8 @@ export default function CartTable({
  {/* Footer Actions */}
  <div className="px-6 py-4 border-t border-custom-secondary flex items-center justify-between">
  <Link
- to="/home"
+ to={continueShoppingPath(paths.client.home)}
+ state={{ restoreShoppingScroll: true }}
  className="inline-flex items-center gap-2 text-custom-accent hover:underline font-medium"
  >
  <HiArrowLeft className="w-5 h-5"/>

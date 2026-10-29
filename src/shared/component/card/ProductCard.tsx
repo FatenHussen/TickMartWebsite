@@ -131,6 +131,7 @@ export default function ProductCard({
 
     return (
         <div
+            data-product-id={id}
             className={cn(
                 "group relative flex h-full flex-col overflow-hidden rounded-[1.35rem] border border-stone-200/80 bg-custom-primary",
                 "shadow-[0_1px_3px_rgba(15,23,42,0.04),0_8px_20px_-12px_rgba(15,23,42,0.12)]",
