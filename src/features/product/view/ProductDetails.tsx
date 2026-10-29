@@ -41,7 +41,7 @@ import type { CartItem, CartExtraLine } from "@/features/cart/types";
 import { extrasLineKeyFromExtras } from "@/features/cart/utils/cartExtras";
 import { paths } from "@/app/routes/path/paths";
 import { resolveProductCountry } from "../lib/resolveLocalizedOrString";
-import { formatDeliveryEstimateLabel } from "../lib/formatDeliveryEstimate";
+import { productDeliveryTimeText } from "../lib/formatDeliveryEstimate";
 import {
     resolveVariantPriceDisplay,
 } from "../lib/variantPriceDisplay";
@@ -794,12 +794,7 @@ function ProductDetails() {
             ? `${t("product.youSaved", "You saved")} ${variantPriceDisplay.savedLabel}`
             : product.amount_saved_formatted?.trim() || undefined;
 
-    const deliveryEstimate =
-        formatDeliveryEstimateLabel(
-            product.delivery_time ?? product.time_prepare,
-            language,
-            t,
-        );
+    const deliveryEstimate = productDeliveryTimeText(product.delivery_time);
 
     /** API returns `country` as either a string or `{ name: { ar, en } }`. */
     const countryName = resolveProductCountry(product.country, language);
@@ -916,7 +911,7 @@ function ProductDetails() {
                                         <HiClock className="h-5 w-5 shrink-0 text-primary" aria-hidden />
                                         <div className="min-w-0">
                                             <p className="text-sm leading-tight text-custom-secondary">
-                                                {t("product.deliveryTime", "Delivery")}
+                                                {t("product.deliveryTime", "Delivery time")}
                                             </p>
                                             <p className="mt-0.5 text-lg font-semibold leading-snug text-text-primary">
                                                 {deliveryEstimate}

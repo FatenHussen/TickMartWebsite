@@ -328,8 +328,11 @@ export interface ProductDetailsData {
  barcode?: string | null;
  /** Legacy field — prefer `delivery_time` when present. */
  time_prepare: string | { ar?: string | null; en?: string | null };
- /** Product-level delivery estimate (not per variant). */
- delivery_time?: string | { ar?: string | null; en?: string | null } | null;
+ /**
+  * Ready-to-show estimate from `Accept-Language`. Not per variant.
+  * `null` or `""` means there is no chip. Do not append a unit or strip bidi marks.
+  */
+ delivery_time?: string | null;
  /** Product-level discount metadata — do not mix with variant discount. */
  discount_type?: VariantDiscountType | string | null;
  /** Decimal. Fixed amounts may exceed 100. */
