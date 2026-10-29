@@ -18,7 +18,6 @@ export type ProductInfoProps = {
     name: string;
     sku?: string;
     barcode?: string;
-    origin?: string;
     price: string;
     originalPrice?: string;
     savings?: string;
@@ -36,7 +35,6 @@ export default function ProductInfo({
     name,
     sku,
     barcode,
-    origin,
     price,
     originalPrice,
     savings,
@@ -52,9 +50,6 @@ export default function ProductInfo({
         sku ? { label: t("product.sku", "SKU"), value: sku, ltr: true } : null,
         barcode
             ? { label: t("product.barcode", "Barcode"), value: barcode, ltr: true }
-            : null,
-        origin
-            ? { label: t("product.origin", "Origin"), value: origin, ltr: false }
             : null,
     ].filter(Boolean) as Array<{ label: string; value: string; ltr: boolean }>;
 

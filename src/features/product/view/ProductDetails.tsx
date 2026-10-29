@@ -84,6 +84,7 @@ import {
     HiDocumentText,
     HiHome,
     HiListBullet,
+    HiMapPin,
     HiPencilSquare,
     HiShieldCheck,
 } from "react-icons/hi2";
@@ -883,7 +884,6 @@ function ProductDetails() {
                                 product.barcode?.trim() ||
                                 undefined
                             }
-                            origin={countryName || undefined}
                             price={displaySalePrice}
                             originalPrice={displayListPrice}
                             savings={savings}
@@ -893,8 +893,24 @@ function ProductDetails() {
                             badges={badges}
                         />
 
-                        {(deliveryEstimate || warrantyName) && (
-                            <div className="flex flex-wrap gap-2.5">
+                        {(countryName || deliveryEstimate || warrantyName) && (
+                            <div className="flex flex-wrap items-center gap-2.5">
+                                {countryName ? (
+                                    <div className="inline-flex max-w-full items-center gap-3 rounded-xl border border-[#F3D7A1] bg-[#FFF6E4] px-4 py-3 dark:border-amber-400/25 dark:bg-amber-400/10">
+                                        <HiMapPin
+                                            className="h-5 w-5 shrink-0 text-[#E09A12] dark:text-amber-400"
+                                            aria-hidden
+                                        />
+                                        <div className="min-w-0">
+                                            <p className="text-sm leading-tight text-[#8C7355] dark:text-amber-100/70">
+                                                {t("product.origin", "Origin")}
+                                            </p>
+                                            <p className="mt-0.5 text-lg font-semibold leading-snug text-[#E09A12] dark:text-amber-400">
+                                                {countryName}
+                                            </p>
+                                        </div>
+                                    </div>
+                                ) : null}
                                 {deliveryEstimate && (
                                     <div className="inline-flex max-w-full items-center gap-3 rounded-xl border border-[color-mix(in_srgb,var(--color-api-second)_14%,var(--color-border-primary))] bg-[color-mix(in_srgb,var(--color-api-second)_6%,var(--color-bg-card))] px-4 py-3 dark:border-white/[0.08] dark:bg-white/[0.03]">
                                         <HiClock className="h-5 w-5 shrink-0 text-primary" aria-hidden />

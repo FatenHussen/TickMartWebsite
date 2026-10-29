@@ -330,7 +330,7 @@ export default function ProductItemsTable({
                                         {item.priceLineFormatted ?? (
                                             <AnimatedPrice
                                                 value={Number.isFinite(item.subtotal) ? item.subtotal : 0}
-                                                prefix={currencySymbol}
+                                                suffix={currencySymbol}
                                             />
                                         )}
                                     </td>

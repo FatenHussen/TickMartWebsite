@@ -527,10 +527,11 @@ export function formatExactMoneyAmount(amount: number): string {
 }
 
 /**
- * International amount, with the currency on the side the language reads from.
- * English (LTR): `$1,234` / `ل.س 1,234`
- * Arabic (RTL): `1,234 ل.س` / `1,234 $`
- * Digits stay in an LTR isolate so they never reverse.
+ * International amount, with the currency on the side the language uses.
+ * Arabic: unit on the left (`ل.س 1,234`, `$ 1,234`).
+ * English: unit on the right (`1,234 SYP`, `1,234 $`).
+ * The whole price is an LTR isolate so this order holds in either UI direction,
+ * and the digits themselves never reverse.
  */
 export function presentMoney(value: string, language?: string | null): string {
     const clean = roundFormattedMoneyText(toLatinNumberText(value)).trim();
@@ -543,10 +544,10 @@ export function presentMoney(value: string, language?: string | null): string {
     }
     const parts = parsePriceParts(clean);
     if (parts.kind === "raw") return isolateLtr(parts.value);
-    if (isArabicLanguage(language)) {
-        return `${isolateLtr(parts.amount)} ${parts.symbol}`;
-    }
-    return isolateLtr(`${parts.symbol}${parts.amount}`);
+    const ordered = isArabicLanguage(language)
+        ? `${parts.symbol} ${parts.amount}`
+        : `${parts.amount} ${parts.symbol}`;
+    return isolateLtr(ordered);
 }
 
 const LATIN_CURRENCY = "\\$|€|£|¥|₹|USD|EUR|GBP";
@@ -587,8 +588,8 @@ export type ParsedPriceParts =
     | { kind: "raw"; value: string };
 
 /**
- * Split a formatted price so the symbol stays on the left of the amount
- * (`ل.س 58,500`, `SYP 58,500`, `$8.82`) inside an LTR isolate.
+ * Split a formatted price that already has its unit on either side
+ * (`ل.س 58,500`, `58,500 SYP`, `$8.82`, `8.82 $`).
  */
 export function parsePriceParts(value: string): ParsedPriceParts {
     const s = toLatinNumberText(value).trim();

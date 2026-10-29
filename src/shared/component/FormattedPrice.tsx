@@ -55,10 +55,13 @@ function PriceGlyph({
     value,
     prominent,
     hideSymbol = false,
+    isArabic = false,
 }: {
     value: string;
     prominent: boolean;
     hideSymbol?: boolean;
+    /** Arabic places the unit on the left of the amount; English on the right. */
+    isArabic?: boolean;
 }) {
     const parts = parsePriceParts(value);
     if (parts.kind === "raw") {
@@ -72,9 +75,9 @@ function PriceGlyph({
         );
     }
 
-    const symbolFirst = /^[$€£¥₹]$/.test(parts.symbol);
     const symbol = (
         <span
+            dir="ltr"
             className={cn(
                 "font-bold",
                 prominent
@@ -93,14 +96,14 @@ function PriceGlyph({
 
     return (
         <span
-            dir="ltr"
-            className="inline-flex items-baseline gap-x-[0.2em] whitespace-nowrap [unicode-bidi:isolate]"
+            dir={isArabic ? "rtl" : "ltr"}
+            className="inline-flex items-baseline whitespace-nowrap"
         >
-            {symbolFirst ? (
-                <>{symbol}{amount}</>
-            ) : (
-                <>{amount}{" "}{symbol}</>
-            )}
+            {amount}
+            <span aria-hidden="true" className="inline-block w-[0.28em]">
+                {" "}
+            </span>
+            {symbol}
         </span>
     );
 }
@@ -109,10 +112,12 @@ function GlyphLine({
     value,
     prominent,
     hideSymbol = false,
+    isArabic = false,
 }: {
     value: string;
     prominent: boolean;
     hideSymbol?: boolean;
+    isArabic?: boolean;
 }) {
     return (
         <span className="inline-flex items-baseline tabular-nums leading-none">
@@ -120,6 +125,7 @@ function GlyphLine({
                 value={value}
                 prominent={prominent}
                 hideSymbol={hideSymbol}
+                isArabic={isArabic}
             />
         </span>
     );
@@ -127,8 +133,9 @@ function GlyphLine({
 
 /**
  * International digits (`1,234.56`) in both languages.
- * Currency units follow the amount (`1,234 SYP` / `1,234 ل.س`), while symbols
- * such as `$` precede it. Each price keeps this order in either UI direction.
+ * The currency follows the language: on the left of the amount in Arabic
+ * (`ل.س 1,234`, `$ 1,234`) and on the right in English (`1,234 SYP`, `1,234 $`).
+ * Digits stay in an LTR isolate so they never reverse.
  */
 export default function FormattedPrice({
     value,
@@ -196,6 +203,7 @@ export default function FormattedPrice({
                                 value={pair.sale}
                                 prominent={prominent && primary}
                                 hideSymbol={hideSymbol}
+                                isArabic={isArabic}
                             />
                         </span>
                         {pair.original ? (
@@ -210,6 +218,7 @@ export default function FormattedPrice({
                                     value={pair.original}
                                     prominent={false}
                                     hideSymbol={hideSymbol}
+                                    isArabic={isArabic}
                                 />
                             </span>
                         ) : null}
@@ -228,6 +237,7 @@ export default function FormattedPrice({
                     value={primary}
                     prominent={prominent}
                     hideSymbol={hideSymbol}
+                    isArabic={isArabic}
                 />
                 {rest.map((chunk) => (
                     <GlyphLine
@@ -235,6 +245,7 @@ export default function FormattedPrice({
                         value={chunk}
                         prominent={false}
                         hideSymbol={hideSymbol}
+                        isArabic={isArabic}
                     />
                 ))}
             </>,
@@ -259,6 +270,7 @@ export default function FormattedPrice({
                     value={chunk}
                     prominent={prominent && i === 0}
                     hideSymbol={hideSymbol}
+                    isArabic={isArabic}
                 />
             </span>
         )),
