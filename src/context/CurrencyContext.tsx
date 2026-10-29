@@ -35,7 +35,24 @@ const defaultCurrencySymbols: Record<string, string> = {
  EGP:"ج.م",
 };
 
+/** Storefront default for guests — no login / settings required. */
+const DEFAULT_CURRENCY: CurrencyState = {
+ code: "SYP",
+ symbol: defaultCurrencySymbols.SYP,
+};
+
+/** Bump when the guest default changes so old USD localStorage is replaced once. */
+const CURRENCY_DEFAULTS_VERSION = "syp-default-v2";
+const CURRENCY_DEFAULTS_VERSION_KEY = "currencyDefaultsVersion";
+
 function getStoredCurrency(): CurrencyState {
+ if (typeof window === "undefined") return DEFAULT_CURRENCY;
+ try {
+ const version = localStorage.getItem(CURRENCY_DEFAULTS_VERSION_KEY);
+ if (version !== CURRENCY_DEFAULTS_VERSION) {
+ localStorage.setItem(CURRENCY_DEFAULTS_VERSION_KEY, CURRENCY_DEFAULTS_VERSION);
+ return DEFAULT_CURRENCY;
+ }
  const storedCode = localStorage.getItem("currency");
  const storedSymbol = localStorage.getItem("currencySymbol");
  if (storedCode && storedSymbol) {
@@ -47,7 +64,10 @@ function getStoredCurrency(): CurrencyState {
  symbol: defaultCurrencySymbols[storedCode],
  };
  }
- return { code:"USD", symbol: defaultCurrencySymbols.USD };
+ return DEFAULT_CURRENCY;
+ } catch {
+ return DEFAULT_CURRENCY;
+ }
 }
 
 export function CurrencyProvider({ children }: { children: ReactNode }) {
@@ -81,7 +101,7 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
  amount == null || typeof amount !== "number" || Number.isNaN(amount)
  ? 0
  : amount;
- return presentMoney(`${currencyState.symbol}${formatMoneyAmount(value)}`);
+ return presentMoney(`${currencyState.symbol}${formatMoneyAmount(value, currencyState.code)}`);
  };
 
  return (

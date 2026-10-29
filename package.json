@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "test:prices": "node --test tests/prices.test.mjs",
     "lint": "eslint .",
     "preview": "vite preview"
   },

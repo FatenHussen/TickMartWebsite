@@ -202,7 +202,7 @@ export function useVariantSelector({
             const axisIds = new Set(
                 options.map((o) => o.id).filter((id) => id > 0),
             );
-            const independent = isIndependentPickerAttribute(attr.type);
+            const independent = isIndependentPickerAttribute(attr);
             const otherIds = selectedIds.filter((id) => !axisIds.has(id));
 
             const matchingVariants = independent

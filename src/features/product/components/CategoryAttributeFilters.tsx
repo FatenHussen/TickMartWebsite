@@ -5,6 +5,7 @@ import { cn } from "@/shared/lib/utils";
 import { resolveLocalizedText } from "@/shared/lib/localizedText";
 import {
     cssColorForSwatch,
+    isColorPickerAttribute,
     isLightSwatchFill,
 } from "@/features/product/lib/attributeValueColor";
 import type {
@@ -82,13 +83,21 @@ export default function CategoryAttributeFilters({
     return (
         <div
             className={cn(
-                "space-y-5",
+                embedded ? "space-y-2" : "space-y-5",
                 !embedded &&
                     "border-t border-sky-200/60 pt-4 dark:border-[color-mix(in_srgb,var(--color-main)_22%,#1f2230)]",
             )}
         >
             {attributes.map((attr, index) => {
-                const type = normalizeType(String(attr.type));
+                const storedType = normalizeType(String(attr.type));
+                // `type` stays as the API sent it. A `square` row named Color / اللون
+                // still paints circles from `values[].hex`.
+                const type: CategoryAttributeUiType = isColorPickerAttribute({
+                    type: attr.type,
+                    attribute: attr.name,
+                })
+                    ? "color"
+                    : storedType;
                 // Filter key = `values[].id`. Label = latest GET `values[].name`.
                 const values = attr.values.map((v) => ({
                     id: v.id,
@@ -101,16 +110,16 @@ export default function CategoryAttributeFilters({
                         key={attr.id}
                         className={cn(
                             "flex flex-col",
-                            embedded ? "gap-2.5" : "gap-3",
+                            embedded ? "gap-1.5" : "gap-3",
                             embedded &&
                                 index > 0 &&
-                                "border-t border-slate-200/80 pt-4 dark:border-[color-mix(in_srgb,var(--color-main)_22%,#1f2230)]",
+                                "border-t border-slate-200/80 pt-2 dark:border-[color-mix(in_srgb,var(--color-main)_22%,#1f2230)]",
                         )}
                     >
                         <h3
                             className={cn(
                                 embedded
-                                    ? "text-xs font-semibold text-custom-secondary dark:text-[color-mix(in_srgb,var(--color-text)_82%,transparent)]"
+                                    ? "text-[11px] font-semibold uppercase tracking-wide text-custom-secondary dark:text-[color-mix(in_srgb,var(--color-text)_82%,transparent)]"
                                     : "text-sm font-bold text-slate-800 dark:text-[var(--color-text)]",
                             )}
                         >
@@ -196,7 +205,7 @@ function SquareValues({
                 aria-controls={listId}
                 onClick={() => setOpen((v) => !v)}
                 className={cn(
-                    "flex w-full items-center gap-2 rounded-lg border bg-white/95 px-3 py-2.5 text-start text-sm transition-colors dark:bg-[color-mix(in_srgb,var(--color-main)_18%,#13151c)]",
+                    "flex w-full items-center gap-2 rounded-md border bg-white/95 px-2.5 py-1.5 text-start text-[13px] transition-colors dark:bg-[color-mix(in_srgb,var(--color-main)_18%,#13151c)]",
                     "border-slate-200 hover:border-slate-300 dark:border-[color-mix(in_srgb,var(--color-main)_22%,#1f2230)] dark:hover:border-[color-mix(in_srgb,var(--color-main)_40%,#1f2230)]",
                     open &&
                         "border-[var(--color-main,#00ACC1)]/50 ring-2 ring-[var(--color-main,#00ACC1)]/20",
@@ -334,7 +343,7 @@ function ColorValues({
                 aria-controls={listId}
                 onClick={() => setOpen((v) => !v)}
                 className={cn(
-                    "flex w-full items-center gap-2 rounded-lg border bg-white/95 px-3 py-2.5 text-start text-sm transition-colors dark:bg-[color-mix(in_srgb,var(--color-main)_18%,#13151c)]",
+                    "flex w-full items-center gap-2 rounded-md border bg-white/95 px-2.5 py-1.5 text-start text-[13px] transition-colors dark:bg-[color-mix(in_srgb,var(--color-main)_18%,#13151c)]",
                     "border-slate-200 hover:border-slate-300 dark:border-[color-mix(in_srgb,var(--color-main)_22%,#1f2230)] dark:hover:border-[color-mix(in_srgb,var(--color-main)_40%,#1f2230)]",
                     open &&
                         "border-[var(--color-main,#00ACC1)]/50 ring-2 ring-[var(--color-main,#00ACC1)]/20",
@@ -344,11 +353,7 @@ function ColorValues({
                     {selectedValues.length > 0 ? (
                         <span className="flex shrink-0 items-center -space-x-1.5 rtl:space-x-reverse">
                             {selectedValues.slice(0, 4).map((v) => {
-                                const fill = cssColorForSwatch({
-                                    hex: v.hex,
-                                    id: v.id,
-                                    label: v.name,
-                                });
+                                const fill = cssColorForSwatch({ hex: v.hex });
                                 const light = isLightSwatchFill(fill);
                                 return (
                                     <span
@@ -408,11 +413,7 @@ function ColorValues({
                 >
                     {values.map((v) => {
                         const active = selected.has(v.id);
-                        const fill = cssColorForSwatch({
-                            hex: v.hex,
-                            id: v.id,
-                            label: v.name,
-                        });
+                        const fill = cssColorForSwatch({ hex: v.hex });
                         const light = isLightSwatchFill(fill);
                         return (
                             <li key={v.id} role="option" aria-selected={active}>
@@ -518,7 +519,7 @@ function CircleValues({
                 aria-controls={listId}
                 onClick={() => setOpen((v) => !v)}
                 className={cn(
-                    "flex w-full items-center gap-2 rounded-lg border bg-white/95 px-3 py-2.5 text-start text-sm transition-colors dark:bg-[color-mix(in_srgb,var(--color-main)_18%,#13151c)]",
+                    "flex w-full items-center gap-2 rounded-md border bg-white/95 px-2.5 py-1.5 text-start text-[13px] transition-colors dark:bg-[color-mix(in_srgb,var(--color-main)_18%,#13151c)]",
                     "border-slate-200 hover:border-slate-300 dark:border-[color-mix(in_srgb,var(--color-main)_22%,#1f2230)] dark:hover:border-[color-mix(in_srgb,var(--color-main)_40%,#1f2230)]",
                     open &&
                         "border-[var(--color-main,#00ACC1)]/50 ring-2 ring-[var(--color-main,#00ACC1)]/20",

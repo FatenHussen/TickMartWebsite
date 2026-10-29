@@ -6,7 +6,10 @@ import { isPurchasableVariant } from "../types/productDetails";
 import { gallerySrcsForSelection, mediaSrc, type ProductMediaSource } from "../lib/productMedia";
 import { resolveListingCardPrices } from "@/shared/lib/formatApiPrice";
 import PriceBlock from "@/shared/component/PriceBlock";
-import { cssColorForSwatch } from "../lib/attributeValueColor";
+import {
+    cssColorForSwatch,
+    isColorPickerAttribute,
+} from "../lib/attributeValueColor";
 
 export type ShopVariantsPreviewProps = {
     variants: ShopVariant[];
@@ -19,18 +22,14 @@ export type ShopVariantsPreviewProps = {
 };
 
 function renderAttributeValue(attr: VariantAttribute) {
-    if (attr.type === "color") {
+    if (isColorPickerAttribute(attr)) {
         return (
             <span
                 role="img"
                 aria-label={`${attr.attribute}: ${attr.value}`}
                 className="inline-block h-7 w-7 shrink-0 rounded-full border-2 border-custom-primary shadow-sm"
                 style={{
-                    backgroundColor: cssColorForSwatch({
-                        hex: attr.hex,
-                        id: attr.id,
-                        label: attr.value,
-                    }),
+                    backgroundColor: cssColorForSwatch({ hex: attr.hex }),
                 }}
                 title={`${attr.attribute}: ${attr.value}`}
             />

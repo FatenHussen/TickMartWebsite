@@ -41,6 +41,7 @@ import type { CartItem, CartExtraLine } from "@/features/cart/types";
 import { extrasLineKeyFromExtras } from "@/features/cart/utils/cartExtras";
 import { paths } from "@/app/routes/path/paths";
 import { resolveProductCountry } from "../lib/resolveLocalizedOrString";
+import { formatDeliveryEstimateLabel } from "../lib/formatDeliveryEstimate";
 import {
     resolveVariantPriceDisplay,
 } from "../lib/variantPriceDisplay";
@@ -758,7 +759,7 @@ function ProductDetails() {
     const baseCurrencySymbol =
         selectedVariant?.currency_symbol ?? product.currency_symbol ?? "";
     const formatPrice = (price: number, symbol = currencySymbol) =>
-        presentMoney(`${symbol}${formatMoneyAmount(price)}`, language);
+        presentMoney(`${symbol}${formatMoneyAmount(price, symbol)}`, language);
 
     const extraAddon = isFood ? 0 : extraDetailsDisplayAddon;
     const priceSource = selectedVariant ?? product;
@@ -793,7 +794,11 @@ function ProductDetails() {
             : product.amount_saved_formatted?.trim() || undefined;
 
     const deliveryEstimate =
-        product.delivery_time?.trim() || product.time_prepare?.trim() || null;
+        formatDeliveryEstimateLabel(
+            product.delivery_time ?? product.time_prepare,
+            language,
+            t,
+        );
 
     /** API returns `country` as either a string or `{ name: { ar, en } }`. */
     const countryName = resolveProductCountry(product.country, language);
@@ -1071,9 +1076,14 @@ function ProductDetails() {
                             }
                             className="border-t border-black/6 pt-4 dark:border-white/8"
                             onIconClick={(icon) => {
+                                const full =
+                                    icon.full_description?.trim() ||
+                                    icon.description?.trim() ||
+                                    icon.name?.trim() ||
+                                    "";
                                 setSelectedIcon({
                                     name: icon.name,
-                                    description: icon.description || "",
+                                    description: full,
                                 });
                                 setIconPopupOpen(true);
                             }}

@@ -234,8 +234,13 @@ export interface ProductIcon {
  /** Same URL as `image`, including `?v=` when the file was replaced. */
  icon?: string | null;
  image?: string | null;
- /** Tooltip. Hide when empty. */
+ /**
+  * Description text. Brief values are used as the hover tooltip;
+  * longer values are shown in the click popup (full description).
+  */
  description?: string | null;
+ /** Optional full description for the click popup when provided by the API. */
+ full_description?: string | null;
 }
 
 export interface ProductApiBadge {
@@ -322,9 +327,9 @@ export interface ProductDetailsData {
  model?: string | null;
  barcode?: string | null;
  /** Legacy field — prefer `delivery_time` when present. */
- time_prepare: string;
+ time_prepare: string | { ar?: string | null; en?: string | null };
  /** Product-level delivery estimate (not per variant). */
- delivery_time?: string | null;
+ delivery_time?: string | { ar?: string | null; en?: string | null } | null;
  /** Product-level discount metadata — do not mix with variant discount. */
  discount_type?: VariantDiscountType | string | null;
  /** Decimal. Fixed amounts may exceed 100. */

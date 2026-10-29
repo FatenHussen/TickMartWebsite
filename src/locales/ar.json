@@ -423,6 +423,7 @@
     "showingProductsIn": "عرض المنتجات في",
     "filters": "الفلاتر",
     "applyFilters": "تطبيق الفلاتر",
+    "activeFiltersCount": "{{count}} مفعّل",
     "reset": "إعادة تعيين",
     "typeFilter": "نوع الفئة",
     "typeAll": "الكل",
