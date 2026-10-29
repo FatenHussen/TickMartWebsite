@@ -186,7 +186,8 @@ export function variantHasOption(
 /**
  * Swatch fill keyed by option id.
  * `options[].hex` first, then `shop_variants[].attributes[].hex`.
- * Applies to `type: "color"` and to a label of Color / Colour / اللون / لون even when `type` stays `square`.
+ * Applies to `type: "color"` and to a color label (Color, Colour, اللون, الألوان, …)
+ * even when `type` stays `square`.
  */
 export function optionHexById(
     attributesMap: AttributeMapItem[],

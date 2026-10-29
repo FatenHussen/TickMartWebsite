@@ -17,6 +17,7 @@ import ProductReviews from "@/shared/component/ProductReviews";
 import { PremiumInlineLoader } from "@/shared/component/loading";
 import { RatingFormModal } from "@/features/account/components";
 import { useInfiniteScroll } from "@/shared/hooks/useInfiniteScroll";
+import { useRevealShoppingAnchor } from "@/shared/hooks/useRevealShoppingAnchor";
 import type { Product } from "../types";
 import type { BrandProduct } from "../types/brand";
 import { resolveListingCardPrices } from "@/shared/lib/formatApiPrice";
@@ -122,6 +123,13 @@ export default function BrandProducts() {
         hasMore,
         isLoading: isProductsLoading,
         threshold: 300,
+    });
+
+    useRevealShoppingAnchor({
+        items: allProducts,
+        hasMore,
+        isLoading: isProductsLoading,
+        onLoadMore: () => setCurrentPage((prev) => prev + 1),
     });
 
     // Fetch sections for brand_details page

@@ -112,6 +112,7 @@ export default function AllProductsSection({
             queryKey: ["products", "list", "infinite", filters],
             fetchFn: (page) => _ProductsApi.getProducts({ ...filters, page }).then((r) => r.data),
             threshold: 500,
+            anchorRestore: true,
         });
 
     const toggleFavorite = useToggleFavorite();

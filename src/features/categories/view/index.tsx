@@ -281,6 +281,7 @@ export default function CategoriesView() {
                     .then((r) => r.data)
                 : _CategoriesApi.getProducts({ ...productFilters, page }).then((r) => r.data),
         enabled: categoryIdForProducts == null || categoryPage !== null,
+        anchorRestore: true,
     });
 
     const pushTrail = useCallback(

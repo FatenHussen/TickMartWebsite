@@ -71,6 +71,7 @@ const [bookingService, setBookingService] = useState<ShopVendorService | null>(n
  }),
  enabled: shopIdNum > 0 && !isServiceProvider,
  threshold: 500,
+ anchorRestore: true,
  });
 
  const {

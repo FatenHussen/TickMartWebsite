@@ -5,6 +5,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { paths } from "@/app/routes/path/paths";
+import { continueShoppingPath } from "@/shared/lib/shoppingResume";
 import { CartSummary } from "../components";
 import CartItemCard from "../components/CartItemCard";
 import CartCheckoutLines from "../components/CartCheckoutLines";
@@ -398,7 +399,8 @@ export default function Cart() {
                                 {t("cart.emptyCartHint")}
                             </p>
                             <Link
-                                to={paths.client.home}
+                                to={continueShoppingPath(paths.client.home)}
+                                state={{ restoreShoppingScroll: true }}
                                 className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white !bg-[color:var(--color-api-second)] hover:!bg-[color:var(--color-api-second-hover)]"
                             >
                                 <HiArrowLeft className={`w-4 h-4 ${isRTL ? "rotate-180" : ""}`} />
@@ -417,7 +419,8 @@ export default function Cart() {
                                 </div>
                                 <div className="flex items-center gap-4 text-sm">
                                     <Link
-                                        to={paths.client.home}
+                                        to={continueShoppingPath(paths.client.home)}
+                                        state={{ restoreShoppingScroll: true }}
                                         className="inline-flex items-center gap-1.5 font-medium text-custom-secondary hover:text-custom-primary"
                                     >
                                         <HiArrowLeft className={`w-4 h-4 ${isRTL ? "rotate-180" : ""}`} />

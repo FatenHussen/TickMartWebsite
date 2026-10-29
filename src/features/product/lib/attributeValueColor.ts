@@ -7,10 +7,18 @@ export function isColorAttributeType(type: string | null | undefined): boolean {
 
 /**
  * A color attribute may stay stored as `type: "square"`.
- * Swatches still apply when the label is `Color`, `Colour`, `اللون`, or `لون`.
- * The stored `type` is never rewritten.
+ * Swatches still apply for these labels. The stored `type` is never rewritten.
  */
-const COLOR_ATTRIBUTE_NAMES = new Set(["color", "colour", "اللون", "لون"]);
+const COLOR_ATTRIBUTE_NAMES = new Set([
+    "color",
+    "colour",
+    "اللون",
+    "لون",
+    "الالوان",
+    "الألوان",
+    "الوان",
+    "ألوان",
+]);
 
 function colorNameCandidates(name: unknown): string[] {
     if (typeof name === "string") return [name];
@@ -30,7 +38,7 @@ export function isColorPickerAttribute(input: {
 }): boolean {
     if (isColorAttributeType(input.type)) return true;
     return colorNameCandidates(input.attribute).some((part) =>
-        COLOR_ATTRIBUTE_NAMES.has(part.trim().toLowerCase()),
+        COLOR_ATTRIBUTE_NAMES.has(part.trim().toLowerCase().normalize("NFC")),
     );
 }
 

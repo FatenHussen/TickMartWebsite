@@ -178,6 +178,7 @@ export default function ScheduleCustomize() {
                 per_page: 20,
             }).then((r) => r.data),
         threshold: 400,
+        anchorRestore: true,
     });
 
     const requireAuth = () => {
