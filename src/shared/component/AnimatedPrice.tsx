@@ -84,14 +84,22 @@ export default function AnimatedPrice({
     return (
         <span
             className={cn(
-                "inline-block tabular-nums transition-transform duration-200 ease-out will-change-transform",
+                "inline-flex items-baseline tabular-nums transition-transform duration-200 ease-out will-change-transform",
                 pulse && "scale-[1.06] motion-reduce:scale-100",
                 className
             )}
         >
-            {prefix}
+            {prefix ? (
+                <span dir="ltr" className="me-[0.2em]">
+                    {prefix}
+                </span>
+            ) : null}
             <span dir="ltr">{display.toFixed(decimals)}</span>
-            {suffix}
+            {suffix ? (
+                <span dir="ltr" className="ms-[0.2em]">
+                    {suffix}
+                </span>
+            ) : null}
         </span>
     );
 }

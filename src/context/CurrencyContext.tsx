@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from"react";
 import type { ReactNode } from"react";
+import i18next from"i18next";
 import { formatMoneyAmount, presentMoney } from"@/shared/lib/formatApiPrice";
 
 export type Currency = string;
@@ -101,7 +102,10 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
  amount == null || typeof amount !== "number" || Number.isNaN(amount)
  ? 0
  : amount;
- return presentMoney(`${currencyState.symbol}${formatMoneyAmount(value, currencyState.code)}`);
+ return presentMoney(
+ `${currencyState.symbol}${formatMoneyAmount(value, currencyState.code)}`,
+ i18next.resolvedLanguage || i18next.language,
+ );
  };
 
  return (

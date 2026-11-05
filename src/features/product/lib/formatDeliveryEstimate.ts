@@ -1,70 +1,14 @@
-import type { TFunction } from "i18next";
-import {
-    resolveLocalizedText,
-    type LocalizedTextValue,
-} from "@/shared/lib/localizedText";
-
-export type DeliveryWindowHours = { min: number; max: number };
+const BIDI_MARKS = /[\u200e\u200f\u202a-\u202e\u2066-\u2069]/g;
 
 /**
- * Pull min/max hours out of API delivery strings such as `12-48 ساعة`
- * or `25 hours`. Returns null when the value is free-form text.
+ * `delivery_time` is already localized by `Accept-Language`.
+ * Tikmool products come back as `12-48 hours` or `12-48 ساعة`
+ * (Arabic keeps bidi isolates around the range). Seller text is returned as typed.
+ * Show that string unchanged: no extra unit, no rebuild from the numbers.
  */
-export function parseDeliveryWindowHours(
-    raw: string,
-): DeliveryWindowHours | null {
-    const normalized = raw
-        .trim()
-        .replace(/[–—]/g, "-")
-        .replace(/\s+/g, " ");
-
-    const range = normalized.match(
-        /^(\d+(?:\.\d+)?)\s*[-\/]\s*(\d+(?:\.\d+)?)\s*(?:ساعة|ساعات|hours?|hrs?|h)?$/i,
-    );
-    if (range) {
-        const min = Number(range[1]);
-        const max = Number(range[2]);
-        if (Number.isFinite(min) && Number.isFinite(max)) {
-            return { min, max };
-        }
-    }
-
-    const single = normalized.match(
-        /^(\d+(?:\.\d+)?)\s*(?:ساعة|ساعات|hours?|hrs?|h)$/i,
-    );
-    if (single) {
-        const hours = Number(single[1]);
-        if (Number.isFinite(hours)) {
-            return { min: hours, max: hours };
-        }
-    }
-
-    return null;
-}
-
-/**
- * Display label for product `delivery_time` / `time_prepare`.
- * Re-formats known hour windows with i18n so English UI does not keep Arabic units.
- */
-export function formatDeliveryEstimateLabel(
-    value: LocalizedTextValue,
-    language: string,
-    t: TFunction,
-): string | null {
-    const text = resolveLocalizedText(value, language).trim();
-    if (!text) return null;
-
-    const window = parseDeliveryWindowHours(text);
-    if (!window) return text;
-
-    if (window.min === window.max) {
-        return t("cart.deliveryWindowSame", "{{hours}} hours", {
-            hours: window.min,
-        });
-    }
-
-    return t("cart.deliveryWindow", "{{min}}–{{max}} hours", {
-        min: window.min,
-        max: window.max,
-    });
+export function productDeliveryTimeText(value: unknown): string | null {
+    if (typeof value !== "string") return null;
+    const visible = value.replace(BIDI_MARKS, "").trim();
+    if (!visible) return null;
+    return value;
 }
