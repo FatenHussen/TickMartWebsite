@@ -9,6 +9,7 @@ import { useNavbarSearch } from "../hooks/useNavbarSearch";
 import type { SearchResultType, SearchResultWithType } from "../types";
 import { cn } from "@/shared/lib/utils";
 import { listingImageSrc } from "@/features/product/lib/productMedia";
+import { resolveLocalizedText } from "@/shared/lib/localizedText";
 
 const SEARCH_TYPES: { value: SearchResultType | "all"; labelKey: string }[] = [
     { value: "all", labelKey: "search.allTypes" },
@@ -49,18 +50,20 @@ function groupResultsByType(
 }
 
 interface NavbarSearchProps {
+    autoFocus?: boolean;
     className?: string;
     inputClassName?: string;
     onResultSelect?: () => void;
 }
 
 export default function NavbarSearch({
+    autoFocus,
     className,
     inputClassName,
     onResultSelect,
 }: NavbarSearchProps) {
     const { t } = useTranslation();
-    const { isRTL } = useLanguage();
+    const { isRTL, language } = useLanguage();
     const containerRef = useRef<HTMLDivElement>(null);
 
     const {
@@ -156,6 +159,7 @@ export default function NavbarSearch({
                 />
                 <input
                     type="text"
+                    autoFocus={autoFocus}
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     onFocus={() => hasQuery && openDropdown()}
@@ -277,7 +281,7 @@ export default function NavbarSearch({
                                                     )}
                                                 </div>
                                                 <span className="text-sm font-medium text-custom-primary truncate flex-1">
-                                                    {item.name}
+                                                    {resolveLocalizedText(item.name, language)}
                                                 </span>
                                             </Link>
                                         ))}
@@ -306,7 +310,7 @@ export default function NavbarSearch({
                                         )}
                                     </div>
                                     <span className="text-sm font-medium text-custom-primary truncate flex-1">
-                                        {item.name}
+                                        {resolveLocalizedText(item.name, language)}
                                     </span>
                                     <span className="text-xs text-gray-light shrink-0">
                                         {t(
