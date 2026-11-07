@@ -868,6 +868,7 @@ function ProductDetails() {
                     <div className="flex min-w-0 flex-col gap-5">
                         <ProductInfo
                             category={product.category?.name}
+                            brand={product.brand ?? null}
                             name={product.name}
                             sku={
                                 selectedVariant?.sku?.trim() ||

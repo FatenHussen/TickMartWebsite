@@ -2,14 +2,14 @@ import { useEffect } from "react";
 import { useTheme } from "@/context/ThemeContext";
 import { useAppSettings } from "@/features/account/hooks/useAppSettings";
 import {
-  DEEMA_BRAND_DARK,
-  DEEMA_BRAND_LIGHT,
+  TICKMART_BRAND_DARK,
+  TICKMART_BRAND_LIGHT,
   mergeWithBrandPalette,
 } from "@/shared/lib/brandColors";
 
 /**
- * Applies theme colours at runtime. API palettes are merged with the static
- * Deema Fashion brand so old dashboard colours (e.g. orange) do not override CSS.
+ * Applies theme colours at runtime. API palettes are merged with TickMart
+ * so dashboard Deema colours do not paint the storefront.
  */
 export function useThemeFromApi() {
   const { setApiColors } = useTheme();
@@ -17,8 +17,8 @@ export function useThemeFromApi() {
 
   useEffect(() => {
     setApiColors(
-      mergeWithBrandPalette(settings?.color, DEEMA_BRAND_LIGHT),
-      mergeWithBrandPalette(settings?.dark_color, DEEMA_BRAND_DARK),
+      mergeWithBrandPalette(settings?.color, TICKMART_BRAND_LIGHT),
+      mergeWithBrandPalette(settings?.dark_color, TICKMART_BRAND_DARK),
     );
   }, [settings, setApiColors]);
 }

@@ -14,9 +14,9 @@
   /* Stands in for the artwork whenever the CMS image is missing or 404s. */
   background: linear-gradient(
     135deg,
-    color-mix(in srgb, var(--color-main, #c720a4) 92%, black) 0%,
-    var(--color-main, #c720a4) 45%,
-    color-mix(in srgb, var(--color-api-second, #ff1493) 70%, var(--color-main, #c720a4)) 100%
+    color-mix(in srgb, var(--color-main, #2c8090) 92%, black) 0%,
+    var(--color-main, #2c8090) 45%,
+    color-mix(in srgb, var(--color-api-second, #4cdaf6) 70%, var(--color-main, #2c8090)) 100%
   );
 }
 
@@ -128,7 +128,7 @@
   width: 7px;
   height: 7px;
   border-radius: 999px;
-  background: var(--color-api-second, #ff1493);
+  background: var(--color-api-second, #4cdaf6);
   box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.18);
 }
 
@@ -164,7 +164,7 @@
   border-radius: 999px;
   padding: 12px 26px;
   background: #fff;
-  color: var(--color-main, #c720a4);
+  color: var(--color-main, #1f2937);
   font-size: 15px;
   font-weight: 700;
   box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.35);
@@ -201,14 +201,11 @@
 .promo-banner-wrap {
   position: relative;
   width: 100%;
-  /* Keep overflow visible so side arrows are never clipped; the swiper clips slides. */
-  overflow: visible;
 }
 
 .promo-banner-swiper {
   border-radius: 24px;
   overflow: hidden;
-  width: 100%;
 }
 
 .promo-banner-swiper .swiper-slide {
@@ -229,7 +226,7 @@
   height: 46px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.92);
-  color: var(--color-main, #c720a4);
+  color: var(--color-main, #2c8090);
   border: 1px solid rgba(255, 255, 255, 0.6);
   box-shadow: 0 6px 18px -6px rgba(0, 0, 0, 0.3);
   display: flex;
@@ -261,7 +258,7 @@
 .promo-banner-nav-icon {
   width: 24px;
   height: 24px;
-  color: var(--color-main, #c720a4);
+  color: var(--color-main, #2c8090);
 }
 
 [dir="rtl"] .promo-banner-nav-icon {
@@ -292,37 +289,6 @@
   background: #fff !important;
 }
 
-@media (max-width: 767px) {
-  .promo-banner-frame {
-    min-height: 220px;
-    padding: 24px 20px;
-  }
-
-  .promo-banner-title {
-    font-size: 22px;
-  }
-
-  .promo-banner-desc {
-    margin-bottom: 14px;
-    font-size: 13px;
-  }
-
-  .promo-banner-btn {
-    padding: 10px 20px;
-    font-size: 14px;
-  }
-
-  .promo-banner-nav {
-    width: 38px;
-    height: 38px;
-  }
-
-  .promo-banner-nav-icon {
-    width: 20px;
-    height: 20px;
-  }
-}
-
 @media (min-width: 768px) {
   .promo-banner-frame {
     padding: 52px 56px;
@@ -332,6 +298,12 @@
   }
   .promo-banner-desc {
     font-size: 16px;
+  }
+  .promo-banner-nav-prev {
+    inset-inline-start: -20px;
+  }
+  .promo-banner-nav-next {
+    inset-inline-end: -20px;
   }
 }
 

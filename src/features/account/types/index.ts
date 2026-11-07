@@ -549,11 +549,11 @@ export interface NewAddressFormData {
 export interface CreateAddressPayload {
  label: AddressLabel;
  area_id: number;
- street_name: string;
- nearest_landmark: string;
+ street_name?: string;
+ nearest_landmark?: string;
  building_number?: string;
  floor_apartment?: string;
- contact_phone: string;
+ contact_phone?: string;
  lat: number;
  lng: number;
  is_default: boolean;
@@ -564,11 +564,11 @@ export interface UpdateAddressPayload {
  governorate_id: number;
  city_id: number;
  area_id: number;
- street_name: string;
- nearest_landmark: string;
+ street_name?: string;
+ nearest_landmark?: string;
  building_number?: string;
  floor_apartment?: string;
- contact_phone: string;
+ contact_phone?: string;
  lat: number;
  lng: number;
  is_default: boolean;

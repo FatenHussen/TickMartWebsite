@@ -16,19 +16,13 @@ export function AddressFormStreetLandmarkGrid({ register, errors }: StreetLandma
             <InputField
                 label={t("account.addAddress.streetName")}
                 placeholder={t("account.addAddress.streetNamePlaceholder")}
-                required
-                {...register("streetName", {
-                    required: t("validation.required"),
-                })}
+                {...register("streetName")}
                 error={errors.streetName}
             />
             <InputField
                 label={t("account.addAddress.nearestLandmark")}
                 placeholder={t("account.addAddress.nearestLandmarkPlaceholder")}
-                required
-                {...register("nearestLandmark", {
-                    required: t("validation.required"),
-                })}
+                {...register("nearestLandmark")}
                 error={errors.nearestLandmark}
             />
         </div>

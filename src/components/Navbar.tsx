@@ -284,24 +284,21 @@ export default function Navbar() {
                         <div className="flex min-w-0 shrink-0 items-center gap-5 lg:gap-6 xl:gap-8">
                             <Link
                                 to={paths.client.home}
-                                className="flex shrink-0 items-center gap-2.5 sm:gap-3"
-                                aria-label="Deema Fashion Home"
+                                className="flex shrink-0 items-center gap-2"
+                                aria-label="TickMart Home"
                             >
                                 {!logoError ? (
                                     <img
-                                        src="/images/shared/favicon.png"
-                                        alt="Deema Fashion"
-                                        className="h-11 w-11 shrink-0 rounded-xl object-contain sm:h-12 sm:w-12 md:h-14 md:w-14"
+                                        src="/images/shared/logo.png"
+                                        alt="TickMart"
+                                        className="h-16 w-auto max-w-[min(480px,56vw)] object-contain sm:h-[4.5rem] md:h-24 lg:h-18 xl:h-22 md:max-w-[min(500px,92vw)]"
                                         onError={() => setLogoError(true)}
                                     />
                                 ) : (
-                                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary sm:h-12 sm:w-12 md:h-14 md:w-14">
-                                        <span className="text-lg font-bold text-white md:text-xl">D</span>
+                                    <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-primary-light sm:h-[4.5rem] md:h-24">
+                                        <span className="text-xl font-bold text-white">∞</span>
                                     </div>
                                 )}
-                                <span className="hidden bg-gradient-to-b from-[#a020f0] to-[#ff1493] bg-clip-text text-lg font-bold tracking-tight text-transparent sm:inline md:text-xl">
-                                    Deema Fashion
-                                </span>
                             </Link>
 
                         {/* Delivery Address - Hidden on mobile, shown on lg+ */}

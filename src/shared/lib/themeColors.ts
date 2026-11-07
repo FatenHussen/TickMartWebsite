@@ -1,8 +1,12 @@
 import type { AppSettingsColorPalette } from "@/features/account/api/settingsApi";
-import { lighten, darken, withAlpha, shade, mixHex, tint } from "./colorUtils";
+import { lighten, darken, withAlpha, shade, mixHex } from "./colorUtils";
 
 /** CSS variable name → value */
 export type CSSVariableMap = Record<string, string>;
+
+/** Warm paper — 60% of light UI. Brand orange stays on CTAs, not the canvas. */
+const LIGHT_CREAM = "#F6F3EE";
+const LIGHT_PAPER = "#FFFcf8";
 
 /** Grocery dark: warm charcoal shelves, not OLED black. */
 export const DARK_CANVAS = "#171412";
@@ -14,40 +18,30 @@ export const DARK_ELEVATED = "#24201C";
  * Surfaces stay cream / white with a whisper of `main_color` (60/30/10).
  * Brand colour is reserved for buttons, logo, and status — not page wash.
  */
-/** Neutral light-mode shells — brand colour only as a whisper, not a full wash. */
-const LIGHT_NEUTRAL = {
-  canvas: "#fafbfc",
-  section: "#f4f6f9",
-  muted: "#eef1f5",
-  hover: "#e8ecf1",
-  border: "#e5e7eb",
-  borderSoft: "#eef0f3",
-};
-
 export function buildApiTintedLightSurfaces(main: string, second: string): CSSVariableMap {
-  const brandWhisper = mixHex("#ffffff", tint(main, 0.96), 0.35);
-  const secondWhisper = mixHex(LIGHT_NEUTRAL.section, tint(second, 0.94), 0.2);
-
+  const canvas = mixHex(LIGHT_CREAM, main, 0.035);
+  const card = mixHex(LIGHT_PAPER, main, 0.012);
+  const muted = mixHex(LIGHT_CREAM, second, 0.04);
   return {
-    "--color-bg": LIGHT_NEUTRAL.canvas,
-    "--color-blue-off": brandWhisper,
-    "--color-blue-very-light": "#fafafa",
-    "--color-blue-border": LIGHT_NEUTRAL.borderSoft,
-    "--color-bg-primary": "#ffffff",
-    "--color-bg-secondary": secondWhisper,
-    "--color-bg-tertiary": LIGHT_NEUTRAL.muted,
-    "--color-bg-hover": LIGHT_NEUTRAL.hover,
-    "--color-bg-active": mixHex(LIGHT_NEUTRAL.hover, tint(main, 0.9), 0.12),
-    "--color-bg-light": LIGHT_NEUTRAL.canvas,
-    "--color-bg-card": "#ffffff",
-    "--color-bg-muted": LIGHT_NEUTRAL.muted,
-    "--color-bg-surface": "#ffffff",
+    "--color-bg": canvas,
+    "--color-blue-off": mixHex(LIGHT_CREAM, main, 0.06),
+    "--color-blue-very-light": mixHex(LIGHT_PAPER, main, 0.04),
+    "--color-blue-border": mixHex("#E8E4DC", main, 0.1),
+    "--color-bg-primary": canvas,
+    "--color-bg-secondary": mixHex(LIGHT_CREAM, main, 0.05),
+    "--color-bg-tertiary": muted,
+    "--color-bg-hover": mixHex(LIGHT_CREAM, main, 0.08),
+    "--color-bg-active": withAlpha(main, 0.1),
+    "--color-bg-light": mixHex(LIGHT_PAPER, main, 0.03),
+    "--color-bg-card": card,
+    "--color-bg-muted": muted,
+    "--color-bg-surface": card,
     "--color-bg-input": "#ffffff",
-    "--color-bg-accent-soft": withAlpha(main, 0.06),
+    "--color-bg-accent-soft": withAlpha(second, 0.08),
     "--color-text-inverse": "#ffffff",
-    "--color-border-primary": LIGHT_NEUTRAL.border,
-    "--color-border-secondary": "#d1d5db",
-    "--color-border-light": LIGHT_NEUTRAL.borderSoft,
+    "--color-border-primary": mixHex("#E4DFD6", main, 0.12),
+    "--color-border-secondary": mixHex("#DDD8D0", second, 0.1),
+    "--color-border-light": mixHex("#EDE9E2", main, 0.08),
     "--color-overlay-brand": withAlpha(darken(main, 12), 0.5),
     "--color-overlay-brand-light": withAlpha(darken(main, 12), 0.25),
   };
@@ -155,10 +149,7 @@ export function buildLightPalette(colors: AppSettingsColorPalette): CSSVariableM
     "--color-status-error-bg": withAlpha("#ef4444", 0.08),
     "--color-discount": "#22c55e",
     "--color-delete": "#ff4d4f",
-    "--color-gold": "#c5a572",
-    "--color-accent-gold": "#c5a572",
-    "--color-accent-plum": darken(main, 18),
-    "--color-accent-slate": "#64748b",
+    "--color-gold": "#ffd700",
 
     // ── Gradient (from main_color) ──
     "--color-gradient-from": lighten(main, 8),
@@ -231,10 +222,7 @@ export function buildDarkPalette(colors: AppSettingsColorPalette): CSSVariableMa
     "--color-status-error-bg": withAlpha("#f87171", 0.1),
     "--color-discount": "#4ade80",
     "--color-delete": "#f87171",
-    "--color-gold": "#d4b896",
-    "--color-accent-gold": "#c5a572",
-    "--color-accent-plum": lighten(main, 4),
-    "--color-accent-slate": "#94a3b8",
+    "--color-gold": "#fbbf24",
 
     // ── Gradient (from main_color) ──
     "--color-gradient-from": main,

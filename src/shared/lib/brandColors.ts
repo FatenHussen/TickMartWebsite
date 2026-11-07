@@ -1,15 +1,15 @@
 import type { AppSettingsColorPalette } from "@/features/account/api/settingsApi";
 
-/** Deema Fashion brand — overrides API `main_color` / `second_color` until dashboard is updated. */
-export const DEEMA_BRAND_LIGHT: AppSettingsColorPalette = {
-  main_color: "#c720a4",
-  second_color: "#ff1493",
+/** TickMart brand — overrides API palette while dashboard still returns Deema colours. */
+export const TICKMART_BRAND_LIGHT: AppSettingsColorPalette = {
+  main_color: "#00aed1",
+  second_color: "#4cdaf6",
   text_color: "#2a2a2a",
 };
 
-export const DEEMA_BRAND_DARK: AppSettingsColorPalette = {
-  main_color: "#ff1493",
-  second_color: "#c720a4",
+export const TICKMART_BRAND_DARK: AppSettingsColorPalette = {
+  main_color: "#4cdaf6",
+  second_color: "#00aed1",
   text_color: "#f5f5f5",
 };
 

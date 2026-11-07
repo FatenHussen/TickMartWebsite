@@ -12,12 +12,14 @@ import {
     useUpdateAddress,
 } from "@/features/account/hooks/useAddress";
 import type { NewAddressFormData } from "@/features/account/types";
+import { useAuthStore } from "@/store/auth";
 import {
     DEFAULT_ADDRESS_LATITUDE,
     DEFAULT_ADDRESS_LONGITUDE,
 } from "../constants";
 import { buildCreateAddressPayload, buildUpdateAddressPayload } from "../utils/buildAddressPayloads";
 import { parseAreasPageForSelect } from "../utils/parseAreasPageForSelect";
+import { profilePhoneForAddressForm } from "../utils/profilePhoneForAddressForm";
 import { resolveLocalizedOptionLabel } from "../utils/resolveLocalizedOptionLabel";
 
 export type UseAddressFormOptions = {
@@ -45,6 +47,7 @@ export function useAddressForm(options: UseAddressFormOptions = {}) {
     });
     const { mutate: updateAddress, isPending: isUpdating } = useUpdateAddress();
     const { data: addresses = [] } = useAddresses();
+    const profilePhone = useAuthStore((s) => s.user?.phone);
 
     const isSubmitPending = isCreating || isUpdating;
 
@@ -53,11 +56,14 @@ export function useAddressForm(options: UseAddressFormOptions = {}) {
         return addresses.find((addr) => addr.id === Number(routeAddressId)) ?? null;
     }, [addresses, isEditMode, routeAddressId]);
 
+    const defaultContactPhone = profilePhoneForAddressForm(profilePhone);
+
     const {
         register,
         handleSubmit,
         watch,
         setValue,
+        getValues,
         control,
         formState: { errors },
         reset,
@@ -71,12 +77,19 @@ export function useAddressForm(options: UseAddressFormOptions = {}) {
             nearestLandmark: "",
             buildingNumber: "",
             floorApartment: "",
-            contactPhone: "",
+            contactPhone: defaultContactPhone,
             lat: DEFAULT_ADDRESS_LATITUDE,
             lng: DEFAULT_ADDRESS_LONGITUDE,
             isDefault: false,
         },
     });
+
+    useEffect(() => {
+        if (isEditMode) return;
+        if (!defaultContactPhone) return;
+        if (getValues("contactPhone")) return;
+        setValue("contactPhone", defaultContactPhone);
+    }, [defaultContactPhone, getValues, isEditMode, setValue]);
 
     useEffect(() => {
         if (!isEditMode || !addressBeingEdited) return;
@@ -85,16 +98,18 @@ export function useAddressForm(options: UseAddressFormOptions = {}) {
             governorate: String(addressBeingEdited.area.city.governorate.id),
             city: String(addressBeingEdited.area.city.id),
             area: String(addressBeingEdited.area.id),
-            streetName: addressBeingEdited.street_name,
-            nearestLandmark: addressBeingEdited.nearest_landmark,
+            streetName: addressBeingEdited.street_name || "",
+            nearestLandmark: addressBeingEdited.nearest_landmark || "",
             buildingNumber: addressBeingEdited.building_number || "",
             floorApartment: addressBeingEdited.floor_apartment || "",
-            contactPhone: addressBeingEdited.contact_phone,
+            contactPhone:
+                profilePhoneForAddressForm(addressBeingEdited.contact_phone) ||
+                defaultContactPhone,
             lat: addressBeingEdited.lat,
             lng: addressBeingEdited.lng,
             isDefault: addressBeingEdited.is_default,
         });
-    }, [isEditMode, addressBeingEdited, reset]);
+    }, [isEditMode, addressBeingEdited, reset, defaultContactPhone]);
 
     const selectedGovernorateId = watch("governorate");
     const selectedCityId = watch("city");

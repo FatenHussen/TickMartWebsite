@@ -36,15 +36,15 @@ export function getPointsTileDarkCardStyle(variant: 0 | 1 | 2): CSSProperties {
 }
 
 const LIGHT_TILE_BASE: [string, string, string] = [
-  "radial-gradient(ellipse 80% 65% at 100% -8%, color-mix(in srgb, var(--color-cta) 16%, transparent) 0%, transparent 58%), linear-gradient(165deg, #fbf6ee 0%, #f4ead8 52%, #efe4d2 100%)",
-  "radial-gradient(ellipse 80% 65% at 100% -8%, color-mix(in srgb, var(--color-cta) 12%, transparent) 0%, transparent 58%), linear-gradient(165deg, #faf4eb 0%, #f3e8d6 55%, #eee3d0 100%)",
-  "radial-gradient(ellipse 80% 65% at 100% -8%, color-mix(in srgb, var(--color-cta) 10%, transparent) 0%, transparent 58%), linear-gradient(165deg, #f8f2e8 0%, #f2e7d4 55%, #ece0cc 100%)",
+  "radial-gradient(ellipse 80% 65% at 100% -8%, color-mix(in srgb, #ff9f00 16%, transparent) 0%, transparent 58%), linear-gradient(165deg, #fbf6ee 0%, #f4ead8 52%, #efe4d2 100%)",
+  "radial-gradient(ellipse 80% 65% at 100% -8%, color-mix(in srgb, #ff9f00 12%, transparent) 0%, transparent 58%), linear-gradient(165deg, #faf4eb 0%, #f3e8d6 55%, #eee3d0 100%)",
+  "radial-gradient(ellipse 80% 65% at 100% -8%, color-mix(in srgb, #ff9f00 10%, transparent) 0%, transparent 58%), linear-gradient(165deg, #f8f2e8 0%, #f2e7d4 55%, #ece0cc 100%)",
 ];
 
 export function getPointsTileLightCardStyle(variant: 0 | 1 | 2): CSSProperties {
   return {
     background: LIGHT_TILE_BASE[variant],
-    border: "1px solid color-mix(in srgb, var(--color-cta) 18%, var(--color-border-primary))",
+    border: "1px solid color-mix(in srgb, #ff9f00 18%, var(--color-border-primary))",
     boxShadow: "0 8px 24px -16px rgba(28, 25, 23, 0.14)",
   };
 }

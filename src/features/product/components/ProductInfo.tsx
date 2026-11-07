@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
+import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { paths } from "@/app/routes/path/paths";
 import { cn } from "@/shared/lib/utils";
 import Rating from "@/shared/component/Rating";
 import Badge from "@/shared/component/Badge";
@@ -12,9 +14,14 @@ export type ProductInfoBadge = {
     image?: string;
 };
 
+export type ProductInfoBrand = {
+    id: number;
+    name: string;
+};
+
 export type ProductInfoProps = {
     category?: string;
-    brand?: string;
+    brand?: ProductInfoBrand | string | null;
     name: string;
     sku?: string;
     barcode?: string;
@@ -46,6 +53,8 @@ export default function ProductInfo({
     className,
 }: ProductInfoProps) {
     const { t } = useTranslation();
+    const brandName = typeof brand === "string" ? brand : brand?.name;
+    const brandId = typeof brand === "object" && brand ? brand.id : undefined;
     const metaItems = [
         sku ? { label: t("product.sku", "SKU"), value: sku, ltr: true } : null,
         barcode
@@ -55,7 +64,7 @@ export default function ProductInfo({
 
     return (
         <div className={cn("flex flex-col gap-3.5", className)}>
-            {(category || brand || topRightSlot) && (
+            {(category || brandName || topRightSlot) && (
                 <div className="flex items-start justify-between gap-4">
                     <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-sm text-custom-secondary">
                         {category && (
@@ -63,12 +72,21 @@ export default function ProductInfo({
                                 {category}
                             </span>
                         )}
-                        {category && brand && (
+                        {category && brandName && (
                             <span className="text-custom-tertiary" aria-hidden>
                                 /
                             </span>
                         )}
-                        {brand && <span>{brand}</span>}
+                        {brandName && brandId != null ? (
+                            <Link
+                                to={paths.client.brandDetails(brandId)}
+                                className="font-medium text-custom-primary transition-colors hover:text-primary dark:hover:text-[color-mix(in_srgb,var(--color-main)_78%,#fff)]"
+                            >
+                                {brandName}
+                            </Link>
+                        ) : brandName ? (
+                            <span>{brandName}</span>
+                        ) : null}
                     </div>
                     {topRightSlot && <div className="shrink-0">{topRightSlot}</div>}
                 </div>
