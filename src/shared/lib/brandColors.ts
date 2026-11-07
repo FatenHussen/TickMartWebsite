@@ -1,15 +1,18 @@
 import type { AppSettingsColorPalette } from "@/features/account/api/settingsApi";
 
-/** TickMart brand — storefront palette (overrides API colours when needed). */
+/**
+ * TickMart brand — logo orange as main, cyan as secondary.
+ * Overrides API colours while the dashboard still returns another brand palette.
+ */
 export const TICKMART_BRAND_LIGHT: AppSettingsColorPalette = {
-  main_color: "#00aed1",
-  second_color: "#4cdaf6",
+  main_color: "#ff9f00",
+  second_color: "#00aed1",
   text_color: "#2a2a2a",
 };
 
 export const TICKMART_BRAND_DARK: AppSettingsColorPalette = {
-  main_color: "#4cdaf6",
-  second_color: "#00aed1",
+  main_color: "#ffb020",
+  second_color: "#4cdaf6",
   text_color: "#f5f5f5",
 };
 

@@ -51,18 +51,18 @@ html.dark #root {
   /* App-matching Arabic/Latin UI font (same geometric sans as the mobile app) */
   --font-sans: "Cairo", ui-sans-serif, system-ui, sans-serif;
 
-  /* Brand Colors - From Design Palette */
-  --color-primary: #00aed1;
-  --color-primary-light: #4cdaf6;
+  /* Brand Colors - TickMart logo orange + cyan secondary */
+  --color-primary: #ff9f00;
+  --color-primary-light: #ffb020;
   --color-secondary: #ffd700;
   /* Tickmart logo orange — sampled from /images/shared/logo.png */
   --color-cta: #ff9f00;
   --color-cta-hover: #e89000;
   --color-cta-ink: #1c1917;
-  --color-blue-off: #e4f0fb;
-  --color-blue-light: #77beff;
-  --color-blue-very-light: #e5f3ff;
-  --color-blue-border: #eff6ff;
+  --color-blue-off: #fff6e8;
+  --color-blue-light: #00aed1;
+  --color-blue-very-light: #fff9f0;
+  --color-blue-border: #ffe8c2;
   --color-white: #ffffff;
   --color-green: #16a34a;
   --color-gray-light: #8b8b8b;
@@ -72,17 +72,17 @@ html.dark #root {
 
   /* Background Colors */
   --color-bg-primary: #ffffff;
-  --color-bg-secondary: #e4f0fb;
+  --color-bg-secondary: #fff6e8;
   --color-bg-tertiary: #f3f4f6;
-  --color-bg-hover: #e4f0fb;
-  --color-bg-active: #e0f7fa;
-  --color-bg-light: #f8fafc;
+  --color-bg-hover: #ffefd6;
+  --color-bg-active: #ffe8c2;
+  --color-bg-light: #fffaf3;
   --color-bg-card: #ffffff;
   /** Sits above section canvas in dark mode so product/shop cards read as distinct panels */
   --color-bg-card-elevated: var(--color-bg-card);
   /* Cart column gradient (light); dark overrides in `@variant dark` */
-  --color-bg-light-1: #e4f0fb;
-  --color-bg-light-2: #e5f3ff;
+  --color-bg-light-1: #fff6e8;
+  --color-bg-light-2: #fff9f0;
 
   /* Text Colors */
   --color-text-primary: #2a2a2a;
@@ -93,14 +93,14 @@ html.dark #root {
   --color-text: var(--color-text-primary);
 
   /* Border Colors */
-  --color-border-primary: #e4f0fb;
+  --color-border-primary: #ffe8c2;
   --color-border-secondary: #d1d5db;
 
   /* Accent Colors */
-  --color-accent-primary: #00aed1;
-  --color-accent-primary-hover: #0099b8;
-  --color-accent-light: #4cdaf6;
-  --color-accent-light-bg: #e0f7fa;
+  --color-accent-primary: #ff9f00;
+  --color-accent-primary-hover: #e89000;
+  --color-accent-light: #ffb020;
+  --color-accent-light-bg: #fff6e8;
 
   /* API palette mirrors (overwritten when settings load) */
   --color-main: var(--color-primary);
@@ -152,11 +152,11 @@ html.dark #root {
   :root,
   :host {
     @variant dark {
-      /* Brand Colors - From Design Palette */
-      --color-primary: #4cdaf6;
-      --color-primary-light: #00aed1;
+      /* Brand Colors - TickMart orange (dark) */
+      --color-primary: #ffb020;
+      --color-primary-light: #ff9f00;
       --color-secondary: #ffd700;
-      --color-blue-off: #1a2332;
+      --color-blue-off: #2a2118;
       --color-white: #ffffff;
       --color-gray: #bbbbbb;
 
@@ -194,10 +194,10 @@ html.dark #root {
       --color-border-secondary: #475569;
 
       /* Accent Colors */
-      --color-accent-primary: #4cdaf6;
-      --color-accent-primary-hover: #00aed1;
-      --color-accent-light: #00aed1;
-      --color-accent-light-bg: #1e3a5f;
+      --color-accent-primary: #ffb020;
+      --color-accent-primary-hover: #ff9f00;
+      --color-accent-light: #ffc44d;
+      --color-accent-light-bg: #3a2a14;
 
       --color-main: var(--color-primary);
       --color-api-second: var(--color-primary-light);
