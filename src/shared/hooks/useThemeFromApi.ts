@@ -9,7 +9,7 @@ import {
 
 /**
  * Applies theme colours at runtime. API palettes are merged with TickMart
- * so dashboard Deema colours do not paint the storefront.
+ * so the storefront keeps TickMart branding.
  */
 export function useThemeFromApi() {
   const { setApiColors } = useTheme();

@@ -1,6 +1,6 @@
 import type { AppSettingsColorPalette } from "@/features/account/api/settingsApi";
 
-/** TickMart brand — overrides API palette while dashboard still returns Deema colours. */
+/** TickMart brand — storefront palette (overrides API colours when needed). */
 export const TICKMART_BRAND_LIGHT: AppSettingsColorPalette = {
   main_color: "#00aed1",
   second_color: "#4cdaf6",
