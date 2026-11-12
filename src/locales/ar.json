@@ -458,6 +458,7 @@
     "quickViewLoadingHint": "جاري جلب الصور والأسعار والمتغيرات…",
     "selectOneVariant": "اختر خياراً واحداً لإضافته للسلة",
     "selectVariant": "اختر أحد المتغيرات",
+    "selectRequiredVariants": "يرجى اختيار متغيرات المنتج قبل إضافته إلى السلة",
     "insufficientStock": "الكمية غير متوفرة بالمخزون.",
     "outOfStock": "غير متوفر",
     "unavailable": "غير متوفر حالياً",

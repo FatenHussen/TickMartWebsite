@@ -14,8 +14,17 @@ import { useAuthStore } from"@/store/auth";
 export function useCurrencies() {
  return useQuery({
  queryKey: queryKeys.currencies.list(),
- queryFn: () => _CurrencyApi.getCurrencies(),
- select: (response) => response.data.items as CurrencyItem[],
+ queryFn: async () => {
+ const response = await _CurrencyApi.getCurrencies();
+ const items = [...response.data.items] as CurrencyItem[];
+ const currentPage = Number(response.data.pagination?.current_page ?? 1);
+ const lastPage = Number(response.data.pagination?.last_page ?? currentPage);
+ for (let page = currentPage + 1; page <= lastPage; page += 1) {
+ const next = await _CurrencyApi.getCurrencies(page);
+ items.push(...next.data.items);
+ }
+ return items;
+ },
  staleTime: 1000 * 60 * 10, // 10 minutes - currencies change rarely
  });
 }
@@ -25,8 +34,9 @@ export function useCurrencies() {
  */
 export function useMyCurrency() {
  const token = useAuthStore((s) => s.token);
+ const userId = useAuthStore((s) => s.user?.id);
  return useQuery({
- queryKey: queryKeys.currencies.myCurrency(),
+ queryKey: [...queryKeys.currencies.myCurrency(), userId, Boolean(token)],
  queryFn: () => _CurrencyApi.getMyCurrency(),
  select: (response) => response.data,
  enabled: Boolean(token),

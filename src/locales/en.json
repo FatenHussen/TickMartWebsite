@@ -458,6 +458,7 @@
     "quickViewLoadingHint": "Fetching photos, prices & variants…",
     "selectOneVariant": "Choose one option to add to cart",
     "selectVariant": "Select a variant",
+    "selectRequiredVariants": "Please select the product options before adding it to your cart.",
     "insufficientStock": "Not enough stock for this quantity.",
     "outOfStock": "Out of stock",
     "unavailable": "Currently unavailable",

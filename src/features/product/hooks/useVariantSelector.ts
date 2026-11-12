@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useMemo, useCallback } from "react";
 import type {
     AttributeMapItem,
     AttributeMapOption,
@@ -6,17 +6,13 @@ import type {
     ProductImage,
     SelectedAttributes,
 } from "../types/productDetails";
-import { isPurchasableVariant, isVariantInStock } from "../types/productDetails";
+import { isPurchasableVariant, isVariantInStock, requiresVariantSelection } from "../types/productDetails";
 import { gallerySrcsForSelection } from "../lib/productMedia";
 import {
-    findShopVariant,
-    findShopVariantByNames,
-    findShopVariantWithOptionId,
-    findShopVariantWithValue,
     isIndependentPickerAttribute,
     optionHexById,
     resolveAttributeOptions,
-    selectedIdsFromVariant,
+    resolvePickerAttributes,
     variantHasOption,
 } from "../lib/findShopVariant";
 
@@ -40,50 +36,15 @@ interface AvailableAttribute extends AttributeMapItem {
     valueHex: Record<number, string>;
 }
 
-function comboAttributes(variant: ShopVariant) {
-    return variant.attributes ?? [];
-}
-
-function attributesFromVariant(variant: ShopVariant | null): SelectedAttributes {
-    const attrs: SelectedAttributes = {};
-    if (!variant) return attrs;
-    for (const attr of comboAttributes(variant)) {
-        attrs[attr.attribute] = attr.value;
-    }
-    return attrs;
-}
-
-function firstComboVariant(variants: ShopVariant[]): ShopVariant | undefined {
-    return variants.find((variant) => comboAttributes(variant).length > 0);
-}
-
-function defaultVariant(
-    shopVariants: ShopVariant[],
-    hasAttributeMatrix: boolean,
-): ShopVariant | undefined {
-    if (shopVariants.length === 0) return undefined;
-    if (!hasAttributeMatrix) {
-        return (
-            shopVariants.find(isPurchasableVariant) ??
-            shopVariants.find(isVariantInStock) ??
-            shopVariants[0]
-        );
-    }
-    return firstComboVariant(shopVariants) ?? shopVariants[0];
-}
-
-function findVariantById(
-    shopVariants: ShopVariant[],
-    id: number | null,
-): ShopVariant | undefined {
-    if (id == null) return undefined;
-    return shopVariants.find((variant) => variant.id === id);
+function attributeKey(attribute: AttributeMapItem): string {
+    return attribute.id != null ? `id:${attribute.id}` : attribute.attribute;
 }
 
 interface UseVariantSelectorReturn {
     selectedAttributes: SelectedAttributes;
     selectedIds: number[];
     setAttributeOption: (attr: AttributeMapItem, optionId: number) => void;
+    selectShopVariant: (id: number) => void;
     selectedVariant: ShopVariant | null;
     selectedShopVariantId: number | null;
     currentPrice: number;
@@ -91,6 +52,7 @@ interface UseVariantSelectorReturn {
     currentImages: string[];
     currentQuantity: number | null;
     isVariantSelected: boolean;
+    requiresSelection: boolean;
     availableAttributes: AvailableAttribute[];
 }
 
@@ -108,51 +70,55 @@ export function useVariantSelector({
     basePrice,
     basePriceAfterDiscount,
 }: UseVariantSelectorParams): UseVariantSelectorReturn {
-    const [selectedShopVariantId, setSelectedShopVariantId] = useState<
-        number | null
-    >(null);
-    const [boundProductId, setBoundProductId] = useState(productId);
+    const [selection, setSelection] = useState<{
+        productId?: number;
+        optionIds: Record<string, number>;
+        shopVariantId: number | null;
+    }>({ productId, optionIds: {}, shopVariantId: null });
 
-    if (productId !== boundProductId) {
-        setBoundProductId(productId);
-        setSelectedShopVariantId(null);
+    // Reset during render so a route change cannot reuse another product's choices.
+    let activeSelection = selection;
+    if (productId !== selection.productId) {
+        activeSelection = { productId, optionIds: {}, shopVariantId: null };
+        setSelection(activeSelection);
     }
 
-    const hasAttributeMatrix = attributesMap.length > 0;
+    const pickerAttributes = useMemo(
+        () => resolvePickerAttributes(attributesMap, shopVariants),
+        [attributesMap, shopVariants],
+    );
+    const needsSelection = requiresVariantSelection(shopVariants, pickerAttributes);
+    const choices = pickerAttributes.map((attribute) => ({
+        attribute,
+        option: resolveAttributeOptions(attribute, shopVariants).find(
+            (option) => option.id === activeSelection.optionIds[attributeKey(attribute)],
+        ),
+    }));
+    const selectedAttributes: SelectedAttributes = {};
+    const selectedIds: number[] = [];
+    for (const { attribute, option } of choices) {
+        if (!option) continue;
+        selectedAttributes[attribute.attribute] = option.name;
+        if (option.id > 0) selectedIds.push(option.id);
+    }
 
-    const selectedVariant = useMemo(() => {
-        if (shopVariants.length === 0) return null;
-        return (
-            findVariantById(shopVariants, selectedShopVariantId) ??
-            defaultVariant(shopVariants, hasAttributeMatrix) ??
-            null
+    let selectedVariant: ShopVariant | null = null;
+    if (!needsSelection) {
+        // A simple product still needs an internal shop row for cart identity.
+        selectedVariant = shopVariants.find(isPurchasableVariant) ??
+            shopVariants.find(isVariantInStock) ?? shopVariants[0] ?? null;
+    } else if (activeSelection.shopVariantId != null) {
+        selectedVariant = shopVariants.find(
+            (variant) => variant.id === activeSelection.shopVariantId,
+        ) ?? null;
+    } else if (choices.length > 0 && choices.every(({ option }) => option != null)) {
+        const matches = shopVariants.filter((variant) =>
+            choices.every(({ attribute, option }) =>
+                variantHasOption(variant, option!, attribute.attribute),
+            ),
         );
-    }, [shopVariants, selectedShopVariantId, hasAttributeMatrix]);
-
-    useEffect(() => {
-        if (shopVariants.length === 0) {
-            setSelectedShopVariantId((id) => (id == null ? id : null));
-            return;
-        }
-
-        const stillThere =
-            selectedShopVariantId != null &&
-            shopVariants.some((variant) => variant.id === selectedShopVariantId);
-        if (stillThere) return;
-
-        const nextId = defaultVariant(shopVariants, hasAttributeMatrix)?.id ?? null;
-        setSelectedShopVariantId((id) => (id === nextId ? id : nextId));
-    }, [shopVariants, selectedShopVariantId, hasAttributeMatrix]);
-
-    const selectedAttributes = useMemo(
-        () => attributesFromVariant(selectedVariant),
-        [selectedVariant],
-    );
-
-    const selectedIds = useMemo(
-        () => selectedIdsFromVariant(selectedVariant),
-        [selectedVariant],
-    );
+        selectedVariant = matches.find(isPurchasableVariant) ?? matches[0] ?? null;
+    }
 
     const setAttributeOption = useCallback(
         (attr: AttributeMapItem, optionId: number) => {
@@ -160,44 +126,52 @@ export function useVariantSelector({
             const option = options.find((o) => o.id === optionId);
             if (!option) return;
 
-            const axisIds = new Set(
-                options.map((o) => o.id).filter((id) => id > 0),
-            );
-            const currentIds = selectedIdsFromVariant(selectedVariant);
-            const nextIds = [
-                ...currentIds.filter((id) => !axisIds.has(id)),
-                ...(optionId > 0 ? [optionId] : []),
-            ];
-
-            // Keep the other axes when that combo exists (أزرق + S).
-            // Otherwise pick the first row with the new value (أسود → L).
-            const match =
-                (nextIds.length
-                    ? findShopVariant(shopVariants, nextIds)
-                    : null) ??
-                findShopVariantWithOptionId(shopVariants, optionId) ??
-                findShopVariantByNames(shopVariants, {
-                    ...attributesFromVariant(selectedVariant),
-                    [attr.attribute]: option.name,
-                }) ??
-                findShopVariantWithValue(
-                    shopVariants,
-                    attr.attribute,
-                    option.name,
+            setSelection((previous) => {
+                const previousIds = previous.productId === productId ? previous.optionIds : {};
+                const nextIds: Record<string, number> = { [attributeKey(attr)]: optionId };
+                let candidates = shopVariants.filter((variant) =>
+                    variantHasOption(variant, option, attr.attribute),
                 );
-            if (!match) return;
-            setSelectedShopVariantId(match.id ?? null);
+                // Retain only compatible explicit choices. Never fill unchosen axes.
+                for (const other of pickerAttributes) {
+                    if (attributeKey(other) === attributeKey(attr)) continue;
+                    const chosen = resolveAttributeOptions(other, shopVariants).find(
+                        (item) => item.id === previousIds[attributeKey(other)],
+                    );
+                    if (!chosen) continue;
+                    const matching = candidates.filter((variant) =>
+                        variantHasOption(variant, chosen, other.attribute),
+                    );
+                    if (!matching.length) continue;
+                    nextIds[attributeKey(other)] = chosen.id;
+                    candidates = matching;
+                }
+                return { productId, optionIds: nextIds, shopVariantId: null };
+            });
         },
-        [shopVariants, selectedVariant],
+        [shopVariants, pickerAttributes, productId],
     );
 
+    const selectShopVariant = useCallback((id: number) => {
+        const variant = shopVariants.find((row) => row.id === id);
+        if (!variant) return;
+        const optionIds: Record<string, number> = {};
+        for (const attribute of pickerAttributes) {
+            const option = resolveAttributeOptions(attribute, shopVariants).find(
+                (item) => variantHasOption(variant, item, attribute.attribute),
+            );
+            if (option) optionIds[attributeKey(attribute)] = option.id;
+        }
+        setSelection({ productId, optionIds, shopVariantId: id });
+    }, [shopVariants, pickerAttributes, productId]);
+
     const hexById = useMemo(
-        () => optionHexById(attributesMap, shopVariants),
-        [attributesMap, shopVariants],
+        () => optionHexById(pickerAttributes, shopVariants),
+        [pickerAttributes, shopVariants],
     );
 
     const availableAttributes = useMemo((): AvailableAttribute[] => {
-        return attributesMap.map((attr) => {
+        return pickerAttributes.map((attr) => {
             const options = resolveAttributeOptions(attr, shopVariants);
             const axisIds = new Set(
                 options.map((o) => o.id).filter((id) => id > 0),
@@ -256,7 +230,7 @@ export function useVariantSelector({
             };
         });
     }, [
-        attributesMap,
+        pickerAttributes,
         shopVariants,
         selectedAttributes,
         selectedIds,
@@ -288,20 +262,22 @@ export function useVariantSelector({
     }, [selectedVariant]);
 
     const isVariantSelected = useMemo(() => {
-        return !hasAttributeMatrix || selectedVariant !== null;
-    }, [hasAttributeMatrix, selectedVariant]);
+        return selectedVariant !== null;
+    }, [selectedVariant]);
 
     return {
         selectedAttributes,
         selectedIds,
         setAttributeOption,
+        selectShopVariant,
         selectedVariant,
-        selectedShopVariantId,
+        selectedShopVariantId: selectedVariant?.id ?? null,
         currentPrice,
         currentPriceAfterDiscount,
         currentImages,
         currentQuantity,
         isVariantSelected,
+        requiresSelection: needsSelection,
         availableAttributes,
     };
 }

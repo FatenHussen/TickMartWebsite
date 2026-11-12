@@ -49,6 +49,7 @@ import PriceBlock from "@/shared/component/PriceBlock";
 import {
     isPurchasableVariant,
     firstPurchasableVariant,
+    requiresVariantSelection,
     variantOrderLimit,
     exceedsVariantStock,
     warrantyTitle,
@@ -208,7 +209,9 @@ function ProductDetails() {
             return;
         }
         const variants = boughtWithPreview.shop_variants;
-        const firstOk = firstPurchasableVariant(variants);
+        const firstOk = requiresVariantSelection(variants, boughtWithPreview.attributes_map)
+            ? undefined
+            : firstPurchasableVariant(variants);
         setPreviewSelectedShopVariantId((prev) => {
             if (prev != null && variants.some((v) => v.id === prev)) return prev;
             return firstOk?.id ?? null;
@@ -249,6 +252,9 @@ function ProductDetails() {
         currentPriceAfterDiscount,
         currentImages,
         selectedVariant,
+        selectedShopVariantId,
+        selectShopVariant,
+        requiresSelection,
         availableAttributes,
     } = useVariantSelector({
         productId: productIdNum,
@@ -333,6 +339,11 @@ function ProductDetails() {
     const productVariants = product?.shop_variants ?? [];
     const hasPurchasableVariant = productVariants.some(isPurchasableVariant);
     const canAddToCart = isPurchasableVariant(selectedVariant);
+    const needsVariantChoice = requiresSelection && selectedVariant == null;
+    const addToCartDisabled = !canAddToCart && !(needsVariantChoice && hasPurchasableVariant);
+    const showVariantRows = requiresSelection && (
+        availableAttributes.length === 0 || availableAttributes.some((attribute) => attribute.options.length === 0)
+    );
     const warrantyName = product
         ? warrantyTitle(product, (months) =>
               t("product.warrantyMonths", { count: months }),
@@ -341,8 +352,8 @@ function ProductDetails() {
     const warrantyDescription = product ? warrantyBody(product) : null;
     const cannotAddToCartReason = !hasPurchasableVariant
         ? t("product.unavailable", "Currently unavailable")
-        : selectedVariant == null
-          ? t("product.selectVariant", "Select a variant")
+        : needsVariantChoice
+          ? t("product.selectRequiredVariants", "Please select the product options before adding it to your cart.")
           : t("product.outOfStock", "Out of stock");
 
     /** Bound to the selected shop variant via `galleryFor` (`has_variant_images` + `images[].path`). */
@@ -357,7 +368,7 @@ function ProductDetails() {
         if (!isPurchasableVariant(v)) {
             toast.error(
                 variants.some(isPurchasableVariant)
-                    ? t("product.selectVariant", "Select a variant")
+                    ? t("product.selectRequiredVariants", "Please select the product options before adding it to your cart.")
                     : t("product.unavailable", "Currently unavailable"),
             );
             return;
@@ -941,7 +952,14 @@ function ProductDetails() {
                             </div>
                         )}
 
-                        {availableAttributes.map((attribute) => (
+                        {showVariantRows ? (
+                            <ShopVariantsPreview
+                                variants={productVariants}
+                                productMedia={product}
+                                selectedId={selectedShopVariantId}
+                                onSelect={selectShopVariant}
+                            />
+                        ) : availableAttributes.map((attribute) => (
                             <AttributeSelector
                                 key={attribute.id ?? attribute.attribute}
                                 attribute={attribute}
@@ -992,10 +1010,10 @@ function ProductDetails() {
                                 max={maxOrderQuantity}
                                 onQuantityChange={setQuantity}
                                 onAddToCart={handleAddToCart}
-                                addToCartDisabled={!canAddToCart}
+                                addToCartDisabled={addToCartDisabled}
                                 addToCartClassName="hidden lg:inline-flex"
                                 addToCartText={
-                                    canAddToCart
+                                    !addToCartDisabled
                                         ? t("product.addToCart", "Add To Cart")
                                         : t(
                                               "product.unavailable",
@@ -1286,9 +1304,10 @@ function ProductDetails() {
                                         />
                                     }
                                     disabled={
-                                        !isPurchasableVariant(
-                                            previewSelectedVariant
-                                        ) || previewQuantity < 1
+                                        (!isPurchasableVariant(previewSelectedVariant) &&
+                                            !(previewSelectedVariant == null &&
+                                                (boughtWithPreview.shop_variants ?? []).some(isPurchasableVariant))) ||
+                                        previewQuantity < 1
                                     }
                                     className="cursor-pointer rounded-xl border border-primary/20 bg-primary shadow-md shadow-[0_8px_28px_-6px_var(--color-shadow-accent)] !opacity-100 transition duration-200 hover:!border-primary/30 hover:!bg-[var(--color-primary-dark)] hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50"
                                     onClick={handleAddPreviewToCart}
@@ -1488,11 +1507,11 @@ function ProductDetails() {
                         <button
                             type="button"
                             onClick={handleAddToCart}
-                            disabled={!canAddToCart}
+                            disabled={addToCartDisabled}
                             className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-primary text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
                         >
                             <HiShoppingCart className="h-4 w-4" aria-hidden />
-                            {canAddToCart
+                            {!addToCartDisabled
                                 ? t("product.addToCart", "Add To Cart")
                                 : t("product.unavailable", "Currently unavailable")}
                         </button>

@@ -128,6 +128,7 @@ export default function AttributeSelector({
                                     )}
                                     style={{ backgroundColor: fill }}
                                     aria-label={`Select color ${option.name}`}
+                                    aria-pressed={isSelected}
                                     title={option.name}
                                 >
                                     {isSelected ? (
@@ -163,6 +164,7 @@ export default function AttributeSelector({
                                         : "bg-custom-card text-custom-primary ring-1 ring-black/8 hover:ring-black/16 dark:ring-white/10 dark:hover:ring-white/20",
                                 )}
                                 aria-label={`Select ${attribute.attribute} ${option.name}`}
+                                aria-pressed={isSelected}
                             >
                                 {option.name}
                             </button>

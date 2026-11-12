@@ -19,6 +19,27 @@ export function selectedIdsFromVariant(
         .filter((id): id is number => id != null && Number.isFinite(id) && id > 0);
 }
 
+/** Include axes present on variants even if an older API omits their map. */
+export function resolvePickerAttributes(
+    attributesMap: AttributeMapItem[],
+    variants: ShopVariant[],
+): AttributeMapItem[] {
+    const result = [...attributesMap];
+    for (const variant of variants) {
+        for (const attribute of attrs(variant)) {
+            if (result.some((item) => item.attribute === attribute.attribute)) continue;
+            result.push({
+                attribute: attribute.attribute,
+                type: attribute.type,
+                values: [...new Set(variants.flatMap((row) =>
+                    attrs(row).filter((a) => a.attribute === attribute.attribute).map((a) => a.value),
+                ))],
+            });
+        }
+    }
+    return result;
+}
+
 /**
  * Match a shop row by attribute-value IDs.
  * Admin rename (صغير → XS) keeps the same `id`; only `name` / `value` change.

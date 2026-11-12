@@ -184,6 +184,7 @@ export default function ShopVariantsPreview({
                                 <button
                                     type="button"
                                     disabled={outOfStock}
+                                    aria-pressed={isSelected}
                                     onClick={() =>
                                         purchasable &&
                                         v.id != null &&

@@ -9,6 +9,7 @@ import NotificationToast from "@/components/NotificationToast";
 import useFirebaseNotifications from "@/hooks/useFirebaseNotifications";
 import { PopupProvider } from "@/features/popup/providers/PopupProvider";
 import { BootGate } from "@/shared/component/loading";
+import { CurrencyFromApiSync } from "@/features/account/components/CurrencyFromApiSync";
 import "@/i18n/config";
 
 type AppProps = {
@@ -33,6 +34,7 @@ export default function App({ children }: AppProps) {
   return (
     <LanguageProvider>
       <CurrencyProvider>
+        <CurrencyFromApiSync />
         <ThemeProvider>
           <ThemeFromApiSync />
           <BootGate>

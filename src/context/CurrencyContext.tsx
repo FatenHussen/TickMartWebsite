@@ -2,13 +2,19 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState } f
 import type { ReactNode } from"react";
 import i18next from"i18next";
 import { formatMoneyAmount, presentMoney } from"@/shared/lib/formatApiPrice";
+import {
+ currencySymbols,
+ persistCurrencySelection,
+ persistDefaultCurrency,
+ readCurrencySelection,
+ readDefaultCurrency,
+ resetAccountCurrencySelection,
+ resolveCurrencySelection,
+ type CurrencySelection,
+ type CurrencyValue,
+} from "@/shared/lib/currencyPreference";
 
 export type Currency = string;
-
-interface CurrencyState {
- code: string;
- symbol: string;
-}
 
 interface CurrencyContextType {
  currency: Currency;
@@ -16,8 +22,9 @@ interface CurrencyContextType {
  setCurrency: (
  currency: Currency,
  symbol?: string,
- options?: { fromAccount?: boolean },
+ options?: { fromAccount?: boolean; fromDefault?: boolean },
  ) => void;
+ resetAccountCurrency: () => void;
  getCurrencySymbol: () => string;
  formatPrice: (amount: number) => string;
 }
@@ -26,73 +33,60 @@ const CurrencyContext = createContext<CurrencyContextType | undefined>(
  undefined
 );
 
-const defaultCurrencySymbols: Record<string, string> = {
- USD:"$",
- EUR:"€",
- GBP:"£",
- SYP:"ل.س",
- AED:"د.إ",
- SAR:"ر.س",
- EGP:"ج.م",
-};
-
-/** Storefront default for guests — no login / settings required. */
-const DEFAULT_CURRENCY: CurrencyState = {
- code: "SYP",
- symbol: defaultCurrencySymbols.SYP,
-};
-
-/** Bump when the guest default changes so old USD localStorage is replaced once. */
-const CURRENCY_DEFAULTS_VERSION = "syp-default-v2";
-const CURRENCY_DEFAULTS_VERSION_KEY = "currencyDefaultsVersion";
-
-function getStoredCurrency(): CurrencyState {
- if (typeof window === "undefined") return DEFAULT_CURRENCY;
+function getStoredCurrency(): CurrencySelection {
  try {
- const version = localStorage.getItem(CURRENCY_DEFAULTS_VERSION_KEY);
- if (version !== CURRENCY_DEFAULTS_VERSION) {
- localStorage.setItem(CURRENCY_DEFAULTS_VERSION_KEY, CURRENCY_DEFAULTS_VERSION);
- return DEFAULT_CURRENCY;
- }
- const storedCode = localStorage.getItem("currency");
- const storedSymbol = localStorage.getItem("currencySymbol");
- if (storedCode && storedSymbol) {
- return { code: storedCode, symbol: storedSymbol };
- }
- if (storedCode && defaultCurrencySymbols[storedCode]) {
- return {
- code: storedCode,
- symbol: defaultCurrencySymbols[storedCode],
- };
- }
- return DEFAULT_CURRENCY;
+ return readCurrencySelection(typeof window === "undefined" ? undefined : localStorage);
  } catch {
- return DEFAULT_CURRENCY;
+ return readCurrencySelection();
+ }
+}
+
+function getStoredDefaultCurrency(): CurrencyValue {
+ try {
+ return readDefaultCurrency(typeof window === "undefined" ? undefined : localStorage);
+ } catch {
+ return readDefaultCurrency();
  }
 }
 
 export function CurrencyProvider({ children }: { children: ReactNode }) {
- const [currencyState, setCurrencyState] = useState<CurrencyState>(
+ const [currencyState, setCurrencyState] = useState<CurrencySelection>(
  getStoredCurrency
  );
+ const defaultCurrencyRef = useRef<CurrencyValue | null>(null);
+ if (defaultCurrencyRef.current === null) defaultCurrencyRef.current = getStoredDefaultCurrency();
 
  useEffect(() => {
- localStorage.setItem("currency", currencyState.code);
- localStorage.setItem("currencySymbol", currencyState.symbol);
+ try {
+ persistCurrencySelection(localStorage, currencyState);
+ } catch {
+ /* Storage access may be disabled by the browser. */
+ }
  }, [currencyState]);
-
- const pinnedByUser = useRef(false);
 
  const setCurrency = useCallback((
  newCurrency: Currency,
  symbol?: string,
- options?: { fromAccount?: boolean },
+ options?: { fromAccount?: boolean; fromDefault?: boolean },
  ) => {
- if (options?.fromAccount && pinnedByUser.current) return;
- if (!options?.fromAccount) pinnedByUser.current = true;
  const resolvedSymbol =
- symbol ?? defaultCurrencySymbols[newCurrency] ?? newCurrency;
- setCurrencyState({ code: newCurrency, symbol: resolvedSymbol });
+ symbol ?? currencySymbols[newCurrency] ?? newCurrency;
+ const source = options?.fromAccount ? "account" : options?.fromDefault ? "default" : "user";
+ const incoming: CurrencySelection = { code: newCurrency, symbol: resolvedSymbol, source };
+ if (source === "default") {
+ defaultCurrencyRef.current = { code: newCurrency, symbol: resolvedSymbol };
+ try {
+ persistDefaultCurrency(localStorage, { code: newCurrency, symbol: resolvedSymbol });
+ } catch {
+ /* API defaults still apply without browser storage. */
+ }
+ }
+ setCurrencyState((current) => resolveCurrencySelection(current, incoming));
+ }, []);
+
+ const resetAccountCurrency = useCallback(() => {
+ const defaultCurrency = defaultCurrencyRef.current ?? getStoredDefaultCurrency();
+ setCurrencyState((current) => resetAccountCurrencySelection(current, defaultCurrency));
  }, []);
 
  const getCurrencySymbol = () => currencyState.symbol;
@@ -114,6 +108,7 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
  currency: currencyState.code,
  currencySymbol: currencyState.symbol,
  setCurrency,
+ resetAccountCurrency,
  getCurrencySymbol,
  formatPrice,
  }}

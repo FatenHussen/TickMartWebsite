@@ -95,12 +95,35 @@ for (const language of ["ar", "en"]) {
     languages.set(language, instance);
 }
 
+function renderInCurrency(element, language = "ar", currency = "SYP") {
+    const previousWindow = Object.getOwnPropertyDescriptor(globalThis, "window");
+    const previousStorage = Object.getOwnPropertyDescriptor(globalThis, "localStorage");
+    const stored = new Map([
+        ["currencyPreference", "user"],
+        ["currency", currency],
+        ["currencySymbol", currency === "SYP" ? "ل.س" : "$"],
+    ]);
+    Object.defineProperty(globalThis, "window", { configurable: true, value: {} });
+    Object.defineProperty(globalThis, "localStorage", {
+        configurable: true,
+        value: { getItem: (key) => stored.get(key) ?? null },
+    });
+    try {
+        return renderToStaticMarkup(
+            createElement(I18nextProvider, { i18n: languages.get(language) },
+                createElement(CurrencyProvider, null, element),
+            ),
+        );
+    } finally {
+        if (previousWindow) Object.defineProperty(globalThis, "window", previousWindow);
+        else delete globalThis.window;
+        if (previousStorage) Object.defineProperty(globalThis, "localStorage", previousStorage);
+        else delete globalThis.localStorage;
+    }
+}
+
 function renderInSyrianCurrency(element, language = "ar") {
-    return visibleText(renderToStaticMarkup(
-        createElement(I18nextProvider, { i18n: languages.get(language) },
-            createElement(CurrencyProvider, null, element),
-        ),
-    ));
+    return visibleText(renderInCurrency(element, language));
 }
 
 test("numeric dollar prices retain cents; only Syrian prices use whole rounding", () => {
@@ -212,11 +235,7 @@ test("savings remain exact while Syrian sale and list prices are rounded", () =>
 
 for (const language of ["ar", "en"]) {
     test(`FormattedPrice renders USD cents unchanged in a Syrian context (${language})`, () => {
-        const markup = renderToStaticMarkup(
-            createElement(I18nextProvider, { i18n: languages.get(language) },
-                createElement(CurrencyProvider, null, createElement(FormattedPrice, { value: "$11.70" })),
-            ),
-        );
+        const markup = renderInCurrency(createElement(FormattedPrice, { value: "$11.70" }), language);
         assert.equal(visibleText(markup), "11.70 $");
         assert.match(markup, language === "ar" ? /dir="rtl"/ : /dir="ltr"/);
         if (language === "en") assert.doesNotMatch(markup, /dir="rtl"/);
@@ -239,28 +258,9 @@ test("CurrencyProvider passes its Syrian currency into numeric formatting", () =
 });
 
 test("CurrencyProvider keeps numeric dollar cents for a saved USD selection", () => {
-    const previousWindow = Object.getOwnPropertyDescriptor(globalThis, "window");
-    const previousStorage = Object.getOwnPropertyDescriptor(globalThis, "localStorage");
-    const stored = new Map([
-        ["currencyDefaultsVersion", "syp-default-v2"],
-        ["currency", "USD"],
-        ["currencySymbol", "$"],
-    ]);
-    Object.defineProperty(globalThis, "window", { configurable: true, value: {} });
-    Object.defineProperty(globalThis, "localStorage", {
-        configurable: true,
-        value: { getItem: (key) => stored.get(key) ?? null },
-    });
-    try {
-        function NumericPrice() {
-            const { formatPrice } = useCurrency();
-            return createElement("span", null, formatPrice(11.7));
-        }
-        assertMoney(renderInSyrianCurrency(createElement(NumericPrice)), "11.7", "USD");
-    } finally {
-        if (previousWindow) Object.defineProperty(globalThis, "window", previousWindow);
-        else delete globalThis.window;
-        if (previousStorage) Object.defineProperty(globalThis, "localStorage", previousStorage);
-        else delete globalThis.localStorage;
+    function NumericPrice() {
+        const { formatPrice } = useCurrency();
+        return createElement("span", null, formatPrice(11.7));
     }
+    assertMoney(visibleText(renderInCurrency(createElement(NumericPrice), "ar", "USD")), "11.7", "USD");
 });

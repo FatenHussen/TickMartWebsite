@@ -11,7 +11,7 @@ import { _ProductsApi } from "@/features/home/api/products.service";
 import { _ProductApi } from "@/features/product/api/productApi";
 import { queryKeys } from "@/utils/queryKeys";
 import ShopVariantsPreview from "@/features/product/components/ShopVariantsPreview";
-import { isPurchasableVariant } from "@/features/product/types/productDetails";
+import { isPurchasableVariant, requiresVariantSelection } from "@/features/product/types/productDetails";
 import { gallerySrcsForSelection, listingImageSrc } from "@/features/product/lib/productMedia";
 import { PremiumInlineLoader } from "@/shared/component/loading";
 import type { ScheduledBasketDetail } from "../types/scheduledBasket";
@@ -132,11 +132,13 @@ export default function AddProductModal({
         [productDetails?.shop_variants],
     );
 
-    useEffect(() => {
-        if (purchasableVariants.length === 1) {
-            setSelectedVariantId(purchasableVariants[0].id);
-        }
-    }, [productDetails?.id, purchasableVariants]);
+    const needsVariantChoice = requiresVariantSelection(
+        productDetails?.shop_variants ?? [],
+        productDetails?.attributes_map ?? [],
+    );
+    const selectedDetailVariant =
+        purchasableVariants.find((v) => v.id === selectedVariantId) ??
+        (!needsVariantChoice ? purchasableVariants[0] ?? null : null);
 
     const existingProductIds = useMemo(() => {
         const ids = new Set(basket.items.map((i) => i.product.id));
@@ -156,14 +158,12 @@ export default function AddProductModal({
     };
 
     const resolveVariantIdForAdd = (): number | null => {
-        if (selectedVariantId != null) return selectedVariantId;
-        if (purchasableVariants.length === 1) {
-            return purchasableVariants[0].id;
-        }
+        if (selectedDetailVariant != null) return selectedDetailVariant.id;
         // Nothing orderable in the details response — fall back to the offer the
         // list endpoint already resolved for this product, if any.
         if (
-            purchasableVariants.length === 0 &&
+            !needsVariantChoice &&
+            (productDetails?.shop_variants?.length ?? 0) === 0 &&
             listProductForDetail?.shop_product_variant_id != null
         ) {
             return listProductForDetail.shop_product_variant_id;
@@ -172,14 +172,24 @@ export default function AddProductModal({
     };
 
     const handleAddToBasket = () => {
-        if (addingProductId != null || detailProductId == null) return;
+        if (
+            addingProductId != null ||
+            updateMutation.isPending ||
+            detailsLoading ||
+            detailProductId == null
+        ) return;
 
         const variantId = resolveVariantIdForAdd();
         const productId = productDetails?.id ?? detailProductId;
 
         if (variantId == null) {
             toast.error(
-                t("product.selectOneVariant", "Choose one option to add to cart"),
+                purchasableVariants.length > 0
+                    ? t(
+                          "product.selectRequiredVariants",
+                          "Please select the product options before adding it to your cart.",
+                      )
+                    : t("product.unavailable", "Currently unavailable"),
             );
             return;
         }
@@ -230,10 +240,6 @@ export default function AddProductModal({
 
     const isAdding = addingProductId != null || updateMutation.isPending;
     const detailTitle = productDetails?.name ?? listProductForDetail?.name ?? "";
-    const selectedDetailVariant =
-        purchasableVariants.find((v) => v.id === selectedVariantId) ??
-        productDetails?.shop_variants?.find((v) => v.id === selectedVariantId) ??
-        null;
     const detailImage =
         gallerySrcsForSelection(selectedDetailVariant, productDetails)[0] ||
         listProductForDetail?.image ||
@@ -245,10 +251,9 @@ export default function AddProductModal({
         return stripped.length > 220 ? `${stripped.slice(0, 220)}…` : stripped;
     }, [productDetails?.full_description, productDetails?.description]);
 
-    const canAddFromDetail = (() => {
-        const vid = resolveVariantIdForAdd();
-        return vid != null;
-    })();
+    const canAddFromDetail = !detailsLoading && (
+        purchasableVariants.length > 0 || resolveVariantIdForAdd() != null
+    );
 
     const showVariantPicker = purchasableVariants.length > 0;
 
@@ -327,10 +332,10 @@ export default function AddProductModal({
                                 <ShopVariantsPreview
                                     variants={purchasableVariants}
                                     productMedia={productDetails}
-                                    selectedId={selectedVariantId}
+                                    selectedId={selectedDetailVariant?.id ?? null}
                                     onSelect={(id) => setSelectedVariantId(id)}
                                 />
-                            ) : listProductForDetail?.shop_product_variant_id != null ? (
+                            ) : resolveVariantIdForAdd() != null ? (
                                 <p className="text-sm text-custom-secondary">
                                     {t(
                                         "baskets.addProductSingleVariant",

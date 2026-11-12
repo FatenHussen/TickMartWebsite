@@ -14,6 +14,7 @@ import { queryKeys } from "@/utils/queryKeys";
 import { paths } from "@/app/routes/path/paths";
 import {
     isPurchasableVariant,
+    requiresVariantSelection,
     variantOrderLimit,
     exceedsVariantStock,
 } from "@/features/product/types/productDetails";
@@ -86,14 +87,13 @@ export default function AddToCustomBasketPopup({
         setSelectedVariantId(null);
     }, [isOpen, productId]);
 
-    useEffect(() => {
-        if (purchasable.length === 1) {
-            setSelectedVariantId(purchasable[0].id);
-        }
-    }, [details?.id, purchasable]);
-
+    const needsVariantChoice = requiresVariantSelection(
+        details?.shop_variants ?? [],
+        details?.attributes_map ?? [],
+    );
     const selectedVariant =
-        purchasable.find((v) => v.id === selectedVariantId) ?? null;
+        purchasable.find((v) => v.id === selectedVariantId) ??
+        (!needsVariantChoice ? purchasable[0] ?? null : null);
 
     const maxQty = variantOrderLimit(
         selectedVariant,
@@ -106,23 +106,17 @@ export default function AddToCustomBasketPopup({
         currency,
     );
 
-    const resolvedVariantId = (): number | null => {
-        if (selectedVariantId != null) return selectedVariantId;
-        if (purchasable.length === 1) return purchasable[0].id;
-        if (
-            purchasable.length === 0 &&
-            product?.shop_product_variant_id != null
-        ) {
-            return product.shop_product_variant_id;
-        }
-        return null;
-    };
-
     const handleAdd = () => {
-        const variantId = resolvedVariantId();
+        if (isLoading || addMutation.isPending || quantity < 1) return;
+        const variantId = selectedVariant?.id ?? null;
         if (variantId == null) {
             toast.error(
-                t("product.selectOneVariant", "Choose one option to add to cart"),
+                purchasable.length > 0
+                    ? t(
+                          "product.selectRequiredVariants",
+                          "Please select the product options before adding it to your cart.",
+                      )
+                    : t("product.unavailable", "Currently unavailable"),
             );
             return;
         }
@@ -142,7 +136,7 @@ export default function AddToCustomBasketPopup({
         );
     };
 
-    const canAdd = resolvedVariantId() != null && quantity >= 1;
+    const canAdd = !isLoading && purchasable.length > 0 && quantity >= 1;
     const imageSrc =
         gallerySrcsForSelection(selectedVariant, details)[0] ||
         product?.image;
@@ -194,7 +188,7 @@ export default function AddToCustomBasketPopup({
                         <ShopVariantsPreview
                             variants={details?.shop_variants ?? []}
                             productMedia={details}
-                            selectedId={selectedVariantId}
+                            selectedId={selectedVariant?.id ?? null}
                             onSelect={setSelectedVariantId}
                         />
                     )}

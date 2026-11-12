@@ -83,16 +83,20 @@ function usableImages(
 /**
  * Gallery for `/product/{id}`:
  * 1. `shop_variants[i].images` only when `has_variant_images === true`
- * 2. otherwise `product.images` (`path`, including the synthetic thumbnail)
- * 3. `product.thumbnail` when both are empty
- * 4. a variant with `has_variant_images === false` inherits that same `path`
+ * 2. otherwise `product.thumbnail` followed by `product.images`
+ *    (the URL list removes duplicates, including synthetic thumbnail rows)
+ * 3. a variant with `has_variant_images === false` inherits the product gallery
  */
 export function galleryFor(
     product?: ProductMediaSource | null,
     selected?: VariantMediaSource | null,
 ): Array<ProductImage | string> {
     const variantImages = usableImages(selected?.images);
-    const productImages = usableImages(product?.images);
+    const thumb = product?.thumbnail?.trim();
+    const productImages = usableImages([
+        ...(thumb ? [{ path: thumb }] : []),
+        ...(product?.images ?? []),
+    ]);
     const owns = variantOwnsImagesFlag(selected?.has_variant_images);
 
     if (owns === true && variantImages.length) {
@@ -105,8 +109,6 @@ export function galleryFor(
     if (productImages.length) {
         return productImages;
     }
-    const thumb = product?.thumbnail?.trim();
-    if (thumb) return [{ path: thumb }];
     if (owns === false && variantImages.length) {
         return variantImages;
     }
@@ -115,7 +117,7 @@ export function galleryFor(
 
 /**
  * String URLs for the selected shop variant:
- * own variant images → product images → thumbnail.
+ * Own variant images, otherwise the product thumbnail and gallery.
  */
 export function gallerySrcsForSelection(
     selectedVariant: VariantMediaSource | null | undefined,

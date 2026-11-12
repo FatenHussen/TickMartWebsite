@@ -147,6 +147,15 @@ export function isComboVariant(
     return Boolean(variant && (variant.attributes?.length ?? 0) > 0);
 }
 
+/** A purchase option must be chosen explicitly, even when only one is in stock. */
+export function requiresVariantSelection(
+    variants: ShopVariant[] | null | undefined,
+    attributesMap: AttributeMapItem[] | null | undefined = [],
+): boolean {
+    const rows = variants ?? [];
+    return Boolean(attributesMap?.length) || rows.length > 1 || rows.some(isComboVariant);
+}
+
 /** Prefer a purchasable combo; fall back to any purchasable row. */
 export function firstPurchasableVariant(
     variants: ShopVariant[] | null | undefined,
