@@ -35,20 +35,29 @@ function mapApiToOrderDetails(
 ): OrderDetails {
  const shopEntries = Object.values(raw.items ?? {});
  const cartItems: CartItem[] = shopEntries.flatMap((shop) =>
- (shop?.items ?? []).map((item) => ({
+ (shop?.items ?? []).map((item) => {
+ // `price` from the API is the unit price; the line total is unit × quantity.
+ const unitPrice = Number(item.price) || 0;
+ const quantity = Number(item.quantity) || 0;
+ const variantText = (item.variant_attributes ?? [])
+ .map((attr) => `${attr.attribute ?? attr.type}: ${attr.value}`)
+ .filter((text) => !text.startsWith("undefined"))
+ .join(" · ");
+ return {
  id: item.id,
  name: item.product_name,
  category: shop.shop,
  store: shop.shop,
- size:"",
+ size: variantText,
  type:"",
  image:"",
- price: formatPrice(item.price),
- quantity: item.quantity,
- subtotal: formatPrice(item.price * item.quantity),
+ price: formatPrice(unitPrice),
+ quantity,
+ subtotal: formatPrice(unitPrice * quantity),
  storeId: shop.shop,
  hasFreeDelivery: false,
- }))
+ };
+ })
  );
 
  const addr = raw.user_address;
@@ -114,7 +123,6 @@ export function useOrderDetails() {
  enabled: orderId != null && orderId !=="",
  staleTime: 1000 * 60,
  });
- console.log("data", rawData);
  
 
  const order: OrderDetails | null = rawData

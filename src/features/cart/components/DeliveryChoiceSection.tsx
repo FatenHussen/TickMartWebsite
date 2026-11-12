@@ -83,7 +83,7 @@ export default function DeliveryChoiceSection({
         return (
             <section className="rounded-2xl border border-custom-primary bg-custom-card px-4 py-4 sm:px-5">
                 <h2 className="text-base font-bold text-[color:var(--color-text)]">
-                    {t("checkout.deliveryMethod", "Delivery method")}
+                    {t("checkout.deliveryTiming", "Delivery time")}
                 </h2>
                 <p className="mt-2 text-sm font-semibold text-[color:var(--color-text)]">
                     {t("checkout.instantDelivery", "Instant delivery")}
@@ -110,7 +110,7 @@ export default function DeliveryChoiceSection({
     return (
         <section className="rounded-2xl border border-custom-primary bg-custom-card px-4 py-4 sm:px-5">
             <h2 className="text-base font-bold text-[color:var(--color-text)]">
-                {t("checkout.deliveryMethod", "Delivery method")}
+                {t("checkout.deliveryTiming", "Delivery time")}
             </h2>
             <div className="mt-3 space-y-2">
                 <ChoiceRow

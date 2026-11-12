@@ -66,6 +66,12 @@ export default function CartItemCard({
         originalSubtotal != null
             ? originalSubtotal - priceNum * item.quantity
             : 0;
+    // The cart must show both the unit price and the multiplied line total.
+    // `item.subtotal` is only trusted when no live preview price overrides it.
+    const lineTotalText =
+        preview || item.subtotal == null
+            ? formatPrice(priceNum * item.quantity)
+            : item.subtotal;
     const variantText = displayVariant?.length
         ? displayVariant.join(" · ")
         : item.selectedAttributes && Object.keys(item.selectedAttributes).length > 0
@@ -201,11 +207,17 @@ export default function CartItemCard({
                                         ? `${t("cart.youSave", "You save")} ${formatPrice(savedAmount)}`
                                         : undefined
                                 }
-                                size="sm"
+                                size="xs"
                                 align="end"
                             />
                             <p className="mt-0.5 text-[11px] text-custom-secondary">
-                                {t("cart.each", "each")}
+                                {t("cart.unitPrice", "Unit price")} × {item.quantity}
+                            </p>
+                            <p className="mt-1 text-[15px] font-bold tabular-nums text-custom-primary">
+                                {lineTotalText}
+                            </p>
+                            <p className="text-[11px] text-custom-secondary">
+                                {t("cart.lineTotal", "Total")}
                             </p>
                             {extrasTotal && (
                                 <p className="text-[11px] text-custom-secondary">

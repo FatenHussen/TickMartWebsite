@@ -213,11 +213,14 @@ export default function RecipeDetails() {
             const selectedId =
                 selectedVariants[index] ?? item.main_item.shop_product_variant_id;
             const selectedVariant = getSelectedVariant(item, selectedId);
+            const symbol = recipe.totals?.currency_symbol ?? "$";
             return {
                 shop_product_variant_id: selectedVariant.shop_product_variant_id,
                 quantity: qty,
                 name: selectedVariant.name,
                 image: selectedVariant.image_url ?? "",
+                // Formatted unit price so the cart shows a currency, not a bare number.
+                price: `${symbol}${(selectedVariant.price ?? 0).toFixed(2)}`,
                 priceNumeric: selectedVariant.price,
                 storeId: 0,
             };

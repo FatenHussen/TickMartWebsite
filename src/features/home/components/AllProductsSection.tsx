@@ -316,7 +316,7 @@ export default function AllProductsSection({
                     </div>
 
                     {/* Filter selects */}
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
                         {filterControls.map(
                             ({ key, label, Icon, value, setValue, options, onScroll, loadingMore, allLabel }) => {
                                 const isActive = Boolean(value);
@@ -372,21 +372,21 @@ export default function AllProductsSection({
 
                 {/* Products grid */}
                 {isLoading && products.length === 0 ? (
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5">
                         {Array.from({ length: 10 }).map((_, i) => (
                             <ProductCardSkeleton key={`sk-${i}`} />
                         ))}
                     </div>
                 ) : products.length > 0 ? (
                     <>
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5">
                             {products.map((product) => (
                                 <ProductCard key={product.id} {...convertProductToCardProps(product)} />
                             ))}
                         </div>
 
                         {isFetchingNextPage && (
-                            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                            <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5">
                                 {Array.from({ length: 5 }).map((_, i) => (
                                     <ProductCardSkeleton key={`ld-${i}`} />
                                 ))}

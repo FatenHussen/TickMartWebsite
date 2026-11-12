@@ -67,17 +67,18 @@ export default function Settings() {
         setLocalTheme(theme === "light" ? "light" : theme === "dark" ? "dark" : "system");
     }, [theme]);
 
+    // Picking in the dropdown only stages the choice; `handleSave` commits it as
+    // the explicit preference once the server accepts it.
     const applyCurrency = (currencyId: number | null) => {
         setLocalCurrencyId(currencyId);
-        const selected = currencies.find((c) => Number(c.id) === currencyId);
-        if (selected) setCurrency(selected.code, selected.symbol);
     };
 
     const handleCancel = () => {
         setLocalLanguage(language);
         if (myCurrency) {
             setLocalCurrencyId(myCurrency.id);
-            setCurrency(myCurrency.code, myCurrency.symbol);
+            // Restoring the account's own currency is not a new explicit choice.
+            setCurrency(myCurrency.code, myCurrency.symbol, { fromAccount: true });
         }
         setLocalTheme(theme === "light" ? "light" : theme === "dark" ? "dark" : "system");
     };
@@ -94,7 +95,9 @@ export default function Settings() {
                 return;
             }
         } else if (myCurrency) {
-            setCurrency(myCurrency.code, myCurrency.symbol);
+            // No currency change was made: keep the account value as account-sourced
+            // so it never masquerades as a deliberate browser preference.
+            setCurrency(myCurrency.code, myCurrency.symbol, { fromAccount: true });
         }
 
         if (localTheme === "system") {

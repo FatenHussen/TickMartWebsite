@@ -34,7 +34,7 @@ export default function ProductQuantitySelector({
     };
 
     return (
-        <div className={cn("flex w-full flex-col gap-3 sm:flex-row sm:items-center", className)}>
+        <div className={cn("flex w-full flex-row flex-wrap items-center gap-3", className)}>
             <div
                 className={cn(
                     "inline-flex h-12 shrink-0 items-center rounded-xl border",

@@ -14,13 +14,13 @@ export function AddressFormStreetLandmarkGrid({ register, errors }: StreetLandma
     return (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <InputField
-                label={t("account.addAddress.streetName")}
+                label={`${t("account.addAddress.streetName")} (${t("common.optional")})`}
                 placeholder={t("account.addAddress.streetNamePlaceholder")}
                 {...register("streetName")}
                 error={errors.streetName}
             />
             <InputField
-                label={t("account.addAddress.nearestLandmark")}
+                label={`${t("account.addAddress.nearestLandmark")} (${t("common.optional")})`}
                 placeholder={t("account.addAddress.nearestLandmarkPlaceholder")}
                 {...register("nearestLandmark")}
                 error={errors.nearestLandmark}
@@ -40,13 +40,13 @@ export function AddressFormBuildingFloorGrid({ register, errors }: BuildingFloor
     return (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <InputField
-                label={t("account.addAddress.buildingNumber")}
+                label={`${t("account.addAddress.buildingNumber")} (${t("common.optional")})`}
                 placeholder={t("account.addAddress.buildingNumberPlaceholder")}
                 {...register("buildingNumber")}
                 error={errors.buildingNumber}
             />
             <InputField
-                label={t("account.addAddress.floorApartment")}
+                label={`${t("account.addAddress.floorApartment")} (${t("common.optional")})`}
                 placeholder={t("account.addAddress.floorApartmentPlaceholder")}
                 {...register("floorApartment")}
                 error={errors.floorApartment}

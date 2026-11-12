@@ -9,6 +9,9 @@ import OrderItemsTable from "../components/OrderItemsTable";
 import CheckoutOrderSummary from "../components/CheckoutOrderSummary";
 import NonDiscountPromotionBanner from "../components/NonDiscountPromotionBanner";
 import AvailablePromotionsSelector from "../components/AvailablePromotionsSelector";
+import ActiveBenefitsSelector from "../components/ActiveBenefitsSelector";
+import CheckoutCouponSection from "../components/CheckoutCouponSection";
+import { useActiveBenefits } from "../hooks/useActiveBenefits";
 import {
     customerSelectedPromotions,
     isCustomerSelectedPromotion,
@@ -109,7 +112,59 @@ export default function Checkout() {
         setDeliveryChoice,
         setScheduledDeliveryAt,
         setEarliestDeliveryAt,
+        setCoupon: setCheckoutCoupon,
+        setPointCouponExchangeId,
+        setPointFreeDeliveryExchangeId,
+        setUseSubscriptionDiscount,
+        setUseSubscriptionFreeDelivery,
     } = useCheckoutStore();
+
+    const { data: activeBenefitsData } = useActiveBenefits();
+    const [selectedCouponKey, setSelectedCouponKey] = useState<string | null>(null);
+    const [selectedDeliveryKey, setSelectedDeliveryKey] = useState<string | null>(null);
+
+    /** Only one discount source may apply: a code, a points/subscription benefit, or a promotion. */
+    const handleApplyCoupon = (code: string) => {
+        setSelectedCouponKey(null);
+        setPointCouponExchangeId(null);
+        setUseSubscriptionDiscount(false);
+        setPromotionId(null);
+        setCheckoutCoupon(code);
+    };
+
+    const handleRemoveCoupon = () => setCheckoutCoupon("");
+
+    const handleSelectCouponBenefit = (
+        key: string | null,
+        value: number | boolean | null,
+    ) => {
+        setSelectedCouponKey(key);
+        setPointCouponExchangeId(null);
+        setUseSubscriptionDiscount(false);
+        if (key === "point_coupon_exchange_id" && typeof value === "number") {
+            setPointCouponExchangeId(value);
+            setCheckoutCoupon("");
+        } else if (key === "use_subscription_discount") {
+            setUseSubscriptionDiscount(true);
+            setCheckoutCoupon("");
+        }
+        // A promotion conflicts with any discount benefit.
+        setPromotionId(null);
+    };
+
+    const handleSelectDeliveryBenefit = (
+        key: string | null,
+        value: number | boolean | null,
+    ) => {
+        setSelectedDeliveryKey(key);
+        setPointFreeDeliveryExchangeId(null);
+        setUseSubscriptionFreeDelivery(false);
+        if (key === "point_free_delivery_exchange_id" && typeof value === "number") {
+            setPointFreeDeliveryExchangeId(value);
+        } else if (key === "use_subscription_free_delivery") {
+            setUseSubscriptionFreeDelivery(true);
+        }
+    };
 
     const previewBenefits = useMemo(
         () => ({
@@ -142,12 +197,15 @@ export default function Checkout() {
     const [showAddAddressForm, setShowAddAddressForm] = useState(false);
 
     const { data: serverCheckout } = useCartCheckout();
-    const { data: preview } = useOrderPreview(
+    const { data: preview, isLoading: isPreviewLoading } = useOrderPreview(
         selectedAddressId ? Number(selectedAddressId) : null,
         storedCoupon || undefined,
         previewBenefits,
         selectedPaymentMethodId || undefined,
     );
+
+    /** A points / subscription discount is active, so a code cannot stack on it. */
+    const couponBlockedByBenefit = Boolean(selectedCouponKey);
 
     const orderItemsByVariant = useMemo(
         () =>
@@ -354,6 +412,33 @@ export default function Checkout() {
                             onScheduledChange={setScheduledDeliveryAt}
                         />
                     )}
+
+                    {/* `رصيدك الحالي` — points and subscription benefits with apply buttons. */}
+                    {activeBenefitsData?.has_benefits && (
+                        <ActiveBenefitsSelector
+                            coupons={activeBenefitsData.coupons}
+                            freeDeliveries={activeBenefitsData.free_deliveries}
+                            selectedCouponKey={selectedCouponKey}
+                            selectedDeliveryKey={selectedDeliveryKey}
+                            onSelectCoupon={handleSelectCouponBenefit}
+                            onSelectDelivery={handleSelectDeliveryBenefit}
+                        />
+                    )}
+
+                    {/* `وفر على طلبك` — discount code with an apply button. */}
+                    <CheckoutCouponSection
+                        coupon={storedCoupon}
+                        onApply={handleApplyCoupon}
+                        onRemove={handleRemoveCoupon}
+                        isLoading={isPreviewLoading}
+                        disabled={couponBlockedByBenefit}
+                        disabledHint={t(
+                            "cart.couponDisabledByBenefit",
+                            "Remove the selected discount to use a coupon code",
+                        )}
+                        applied={preview?.coupon?.applied ?? false}
+                        failReasons={preview?.coupon?.fail_reasons ?? []}
+                    />
 
                     {customerSelectedPromotions(preview?.available_promotions).length > 0 && (
                             <AvailablePromotionsSelector

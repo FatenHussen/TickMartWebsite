@@ -264,7 +264,7 @@ export default function BrandProducts() {
                     )}
 
                     {isProductsLoading && (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 mt-5">
+                        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-5 mt-5">
                             {Array.from({ length: 10 }).map((_, index) => (
                                 <ProductCardSkeleton key={`skeleton-${index}`} />
                             ))}

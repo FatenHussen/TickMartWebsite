@@ -110,9 +110,22 @@ function CompactOrderItemRow({ item }: { item: CartItem }) {
                     {variant ? ` · ${variant}` : ""}
                 </p>
             </div>
-            <span className="shrink-0 text-sm font-semibold tabular-nums text-custom-primary">
-                {isFree ? t("cart.free") : item.price}
-            </span>
+            <div className="shrink-0 text-end">
+                {isFree ? (
+                    <span className="text-sm font-semibold tabular-nums text-custom-primary">
+                        {t("cart.free")}
+                    </span>
+                ) : (
+                    <>
+                        <span className="block text-[11px] tabular-nums text-custom-secondary">
+                            {item.price} × {item.quantity}
+                        </span>
+                        <span className="block text-sm font-semibold tabular-nums text-custom-primary">
+                            {item.subtotal ?? item.price}
+                        </span>
+                    </>
+                )}
+            </div>
         </article>
     );
 }

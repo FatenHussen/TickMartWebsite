@@ -1,7 +1,7 @@
 import { Link } from"react-router-dom";
 import { paths } from"@/app/routes/path/paths";
 import { continueShoppingPath } from"@/shared/lib/shoppingResume";
-import { HiArrowLeft } from"react-icons/hi";
+import { HiArrowLeft, HiPlus } from"react-icons/hi";
 import { useTranslation } from"react-i18next";
 import { useLanguage } from"@/context/LanguageContext";
 import { cn } from"@/shared/lib/utils";
@@ -37,14 +37,17 @@ export default function CartTable({
  <th className={cn(isRTL ?"text-right":"text-left","py-4 px-4 text-sm font-semibold text-custom-primary")}>
  {t("cart.product")}
  </th>
+ <th className={cn(isRTL ?"text-right":"text-left","py-4 px-4 text-sm font-semibold text-custom-primary")}>
+ {t("cart.skuAndVariants","الرمز والمتغيرات")}
+ </th>
  <th className={cn(isRTL ?"text-left":"text-right","py-4 px-4 text-sm font-semibold text-custom-primary")}>
- {t("checkout.price")}
+ {t("cart.unitPrice","السعر الفردي")}
  </th>
  <th className="text-center py-4 px-4 text-sm font-semibold text-custom-primary">
  {t("cart.quantity")}
  </th>
  <th className={cn(isRTL ?"text-left":"text-right","py-4 px-4 text-sm font-semibold text-custom-primary")}>
- {t("cart.subtotal")}
+ {t("cart.lineTotal","الإجمالي")}
  </th>
  <th className="w-16 py-4 px-4"></th>
  </tr>
@@ -73,6 +76,16 @@ export default function CartTable({
  <HiArrowLeft className="w-5 h-5"/>
  {t("cart.returnToShop")}
  </Link>
+ <div className="flex items-center gap-3">
+ {/* `اضافة منتجات جديدة` — explicit add action required by the order spec. */}
+ <Link
+ to={continueShoppingPath(paths.client.home)}
+ state={{ restoreShoppingScroll: true }}
+ className="inline-flex items-center gap-2 rounded-xl border border-custom-secondary px-4 py-2 text-sm font-semibold text-custom-primary hover:bg-custom-hover transition-colors"
+ >
+ <HiPlus className="w-4 h-4"/>
+ {t("cart.addNewProducts","اضافة منتجات جديدة")}
+ </Link>
  <Button
  type="button"
  variant="outline"
@@ -81,6 +94,7 @@ export default function CartTable({
  >
  {t("cart.updateCart")}
  </Button>
+ </div>
  </div>
  </div>
  );

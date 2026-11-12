@@ -3,6 +3,7 @@ import { useAuthStore } from "@/store/auth";
 import { useCartStore } from "@/store/cart";
 import { apiRoutes } from "@/utils/apiRoutes";
 import type { CartItem } from "@/features/cart/types";
+import { mergeServerCartItems } from "@/features/cart/lib/mergeServerCartItems";
 
 export type ServerCartItem = {
     shop_product_variant_id: number;
@@ -94,5 +95,5 @@ export function syncLocalCartToServer(): void {
         .getState()
         .items.map(toServerCartItem)
         .filter((item): item is ServerCartItem => item != null);
-    postCartItemsSafe(items);
+    postCartItemsSafe(mergeServerCartItems(items));
 }

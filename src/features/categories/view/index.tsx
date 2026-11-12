@@ -578,14 +578,14 @@ export default function CategoriesView() {
                     />
 
                     {productsLoading && products.length === 0 ? (
-                        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-7 lg:grid-cols-3 lg:gap-8">
+                        <div className="grid grid-cols-2 gap-3 sm:gap-7 lg:grid-cols-3 lg:gap-8">
                             {Array.from({ length: 6 }).map((_, i) => (
                                 <ProductCardSkeleton key={`skeleton-${i}`} />
                             ))}
                         </div>
                     ) : products.length > 0 ? (
                         <>
-                            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-7 lg:grid-cols-3 lg:gap-8">
+                            <div className="grid grid-cols-2 gap-3 sm:gap-7 lg:grid-cols-3 lg:gap-8">
                                 {products.map((product) => {
                                     const listing = resolveListingCardPrices(
                                         product,
@@ -631,7 +631,7 @@ export default function CategoriesView() {
                             </div>
 
                             {isFetchingNextPage && (
-                                <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-7 lg:grid-cols-3 lg:gap-8">
+                                <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-7 lg:grid-cols-3 lg:gap-8">
                                     {Array.from({ length: 3 }).map((_, i) => (
                                         <ProductCardSkeleton key={`loading-${i}`} />
                                     ))}

@@ -78,7 +78,7 @@ import {
     mapApiTopBadgesToProductCard,
 } from "@/shared/lib/mapProductBadges";
 import { cn } from "@/shared/lib/utils";
-import { HiEye, HiShoppingCart } from "react-icons/hi";
+import { HiEye, HiMinus, HiPlus, HiShoppingCart } from "react-icons/hi";
 import {
     HiChevronRight,
     HiClock,
@@ -425,6 +425,9 @@ function ProductDetails() {
             variantId: v.variant_id ?? undefined,
             shop_product_variant_id: v.id,
             shopId: shopIdForLine ?? undefined,
+            sku: v.sku?.trim() || boughtWithPreview.sku?.trim() || undefined,
+            model: v.model?.trim() || undefined,
+            availableQuantity: v.quantity ?? undefined,
             selectedAttributes: selectedAttrs,
         };
 
@@ -610,6 +613,9 @@ function ProductDetails() {
             variantId: selectedVariant.variant_id ?? undefined,
             shop_product_variant_id: selectedVariant.id,
             shopId: shopIdForLine ?? undefined,
+            sku: selectedVariant.sku?.trim() || product.sku?.trim() || undefined,
+            model: selectedVariant.model?.trim() || undefined,
+            availableQuantity: selectedVariant.quantity ?? undefined,
             selectedAttributes:
                 Object.keys(selectedAttributes).length > 0
                     ? { ...selectedAttributes }
@@ -1501,14 +1507,41 @@ function ProductDetails() {
                     style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
                 >
                     <div className="flex items-center gap-3">
-                        <p className="min-w-0 truncate text-base font-semibold tabular-nums text-text-primary">
+                        <p className="min-w-0 shrink truncate text-base font-semibold tabular-nums text-text-primary">
                             {displaySalePrice}
                         </p>
+                        {/* Quantity sits next to Add on mobile: the in-page selector
+                            only shows its Add button from lg up. */}
+                        <div className="inline-flex h-11 shrink-0 items-center rounded-xl border border-[color-mix(in_srgb,var(--color-api-second)_28%,var(--color-border-primary))] bg-custom-card dark:border-white/10">
+                            <button
+                                type="button"
+                                onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                                disabled={quantity <= 1}
+                                className="flex h-11 w-9 items-center justify-center text-primary disabled:opacity-40"
+                                aria-label={t("cart.decreaseQuantity", "Decrease quantity")}
+                            >
+                                <HiMinus className="h-3.5 w-3.5" />
+                            </button>
+                            <span className="min-w-7 text-center text-sm font-semibold tabular-nums text-text-primary">
+                                {quantity}
+                            </span>
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    setQuantity((q) => Math.min(maxOrderQuantity, q + 1))
+                                }
+                                disabled={quantity >= maxOrderQuantity}
+                                className="flex h-11 w-9 items-center justify-center text-primary disabled:opacity-40"
+                                aria-label={t("cart.increaseQuantity", "Increase quantity")}
+                            >
+                                <HiPlus className="h-3.5 w-3.5" />
+                            </button>
+                        </div>
                         <button
                             type="button"
                             onClick={handleAddToCart}
                             disabled={addToCartDisabled}
-                            className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-primary text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+                            className="inline-flex h-11 flex-1 shrink-0 basis-0 items-center justify-center gap-2 rounded-xl bg-primary text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
                         >
                             <HiShoppingCart className="h-4 w-4" aria-hidden />
                             {!addToCartDisabled

@@ -88,3 +88,61 @@ test("malformed cache or denied storage still allows a safe default and currency
     assert.doesNotThrow(() => persistDefaultCurrency(denied, usdDefault));
     assert.deepEqual(resolveCurrencySelection(usdDefault, sypUser), sypUser);
 });
+
+const SYP = { code: "SYP", symbol: "ل.س" };
+const USD = { code: "USD", symbol: "$" };
+
+test("REPORTED BUG: pick USD in settings, close site, reopen -> must stay USD", () => {
+    const storage = createStorage();
+    // Dashboard default is Syrian pounds.
+    persistDefaultCurrency(storage, SYP);
+
+    // User explicitly saves USD in Settings (handleSave -> setCurrency w/o flags).
+    let sel = resolveCurrencySelection(
+        { ...SYP, source: "default" },
+        { ...USD, source: "user" },
+    );
+    persistCurrencySelection(storage, sel);
+    assert.equal(sel.code, "USD");
+
+    // ---- site closed & reopened ----
+    let booted = readCurrencySelection(storage);
+    assert.equal(booted.code, "USD", "after reload, stored selection must be USD");
+
+    // CurrencyFromApiSync now runs on boot, in its real order:
+    // 1) dashboard default arrives
+    booted = resolveCurrencySelection(booted, { ...SYP, source: "default" });
+    assert.equal(booted.code, "USD", "dashboard default must not override user choice");
+
+    // 2) resetAccountCurrency() fires on auth/user change
+    booted = resetAccountCurrencySelection(booted, SYP);
+    assert.equal(booted.code, "USD", "account reset must not clear a user choice");
+
+    // 3) account currency (/my-currency) arrives as fromAccount
+    booted = resolveCurrencySelection(booted, { ...SYP, source: "account" });
+    assert.equal(booted.code, "USD", "account value must not override user choice");
+});
+
+test("the persisted flag survives a reload where the account value is written after", () => {
+    const storage = createStorage();
+    persistDefaultCurrency(storage, SYP);
+
+    // user picks USD
+    persistCurrencySelection(storage, { ...USD, source: "user" });
+    assert.equal(storage.getItem("currencyPreference"), "user");
+
+    // Now the account sync writes SYP as 'account' into the SAME state and the
+    // persist effect runs again. This is what happens on a live reload.
+    const afterAccount = resolveCurrencySelection(
+        readCurrencySelection(storage),
+        { ...SYP, source: "account" },
+    );
+    persistCurrencySelection(storage, afterAccount);
+
+    assert.equal(
+        storage.getItem("currencyPreference"),
+        "user",
+        "the user flag must not be erased by a later account write",
+    );
+    assert.equal(readCurrencySelection(storage).code, "USD");
+});

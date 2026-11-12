@@ -103,6 +103,14 @@ export default function CheckoutOrderSummary({
                             accent={shippingIsFree ? "success" : undefined}
                         />
                     )}
+                    {/*
+                      * `الضريبة` — shown only once the API returns a real amount.
+                      * The preview has no tax field yet, so this stays hidden
+                      * rather than displaying a placeholder "0%".
+                      */}
+                    {summary.tax && !isZeroMoney(summary.tax) && (
+                        <SummaryRow label={t("checkout.tax", "الضريبة")} value={summary.tax} />
+                    )}
                     {summary.productDiscount &&
                         !isZeroMoney(summary.productDiscount) && (
                             <SummaryRow

@@ -630,7 +630,9 @@ export default function Navbar() {
                             <button
                                 type="button"
                                 onClick={toggleTheme}
-                                className={cn(ICON_CIRCLE, "hidden sm:flex")}
+                                /* Below lg these live in the mobile menu, so they no
+                                   longer crowd the bar beside the search icon. */
+                                className={cn(ICON_CIRCLE, "hidden lg:flex")}
                                 aria-label={
                                     theme === "dark"
                                         ? t("navbar.lightMode") || "Light mode"
@@ -648,7 +650,7 @@ export default function Navbar() {
                                 onClick={toggleLanguage}
                                 className={cn(
                                     ICON_CIRCLE,
-                                    "hidden h-auto min-h-10 w-10 flex-col justify-center gap-0.5 py-1 sm:flex",
+                                    "hidden h-auto min-h-10 w-10 flex-col justify-center gap-0.5 py-1 lg:flex",
                                 )}
                                 aria-label={t("navbar.language") || "Language"}
                             >
@@ -799,38 +801,47 @@ export default function Navbar() {
                                 <span className="text-lg font-bold text-custom-primary">
                                     {t("navbar.menu")}
                                 </span>
-                                <div className="flex items-center gap-2">
+                                <button
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    className="p-2 hover:bg-custom-tertiary rounded-lg transition-colors"
+                                    aria-label={t("common.close") || "Close"}
+                                >
+                                    <HiX className="w-6 h-6 text-custom-primary" />
+                                </button>
+                            </div>
+
+                            {/* Site options: labelled rows rather than bare icons,
+                                so they read as settings instead of search controls. */}
+                            <div className="border-b border-custom-primary p-4">
+                                <div className="mb-2 text-xs font-semibold uppercase text-custom-secondary">
+                                    {t("navbar.siteOptions", "Site options")}
+                                </div>
+                                <div className="grid grid-cols-2 gap-2">
                                     <button
                                         type="button"
                                         onClick={toggleTheme}
-                                        className="p-2 rounded-lg hover:bg-custom-tertiary transition-colors text-custom-primary"
-                                        aria-label={
-                                            theme === "dark"
-                                                ? t("navbar.lightMode") || "Light mode"
-                                                : t("navbar.darkMode") || "Dark mode"
-                                        }
+                                        className="flex items-center gap-2 rounded-xl border border-custom-primary px-3 py-2.5 text-start text-custom-primary transition-colors hover:bg-custom-tertiary"
                                     >
                                         {theme === "dark" ? (
-                                            <HiSun className="w-5 h-5 text-primary-light" />
+                                            <HiSun className="w-5 h-5 shrink-0 text-primary-light" />
                                         ) : (
-                                            <HiMoon className="w-5 h-5 text-primary-light" />
+                                            <HiMoon className="w-5 h-5 shrink-0 text-primary-light" />
                                         )}
+                                        <span className="truncate text-sm font-medium">
+                                            {theme === "dark"
+                                                ? t("navbar.lightMode") || "Light mode"
+                                                : t("navbar.darkMode") || "Dark mode"}
+                                        </span>
                                     </button>
                                     <button
                                         type="button"
                                         onClick={toggleLanguage}
-                                        className="flex items-center gap-1.5 px-3 py-2 rounded-lg hover:bg-custom-tertiary transition-colors text-custom-primary"
+                                        className="flex items-center gap-2 rounded-xl border border-custom-primary px-3 py-2.5 text-start text-custom-primary transition-colors hover:bg-custom-tertiary"
                                     >
-                                        <HiGlobe className="w-5 h-5 text-primary-light" />
-                                        <span className="text-sm font-medium">
-                                            {language === "en" ? "AR" : "EN"}
+                                        <HiGlobe className="w-5 h-5 shrink-0 text-primary-light" />
+                                        <span className="truncate text-sm font-medium">
+                                            {language === "en" ? "العربية" : "English"}
                                         </span>
-                                    </button>
-                                    <button
-                                        onClick={() => setIsMobileMenuOpen(false)}
-                                        className="p-2 hover:bg-custom-tertiary rounded-lg transition-colors"
-                                    >
-                                        <HiX className="w-6 h-6 text-custom-primary" />
                                     </button>
                                 </div>
                             </div>

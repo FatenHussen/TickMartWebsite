@@ -88,7 +88,9 @@ export function mapPreviewToCartSummary(
       basketDiscountAmount > 0
         ? formatDiscount(formatPrice, basketDiscountAmount)
         : undefined,
-    tax: "0%",
+    // No tax field in the preview yet. Pass the API amount through once the
+    // backend sends it; `"0%"` keeps the existing hidden-by-default behaviour.
+    tax: toNum(preview.tax) > 0 ? formatPrice(toNum(preview.tax)) : "0%",
     couponDiscount: formatDiscount(formatPrice, couponDiscount),
     ...(subscriptionDiscount > 0 && {
       subscriptionDiscount: formatDiscount(formatPrice, subscriptionDiscount),
@@ -150,6 +152,8 @@ export function mapPreviewToCheckoutSummary(
     shippingIsFree: deliveryPrice === 0,
     storeDiscounts: formatDiscount(formatPrice, basketDiscountAmount),
     couponDiscount: formatDiscount(formatPrice, couponDiscount),
+    // `الضريبة` — omitted while the API sends no tax, so the row stays hidden.
+    ...(toNum(preview.tax) > 0 && { tax: formatPrice(toNum(preview.tax)) }),
     ...(productDiscount > 0 && {
       productDiscount: formatDiscount(formatPrice, productDiscount),
     }),

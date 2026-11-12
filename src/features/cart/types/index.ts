@@ -29,6 +29,12 @@ export type CartItem = {
  shopId?: number;
  /** For API: selected attribute key-value for variant */
  selectedAttributes?: Record<string, string>;
+ /** Variant SKU shown in the cart table and the dashboard order line. */
+ sku?: string;
+ /** Manufacturer model number (`رقم الموديل`) when the variant carries one. */
+ model?: string;
+ /** Remaining stock for the selected variant (`العدد المتوفر`). */
+ availableQuantity?: number;
  /** Numeric price per unit for recalculating subtotal */
  priceNumeric?: number;
  /** For API: shop_product_variant_id (from product variant, recipe item, or basket item) */
@@ -367,6 +373,8 @@ export interface OrderPreviewResponse {
  products_total_after_all_discounts?: number;
  total_quantity: number;
  total: number | string;
+ /** `الضريبة` — not sent by the API yet; rendered only when present and > 0. */
+ tax?: number | string | null;
  // Discounts object (shape varies by API version — handled in normalization layer)
  discounts?: Record<string, unknown>;
  // Old format: root-level points/subscription objects
@@ -578,6 +586,8 @@ export type CheckoutOrderSummary = {
  promotionDiscount?: string;
  rewardLines?: SummaryRewardLine[];
  productDiscount?: string;
+ /** `الضريبة` — rendered only when the API returns a real amount. */
+ tax?: string;
  total: string;
  numOfItems?: number;
  pointsEarned?: number;

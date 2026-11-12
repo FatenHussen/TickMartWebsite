@@ -142,11 +142,16 @@ export default function CustomBasketDetails({
                 ? item.alternatives.find((a) => a.shop_product_variant_id === selectedAltId)
                 : null;
             const priceNumeric = selectedAlt?.price ?? item.unit_price;
+            // The basket details response carries no currency; the page already
+            // renders these amounts as "$" (see `currencySymbol` below).
+            const symbol = "$";
             return {
                 shop_product_variant_id,
                 quantity,
                 name: item.product.name,
                 image: item.product.image,
+                // Formatted unit price so the cart shows a currency, not a bare number.
+                price: `${symbol}${(priceNumeric ?? 0).toFixed(2)}`,
                 priceNumeric,
                 storeId: 0,
             };

@@ -11,9 +11,7 @@ import {
 } from"@/features/cart/utils/cartExtras";
 import { cartItemsToPreviewOrderItems } from"@/features/cart/utils/orderLinePayload";
 
-function formatPrice(value: number): string {
- return `£${value.toFixed(2)}`;
-}
+import { formatPrice, lineMoney } from"@/features/cart/lib/lineMoney";
 
 /** Distinguish cart lines that share variant + extras but differ by note. */
 function noteLineSuffix(note?: string | null): string {
@@ -136,7 +134,7 @@ export const useCartStore = create<CartStore>()(
  next[existingIndex] = {
  ...existing,
  quantity: newQty,
- subtotal: formatPrice(num * newQty),
+ subtotal: formatPrice(num * newQty, existing.price),
  priceNumeric: num,
  };
  return { items: next };
@@ -148,14 +146,15 @@ export const useCartStore = create<CartStore>()(
 
  addRecipe: (payload: AddRecipePayload) => {
  const cartItems: CartItem[] = payload.items.map((it, idx) => {
- const { name, image, priceNumeric, quantity, shop_product_variant_id, storeId } = it;
+ const { name, image, price, priceNumeric, quantity, shop_product_variant_id, storeId } = it;
+ const money = lineMoney(price, priceNumeric, quantity);
  return {
  id: `recipe-${payload.recipe_id}-${idx}`,
  name: name ??"",
  image: image ??"",
- price: String(priceNumeric ?? 0),
+ price: money.price,
  quantity,
- subtotal: String((priceNumeric ?? 0) * quantity),
+ subtotal: money.subtotal,
  storeId: storeId ?? 0,
  shop_product_variant_id: shop_product_variant_id!,
  priceNumeric,
@@ -173,14 +172,15 @@ export const useCartStore = create<CartStore>()(
 
  addBasket: (payload: AddBasketPayload) => {
  const cartItems: CartItem[] = payload.items.map((it, idx) => {
- const { name, image, priceNumeric, quantity, shop_product_variant_id, storeId } = it;
+ const { name, image, price, priceNumeric, quantity, shop_product_variant_id, storeId } = it;
+ const money = lineMoney(price, priceNumeric, quantity);
  return {
  id: `basket-${payload.admin_basket_id}-${idx}`,
  name: name ??"",
  image: image ??"",
- price: String(priceNumeric ?? 0),
+ price: money.price,
  quantity,
- subtotal: String((priceNumeric ?? 0) * quantity),
+ subtotal: money.subtotal,
  storeId: storeId ?? 0,
  shop_product_variant_id: shop_product_variant_id!,
  priceNumeric,
@@ -198,14 +198,15 @@ export const useCartStore = create<CartStore>()(
 
  addScheduleBasket: (payload: AddScheduleBasketPayload) => {
  const cartItems: CartItem[] = payload.items.map((it, idx) => {
- const { name, image, priceNumeric, quantity, shop_product_variant_id, storeId } = it;
+ const { name, image, price, priceNumeric, quantity, shop_product_variant_id, storeId } = it;
+ const money = lineMoney(price, priceNumeric, quantity);
  return {
  id: `schedule-basket-${payload.admin_schedule_basket_id}-${idx}`,
  name: name ??"",
  image: image ??"",
- price: String(priceNumeric ?? 0),
+ price: money.price,
  quantity,
- subtotal: String((priceNumeric ?? 0) * quantity),
+ subtotal: money.subtotal,
  storeId: storeId ?? 0,
  shop_product_variant_id: shop_product_variant_id!,
  priceNumeric,
@@ -240,7 +241,7 @@ export const useCartStore = create<CartStore>()(
  next[index] = {
  ...item,
  quantity: qty,
- subtotal: formatPrice(num * qty),
+ subtotal: formatPrice(num * qty, item.price),
  };
  return { items: next };
  });

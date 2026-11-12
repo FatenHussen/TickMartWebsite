@@ -13,7 +13,7 @@ export function AddressFormContactPhoneField({ register, errors }: AddressFormCo
     return (
         <div className="space-y-2">
             <label className="block text-sm font-medium text-custom-primary">
-                {t("account.addAddress.contactPhone")}
+                {t("account.addAddress.contactPhone")} ({t("common.optional")})
             </label>
             <div className="flex overflow-hidden rounded-xl border border-custom-secondary bg-custom-card transition-colors duration-200 dark:border-[rgba(255,255,255,0.06)] dark:bg-[rgba(255,255,255,0.04)]">
                 <div className="shrink-0 bg-custom-tertiary px-4 py-2.5 text-sm font-medium text-custom-secondary dark:bg-[rgba(255,255,255,0.04)] dark:text-[#A1A1AA]">
