@@ -664,6 +664,7 @@
     "updateCart": "تحديث السلة",
     "returnToShop": "العودة إلى المتجر",
     "addNewProducts": "اضافة منتجات جديدة",
+    "invalidLinesFound": "تعذّر تجهيز هذه المنتجات: {{names}}. يرجى حذفها من السلة واضافتها من جديد.",
     "unitPrice": "السعر الفردي",
     "lineTotal": "الإجمالي",
     "skuAndVariants": "الرمز والمتغيرات",

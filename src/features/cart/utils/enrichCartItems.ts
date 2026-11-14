@@ -156,21 +156,24 @@ export function enrichCartItemsWithPreview(
       ? toNum(orderItem.price)
       : previewPrices?.priceBeforeDiscount;
 
-    const displayPrice =
-      priceAfterDiscount != null
-        ? formatPrice(priceAfterDiscount)
-        : item.price;
+    /**
+     * Never fall back to the stored `item.price` string: it keeps the symbol
+     * from whenever the line was added, so a cart built before a currency
+     * switch rendered `$0.94` next to `ل.س58500.00` on the same review page.
+     * Re-format the stored numeric amount in the active currency instead.
+     */
+    const unitPriceNum = priceAfterDiscount ?? item.priceNumeric ?? toNum(item.price);
+    const displayPrice = formatPrice(unitPriceNum);
     const hasDiscount =
       priceBeforeDiscount != null &&
       priceBeforeDiscount > 0 &&
       (priceAfterDiscount ?? 0) < priceBeforeDiscount;
+    // Same rule as `displayPrice`: a stale `originalPrice` string would carry
+    // the old symbol, so drop it rather than show a second currency.
     const displayOriginalPrice = hasDiscount
       ? formatPrice(priceBeforeDiscount!)
-      : item.originalPrice;
-    const priceNum =
-      priceAfterDiscount ??
-      (item.priceNumeric ?? toNum(item.price));
-    const displaySubtotal = formatPrice(priceNum * item.quantity);
+      : undefined;
+    const displaySubtotal = formatPrice(unitPriceNum * item.quantity);
 
     const variantStr = orderItem?.variant?.length
       ? orderItem.variant.join(", ")

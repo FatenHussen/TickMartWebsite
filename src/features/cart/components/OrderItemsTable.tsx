@@ -117,7 +117,11 @@ function CompactOrderItemRow({ item }: { item: CartItem }) {
                     </span>
                 ) : (
                     <>
-                        <span className="block text-[11px] tabular-nums text-custom-secondary">
+                        {/* `dir="ltr"` keeps `price × qty` in that order under RTL. */}
+                        <span
+                            dir="ltr"
+                            className="block text-[11px] tabular-nums text-custom-secondary"
+                        >
                             {item.price} × {item.quantity}
                         </span>
                         <span className="block text-sm font-semibold tabular-nums text-custom-primary">

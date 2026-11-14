@@ -12,6 +12,7 @@ import AvailablePromotionsSelector from "../components/AvailablePromotionsSelect
 import ActiveBenefitsSelector from "../components/ActiveBenefitsSelector";
 import CheckoutCouponSection from "../components/CheckoutCouponSection";
 import { useActiveBenefits } from "../hooks/useActiveBenefits";
+import { findInvalidCartLines } from "../lib/invalidCartLines";
 import {
     customerSelectedPromotions,
     isCustomerSelectedPromotion,
@@ -235,14 +236,17 @@ export default function Checkout() {
                 freeShippingValue: t("cart.freeDelivery"),
             });
         }
+        // Without a preview there is no authoritative total. `formatPrice(0)`
+        // printed a confident `$ 0` beside real line prices, so show a
+        // placeholder until the preview succeeds.
         return {
             items: displayItems,
-            itemsTotal: formatPrice(0),
-            subtotal: formatPrice(0),
+            itemsTotal: "—",
+            subtotal: "—",
             deliveryFees: "-",
-            storeDiscounts: formatPrice(0),
-            couponDiscount: formatPrice(0),
-            total: formatPrice(0),
+            storeDiscounts: "—",
+            couponDiscount: "—",
+            total: "—",
         };
     }, [displayItems, formatPrice, i18n.language, preview, t]);
 
@@ -317,7 +321,10 @@ export default function Checkout() {
         (!scheduledDeliveryAt ||
             isBeforeEarliest(scheduledDeliveryAt, checkout?.earliest_delivery_at));
     const checkoutMessage = checkoutBlockMessage(checkout);
+    /** Lines the preview cannot price; they make `POST /orders/preview` 422. */
+    const invalidLines = findInvalidCartLines(cartItems);
     const canContinue =
+        invalidLines.length === 0 &&
         Boolean(selectedAddressId) &&
         Boolean(selectedPaymentMethod) &&
         !blockedByMinimum &&
@@ -471,6 +478,16 @@ export default function Checkout() {
                                 compact
                             />
                         )}
+                        {invalidLines.length > 0 && (
+                            <p className="rounded-2xl border border-[color:var(--color-ui-amber-200)] bg-[color:var(--color-ui-amber-50)] px-4 py-3 text-sm leading-relaxed text-[color:var(--color-ui-amber-900)]">
+                                {t("cart.invalidLinesFound", {
+                                    names: invalidLines.map((item) => item.name).join("، "),
+                                    defaultValue:
+                                        "تعذّر تجهيز هذه المنتجات: {{names}}. يرجى حذفها من السلة واضافتها من جديد.",
+                                })}
+                            </p>
+                        )}
+
                         {checkoutMessage && (
                             <p className="rounded-2xl border border-[color:var(--color-ui-amber-200)] bg-[color:var(--color-ui-amber-50)] px-4 py-3 text-sm leading-relaxed text-[color:var(--color-ui-amber-900)]">
                                 {checkoutMessage}

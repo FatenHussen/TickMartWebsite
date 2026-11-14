@@ -30,6 +30,8 @@ import {
     isBeforeEarliest,
 } from "../lib/cartCheckout";
 
+import { findInvalidCartLines } from "../lib/invalidCartLines";
+
 import circle from "/images/shared/circle.png";
 import circleBottom from "/images/shared/circleBottom.png";
 
@@ -177,7 +179,10 @@ export default function ReviewConfirm() {
         setEarliestDeliveryAt(checkout?.earliest_delivery_at || null);
     }, [checkout?.earliest_delivery_at, setEarliestDeliveryAt]);
 
+    const invalidLines = findInvalidCartLines(cartItems);
+
     const canConfirm =
+        invalidLines.length === 0 &&
         Boolean(storedAddressId) &&
         Boolean(preview) &&
         Boolean(selectedPaymentMethod) &&
@@ -323,6 +328,16 @@ export default function ReviewConfirm() {
                         </p>
                     </section>
 
+                    {invalidLines.length > 0 && (
+                        <p className="rounded-2xl border border-[color:var(--color-ui-amber-200)] bg-[color:var(--color-ui-amber-50)] px-4 py-3 text-sm leading-relaxed text-[color:var(--color-ui-amber-900)]">
+                            {t("cart.invalidLinesFound", {
+                                names: invalidLines.map((item) => item.name).join("، "),
+                                defaultValue:
+                                    "تعذّر تجهيز هذه المنتجات: {{names}}. يرجى حذفها من السلة واضافتها من جديد.",
+                            })}
+                        </p>
+                    )}
+
                     {(checkoutMessage || scheduledTooEarly) && (
                         <p className="rounded-2xl border border-[color:var(--color-ui-amber-200)] bg-[color:var(--color-ui-amber-50)] px-4 py-3 text-sm leading-relaxed text-[color:var(--color-ui-amber-900)]">
                             {checkoutMessage ||
@@ -341,17 +356,22 @@ export default function ReviewConfirm() {
                         />
                     )}
 
+                    {/*
+                      * Without a preview there is no authoritative total. Showing
+                      * `formatPrice(0)` printed a confident `$ 0` next to real
+                      * line prices, so show a placeholder until the preview loads.
+                      */}
                     <CheckoutOrderSummary
                         totalOnly
                         summary={
                             checkoutSummary ?? {
                                 items: [],
-                                itemsTotal: formatPrice(0),
-                                subtotal: formatPrice(0),
+                                itemsTotal: "—",
+                                subtotal: "—",
                                 deliveryFees: "-",
-                                storeDiscounts: formatPrice(0),
-                                couponDiscount: formatPrice(0),
-                                total: formatPrice(0),
+                                storeDiscounts: "—",
+                                couponDiscount: "—",
+                                total: "—",
                             }
                         }
                         onPlaceOrder={handleConfirmOrder}

@@ -664,6 +664,7 @@
     "updateCart": "Update cart",
     "returnToShop": "Return to shop",
     "addNewProducts": "Add new products",
+    "invalidLinesFound": "These products could not be prepared: {{names}}. Please remove them from the cart and add them again.",
     "unitPrice": "Unit price",
     "lineTotal": "Total",
     "skuAndVariants": "SKU & options",
